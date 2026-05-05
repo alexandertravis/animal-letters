@@ -109,13 +109,22 @@ window.APP = window.APP || {};
       return pts;
     });
 
-    function showGuide() {
+    // Render (or re-render) the guide starting from the current checkpoint.
+    // Called on every new stroke AND every time a checkpoint is hit, so the
+    // guide visually shrinks as the child traces and the dot advances with them.
+    function updateGuide() {
       guideGroup.innerHTML = '';
       if (currentStroke >= totalStrokes) return;
-      const pts = checkpoints[currentStroke];
+
+      const remaining = checkpoints[currentStroke].slice(currentCheckpoint);
+      if (remaining.length === 0) return;
+
+      // Build a polyline from the remaining checkpoints so the guide
+      // disappears behind the user's ink as they progress.
+      const d = 'M ' + remaining.map(p => `${p.x},${p.y}`).join(' L ');
       const path = el('path', {
         class: 'guide',
-        d: data.strokes[currentStroke].d,
+        d,
         fill: 'none',
         stroke: '#ff8906',
         'stroke-width': 8,
@@ -124,10 +133,12 @@ window.APP = window.APP || {};
         'stroke-dasharray': '14 12'
       });
       guideGroup.appendChild(path);
-      const start = pts[0];
+
+      // Dot sits at the leading edge — where the child should continue from.
+      const lead = remaining[0];
       const dot = el('circle', {
         class: 'startDot',
-        cx: start.x, cy: start.y, r: 10,
+        cx: lead.x, cy: lead.y, r: 10,
         fill: '#ff8906'
       });
       guideGroup.appendChild(dot);
@@ -137,7 +148,7 @@ window.APP = window.APP || {};
       doneGroup.appendChild(el('path', { d: data.strokes[strokeIdx].d }));
     }
 
-    showGuide();
+    updateGuide();
 
     // ---- Coordinate mapping ----
     function clientToSvg(clientX, clientY) {
@@ -206,8 +217,14 @@ window.APP = window.APP || {};
       if (currentStroke >= totalStrokes) return;
       const cps = checkpoints[currentStroke];
       // Advance through any consecutive checkpoints within tolerance (handles fast drags).
+      let advanced = false;
       while (currentCheckpoint < cps.length && dist(p, cps[currentCheckpoint]) <= TOLERANCE) {
         currentCheckpoint++;
+        advanced = true;
+      }
+      // Shrink the guide to reflect progress whenever a checkpoint is newly hit.
+      if (advanced && currentCheckpoint < cps.length) {
+        updateGuide();
       }
       if (currentCheckpoint >= cps.length) {
         // Stroke complete.
@@ -216,7 +233,7 @@ window.APP = window.APP || {};
         currentCheckpoint = 0;
         endActiveInk();
         pointerActive = false;
-        showGuide();
+        updateGuide();
         if (currentStroke >= totalStrokes) {
           // All strokes done — play letter-complete sound then fire callback.
           if (APP.audio) APP.audio.letterDone();
