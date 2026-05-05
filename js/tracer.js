@@ -116,7 +116,11 @@ window.APP = window.APP || {};
       guideGroup.innerHTML = '';
       if (currentStroke >= totalStrokes) return;
 
-      const remaining = checkpoints[currentStroke].slice(currentCheckpoint);
+      // Start the remaining guide from the last *completed* checkpoint so the dot
+      // sits flush with the end of the ink — no gap between what's filled and
+      // where the guide continues.
+      const sliceFrom = currentCheckpoint > 0 ? currentCheckpoint - 1 : 0;
+      const remaining = checkpoints[currentStroke].slice(sliceFrom);
       if (remaining.length === 0) return;
 
       // Build a polyline from the remaining checkpoints so the guide
@@ -134,7 +138,7 @@ window.APP = window.APP || {};
       });
       guideGroup.appendChild(path);
 
-      // Dot sits at the leading edge — where the child should continue from.
+      // Dot sits at the last completed position — the trailing edge of the ink.
       const lead = remaining[0];
       const dot = el('circle', {
         class: 'startDot',
