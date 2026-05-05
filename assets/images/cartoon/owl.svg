@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <ellipse cx="100" cy="110" rx="58" ry="70" fill="#9c6b4a"/>
+  <polygon points="55,55 75,80 60,85" fill="#9c6b4a"/>
+  <polygon points="145,55 125,80 140,85" fill="#9c6b4a"/>
+  <ellipse cx="100" cy="140" rx="42" ry="34" fill="#d4a574"/>
+  <circle cx="78" cy="100" r="22" fill="#fff"/>
+  <circle cx="122" cy="100" r="22" fill="#fff"/>
+  <circle cx="78" cy="100" r="10" fill="#222"/>
+  <circle cx="122" cy="100" r="10" fill="#222"/>
+  <circle cx="80" cy="97" r="3" fill="#fff"/>
+  <circle cx="124" cy="97" r="3" fill="#fff"/>
+  <polygon points="100,115 92,128 108,128" fill="#e89e5a"/>
+  <line x1="78" y1="172" x2="78" y2="186" stroke="#e89e5a" stroke-width="4" stroke-linecap="round"/>
+  <line x1="100" y1="174" x2="100" y2="188" stroke="#e89e5a" stroke-width="4" stroke-linecap="round"/>
+  <line x1="122" y1="172" x2="122" y2="186" stroke="#e89e5a" stroke-width="4" stroke-linecap="round"/>
+</svg>

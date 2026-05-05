@@ -1,0 +1,99 @@
+window.APP = window.APP || {};
+
+(function (APP) {
+  function seg(name, options, current, onPick) {
+    const wrap = document.createElement('div');
+    wrap.className = 'seg';
+    options.forEach(opt => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = opt.label;
+      if (opt.value === current) b.classList.add('on');
+      b.addEventListener('click', () => onPick(opt.value));
+      wrap.appendChild(b);
+    });
+    return wrap;
+  }
+
+  function render(root, ctx) {
+    root.innerHTML = '';
+    const s = APP.state.settings;
+    const wrap = document.createElement('div');
+    wrap.className = 'setup';
+    wrap.innerHTML = `<h2>Game settings</h2>`;
+
+    // Max name length
+    const f1 = document.createElement('div');
+    f1.className = 'field';
+    f1.innerHTML = `
+      <label>Longest animal name to use: <span class="lengthValue">${s.maxLength}</span> letters</label>
+      <input type="range" min="3" max="10" step="1" value="${s.maxLength}"/>
+    `;
+    const range = f1.querySelector('input');
+    const lengthValue = f1.querySelector('.lengthValue');
+    range.addEventListener('input', () => {
+      const v = parseInt(range.value, 10);
+      APP.settings.update({ maxLength: v });
+      lengthValue.textContent = v;
+    });
+    wrap.appendChild(f1);
+
+    // Letter case
+    const f2 = document.createElement('div');
+    f2.className = 'field';
+    f2.innerHTML = `<label>Letter style</label>`;
+    f2.appendChild(seg('case', [
+      { value: 'upper', label: 'ABC (uppercase)' },
+      { value: 'lower', label: 'abc (lowercase)' }
+    ], s.letterCase, v => { APP.settings.update({ letterCase: v }); render(root, ctx); }));
+    wrap.appendChild(f2);
+
+    // Depiction
+    const f3 = document.createElement('div');
+    f3.className = 'field';
+    f3.innerHTML = `<label>Animal pictures</label>`;
+    f3.appendChild(seg('depict', [
+      { value: 'cartoon', label: 'Cartoon' },
+      { value: 'realistic', label: 'Realistic' }
+    ], s.depiction, v => { APP.settings.update({ depiction: v }); render(root, ctx); }));
+    wrap.appendChild(f3);
+
+    // Reveal mode
+    const f4 = document.createElement('div');
+    f4.className = 'field';
+    f4.innerHTML = `<label>Show the word as you build it</label>`;
+    f4.appendChild(seg('reveal', [
+      { value: 'faint', label: 'Faint → bold' },
+      { value: 'hidden', label: 'Hidden → reveal' }
+    ], s.revealMode, v => { APP.settings.update({ revealMode: v }); render(root, ctx); }));
+    wrap.appendChild(f4);
+
+    // Actions
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    const back = document.createElement('button');
+    back.className = 'btn ghost';
+    back.textContent = 'Back';
+    back.addEventListener('click', () => ctx.go('landing'));
+    const start = document.createElement('button');
+    start.className = 'btn';
+    start.textContent = 'Start';
+    start.addEventListener('click', () => {
+      const animal = APP.animals.pickRandom(APP.state.settings.maxLength, APP.state.currentAnimal);
+      if (!animal) {
+        alert('No animals fit that length. Try a longer name length.');
+        return;
+      }
+      APP.startGame(animal);
+      ctx.go('game');
+    });
+    actions.appendChild(back);
+    actions.appendChild(start);
+    wrap.appendChild(actions);
+
+    root.appendChild(wrap);
+  }
+
+  APP.screens = APP.screens || {};
+  APP.screens.setup = { render };
+})(window.APP);
