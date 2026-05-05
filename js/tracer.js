@@ -236,7 +236,6 @@ window.APP = window.APP || {};
         currentStroke++;
         currentCheckpoint = 0;
         endActiveInk();
-        pointerActive = false;
         updateGuide();
         if (currentStroke >= totalStrokes) {
           // All strokes done — play letter-complete sound then fire callback.
@@ -245,6 +244,13 @@ window.APP = window.APP || {};
         } else {
           // Individual stroke done — short tick.
           if (APP.audio) APP.audio.strokeDone();
+          // If the finger is still down, seamlessly begin the next stroke from
+          // the current position so the child never has to lift and re-tap.
+          if (pointerActive) {
+            startStrokeIfNeeded();
+            activeInkPoints.push(p);
+            activeInkPath.setAttribute('d', pointsToPath(activeInkPoints));
+          }
         }
       }
     }
