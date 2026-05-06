@@ -11,6 +11,10 @@ window.APP = window.APP || {};
   const DRAW_RADIUS  = 52;       // viewBox units — how close to the dot before ink is deposited
   const CHECKPOINTS_PER_STROKE = 18;
 
+  // One colour per stroke — matches the letter-patterns review screen so
+  // the child sees the same numbering system in both places.
+  const STROKE_COLORS = ['#ff8906', '#f582ae', '#8bd3dd', '#5390d9', '#7c3aed'];
+
   function el(tag, attrs, children) {
     const e = document.createElementNS(SVG_NS, tag);
     if (attrs) for (const k in attrs) e.setAttribute(k, attrs[k]);
@@ -71,10 +75,11 @@ window.APP = window.APP || {};
     svg.appendChild(doneGroup);
 
     // User ink layer (masked to letter shape).
+    // No group-level stroke colour — each path gets its own colour from STROKE_COLORS.
     const inkGroup = el('g', {
       class: 'ink-group',
       mask: `url(#${maskId})`,
-      stroke: '#f582ae', 'stroke-width': INK_WIDTH, fill: 'none',
+      'stroke-width': INK_WIDTH, fill: 'none',
       'stroke-linecap': 'round', 'stroke-linejoin': 'round'
     });
     svg.appendChild(inkGroup);
@@ -139,12 +144,13 @@ window.APP = window.APP || {};
         'stroke-linejoin': 'round'
       }));
 
-      // Orange dashed guide on top of the halo.
+      // Dashed guide path — colour matches the current stroke number.
+      const color = STROKE_COLORS[currentStroke % STROKE_COLORS.length];
       guideGroup.appendChild(el('path', {
         class: 'guide',
         d,
         fill: 'none',
-        stroke: '#ff8906',
+        stroke: color,
         'stroke-width': 9,
         'stroke-linecap': 'round',
         'stroke-linejoin': 'round',
@@ -154,12 +160,24 @@ window.APP = window.APP || {};
       // Dot sits at the last completed position — the trailing edge of the ink.
       const lead = remaining[0];
       // White ring gives the dot a clear border against the ink.
-      guideGroup.appendChild(el('circle', { cx: lead.x, cy: lead.y, r: 15, fill: 'white' }));
+      guideGroup.appendChild(el('circle', { cx: lead.x, cy: lead.y, r: 17, fill: 'white' }));
       guideGroup.appendChild(el('circle', {
         class: 'startDot',
-        cx: lead.x, cy: lead.y, r: 11,
-        fill: '#ff8906'
+        cx: lead.x, cy: lead.y, r: 13,
+        fill: color
       }));
+      // Stroke number inside the dot so the child can follow the order.
+      const numLabel = document.createElementNS(SVG_NS, 'text');
+      numLabel.setAttribute('x', lead.x);
+      numLabel.setAttribute('y', lead.y);
+      numLabel.setAttribute('text-anchor', 'middle');
+      numLabel.setAttribute('dominant-baseline', 'central');
+      numLabel.setAttribute('font-size', '15');
+      numLabel.setAttribute('font-weight', '800');
+      numLabel.setAttribute('fill', 'white');
+      numLabel.setAttribute('pointer-events', 'none');
+      numLabel.textContent = String(currentStroke + 1);
+      guideGroup.appendChild(numLabel);
     }
 
     function markStrokeDone(strokeIdx) {
@@ -202,7 +220,8 @@ window.APP = window.APP || {};
 
     function startStrokeIfNeeded() {
       if (activeInkPath) return;
-      activeInkPath = el('path', { d: '' });
+      const color = STROKE_COLORS[currentStroke % STROKE_COLORS.length];
+      activeInkPath = el('path', { d: '', stroke: color });
       inkGroup.appendChild(activeInkPath);
       activeInkPoints = [];
     }
