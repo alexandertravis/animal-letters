@@ -27,46 +27,59 @@ window.APP = window.APP || {};
 
     APP.ANIMALS.forEach(animal => {
       const done   = APP.state.completedAnimals.has(animal.name);
-      const imgSrc = animal.images.cartoon; // always cartoon in the gallery
+      const imgSrc = animal.images.cartoon;
 
       const tile = document.createElement('div');
-      tile.className = 'gallery-tile' + (done ? ' unlocked' : ' locked');
-      tile.setAttribute('aria-label', done ? animal.displayName : 'Locked');
+      tile.className = 'gallery-tile ' + (done ? 'unlocked' : 'locked');
 
-      // Image box
-      const imgBox = document.createElement('div');
-      imgBox.className = 'gallery-img';
+      // Name row — full name when done, spaced underscores when locked
+      const nameEl = document.createElement('div');
+      nameEl.className = 'gallery-tile-name';
+      nameEl.textContent = done
+        ? animal.displayName
+        : Array(animal.name.length).fill('_').join(' ');
 
-      const img = new Image();
-      img.alt = animal.displayName;
-      img.onerror = () => {
-        img.style.display = 'none';
-        fallback.style.display = 'flex';
-      };
-      img.src = imgSrc;
+      tile.appendChild(nameEl);
 
-      const fallback = document.createElement('div');
-      fallback.className = 'gallery-fallback';
-      fallback.style.display = 'none';
-      fallback.textContent = animal.displayName[0].toUpperCase();
+      if (done) {
+        // Full image centred in remaining space
+        const imgWrap = document.createElement('div');
+        imgWrap.className = 'gallery-tile-full';
 
-      imgBox.appendChild(img);
-      imgBox.appendChild(fallback);
+        const img = new Image();
+        img.alt = animal.displayName;
 
-      if (!done) {
-        const overlay = document.createElement('div');
-        overlay.className = 'gallery-overlay';
-        overlay.innerHTML = '&#128274;'; // lock emoji
-        imgBox.appendChild(overlay);
+        const fallback = document.createElement('div');
+        fallback.className = 'gallery-fallback';
+        fallback.textContent = animal.displayName[0].toUpperCase();
+        fallback.style.display = 'none';
+
+        img.onerror = () => { img.style.display = 'none'; fallback.style.display = 'flex'; };
+        img.src = imgSrc;
+
+        imgWrap.appendChild(img);
+        imgWrap.appendChild(fallback);
+        tile.appendChild(imgWrap);
+
+      } else {
+        // Spacer pushes the peek strip to the bottom
+        const spacer = document.createElement('div');
+        spacer.className = 'gallery-tile-spacer';
+        tile.appendChild(spacer);
+
+        // Peek strip — shows just the top portion of the image
+        const peek = document.createElement('div');
+        peek.className = 'gallery-tile-peek';
+
+        const img = new Image();
+        img.alt = '';
+        img.src = imgSrc;
+        // If image fails to load the peek is just empty — that's fine
+
+        peek.appendChild(img);
+        tile.appendChild(peek);
       }
 
-      // Name label
-      const nameEl = document.createElement('div');
-      nameEl.className = 'gallery-name';
-      nameEl.textContent = done ? animal.displayName : '???';
-
-      tile.appendChild(imgBox);
-      tile.appendChild(nameEl);
       grid.appendChild(tile);
     });
 

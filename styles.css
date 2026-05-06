@@ -254,72 +254,95 @@ html, body {
   padding: 4px 12px;
   box-shadow: var(--shadow);
 }
+
+/* Fixed-size square tiles, centred grid */
 .gallery-grid {
   flex: 1;
   overflow-y: auto;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 10px;
-  padding: 8px 16px 24px;
+  grid-template-columns: repeat(auto-fill, 140px);
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 16px 28px;
 }
+
 .gallery-tile {
+  width: 140px;
+  height: 140px;
   background: #fff;
   border-radius: 14px;
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   overflow: hidden;
 }
 .gallery-tile.unlocked {
   box-shadow: 0 6px 0 rgba(0,24,88,0.18), 0 0 0 3px var(--accent);
 }
-.gallery-img {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1;
+
+/* Name row — sits at the top of every tile */
+.gallery-tile-name {
+  flex-shrink: 0;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px;
-}
-.gallery-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-.gallery-tile.locked .gallery-img img {
-  filter: grayscale(1) brightness(0.55);
-}
-.gallery-fallback {
-  font-size: 2.5rem;
+  font-size: 0.72rem;
   font-weight: 800;
-  color: var(--muted);
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.gallery-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.6rem;
-  opacity: 0.6;
-  pointer-events: none;
-}
-.gallery-name {
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 4px 6px 8px;
   text-align: center;
-  letter-spacing: 0.04em;
+  padding: 0 6px;
   color: var(--ink);
 }
-.gallery-tile.locked .gallery-name {
+.gallery-tile.locked .gallery-tile-name {
+  letter-spacing: 0.22em;
+  color: #aaa;
+}
+.gallery-tile.unlocked .gallery-tile-name {
+  letter-spacing: 0.04em;
+}
+
+/* UNLOCKED — full image fills remaining space, centred */
+.gallery-tile-full {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px 8px;
+  overflow: hidden;
+}
+.gallery-tile-full img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.gallery-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  font-weight: 800;
   color: var(--muted);
-  letter-spacing: 0.1em;
+}
+
+/* LOCKED — spacer pushes peek strip to the bottom */
+.gallery-tile-spacer { flex: 1; }
+
+/* Peek strip: fixed height, clips image so only the top of the head shows */
+.gallery-tile-peek {
+  flex-shrink: 0;
+  height: 38px;
+  overflow: hidden;
+  position: relative;
+}
+.gallery-tile-peek img {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 86%;
+  height: auto;
+  filter: grayscale(1) brightness(0.52);
 }
