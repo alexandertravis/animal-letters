@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Ears -->
+  <circle cx="64" cy="68" r="26" fill="#c0a0b0"/>
+  <circle cx="136" cy="68" r="26" fill="#c0a0b0"/>
+  <circle cx="64" cy="68" r="16" fill="#e8c0d0"/>
+  <circle cx="136" cy="68" r="16" fill="#e8c0d0"/>
+  <!-- Head -->
+  <ellipse cx="100" cy="118" rx="62" ry="64" fill="#c0a0b0"/>
+  <!-- Eyes -->
+  <circle cx="78" cy="102" r="9" fill="#fff"/>
+  <circle cx="122" cy="102" r="9" fill="#fff"/>
+  <circle cx="80" cy="102" r="5" fill="#111"/>
+  <circle cx="124" cy="102" r="5" fill="#111"/>
+  <circle cx="81" cy="100" r="2" fill="#fff"/>
+  <circle cx="125" cy="100" r="2" fill="#fff"/>
+  <!-- Pointy muzzle -->
+  <ellipse cx="100" cy="144" rx="20" ry="14" fill="#d8b0c0"/>
+  <!-- Nose -->
+  <circle cx="100" cy="132" r="6" fill="#d96c8a"/>
+  <!-- Whiskers -->
+  <line x1="38" y1="136" x2="80" y2="140" stroke="#888" stroke-width="1.5"/>
+  <line x1="38" y1="144" x2="80" y2="144" stroke="#888" stroke-width="1.5"/>
+  <line x1="120" y1="140" x2="162" y2="136" stroke="#888" stroke-width="1.5"/>
+  <line x1="120" y1="144" x2="162" y2="144" stroke="#888" stroke-width="1.5"/>
+</svg>

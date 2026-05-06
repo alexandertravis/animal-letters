@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Mane -->
+  <ellipse cx="96" cy="58" rx="14" ry="32" fill="#333" transform="rotate(-10 96 58)"/>
+  <!-- Ears -->
+  <polygon points="70,66 60,34 88,60" fill="#f0f0f0"/>
+  <polygon points="72,63 66,43 84,59" fill="#e0b0b0"/>
+  <polygon points="108,63 118,34 96,59" fill="#f0f0f0"/>
+  <polygon points="106,63 112,43 98,59" fill="#e0b0b0"/>
+  <!-- Head -->
+  <ellipse cx="88" cy="110" rx="30" ry="60" fill="#f0f0f0" transform="rotate(-8 88 110)"/>
+  <!-- Stripes on face -->
+  <path d="M70 82 Q88 78 96 86" stroke="#333" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M66 100 Q84 96 94 104" stroke="#333" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M64 118 Q82 114 92 122" stroke="#333" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <!-- Eye -->
+  <circle cx="84" cy="88" r="9" fill="#fff"/>
+  <circle cx="86" cy="88" r="5" fill="#2c1800"/>
+  <circle cx="87" cy="86" r="2" fill="#fff"/>
+  <!-- Nostril area -->
+  <ellipse cx="70" cy="148" rx="18" ry="14" fill="#e8d8d8"/>
+  <ellipse cx="65" cy="147" rx="4" ry="3.5" fill="#8a6060" transform="rotate(-10 65 147)"/>
+</svg>

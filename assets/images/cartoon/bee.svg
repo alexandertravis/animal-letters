@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Wings -->
+  <ellipse cx="72" cy="85" rx="30" ry="18" fill="rgba(173,216,230,0.75)" transform="rotate(-20 72 85)"/>
+  <ellipse cx="128" cy="85" rx="30" ry="18" fill="rgba(173,216,230,0.75)" transform="rotate(20 128 85)"/>
+  <!-- Body -->
+  <ellipse cx="100" cy="120" rx="32" ry="42" fill="#f6c177"/>
+  <!-- Stripes -->
+  <rect x="68" y="108" width="64" height="12" rx="6" fill="#333"/>
+  <rect x="68" y="128" width="64" height="12" rx="6" fill="#333"/>
+  <!-- Head -->
+  <circle cx="100" cy="72" r="22" fill="#f6c177"/>
+  <!-- Antennae -->
+  <line x1="92" y1="52" x2="80" y2="36" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="79" cy="34" r="4" fill="#333"/>
+  <line x1="108" y1="52" x2="120" y2="36" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="121" cy="34" r="4" fill="#333"/>
+  <!-- Eyes -->
+  <circle cx="91" cy="70" r="5" fill="#333"/>
+  <circle cx="109" cy="70" r="5" fill="#333"/>
+  <circle cx="92" cy="69" r="2" fill="#fff"/>
+  <circle cx="110" cy="69" r="2" fill="#fff"/>
+  <!-- Stinger -->
+  <polygon points="100,160 95,172 105,172" fill="#333"/>
+</svg>

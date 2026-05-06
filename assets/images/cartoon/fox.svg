@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Ears -->
+  <polygon points="62,78 48,36 88,68" fill="#e8632a"/>
+  <polygon points="138,78 152,36 112,68" fill="#e8632a"/>
+  <polygon points="65,74 54,46 84,68" fill="#f0c0a0"/>
+  <polygon points="135,74 146,46 116,68" fill="#f0c0a0"/>
+  <!-- Head -->
+  <ellipse cx="100" cy="110" rx="60" ry="62" fill="#e8632a"/>
+  <!-- White muzzle -->
+  <ellipse cx="100" cy="138" rx="36" ry="28" fill="#f5e6d0"/>
+  <!-- Eyes -->
+  <circle cx="80" cy="98" r="9" fill="#fff"/>
+  <circle cx="120" cy="98" r="9" fill="#fff"/>
+  <ellipse cx="82" cy="98" rx="5" ry="6" fill="#4a3000"/>
+  <ellipse cx="122" cy="98" rx="5" ry="6" fill="#4a3000"/>
+  <circle cx="83" cy="96" r="2" fill="#fff"/>
+  <circle cx="123" cy="96" r="2" fill="#fff"/>
+  <!-- Nose -->
+  <ellipse cx="100" cy="126" rx="8" ry="6" fill="#333"/>
+  <!-- Mouth -->
+  <path d="M100 132 Q90 142 82 138" stroke="#555" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M100 132 Q110 142 118 138" stroke="#555" stroke-width="2" fill="none" stroke-linecap="round"/>
+</svg>

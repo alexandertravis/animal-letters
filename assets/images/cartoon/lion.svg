@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Mane -->
+  <circle cx="100" cy="108" r="76" fill="#c8821a"/>
+  <!-- Mane inner -->
+  <circle cx="100" cy="108" r="62" fill="#e8a030"/>
+  <!-- Face -->
+  <circle cx="100" cy="108" r="52" fill="#f6c177"/>
+  <!-- Ears inside mane -->
+  <circle cx="52" cy="60" r="12" fill="#e8a030"/>
+  <circle cx="148" cy="60" r="12" fill="#e8a030"/>
+  <!-- Eyes -->
+  <circle cx="82" cy="96" r="10" fill="#fff"/>
+  <circle cx="118" cy="96" r="10" fill="#fff"/>
+  <ellipse cx="84" cy="96" rx="5" ry="6" fill="#5a3800"/>
+  <ellipse cx="120" cy="96" rx="5" ry="6" fill="#5a3800"/>
+  <circle cx="85" cy="93" r="2" fill="#fff"/>
+  <circle cx="121" cy="93" r="2" fill="#fff"/>
+  <!-- Muzzle -->
+  <ellipse cx="100" cy="126" rx="26" ry="18" fill="#e8a030"/>
+  <!-- Nose -->
+  <ellipse cx="100" cy="116" rx="8" ry="6" fill="#8b3a3a"/>
+  <!-- Mouth -->
+  <path d="M100 122 Q88 132 80 128" stroke="#8b3a3a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M100 122 Q112 132 120 128" stroke="#8b3a3a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Whiskers -->
+  <line x1="40" y1="120" x2="74" y2="124" stroke="#a07840" stroke-width="1.5"/>
+  <line x1="40" y1="128" x2="74" y2="128" stroke="#a07840" stroke-width="1.5"/>
+  <line x1="126" y1="124" x2="160" y2="120" stroke="#a07840" stroke-width="1.5"/>
+  <line x1="126" y1="128" x2="160" y2="128" stroke="#a07840" stroke-width="1.5"/>
+</svg>

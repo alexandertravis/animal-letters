@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Ears -->
+  <ellipse cx="62" cy="68" rx="20" ry="26" fill="#f4a0b0" transform="rotate(-15 62 68)"/>
+  <ellipse cx="62" cy="68" rx="12" ry="16" fill="#e07090" transform="rotate(-15 62 68)"/>
+  <ellipse cx="138" cy="68" rx="20" ry="26" fill="#f4a0b0" transform="rotate(15 138 68)"/>
+  <ellipse cx="138" cy="68" rx="12" ry="16" fill="#e07090" transform="rotate(15 138 68)"/>
+  <!-- Head -->
+  <ellipse cx="100" cy="112" rx="66" ry="66" fill="#f4a0b0"/>
+  <!-- Eyes -->
+  <circle cx="78" cy="96" r="9" fill="#fff"/>
+  <circle cx="122" cy="96" r="9" fill="#fff"/>
+  <circle cx="80" cy="96" r="5" fill="#333"/>
+  <circle cx="124" cy="96" r="5" fill="#333"/>
+  <circle cx="81" cy="94" r="2" fill="#fff"/>
+  <circle cx="125" cy="94" r="2" fill="#fff"/>
+  <!-- Snout -->
+  <ellipse cx="100" cy="136" rx="30" ry="22" fill="#e07090"/>
+  <circle cx="90" cy="133" r="6" fill="#c05070"/>
+  <circle cx="110" cy="133" r="6" fill="#c05070"/>
+  <!-- Curly tail hint -->
+  <path d="M166 112 Q180 100 174 88 Q168 78 160 86" stroke="#e07090" stroke-width="4" fill="none" stroke-linecap="round"/>
+</svg>

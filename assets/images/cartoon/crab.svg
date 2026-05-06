@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Claws -->
+  <ellipse cx="36" cy="88" rx="20" ry="14" fill="#e05030" transform="rotate(-20 36 88)"/>
+  <ellipse cx="164" cy="88" rx="20" ry="14" fill="#e05030" transform="rotate(20 164 88)"/>
+  <line x1="60" y1="108" x2="36" y2="94" stroke="#e05030" stroke-width="8" stroke-linecap="round"/>
+  <line x1="140" y1="108" x2="164" y2="94" stroke="#e05030" stroke-width="8" stroke-linecap="round"/>
+  <!-- Legs -->
+  <line x1="72" y1="130" x2="48" y2="158" stroke="#e05030" stroke-width="6" stroke-linecap="round"/>
+  <line x1="82" y1="138" x2="66" y2="168" stroke="#e05030" stroke-width="6" stroke-linecap="round"/>
+  <line x1="118" y1="130" x2="152" y2="158" stroke="#e05030" stroke-width="6" stroke-linecap="round"/>
+  <line x1="118" y1="138" x2="134" y2="168" stroke="#e05030" stroke-width="6" stroke-linecap="round"/>
+  <!-- Body -->
+  <ellipse cx="100" cy="120" rx="58" ry="42" fill="#e05030"/>
+  <!-- Shell texture -->
+  <ellipse cx="100" cy="112" rx="44" ry="30" fill="#c84020" opacity="0.4"/>
+  <!-- Eye stalks -->
+  <line x1="82" y1="100" x2="74" y2="82" stroke="#e05030" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="72" cy="78" r="8" fill="#fff"/>
+  <circle cx="74" cy="78" r="4" fill="#222"/>
+  <line x1="118" y1="100" x2="126" y2="82" stroke="#e05030" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="128" cy="78" r="8" fill="#fff"/>
+  <circle cx="126" cy="78" r="4" fill="#222"/>
+</svg>

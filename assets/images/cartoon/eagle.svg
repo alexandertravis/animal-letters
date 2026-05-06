@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Wings spread -->
+  <ellipse cx="34" cy="110" rx="36" ry="18" fill="#5a3e1e" transform="rotate(-15 34 110)"/>
+  <ellipse cx="166" cy="110" rx="36" ry="18" fill="#5a3e1e" transform="rotate(15 166 110)"/>
+  <!-- Body -->
+  <ellipse cx="100" cy="128" rx="32" ry="44" fill="#5a3e1e"/>
+  <!-- White tail -->
+  <ellipse cx="100" cy="164" rx="20" ry="12" fill="#fff"/>
+  <!-- White head -->
+  <circle cx="100" cy="76" r="32" fill="#fff"/>
+  <!-- Eye -->
+  <circle cx="88" cy="72" r="7" fill="#f6c177"/>
+  <circle cx="90" cy="72" r="4" fill="#222"/>
+  <circle cx="91" cy="70" r="1.5" fill="#fff"/>
+  <!-- Hooked beak -->
+  <polygon points="76,82 56,90 72,100" fill="#e8a030"/>
+  <path d="M72,100 Q64,106 70,110" stroke="#e8a030" stroke-width="3" fill="none" stroke-linecap="round"/>
+</svg>

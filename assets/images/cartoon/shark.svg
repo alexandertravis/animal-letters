@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Tail fin -->
+  <polygon points="168,100 188,74 188,126" fill="#4a7aaa"/>
+  <!-- Body -->
+  <ellipse cx="96" cy="112" rx="78" ry="44" fill="#4a7aaa"/>
+  <!-- White belly -->
+  <ellipse cx="88" cy="122" rx="56" ry="28" fill="#e8f0f8"/>
+  <!-- Dorsal fin -->
+  <polygon points="90,70 74,112 116,112" fill="#3a6a9a"/>
+  <!-- Pectoral fin -->
+  <polygon points="88,128 60,156 112,140" fill="#3a6a9a"/>
+  <!-- Eye -->
+  <circle cx="38" cy="104" r="10" fill="#fff"/>
+  <circle cx="40" cy="104" r="6" fill="#111"/>
+  <circle cx="41" cy="102" r="2" fill="#fff"/>
+  <!-- Mouth with teeth -->
+  <path d="M20,118 Q36,130 60,124" stroke="#333" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <polygon points="28,119 32,128 36,119" fill="#fff"/>
+  <polygon points="38,122 42,130 46,122" fill="#fff"/>
+  <polygon points="48,122 52,129 56,122" fill="#fff"/>
+</svg>

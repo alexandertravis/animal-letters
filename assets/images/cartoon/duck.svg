@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Body -->
+  <ellipse cx="105" cy="140" rx="62" ry="46" fill="#f0f0f0"/>
+  <!-- Wing -->
+  <ellipse cx="116" cy="145" rx="36" ry="22" fill="#d0d0d0" transform="rotate(-8 116 145)"/>
+  <!-- Head -->
+  <circle cx="72" cy="84" r="32" fill="#3a8a3a"/>
+  <!-- White collar ring -->
+  <ellipse cx="80" cy="110" rx="22" ry="10" fill="#fff"/>
+  <!-- Eye -->
+  <circle cx="62" cy="78" r="7" fill="#fff"/>
+  <circle cx="64" cy="78" r="4" fill="#222"/>
+  <circle cx="65" cy="76" r="1.5" fill="#fff"/>
+  <!-- Bill -->
+  <ellipse cx="44" cy="90" rx="18" ry="9" fill="#e8a030" transform="rotate(-10 44 90)"/>
+  <line x1="34" y1="91" x2="62" y2="89" stroke="#c07820" stroke-width="2"/>
+</svg>

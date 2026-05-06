@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Antlers -->
+  <path d="M74 56 Q60 30 48 26 M60 44 Q50 34 42 38" stroke="#8b5e3c" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M126 56 Q140 30 152 26 M140 44 Q150 34 158 38" stroke="#8b5e3c" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <!-- Ears -->
+  <ellipse cx="58" cy="80" rx="16" ry="22" fill="#c8845a" transform="rotate(-20 58 80)"/>
+  <ellipse cx="58" cy="80" rx="9" ry="13" fill="#e8b0a0" transform="rotate(-20 58 80)"/>
+  <ellipse cx="142" cy="80" rx="16" ry="22" fill="#c8845a" transform="rotate(20 142 80)"/>
+  <ellipse cx="142" cy="80" rx="9" ry="13" fill="#e8b0a0" transform="rotate(20 142 80)"/>
+  <!-- Head -->
+  <ellipse cx="100" cy="115" rx="58" ry="64" fill="#c8845a"/>
+  <!-- Eyes -->
+  <circle cx="78" cy="100" r="9" fill="#fff"/>
+  <circle cx="122" cy="100" r="9" fill="#fff"/>
+  <circle cx="80" cy="100" r="5" fill="#2c1800"/>
+  <circle cx="124" cy="100" r="5" fill="#2c1800"/>
+  <circle cx="81" cy="98" r="2" fill="#fff"/>
+  <circle cx="125" cy="98" r="2" fill="#fff"/>
+  <!-- Muzzle -->
+  <ellipse cx="100" cy="138" rx="26" ry="18" fill="#e8b0a0"/>
+  <!-- Nose -->
+  <ellipse cx="100" cy="128" rx="7" ry="5" fill="#c06060"/>
+</svg>

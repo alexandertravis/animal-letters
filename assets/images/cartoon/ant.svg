@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Body segments -->
+  <ellipse cx="100" cy="155" rx="28" ry="22" fill="#c0392b"/>
+  <ellipse cx="100" cy="115" rx="18" ry="16" fill="#c0392b"/>
+  <ellipse cx="100" cy="82" rx="20" ry="18" fill="#c0392b"/>
+  <!-- Antennae -->
+  <line x1="94" y1="66" x2="72" y2="46" stroke="#7b241c" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="70" cy="44" r="4" fill="#7b241c"/>
+  <line x1="106" y1="66" x2="128" y2="46" stroke="#7b241c" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="130" cy="44" r="4" fill="#7b241c"/>
+  <!-- Eyes -->
+  <circle cx="90" cy="79" r="4" fill="#fff"/>
+  <circle cx="110" cy="79" r="4" fill="#fff"/>
+  <circle cx="91" cy="79" r="2" fill="#111"/>
+  <circle cx="111" cy="79" r="2" fill="#111"/>
+  <!-- Legs -->
+  <line x1="82" y1="112" x2="52" y2="100" stroke="#7b241c" stroke-width="3" stroke-linecap="round"/>
+  <line x1="82" y1="118" x2="50" y2="118" stroke="#7b241c" stroke-width="3" stroke-linecap="round"/>
+  <line x1="82" y1="124" x2="54" y2="136" stroke="#7b241c" stroke-width="3" stroke-linecap="round"/>
+  <line x1="118" y1="112" x2="148" y2="100" stroke="#7b241c" stroke-width="3" stroke-linecap="round"/>
+  <line x1="118" y1="118" x2="150" y2="118" stroke="#7b241c" stroke-width="3" stroke-linecap="round"/>
+  <line x1="118" y1="124" x2="146" y2="136" stroke="#7b241c" stroke-width="3" stroke-linecap="round"/>
+</svg>
