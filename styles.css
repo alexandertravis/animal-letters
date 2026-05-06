@@ -347,8 +347,42 @@ html, body {
   filter: grayscale(1) brightness(0.52);
 }
 
-/* ---------- Setup — dev tools section ---------- */
+/* ---------- Setup — topbar & dev tools ---------- */
+.setup-topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.setup-topbar h2 { margin: 0; }
 .setup-dev-tools { opacity: 0.8; }
+
+/* ---------- Toggle-group control (segmented control style) ---------- */
+/* Used on the letter-patterns screen (and anywhere else needing clear grouping). */
+.toggle-group {
+  display: inline-flex;
+  background: rgba(0, 24, 88, 0.09);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+.toggle-group button {
+  border: none;
+  border-radius: 7px;
+  padding: 5px 13px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: transparent;
+  color: var(--ink);
+  min-height: 34px;
+  transition: background 0.12s, box-shadow 0.12s;
+  opacity: 0.55;
+}
+.toggle-group button.on {
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 24, 88, 0.18);
+  opacity: 1;
+}
 
 /* ---------- Letter Patterns screen ---------- */
 .letters-screen {
@@ -367,19 +401,7 @@ html, body {
 }
 .letters-header h2 { margin: 0; flex: 1; min-width: 0; }
 
-.ltr-controls { display: flex; gap: 8px; flex-wrap: wrap; }
-.ltr-controls .seg { display: flex; gap: 4px; }
-.ltr-controls .seg button {
-  background: var(--muted);
-  border: none;
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  min-height: 36px;
-}
-.ltr-controls .seg button.on { background: var(--accent); color: var(--accent-ink); }
+.ltr-controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
 /* Overview grid */
 .letters-grid {
@@ -431,7 +453,8 @@ html, body {
   align-items: center;
   gap: 10px;
   padding: 8px 12px;
-  min-height: 0;
+  /* overflow:hidden clips stage SVGs that would otherwise bleed into sibling rows */
+  overflow: hidden;
 }
 .letter-stages-char {
   font-size: 2.2rem;
@@ -446,7 +469,10 @@ html, body {
   gap: 6px;
   overflow-x: auto;
   flex: 1;
-  padding-bottom: 2px;
+  /* min-width:0 lets the flex child shrink below its content size so overflow-x can kick in */
+  min-width: 0;
+  padding-bottom: 4px;
+  align-items: flex-start;
 }
 .stage-cell {
   display: flex;

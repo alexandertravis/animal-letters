@@ -38,6 +38,17 @@ window.APP = window.APP || {};
     const animal = APP.state.currentAnimal;
     if (!animal) { ctx.go('landing'); return; }
 
+    // Animal already fully traced (e.g. user pressed Home on the complete screen
+    // then hit Continue). Silently start the next animal instead of showing a
+    // blank strip with nothing left to trace.
+    if (APP.state.letterIndex >= animal.name.length) {
+      const next = APP.animals.pickRandom(APP.state.settings.maxLength, animal);
+      if (!next) { ctx.go('landing'); return; }
+      APP.startGame(next);
+      render(root, ctx);
+      return;
+    }
+
     const wrap = document.createElement('div');
     wrap.className = 'game';
 

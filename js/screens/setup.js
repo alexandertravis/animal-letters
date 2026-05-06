@@ -27,7 +27,16 @@ window.APP = window.APP || {};
 
     const wrap = document.createElement('div');
     wrap.className = 'setup';
-    wrap.innerHTML = `<h2>Settings</h2>`;
+
+    // Topbar: home icon + title
+    const topbar = document.createElement('div');
+    topbar.className = 'setup-topbar';
+    topbar.innerHTML = `
+      <button class="btn icon ghost" id="setup-home" aria-label="Home">&#8962;</button>
+      <h2>Settings</h2>
+    `;
+    topbar.querySelector('#setup-home').addEventListener('click', () => ctx.go('landing'));
+    wrap.appendChild(topbar);
 
     // Max name length
     const f1 = document.createElement('div');

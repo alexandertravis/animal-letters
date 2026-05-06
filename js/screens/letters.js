@@ -66,8 +66,17 @@ window.APP = window.APP || {};
     const wrap = document.createElement('div');
     wrap.className = 'letter-stages';
 
+    // Derive actual rendered height from the viewBox aspect ratio so that the
+    // SVG element never overflows its cell regardless of the aspect ratio.
+    const vbParts = data.viewBox.split(/\s+/).map(Number);
+    const aspect  = vbParts[3] / vbParts[2]; // height / width
+    const svgH    = Math.round(px * aspect);
+
     data.strokes.forEach((_, idx) => {
-      const svg = svgEl('svg', { viewBox: data.viewBox, width: px, height: px });
+      const svg = svgEl('svg', {
+        viewBox: data.viewBox, width: px, height: svgH,
+        style: 'display:block;flex-shrink:0'
+      });
 
       // Done
       const doneG = svgEl('g', {
@@ -135,11 +144,11 @@ window.APP = window.APP || {};
         <button class="btn icon ghost" id="ltr-back" aria-label="Back">&#8592;</button>
         <h2>Letter Patterns</h2>
         <div class="ltr-controls">
-          <div class="seg">
+          <div class="toggle-group">
             <button data-case="upper" class="${caseMode === 'upper' ? 'on' : ''}">ABC</button>
             <button data-case="lower" class="${caseMode === 'lower' ? 'on' : ''}">abc</button>
           </div>
-          <div class="seg">
+          <div class="toggle-group">
             <button data-view="overview" class="${viewMode === 'overview' ? 'on' : ''}">Overview</button>
             <button data-view="stages"   class="${viewMode === 'stages'   ? 'on' : ''}">Stages</button>
           </div>
