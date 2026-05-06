@@ -346,3 +346,211 @@ html, body {
   height: auto;
   filter: grayscale(1) brightness(0.52);
 }
+
+/* ---------- Setup — dev tools section ---------- */
+.setup-dev-tools { opacity: 0.8; }
+
+/* ---------- Letter Patterns screen ---------- */
+.letters-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.letters-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.letters-header h2 { margin: 0; flex: 1; min-width: 0; }
+
+.ltr-controls { display: flex; gap: 8px; flex-wrap: wrap; }
+.ltr-controls .seg { display: flex; gap: 4px; }
+.ltr-controls .seg button {
+  background: var(--muted);
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 36px;
+}
+.ltr-controls .seg button.on { background: var(--accent); color: var(--accent-ink); }
+
+/* Overview grid */
+.letters-grid {
+  flex: 1;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 122px);
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 14px 32px;
+}
+.letter-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 6px 6px;
+  gap: 3px;
+}
+.letter-card-char {
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1;
+}
+.letter-card-info {
+  font-size: 0.68rem;
+  color: #999;
+  font-weight: 600;
+}
+.letter-card-missing { font-size: 0.68rem; color: #d00; font-weight: 600; }
+
+/* Stages list */
+.letters-stages-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 12px 32px;
+}
+.letter-stages-row {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  min-height: 0;
+}
+.letter-stages-char {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--ink);
+  width: 38px;
+  flex-shrink: 0;
+  text-align: center;
+}
+.letter-stages {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  flex: 1;
+  padding-bottom: 2px;
+}
+.stage-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.stage-badge {
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: #fff;
+  background: #ff8906;
+  border-radius: 10px;
+  padding: 1px 6px;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* ---------- Dev Animals screen ---------- */
+.devanimals {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.devanimals-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px 8px;
+  flex-shrink: 0;
+}
+.devanimals-header h2 { margin: 0; flex: 1; }
+.devanimals-count {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #999;
+}
+.devanimals-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 12px 32px;
+}
+.devanimals-group-header {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 8px 4px 2px;
+}
+.devanimals-tile {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  display: flex;
+  gap: 14px;
+  padding: 10px 12px;
+  align-items: center;
+}
+.devanimals-img {
+  width: 68px;
+  height: 68px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.devanimals-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.devanimals-fallback {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--muted);
+}
+.devanimals-info { flex: 1; min-width: 0; }
+.devanimals-name { font-size: 1.1rem; font-weight: 800; color: var(--ink); }
+.devanimals-cases {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin: 4px 0;
+}
+.dev-chip {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: #f0f0f0;
+  color: var(--ink);
+}
+.dev-chip-label {
+  opacity: 0.5;
+  font-size: 0.68rem;
+  margin-right: 2px;
+}
+.devanimals-assets {
+  font-size: 0.72rem;
+  color: #aaa;
+  margin-top: 2px;
+}

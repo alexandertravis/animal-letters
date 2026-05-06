@@ -99,6 +99,25 @@ window.APP = window.APP || {};
     actions.appendChild(start);
     wrap.appendChild(actions);
 
+    // Dev / review tools
+    const devTools = document.createElement('div');
+    devTools.className = 'field setup-dev-tools';
+    devTools.innerHTML = `<label>Review tools</label>`;
+    const devBtns = document.createElement('div');
+    devBtns.className = 'seg';
+    const lettersBtn = document.createElement('button');
+    lettersBtn.type = 'button';
+    lettersBtn.textContent = 'Letter Patterns';
+    lettersBtn.addEventListener('click', () => ctx.go('letters'));
+    const animalsBtn = document.createElement('button');
+    animalsBtn.type = 'button';
+    animalsBtn.textContent = 'Animal Images';
+    animalsBtn.addEventListener('click', () => ctx.go('devanimals'));
+    devBtns.appendChild(lettersBtn);
+    devBtns.appendChild(animalsBtn);
+    devTools.appendChild(devBtns);
+    wrap.appendChild(devTools);
+
     root.appendChild(wrap);
   }
 

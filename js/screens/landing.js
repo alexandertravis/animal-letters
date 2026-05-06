@@ -25,13 +25,7 @@ window.APP = window.APP || {};
     });
     const cont = wrap.querySelector('[data-act=continue]');
     if (cont && !cont.disabled) {
-      cont.addEventListener('click', () => {
-        if (APP.state.currentAnimal && APP.state.letterIndex < APP.state.currentAnimal.name.length) {
-          ctx.go('game');
-        } else {
-          ctx.go('setup');
-        }
-      });
+      cont.addEventListener('click', () => ctx.go('game'));
     }
     wrap.querySelector('[data-act=gallery]').addEventListener('click', () => ctx.go('gallery'));
     wrap.querySelector('[data-act=settings]').addEventListener('click', () => ctx.go('setup'));
