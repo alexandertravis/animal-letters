@@ -11,13 +11,18 @@ window.APP = window.APP || {};
       <div class="menu">
         <button class="btn" data-act="new">New Game</button>
         <button class="btn secondary" data-act="continue" ${APP.state.sessionExists ? '' : 'disabled'}>Continue</button>
-        <button class="btn secondary" data-act="gallery">My Animals &#127381;</button>
+        <button class="btn secondary" data-act="gallery">My Animals</button>
         <button class="btn ghost" data-act="settings">Settings</button>
       </div>
     `;
     root.appendChild(wrap);
 
-    wrap.querySelector('[data-act=new]').addEventListener('click', () => ctx.go('setup'));
+    wrap.querySelector('[data-act=new]').addEventListener('click', () => {
+      const animal = APP.animals.pickRandom(APP.state.settings.maxLength, APP.state.currentAnimal);
+      if (!animal) { ctx.go('setup'); return; } // fallback: open settings if nothing fits
+      APP.startGame(animal);
+      ctx.go('game');
+    });
     const cont = wrap.querySelector('[data-act=continue]');
     if (cont && !cont.disabled) {
       cont.addEventListener('click', () => {

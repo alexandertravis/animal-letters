@@ -4,7 +4,10 @@ window.APP = window.APP || {};
   let activeTracer = null;
 
   function caseOf(name) {
-    return APP.state.settings.letterCase === 'lower' ? name.toLowerCase() : name.toUpperCase();
+    const lc = APP.state.settings.letterCase;
+    if (lc === 'lower')  return name.toLowerCase();
+    if (lc === 'proper') return name[0].toUpperCase() + name.slice(1).toLowerCase();
+    return name.toUpperCase();
   }
 
   function buildStrip(animal) {
@@ -44,6 +47,7 @@ window.APP = window.APP || {};
     bar.innerHTML = `
       <div class="group">
         <button class="btn icon ghost" data-act="home" aria-label="Home">&#8962;</button>
+        <button class="btn icon ghost" data-act="settings" aria-label="Settings">&#9881;</button>
       </div>
       <div class="group">
         <button class="btn ghost" data-act="restart">Restart letter</button>
@@ -67,6 +71,10 @@ window.APP = window.APP || {};
       if (activeTracer) { activeTracer.destroy(); activeTracer = null; }
       ctx.go('landing');
     });
+    bar.querySelector('[data-act=settings]').addEventListener('click', () => {
+      if (activeTracer) { activeTracer.destroy(); activeTracer = null; }
+      ctx.go('setup');
+    });
     bar.querySelector('[data-act=restart]').addEventListener('click', () => mountCurrentLetter(stage, ctx));
     bar.querySelector('[data-act=skip]').addEventListener('click', () => {
       if (activeTracer) { activeTracer.destroy(); activeTracer = null; }
@@ -81,7 +89,11 @@ window.APP = window.APP || {};
     if (activeTracer) { activeTracer.destroy(); activeTracer = null; }
     const animal = APP.state.currentAnimal;
     const rawChar = animal.name[APP.state.letterIndex];
-    const ch = APP.state.settings.letterCase === 'lower' ? rawChar.toLowerCase() : rawChar.toUpperCase();
+    const lc = APP.state.settings.letterCase;
+    let ch;
+    if (lc === 'lower')       ch = rawChar.toLowerCase();
+    else if (lc === 'proper') ch = APP.state.letterIndex === 0 ? rawChar.toUpperCase() : rawChar.toLowerCase();
+    else                      ch = rawChar.toUpperCase();
     activeTracer = APP.tracer.mount(stage, ch, {
       onComplete: () => {
         APP.advanceLetter();

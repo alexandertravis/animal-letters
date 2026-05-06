@@ -17,7 +17,7 @@ window.APP = window.APP || {};
       <div class="animalImg" id="animalImg"></div>
       <div class="actions">
         <button class="btn" data-act="next">Next animal</button>
-        <button class="btn secondary" data-act="gallery">My Animals &#127381;</button>
+        <button class="btn secondary" data-act="gallery">My Animals</button>
         <button class="btn secondary" data-act="replay">Play sound</button>
         <button class="btn ghost" data-act="home">Home</button>
       </div>

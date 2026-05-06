@@ -18,16 +18,23 @@ window.APP = window.APP || {};
   function render(root, ctx) {
     root.innerHTML = '';
     const s = APP.state.settings;
+
+    // Derive min/max from the actual animal list so the slider always reflects
+    // what's really available — no magic numbers that drift out of sync.
+    const nameLengths = APP.ANIMALS.map(a => a.name.length);
+    const minLen = Math.min(...nameLengths);
+    const maxLen = Math.max(...nameLengths);
+
     const wrap = document.createElement('div');
     wrap.className = 'setup';
-    wrap.innerHTML = `<h2>Game settings</h2>`;
+    wrap.innerHTML = `<h2>Settings</h2>`;
 
     // Max name length
     const f1 = document.createElement('div');
     f1.className = 'field';
     f1.innerHTML = `
       <label>Longest animal name to use: <span class="lengthValue">${s.maxLength}</span> letters</label>
-      <input type="range" min="3" max="10" step="1" value="${s.maxLength}"/>
+      <input type="range" min="${minLen}" max="${maxLen}" step="1" value="${s.maxLength}"/>
     `;
     const range = f1.querySelector('input');
     const lengthValue = f1.querySelector('.lengthValue');
@@ -43,8 +50,9 @@ window.APP = window.APP || {};
     f2.className = 'field';
     f2.innerHTML = `<label>Letter style</label>`;
     f2.appendChild(seg('case', [
-      { value: 'upper', label: 'ABC (uppercase)' },
-      { value: 'lower', label: 'abc (lowercase)' }
+      { value: 'upper',  label: 'ABC (uppercase)' },
+      { value: 'proper', label: 'Abc (proper case)' },
+      { value: 'lower',  label: 'abc (lowercase)' }
     ], s.letterCase, v => { APP.settings.update({ letterCase: v }); render(root, ctx); }));
     wrap.appendChild(f2);
 
@@ -74,10 +82,10 @@ window.APP = window.APP || {};
     const back = document.createElement('button');
     back.className = 'btn ghost';
     back.textContent = 'Back';
-    back.addEventListener('click', () => ctx.go('landing'));
+    back.addEventListener('click', () => ctx.go(APP.state.sessionExists ? 'game' : 'landing'));
     const start = document.createElement('button');
     start.className = 'btn';
-    start.textContent = 'Start';
+    start.textContent = 'New Game';
     start.addEventListener('click', () => {
       const animal = APP.animals.pickRandom(APP.state.settings.maxLength, APP.state.currentAnimal);
       if (!animal) {

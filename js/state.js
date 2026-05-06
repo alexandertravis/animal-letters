@@ -1,9 +1,14 @@
 window.APP = window.APP || {};
 
 (function (APP) {
+  // Default max length = longest name in the animal list (so all animals are in play by default).
+  // data/animals.js loads before state.js, so APP.ANIMALS is available here.
+  const _lengths = (APP.ANIMALS || []).map(a => a.name.length);
+  const _maxInList = _lengths.length ? Math.max(..._lengths) : 6;
+
   const DEFAULT_SETTINGS = {
-    maxLength: 5,
-    letterCase: "upper",   // "upper" | "lower"
+    maxLength: _maxInList,
+    letterCase: "upper",   // "upper" | "proper" | "lower"
     depiction: "cartoon",  // "cartoon" | "realistic"
     revealMode: "faint"    // "faint" | "hidden"
   };
