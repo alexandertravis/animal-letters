@@ -57,20 +57,38 @@ window.APP = window.APP || {};
     defs.appendChild(mask);
     svg.appendChild(defs);
 
-    // Ghost layer (full letter, pale).
+    // Outline layer — drawn first so it sits behind everything else.
+    // A slightly wider dark stroke creates a visible border around the letter
+    // shape, giving it the defined printed/block-letter appearance from the
+    // reference image rather than a plain filled blob. 'square' linecap means
+    // stroke ends are cut flat rather than rounded, which reduces the "blobby"
+    // appearance at stroke tips (e.g. top of A, ends of E's bars).
+    const OUTLINE_WIDTH = STROKE_WIDTH + 24; // 12 extra viewBox units of border on each side
+    const outlineGroup = el('g', {
+      class: 'outline-group',
+      stroke: '#001858', 'stroke-width': OUTLINE_WIDTH, fill: 'none',
+      'stroke-linecap': 'square', 'stroke-linejoin': 'miter'
+    });
+    data.strokes.forEach(s => outlineGroup.appendChild(el('path', { d: s.d })));
+    svg.appendChild(outlineGroup);
+
+    // Ghost layer (full letter, pale) — sits on top of the outline, making the
+    // letter interior visible as a light shape against the dark border.
+    // Also uses 'square' linecap so ghost tips match the outline silhouette.
     const ghostGroup = el('g', {
       class: 'ghost-group',
-      stroke: 'rgba(0,24,88,0.12)', 'stroke-width': STROKE_WIDTH, fill: 'none',
-      'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+      stroke: 'rgba(0,24,88,0.10)', 'stroke-width': STROKE_WIDTH, fill: 'none',
+      'stroke-linecap': 'square', 'stroke-linejoin': 'miter'
     });
     data.strokes.forEach(s => ghostGroup.appendChild(el('path', { d: s.d })));
     svg.appendChild(ghostGroup);
 
     // Done strokes layer (rendered solid as user finishes them).
+    // Matches ghost linecap so completed strokes fit cleanly inside the outline.
     const doneGroup = el('g', {
       class: 'done-group',
       stroke: '#001858', 'stroke-width': STROKE_WIDTH, fill: 'none',
-      'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+      'stroke-linecap': 'square', 'stroke-linejoin': 'miter'
     });
     svg.appendChild(doneGroup);
 

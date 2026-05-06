@@ -13,7 +13,7 @@ window.APP = window.APP || {};
 
   // ----- Uppercase -----
   LETTERS['A'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 30,220 L 100,30' },
+    { d: 'M 100,30 L 30,220' },
     { d: 'M 100,30 L 170,220' },
     { d: 'M 60,150 L 140,150' }
   ]};
@@ -68,13 +68,13 @@ window.APP = window.APP || {};
     { d: 'M 50,220 L 160,220' }
   ]};
   LETTERS['M'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 30,220 L 30,30' },
+    { d: 'M 30,30 L 30,220' },
     { d: 'M 30,30 L 100,170' },
     { d: 'M 100,170 L 170,30' },
     { d: 'M 170,30 L 170,220' }
   ]};
   LETTERS['N'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 50,220 L 50,30' },
+    { d: 'M 50,30 L 50,220' },
     { d: 'M 50,30 L 150,220' },
     { d: 'M 150,220 L 150,30' }
   ]};
@@ -106,7 +106,7 @@ window.APP = window.APP || {};
   ]};
   LETTERS['V'] = { viewBox: VB_UP, strokes: [
     { d: 'M 30,30 L 100,220' },
-    { d: 'M 100,220 L 170,30' }
+    { d: 'M 170,30 L 100,220' }
   ]};
   LETTERS['W'] = { viewBox: VB_UP, strokes: [
     { d: 'M 20,30 L 60,220' },
@@ -177,12 +177,12 @@ window.APP = window.APP || {};
     { d: 'M 100,30 L 100,210' }
   ]};
   LETTERS['m'] = { viewBox: VB_LOW, strokes: [
-    { d: 'M 30,210 L 30,110' },
+    { d: 'M 30,110 L 30,210' },
     { d: 'M 30,110 Q 70,90 100,130 L 100,210' },
     { d: 'M 100,130 Q 130,90 170,110 L 170,210' }
   ]};
   LETTERS['n'] = { viewBox: VB_LOW, strokes: [
-    { d: 'M 50,210 L 50,110' },
+    { d: 'M 50,110 L 50,210' },
     { d: 'M 50,110 Q 100,90 150,130 L 150,210' }
   ]};
   LETTERS['o'] = { viewBox: VB_LOW, strokes: [
@@ -197,7 +197,7 @@ window.APP = window.APP || {};
     { d: 'M 150,110 L 150,240' }
   ]};
   LETTERS['r'] = { viewBox: VB_LOW, strokes: [
-    { d: 'M 50,210 L 50,110' },
+    { d: 'M 50,110 L 50,210' },
     { d: 'M 50,140 Q 80,90 140,110' }
   ]};
   LETTERS['s'] = { viewBox: VB_LOW, strokes: [
@@ -212,7 +212,7 @@ window.APP = window.APP || {};
   ]};
   LETTERS['v'] = { viewBox: VB_LOW, strokes: [
     { d: 'M 30,110 L 100,210' },
-    { d: 'M 100,210 L 170,110' }
+    { d: 'M 170,110 L 100,210' }
   ]};
   LETTERS['w'] = { viewBox: VB_LOW, strokes: [
     { d: 'M 20,110 L 60,210' },
