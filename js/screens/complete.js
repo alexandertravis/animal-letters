@@ -17,6 +17,7 @@ window.APP = window.APP || {};
       <div class="animalImg" id="animalImg"></div>
       <div class="actions">
         <button class="btn" data-act="next">Next animal</button>
+        <button class="btn secondary" data-act="gallery">My Animals &#127381;</button>
         <button class="btn secondary" data-act="replay">Play sound</button>
         <button class="btn ghost" data-act="home">Home</button>
       </div>
@@ -40,6 +41,7 @@ window.APP = window.APP || {};
       APP.startGame(next);
       ctx.go('game');
     });
+    wrap.querySelector('[data-act=gallery]').addEventListener('click', () => { APP.audio.stopFile(); ctx.go('gallery'); });
     wrap.querySelector('[data-act=replay]').addEventListener('click', () => APP.audio.playComplete(animal.audio));
     wrap.querySelector('[data-act=home]').addEventListener('click', () => {
       APP.audio.stopFile();

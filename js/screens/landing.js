@@ -11,6 +11,7 @@ window.APP = window.APP || {};
       <div class="menu">
         <button class="btn" data-act="new">New Game</button>
         <button class="btn secondary" data-act="continue" ${APP.state.sessionExists ? '' : 'disabled'}>Continue</button>
+        <button class="btn secondary" data-act="gallery">My Animals &#127381;</button>
         <button class="btn ghost" data-act="settings">Settings</button>
       </div>
     `;
@@ -27,6 +28,7 @@ window.APP = window.APP || {};
         }
       });
     }
+    wrap.querySelector('[data-act=gallery]').addEventListener('click', () => ctx.go('gallery'));
     wrap.querySelector('[data-act=settings]').addEventListener('click', () => ctx.go('setup'));
   }
 
