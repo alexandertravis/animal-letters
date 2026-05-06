@@ -8,6 +8,7 @@ window.APP = window.APP || {};
   const STROKE_WIDTH = 48;       // letter thickness in viewBox units
   const INK_WIDTH    = 44;       // user's drawing thickness
   const TOLERANCE    = 32;       // viewBox units — how close pointer must come to next checkpoint
+  const DRAW_RADIUS  = 52;       // viewBox units — how close to the dot before ink is deposited
   const CHECKPOINTS_PER_STROKE = 18;
 
   function el(tag, attrs, children) {
@@ -126,26 +127,39 @@ window.APP = window.APP || {};
       // Build a polyline from the remaining checkpoints so the guide
       // disappears behind the user's ink as they progress.
       const d = 'M ' + remaining.map(p => `${p.x},${p.y}`).join(' L ');
-      const path = el('path', {
+
+      // White halo — rendered first so it sits behind the orange dashes.
+      // This keeps the guide legible even when pink ink fills the same area.
+      guideGroup.appendChild(el('path', {
+        d,
+        fill: 'none',
+        stroke: 'rgba(255,255,255,0.90)',
+        'stroke-width': 18,
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round'
+      }));
+
+      // Orange dashed guide on top of the halo.
+      guideGroup.appendChild(el('path', {
         class: 'guide',
         d,
         fill: 'none',
         stroke: '#ff8906',
-        'stroke-width': 8,
+        'stroke-width': 9,
         'stroke-linecap': 'round',
         'stroke-linejoin': 'round',
         'stroke-dasharray': '14 12'
-      });
-      guideGroup.appendChild(path);
+      }));
 
       // Dot sits at the last completed position — the trailing edge of the ink.
       const lead = remaining[0];
-      const dot = el('circle', {
+      // White ring gives the dot a clear border against the ink.
+      guideGroup.appendChild(el('circle', { cx: lead.x, cy: lead.y, r: 15, fill: 'white' }));
+      guideGroup.appendChild(el('circle', {
         class: 'startDot',
-        cx: lead.x, cy: lead.y, r: 10,
+        cx: lead.x, cy: lead.y, r: 11,
         fill: '#ff8906'
-      });
-      guideGroup.appendChild(dot);
+      }));
     }
 
     function markStrokeDone(strokeIdx) {
@@ -168,6 +182,14 @@ window.APP = window.APP || {};
     function dist(a, b) {
       const dx = a.x - b.x, dy = a.y - b.y;
       return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    // Returns true when the pointer is close enough to the current guide dot
+    // to be allowed to deposit ink. Prevents colouring random parts of the letter.
+    function isNearGuide(p) {
+      if (currentStroke >= totalStrokes) return false;
+      const dotIdx = currentCheckpoint > 0 ? currentCheckpoint - 1 : 0;
+      return dist(p, checkpoints[currentStroke][dotIdx]) <= DRAW_RADIUS;
     }
 
     // ---- Pointer handling ----
@@ -195,14 +217,29 @@ window.APP = window.APP || {};
       // Wake the AudioContext on the first user gesture so sounds play without delay.
       if (APP.audio) APP.audio._wake();
       pointerActive = true;
-      startStrokeIfNeeded();
-      addPoint(clientToSvg(e.clientX, e.clientY));
+      const p = clientToSvg(e.clientX, e.clientY);
+      if (isNearGuide(p)) {
+        // Seed the ink path at the touch point so the very first move draws
+        // a line from here rather than jumping. Progress is NOT checked on
+        // pointerdown — dragging must occur before checkpoints advance.
+        startStrokeIfNeeded();
+        activeInkPoints.push(p);
+        activeInkPath.setAttribute('d', pointsToPath(activeInkPoints));
+      }
       e.preventDefault();
     }
 
     function onMove(e) {
       if (!pointerActive) return;
-      addPoint(clientToSvg(e.clientX, e.clientY));
+      const p = clientToSvg(e.clientX, e.clientY);
+      if (isNearGuide(p)) {
+        // In range — draw ink and check progress.
+        startStrokeIfNeeded();
+        addPoint(p);
+      } else {
+        // Strayed too far from the guide dot — stop drawing.
+        endActiveInk();
+      }
       e.preventDefault();
     }
 
@@ -244,9 +281,10 @@ window.APP = window.APP || {};
         } else {
           // Individual stroke done — short tick.
           if (APP.audio) APP.audio.strokeDone();
-          // If the finger is still down, seamlessly begin the next stroke from
-          // the current position so the child never has to lift and re-tap.
-          if (pointerActive) {
+          // If the finger is still down AND near the new stroke's start dot,
+          // seamlessly begin the next stroke so the child never has to re-tap
+          // at intersection points. isNearGuide now checks the new stroke.
+          if (pointerActive && isNearGuide(p)) {
             startStrokeIfNeeded();
             activeInkPoints.push(p);
             activeInkPath.setAttribute('d', pointsToPath(activeInkPoints));
