@@ -18,7 +18,10 @@ window.APP = window.APP || {};
       <h2>My Animals</h2>
       <span class="gallery-count">${doneCount}&thinsp;/&thinsp;${total}</span>
     `;
-    header.querySelector('button').addEventListener('click', () => ctx.go('landing'));
+    header.querySelector('button').addEventListener('click', () => {
+      const prev = APP.state.previousScreen;
+      ctx.go(prev && prev !== 'gallery' ? prev : 'landing');
+    });
     wrap.appendChild(header);
 
     // Grid
