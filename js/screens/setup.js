@@ -85,6 +85,49 @@ window.APP = window.APP || {};
     ], s.revealMode, v => { APP.settings.update({ revealMode: v }); render(root, ctx); }));
     wrap.appendChild(f4);
 
+    // Volume
+    const f5 = document.createElement('div');
+    f5.className = 'field';
+    f5.innerHTML = `<label>Volume</label>`;
+
+    const volRow = document.createElement('div');
+    volRow.className = 'volume-row';
+
+    const muteBtn = document.createElement('button');
+    muteBtn.type = 'button';
+    muteBtn.className = 'btn icon ghost mute-btn';
+    muteBtn.setAttribute('aria-label', 'Toggle mute');
+
+    const volSlider = document.createElement('input');
+    volSlider.type  = 'range';
+    volSlider.min   = '0';
+    volSlider.max   = '100';
+    volSlider.step  = '1';
+    volSlider.value = String(Math.round(s.volume * 100));
+
+    function refreshMuteBtn() {
+      const muted = APP.state.settings.muted;
+      muteBtn.textContent = muted ? '🔇' : (APP.state.settings.volume < 0.01 ? '🔇' : '🔊');
+      volRow.classList.toggle('muted', muted);
+    }
+    refreshMuteBtn();
+
+    muteBtn.addEventListener('click', () => {
+      APP.audio.setMuted(!APP.state.settings.muted);
+      refreshMuteBtn();
+    });
+
+    volSlider.addEventListener('input', () => {
+      const v = parseInt(volSlider.value, 10) / 100;
+      APP.audio.setVolume(v);
+      refreshMuteBtn();
+    });
+
+    volRow.appendChild(muteBtn);
+    volRow.appendChild(volSlider);
+    f5.appendChild(volRow);
+    wrap.appendChild(f5);
+
     // Actions
     const actions = document.createElement('div');
     actions.className = 'actions';

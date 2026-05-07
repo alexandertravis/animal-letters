@@ -2,6 +2,7 @@ window.APP = window.APP || {};
 
 (function (APP) {
   let ac = null;           // AudioContext — created lazily on first user gesture
+  let masterGain = null;   // Single gain node all sounds route through
   let currentAudio = null; // HTMLAudioElement for animal sound files
 
   // Create / resume the AudioContext. Must be called from within a user gesture
@@ -12,6 +13,20 @@ window.APP = window.APP || {};
     return ac;
   }
 
+  // Returns the master gain node, creating it on first call.
+  // All synthesised tones connect here so volume/mute applies globally.
+  function getMaster() {
+    const a = getAC();
+    if (!masterGain) {
+      masterGain = a.createGain();
+      masterGain.connect(a.destination);
+      // Initialise from current settings (may be called before any sound).
+      const s = APP.state && APP.state.settings;
+      masterGain.gain.value = s ? (s.muted ? 0 : s.volume) : 0.7;
+    }
+    return masterGain;
+  }
+
   // Play a single oscillator tone. gain fades to silence over `dur` seconds.
   function tone(freq, dur, type = 'sine', gainVal = 0.3) {
     try {
@@ -19,7 +34,7 @@ window.APP = window.APP || {};
       const osc  = a.createOscillator();
       const gain = a.createGain();
       osc.connect(gain);
-      gain.connect(a.destination);
+      gain.connect(getMaster());   // route through master volume
       osc.type = type;
       osc.frequency.value = freq;
       gain.gain.setValueAtTime(gainVal, a.currentTime);
@@ -61,6 +76,7 @@ window.APP = window.APP || {};
       this.stopFile();
       if (!src) return;
       const el = new Audio(src);
+      el.volume = APP.state.settings.muted ? 0 : APP.state.settings.volume;
       el.addEventListener('error', () => {});
       el.play().catch(() => {});
       currentAudio = el;
@@ -73,11 +89,36 @@ window.APP = window.APP || {};
     // Convenience: play file + fanfare together on the complete screen.
     playComplete(src) {
       this.wordDone();
-      // Delay the animal sound slightly so the fanfare isn't swamped.
       schedule(() => this.playFile(src), 900);
     },
 
+    // ── Volume control ───────────────────────────────────────────────────────
+
+    // Set master volume (0–1). Un-mutes automatically.
+    setVolume(v) {
+      v = Math.max(0, Math.min(1, v));
+      APP.settings.update({ volume: v, muted: v === 0 });
+      this._applyGain();
+    },
+
+    // Toggle or explicitly set mute state.
+    setMuted(bool) {
+      APP.settings.update({ muted: bool });
+      this._applyGain();
+      // Adjust any currently-playing file element.
+      if (currentAudio) {
+        currentAudio.volume = bool ? 0 : APP.state.settings.volume;
+      }
+    },
+
+    // Apply current volume + mute to the master gain node (if it exists).
+    _applyGain() {
+      if (!masterGain || !ac) return;
+      const s = APP.state.settings;
+      masterGain.gain.setTargetAtTime(s.muted ? 0 : s.volume, ac.currentTime, 0.015);
+    },
+
     // Wake / resume the AudioContext during a user gesture so later sounds fire instantly.
-    _wake() { try { getAC(); } catch (_) {} }
+    _wake() { try { getMaster(); } catch (_) {} }
   };
 })(window.APP);

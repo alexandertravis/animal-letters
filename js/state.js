@@ -10,7 +10,9 @@ window.APP = window.APP || {};
     maxLength: _maxInList,
     letterCase: "upper",   // "upper" | "proper" | "lower"
     depiction: "cartoon",  // "cartoon" | "realistic"
-    revealMode: "faint"    // "faint" | "hidden"
+    revealMode: "faint",   // "faint" | "hidden"
+    volume: 0.7,           // 0–1
+    muted: false
   };
 
   APP.state = {
