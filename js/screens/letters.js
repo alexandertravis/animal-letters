@@ -418,22 +418,24 @@ window.APP = window.APP || {};
         placeholder.textContent = 'Select a letter above to start practising';
         stage.appendChild(placeholder);
 
+        // "Great job" overlay — absolutely positioned inside the stage wrap so
+        // it never affects the controls bar layout when it appears/disappears.
+        const statusLabel = document.createElement('div');
+        statusLabel.className = 'practice-status';
+        stageWrap.appendChild(statusLabel);
+
         stageWrap.appendChild(stage);
         body.appendChild(stageWrap);
 
-        // Controls bar
+        // Controls bar — left-aligned so the button has a fixed position
         const controls = document.createElement('div');
         controls.className = 'practice-controls';
 
         const resetBtn = document.createElement('button');
-        resetBtn.className = 'btn ghost';
+        resetBtn.className = 'btn practice-reset-btn';
         resetBtn.textContent = 'Try again';
         resetBtn.disabled = true;
         controls.appendChild(resetBtn);
-
-        const statusLabel = document.createElement('span');
-        statusLabel.className = 'practice-status';
-        controls.appendChild(statusLabel);
 
         body.appendChild(controls);
 
@@ -448,12 +450,12 @@ window.APP = window.APP || {};
           stage.innerHTML = '';
           resetBtn.disabled = false;
           statusLabel.textContent = '';
-          statusLabel.className = 'practice-status';
+          statusLabel.classList.remove('visible');
 
           practiceTracer = APP.tracer.mount(stage, ch, {
             onComplete() {
-              statusLabel.textContent = `Great job! 🎉`;
-              statusLabel.className = 'practice-status done';
+              statusLabel.textContent = 'Great job! 🎉';
+              statusLabel.classList.add('visible');
             }
           });
         }

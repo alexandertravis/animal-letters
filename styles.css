@@ -572,12 +572,46 @@ html, body {
 .practice-controls {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 14px;
   flex-shrink: 0;
+  padding-left: 8px;
 }
-.practice-status      { font-size: 0.95rem; color: #888; }
-.practice-status.done { color: var(--primary); font-weight: 700; }
+.practice-reset-btn {
+  border: 2px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 8px 20px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.practice-reset-btn:hover:not(:disabled) {
+  background: var(--ink);
+  color: #fff;
+}
+.practice-reset-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.practice-status {
+  position: absolute;
+  bottom: 16px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.practice-status.visible {
+  opacity: 1;
+}
 
 /* ---------- Dev Animals screen ---------- */
 .devanimals {
