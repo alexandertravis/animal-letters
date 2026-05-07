@@ -85,7 +85,7 @@ describe('APP.animals.pickRandom', () => {
   it('returns a valid animal when exclude is null (no crash from null guard)', () => {
     const result = APP.animals.pickRandom(3, null);
     expect(result).not.toBeNull();
-    expect(typeof result.name).toBe('string');
+    expect(ANIMALS_FIXTURE.map(a => a.name)).toContain(result.name);
   });
 });
 
@@ -121,9 +121,9 @@ describe('APP.animals.pickNext', () => {
 
     const result = APP.animals.pickNext(6, null);
 
-    // Should still return *some* animal (falls back to normal random pick).
+    // Should still return *some* animal from the fixture (falls back to normal random pick).
     expect(result).not.toBeNull();
-    expect(typeof result.name).toBe('string');
+    expect(ANIMALS_FIXTURE.map(a => a.name)).toContain(result.name);
   });
 
   it('does NOT apply unfound bias when consecutiveFoundCount < 2', () => {
@@ -170,5 +170,19 @@ describe('APP.animals.pickNext', () => {
     const result = APP.animals.pickNext(6, catAnimal);
 
     expect(result.name).toBe('CAT');
+  });
+
+  it('falls back to pickRandom when maxLength only allows already-found animals (bias active)', () => {
+    // consecutiveFoundCount >= 2, so bias toward unfound is active.
+    // maxLength=3 → only ANT, BEE, CAT are eligible. All three are already found.
+    // → unfound pool is empty → falls back to pickRandom within those 3 animals.
+    APP.state.completedAnimals = new Set(['ANT', 'BEE', 'CAT']);
+    APP.state.consecutiveFoundCount = 2;
+
+    const result = APP.animals.pickNext(3, null);
+
+    // Result must be one of the 3-letter animals in the fixture.
+    expect(result).not.toBeNull();
+    expect(['ANT', 'BEE', 'CAT']).toContain(result.name);
   });
 });

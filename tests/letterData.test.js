@@ -106,6 +106,18 @@ describe('APP.getLetterYTransform', () => {
     expect(b).toBe(0);
   });
 
+  it('lowercase descender branch (e.g. "j"): identity transform — a=1, b=0', () => {
+    const { a, b } = APP.getLetterYTransform('j');
+    expect(a).toBe(1);
+    expect(b).toBe(0);
+  });
+
+  it('lowercase descender branch (e.g. "p"): identity transform — a=1, b=0', () => {
+    const { a, b } = APP.getLetterYTransform('p');
+    expect(a).toBe(1);
+    expect(b).toBe(0);
+  });
+
   it('lowercase default branch (e.g. "a"): maps y=100→middle(100), y=210→bottom(170)', () => {
     const { a, b } = APP.getLetterYTransform('a');
     // a = (170-100)/(210-100) = 70/110 ≈ 0.6364...
@@ -125,7 +137,7 @@ describe('APP.GUIDE_CONFIG', () => {
     expect(typeof APP.GUIDE_CONFIG.lines).toBe('object');
   });
 
-  it('defaults has numeric color, opacity, and width', () => {
+  it('defaults has string color, numeric opacity, and numeric width', () => {
     const { defaults } = APP.GUIDE_CONFIG;
     expect(typeof defaults.color).toBe('string');
     expect(typeof defaults.opacity).toBe('number');

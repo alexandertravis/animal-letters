@@ -109,4 +109,116 @@ describe('APP.launchConfetti', () => {
     // Canvas should be removed after cancel.
     expect(document.body.querySelector('canvas')).toBeNull();
   });
+
+  it('accepts custom opts (count, duration) and still returns a function and appends a canvas', () => {
+    vi.stubGlobal('requestAnimationFrame', vi.fn(() => 42));
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+
+    const cancel = APP.launchConfetti({ count: 5, duration: 100 });
+
+    expect(typeof cancel).toBe('function');
+    expect(document.body.querySelector('canvas')).not.toBeNull();
+
+    cancel();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// APP.svgEl
+// ---------------------------------------------------------------------------
+describe('APP.svgEl', () => {
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+
+  it('creates an element in the SVG namespace', () => {
+    const el = APP.svgEl('circle');
+    expect(el.namespaceURI).toBe(SVG_NS);
+  });
+
+  it('returns an element with the correct tag name', () => {
+    const el = APP.svgEl('rect');
+    expect(el.tagName).toBe('rect');
+  });
+
+  it('applies attributes correctly', () => {
+    const el = APP.svgEl('circle', { cx: '100', cy: '50', r: '10' });
+    expect(el.getAttribute('cx')).toBe('100');
+    expect(el.getAttribute('cy')).toBe('50');
+    expect(el.getAttribute('r')).toBe('10');
+  });
+
+  it('sets textContent when provided as third argument', () => {
+    const el = APP.svgEl('text', {}, 'Hello');
+    expect(el.textContent).toBe('Hello');
+  });
+
+  it('does not set textContent when third argument is omitted', () => {
+    const el = APP.svgEl('text', {});
+    expect(el.textContent).toBe('');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// APP.addGuidelines
+// ---------------------------------------------------------------------------
+describe('APP.addGuidelines', () => {
+  // GUIDE_CONFIG has 4 lines: top, middle, bottom, lower — none hidden by default.
+  // addGuidelines uses line.y directly (no y-transform applied) for x1/x2 from viewBox.
+
+  it('appends the correct number of <line> elements (one per non-hidden guide line)', () => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    APP.addGuidelines(svg, '0 0 200 250');
+
+    const g = svg.querySelector('g.writing-guidelines');
+    expect(g).not.toBeNull();
+    // All 4 lines in GUIDE_CONFIG are visible by default.
+    const visibleCount = Object.values(APP.GUIDE_CONFIG.lines).filter(l => !l.hidden).length;
+    expect(g.querySelectorAll('line').length).toBe(visibleCount);
+  });
+
+  it('does not append hidden guide lines', () => {
+    // Temporarily mark the top line as hidden.
+    const origTop = APP.GUIDE_CONFIG.lines.top.hidden;
+    APP.GUIDE_CONFIG.lines.top.hidden = true;
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    APP.addGuidelines(svg, '0 0 200 250');
+
+    const g = svg.querySelector('g.writing-guidelines');
+    const visibleCount = Object.values(APP.GUIDE_CONFIG.lines).filter(l => !l.hidden).length;
+    expect(g.querySelectorAll('line').length).toBe(visibleCount);
+
+    // Restore.
+    if (origTop === undefined) delete APP.GUIDE_CONFIG.lines.top.hidden;
+    else APP.GUIDE_CONFIG.lines.top.hidden = origTop;
+  });
+
+  it('appended lines use y1 and y2 equal to the guide line y value', () => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    APP.addGuidelines(svg, '0 0 200 250');
+
+    const g = svg.querySelector('g.writing-guidelines');
+    const lines = [...g.querySelectorAll('line')];
+    const visibleLines = Object.values(APP.GUIDE_CONFIG.lines).filter(l => !l.hidden);
+
+    lines.forEach((lineEl, i) => {
+      const expectedY = String(visibleLines[i].y);
+      expect(lineEl.getAttribute('y1')).toBe(expectedY);
+      expect(lineEl.getAttribute('y2')).toBe(expectedY);
+    });
+  });
+
+  it('lines use the correct stroke color from GUIDE_CONFIG defaults when no per-line color is set', () => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    APP.addGuidelines(svg, '0 0 200 250');
+
+    const g = svg.querySelector('g.writing-guidelines');
+    const lines = [...g.querySelectorAll('line')];
+    const visibleLines = Object.values(APP.GUIDE_CONFIG.lines).filter(l => !l.hidden);
+
+    lines.forEach((lineEl, i) => {
+      const lineConfig = visibleLines[i];
+      const expectedColor = lineConfig.color ?? APP.GUIDE_CONFIG.defaults.color;
+      expect(lineEl.getAttribute('stroke')).toBe(expectedColor);
+    });
+  });
 });

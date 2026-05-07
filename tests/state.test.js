@@ -151,6 +151,8 @@ describe('APP.advanceLetter', () => {
     const [, rawValue] = spy.mock.calls[0];
     const parsed = JSON.parse(rawValue);
     expect(Array.isArray(parsed.completedAnimals)).toBe(true);
+    expect(parsed.completedAnimals).toContain('CAT');
+    expect(parsed.completedAnimals).toHaveLength(1);
   });
 });
 
@@ -174,6 +176,7 @@ describe('APP.saveProgress', () => {
     const parsed = JSON.parse(rawValue);
     expect(Array.isArray(parsed.completedAnimals)).toBe(true);
     expect(parsed.completedAnimals).toEqual(expect.arrayContaining(['CAT', 'DOG']));
+    expect(parsed.completedAnimals).toHaveLength(2);
     expect(parsed.animalCompletionCounts).toEqual({ CAT: 2, DOG: 1 });
   });
 });
@@ -209,12 +212,15 @@ describe('APP.skipAnimal', () => {
     APP.ANIMALS = [...ANIMALS_FIXTURE];
     const original = makeAnimal({ name: 'ANT', displayName: 'Ant' });
     APP.startGame(original);
+    const originalName = original.name;
 
     APP.skipAnimal();
 
     // completedAnimals should still be empty — skip is not a completion.
     expect(APP.state.completedAnimals.size).toBe(0);
-    expect(APP.state.screen).not.toBe('complete');
+    expect(APP.state.screen).toBe('game');
+    // A different animal should be selected (ANIMALS_FIXTURE has 6, so guaranteed).
+    expect(APP.state.currentAnimal.name).not.toBe(originalName);
   });
 
   it('sets screen to "landing" when no eligible animals remain', () => {
@@ -327,6 +333,15 @@ describe('APP.clearProgress — error resilience', () => {
     vi.spyOn(ls, 'removeItem').mockImplementation(() => { throw new Error('SecurityError'); });
     vi.stubGlobal('localStorage', ls);
 
+    APP.state.completedAnimals = new Set(['CAT']);
+    APP.state.animalCompletionCounts = { CAT: 1 };
+    APP.state.consecutiveFoundCount = 3;
+
     expect(() => APP.clearProgress()).not.toThrow();
+
+    // State should be reset even when the storage call throws.
+    expect(APP.state.completedAnimals.size).toBe(0);
+    expect(APP.state.animalCompletionCounts).toEqual({});
+    expect(APP.state.consecutiveFoundCount).toBe(0);
   });
 });
