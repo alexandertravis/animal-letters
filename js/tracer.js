@@ -9,6 +9,9 @@ window.APP = window.APP || {};
   const STROKE_WIDTH_LOW = 30;   // lowercase letter thickness
   const INK_WIDTH_UP     = 38;   // user ink thickness — uppercase
   const INK_WIDTH_LOW    = 26;   // user ink thickness — lowercase
+  const X_SCALE_UP       = 0.85; // horizontal squeeze for uppercase — tune to taste
+  const X_SCALE_LOW      = 0.80; // horizontal squeeze for lowercase — tune to taste
+  const X_CENTER         = 100;  // viewBox midpoint around which x-scale is applied
   const TOLERANCE    = 32;       // viewBox units — how close pointer must come to next checkpoint
   const DRAW_RADIUS  = 52;       // viewBox units — how close to the dot before ink is deposited
   const CHECKPOINTS_PER_STROKE = 18;
@@ -50,7 +53,24 @@ window.APP = window.APP || {};
 
     // Compute y-axis transform: maps design coordinates → current guide positions.
     const { a: tA, b: tB } = APP.getLetterYTransform(character);
-    const letterTransform = `translate(0,${tB.toFixed(3)}) scale(1,${tA.toFixed(6)})`;
+    // Lowercase letters get a horizontal squeeze so they look more circular.
+    // Scaling around the viewBox centre (x=100): new_x = xScale*x + X_CENTER*(1-xScale).
+    const xScale  = isUpper ? X_SCALE_UP  : X_SCALE_LOW;
+    const xOffset = isUpper ? X_CENTER * (1 - X_SCALE_UP) : X_CENTER * (1 - X_SCALE_LOW);
+    const letterTransform = `translate(${xOffset},${tB.toFixed(3)}) scale(${xScale},${tA.toFixed(6)})`;
+
+    // Zero-length "dot" strokes (M x,y L x,y) need special handling: a non-uniform
+    // scale turns the round linecap elliptical.  We detect them and render them as
+    // real <circle> elements in transform-free overlay groups instead.
+    function isDot(d) {
+      const m = d.match(/M\s*([\d.-]+)[,\s]+([\d.-]+)\s+L\s*([\d.-]+)[,\s]+([\d.-]+)/);
+      return !!(m && parseFloat(m[1]) === parseFloat(m[3]) && parseFloat(m[2]) === parseFloat(m[4]));
+    }
+    function dotPos(d) { // centre in display-space (transform already applied)
+      const m = d.match(/M\s*([\d.-]+)[,\s]+([\d.-]+)/);
+      if (!m) return null;
+      return { x: xScale * parseFloat(m[1]) + xOffset, y: tA * parseFloat(m[2]) + tB };
+    }
 
     // Mask: white letter shape on black bg → confines user ink to inside the letter.
     const defs = el('defs');
@@ -65,7 +85,14 @@ window.APP = window.APP || {};
       'stroke-linecap': 'round', 'stroke-linejoin': 'round',
       transform: letterTransform
     });
-    data.strokes.forEach(s => maskShapes.appendChild(el('path', { d: s.d })));
+    data.strokes.forEach(s => {
+      if (isDot(s.d)) {
+        const pos = dotPos(s.d);
+        if (pos) mask.appendChild(el('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: 'white' }));
+      } else {
+        maskShapes.appendChild(el('path', { d: s.d }));
+      }
+    });
     mask.appendChild(maskShapes);
     defs.appendChild(mask);
     svg.appendChild(defs);
@@ -99,7 +126,7 @@ window.APP = window.APP || {};
       'stroke-linecap': 'round', 'stroke-linejoin': 'round',
       transform: letterTransform
     });
-    data.strokes.forEach(s => outlineGroup.appendChild(el('path', { d: s.d })));
+    data.strokes.forEach(s => { if (!isDot(s.d)) outlineGroup.appendChild(el('path', { d: s.d })); });
     svg.appendChild(outlineGroup);
 
     // Ghost layer — solid light blue-grey covers the outline interior, leaving
@@ -110,7 +137,7 @@ window.APP = window.APP || {};
       'stroke-linecap': 'round', 'stroke-linejoin': 'round',
       transform: letterTransform
     });
-    data.strokes.forEach(s => ghostGroup.appendChild(el('path', { d: s.d })));
+    data.strokes.forEach(s => { if (!isDot(s.d)) ghostGroup.appendChild(el('path', { d: s.d })); });
     svg.appendChild(ghostGroup);
 
     // Per-stroke depth layer — first stroke is lightest, each subsequent stroke
@@ -125,11 +152,28 @@ window.APP = window.APP || {};
     });
     const _dn = data.strokes.length;
     data.strokes.forEach((s, i) => {
-      const t = i / Math.max(_dn - 1, 1);           // 0 → 1
-      const opacity = (0.08 + t * 0.37).toFixed(2); // 0.10 → 0.30
+      if (isDot(s.d)) return;
+      const t = i / Math.max(_dn - 1, 1);
+      const opacity = (0.08 + t * 0.37).toFixed(2);
       depthGroup.appendChild(el('path', { d: s.d, stroke: `rgba(0,24,88,${opacity})` }));
     });
     svg.appendChild(depthGroup);
+
+    // Dot base layer — perfect circles for zero-length dot strokes (i, j dots etc).
+    // Lives outside the letterTransform group so the non-uniform scale can't distort them.
+    // Stacks outline → ghost → depth tint, matching the visual layering of regular strokes.
+    const dotBaseLayer = el('g', { 'pointer-events': 'none' });
+    data.strokes.forEach((s, i) => {
+      if (!isDot(s.d)) return;
+      const pos = dotPos(s.d);
+      if (!pos) return;
+      const t = i / Math.max(_dn - 1, 1);
+      const opacity = (0.08 + t * 0.37).toFixed(2);
+      dotBaseLayer.appendChild(el('circle', { cx: pos.x, cy: pos.y, r: (SW + 8) / 2, fill: '#001858' }));
+      dotBaseLayer.appendChild(el('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: '#dde0ea' }));
+      dotBaseLayer.appendChild(el('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: `rgba(0,24,88,${opacity})` }));
+    });
+    svg.appendChild(dotBaseLayer);
 
     // Done strokes layer — same width as the outline so completed strokes fill
     // all the way to the edge with no gap or light ring between the fill and border.
@@ -140,6 +184,10 @@ window.APP = window.APP || {};
       transform: letterTransform
     });
     svg.appendChild(doneGroup);
+
+    // Overlay for completed dot strokes — sits above the done group.
+    const doneDotLayer = el('g', { 'pointer-events': 'none' });
+    svg.appendChild(doneDotLayer);
 
     // User ink layer (masked to letter shape).
     // No group-level stroke colour — each path gets its own colour from STROKE_COLORS.
@@ -176,7 +224,7 @@ window.APP = window.APP || {};
       for (let i = 0; i < CHECKPOINTS_PER_STROKE; i++) {
         const t = (i / (CHECKPOINTS_PER_STROKE - 1)) * len;
         const pt = p.getPointAtLength(t);
-        pts.push({ x: pt.x, y: tA * pt.y + tB }); // apply same y-transform as visual groups
+        pts.push({ x: xScale * pt.x + xOffset, y: tA * pt.y + tB }); // same transform as visual groups
       }
       defs.removeChild(p);
       return pts;
@@ -248,7 +296,13 @@ window.APP = window.APP || {};
     }
 
     function markStrokeDone(strokeIdx) {
-      doneGroup.appendChild(el('path', { d: data.strokes[strokeIdx].d }));
+      const s = data.strokes[strokeIdx];
+      if (isDot(s.d)) {
+        const pos = dotPos(s.d);
+        if (pos) doneDotLayer.appendChild(el('circle', { cx: pos.x, cy: pos.y, r: (SW + 8) / 2, fill: '#001858' }));
+      } else {
+        doneGroup.appendChild(el('path', { d: s.d }));
+      }
     }
 
     updateGuide();

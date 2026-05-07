@@ -3,9 +3,14 @@ window.APP = window.APP || {};
 // Each letter is a list of strokes drawn in order. Each stroke is an SVG path `d`.
 // The tracer renders these thick to form the letter's visible shape (no separate outline path).
 // Coordinate system per letter:
-//   Uppercase: viewBox 0 0 200 250, baseline y=220, cap line y=30.
-//   Lowercase: viewBox 0 0 200 268, ascender top y=30, x-height top y=110, baseline y=210, descender to y=240.
-//   Extra height beyond the descender/baseline gives round stroke caps room to breathe.
+//   Uppercase:            cap line y=30, baseline y=220. Transform maps → guide top/bottom.
+//   Lowercase ascenders:  ascender y=30, baseline y=210. Transform maps → guide top/bottom.
+//   Lowercase default:    x-height top y=100, baseline y=210. Transform maps → guide middle/bottom.
+//   Lowercase descenders (g j p q y): paths authored directly in guide coordinates —
+//     bowl top y=100 (middle guide), bowl bottom y=170 (bottom guide), tail to y=240 (lower guide).
+//     Identity transform applied (a=1, b=0). No distortion.
+//   All letters use viewBox '0 0 200 268' (lowercase) or '0 0 200 250' (uppercase).
+//   Extra viewBox height beyond paths gives round stroke caps room to breathe.
 (function (APP) {
   const VB_UP  = '0 0 200 250';
   const VB_LOW = '0 0 200 268';
@@ -96,7 +101,7 @@ window.APP = window.APP || {};
     { d: 'M 90,125 L 165,220' }
   ]};
   LETTERS['S'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 165,55 Q 90,15 50,80 Q 30,140 100,150 Q 170,160 150,200 Q 130,235 50,210' }
+    { d: 'M 155,55 C 168,55 168,125 100,125 C 32,125 32,195 45,195' }
   ]};
   LETTERS['T'] = { viewBox: VB_UP, strokes: [
     { d: 'M 30,30 L 170,30' },
@@ -132,30 +137,30 @@ window.APP = window.APP || {};
 
   // ----- Lowercase -----
   LETTERS['a'] = { viewBox: VB_LOW, strokes: [
-    { d: 'M 145,140 Q 145,100 90,100 Q 40,100 40,160 Q 40,210 90,210 Q 145,210 145,170' },
-    { d: 'M 145,100 L 145,210' }
+    { d: 'M 144,145 Q 144,100 100,100 Q 56,100 56,155 Q 56,210 100,210 Q 144,210 144,165' },
+    { d: 'M 144,100 L 144,210' }
   ]};
   LETTERS['b'] = { viewBox: VB_LOW, strokes: [
     { d: 'M 50,30 L 50,210' },
-    { d: 'M 50,160 Q 50,100 100,100 Q 155,100 155,155 Q 155,210 100,210 Q 50,210 50,160' }
+    { d: 'M 50,155 Q 50,100 103,100 Q 156,100 156,155 Q 156,210 103,210 Q 50,210 50,155' }
   ]};
   LETTERS['c'] = { viewBox: VB_LOW, strokes: [
-    { d: 'M 150,120 Q 50,90 50,160 Q 50,230 150,200' }
+    { d: 'M 144,115 Q 56,100 56,155 Q 56,210 144,195' }
   ]};
   LETTERS['d'] = { viewBox: VB_LOW, strokes: [
-    { d: 'M 150,160 Q 150,100 100,100 Q 45,100 45,155 Q 45,210 100,210 Q 150,210 150,160' },
+    { d: 'M 150,155 Q 150,100 97,100 Q 44,100 44,155 Q 44,210 97,210 Q 150,210 150,155' },
     { d: 'M 150,30 L 150,210' }
   ]};
   LETTERS['e'] = { viewBox: VB_LOW, strokes: [
-    { d: 'M 50,160 L 145,160 Q 145,100 90,100 Q 40,100 40,160 Q 40,215 145,200' }
+    { d: 'M 56,155 L 144,155 Q 144,100 100,100 Q 56,100 56,155 Q 56,210 144,198' }
   ]};
   LETTERS['f'] = { viewBox: VB_LOW, strokes: [
     { d: 'M 150,40 Q 100,30 100,80 L 100,210' },
     { d: 'M 70,110 L 140,110' }
   ]};
   LETTERS['g'] = { viewBox: VB_LOW, strokes: [
-    { d: 'M 145,140 Q 145,100 90,100 Q 40,100 40,160 Q 40,210 90,210 Q 145,210 145,170' },
-    { d: 'M 145,100 L 145,225 Q 145,245 80,238' }
+    { d: 'M 144,130 Q 144,100 100,100 Q 56,100 56,135 Q 56,170 100,170 Q 144,170 144,145' },
+    { d: 'M 144,100 L 144,215 Q 144,242 56,237' }
   ]};
   LETTERS['h'] = { viewBox: VB_LOW, strokes: [
     { d: 'M 50,30 L 50,210' },
@@ -167,7 +172,7 @@ window.APP = window.APP || {};
   ]};
   LETTERS['j'] = { viewBox: VB_LOW, strokes: [
     { d: 'M 130,56 L 130,56' },   // zero-length → perfect circle with round linecap
-    { d: 'M 130,110 L 130,210 Q 130,238 70,235' }
+    { d: 'M 130,110 L 130,215 Q 130,242 70,237' }
   ]};
   LETTERS['k'] = { viewBox: VB_LOW, strokes: [
     { d: 'M 50,30 L 50,210' },
@@ -184,17 +189,17 @@ window.APP = window.APP || {};
   ]};
   LETTERS['n'] = { viewBox: VB_LOW, strokes: [
     { d: 'M 50,110 L 50,210' },
-    { d: 'M 50,110 Q 100,90 150,130 L 150,210' }
+    { d: 'M 50,130 Q 50,110 100,110 Q 150,110 150,160 L 150,210' }
   ]};
   LETTERS['o'] = { viewBox: VB_LOW, strokes: [
-    { d: 'M 100,100 Q 40,100 40,160 Q 40,220 100,220 Q 160,220 160,160 Q 160,100 100,100' }
+    { d: 'M 100,100 Q 56,100 56,155 Q 56,210 100,210 Q 144,210 144,155 Q 144,100 100,100' }
   ]};
   LETTERS['p'] = { viewBox: VB_LOW, strokes: [
     { d: 'M 50,110 L 50,240' },
-    { d: 'M 50,210 Q 50,100 100,100 Q 160,100 160,155 Q 160,210 100,210 Q 50,210 50,160' }
+    { d: 'M 50,135 Q 50,100 94,100 Q 138,100 138,135 Q 138,170 94,170 Q 50,170 50,135' }
   ]};
   LETTERS['q'] = { viewBox: VB_LOW, strokes: [
-    { d: 'M 150,210 Q 150,100 100,100 Q 40,100 40,155 Q 40,210 100,210 Q 150,210 150,160' },
+    { d: 'M 150,135 Q 150,100 106,100 Q 62,100 62,135 Q 62,170 106,170 Q 150,170 150,135' },
     { d: 'M 150,110 L 150,240' }
   ]};
   LETTERS['r'] = { viewBox: VB_LOW, strokes: [
@@ -226,8 +231,8 @@ window.APP = window.APP || {};
     { d: 'M 160,110 L 40,210' }
   ]};
   LETTERS['y'] = { viewBox: VB_LOW, strokes: [
-    { d: 'M 50,110 L 100,200' },
-    { d: 'M 150,110 L 80,238' }
+    { d: 'M 50,110 L 100,170' },
+    { d: 'M 150,110 L 80,240' }
   ]};
   LETTERS['z'] = { viewBox: VB_LOW, strokes: [
     { d: 'M 40,110 L 160,110' },
@@ -249,7 +254,7 @@ window.APP = window.APP || {};
   //   Uppercase          : 30 → 220
   //   Lowercase ascenders: 30 → 210  (b d f h k l t)
   //   Lowercase default  : 100 → 210 (paths typically reach y≈100 at x-height)
-  //   Lowercase descenders: 100 → 245 (g j p q y — bowl top y≈100, tail y≈245)
+  //   Lowercase descenders: 100 → 240 (g j p q y — paths authored in guide coords, identity transform)
   APP.getLetterYTransform = function (char) {
     const gc = APP.GUIDE_CONFIG;
     const top = gc.lines.top.y;
@@ -263,7 +268,9 @@ window.APP = window.APP || {};
     } else if ('bdfhklt'.includes(char)) {
       s1 = 30;  s2 = 210; t1 = top; t2 = bot;
     } else if ('gjpqy'.includes(char)) {
-      s1 = 100; s2 = 245; t1 = mid; t2 = low;
+      // Paths are authored directly in guide coordinates — no scaling needed.
+      // s1=mid, s2=low → t1=mid, t2=low gives a=1, b=0 (identity).
+      s1 = mid; s2 = low; t1 = mid; t2 = low;
     } else {
       s1 = 100; s2 = 210; t1 = mid; t2 = bot;
     }

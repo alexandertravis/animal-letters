@@ -44,6 +44,19 @@
 
 **2026-05-06** — Decision: `completedAnimals` Set is populated only in `advanceLetter()` when the full word is complete, not in `skipAnimal()`. Skipping does not count as completion.
 
+**2026-05-07** — Decision: X-scale squeeze applied (uppercase 0.85, lowercase 0.80) centred at X_CENTER=100 via `translate(xOffset, tB) scale(xScale, tA)`. Both `tracer.js` and `letters.js` use identical constants so the review screen matches in-game rendering.
+
+**2026-05-07** — Decision: i/j dots detected as zero-length `M x,y L x,y` paths and rendered as `<circle>` elements in separate transform-free SVG overlay groups (dotBaseLayer, doneDotLayer). This avoids elliptical distortion from the non-uniform scale transform.
+
+**2026-05-07** — Decision: Descender letters (g, j, p, q, y) use identity y-transform (a=1, b=0) — their paths are authored directly in guide coordinates rather than being remapped. This is the only way to allow the bowl to touch the x-height line AND the tail to reach the descender line without two separate transforms.
+
+**2026-05-07** — Decision: Circular counters achieved by compensating the design rx: `rx_design = display_ry / X_SCALE`. For standard lowercase (a=0.636): rx=43.75. For ascenders (a=0.778): rx=53.5. For identity descenders: rx=44.
+
+**2026-05-07** — Decision: `APP.GUIDE_CONFIG` centralises guideline appearance. Lines: top y=30, middle y=100, bottom y=170, lower y=240. Plan to add `hidden: true` to middle to suppress it from rendering while keeping it as an internal anchor for `getLetterYTransform`.
+
+## Session End — 2026-05-07
+Git status: 3 uncommitted modified files — `js/letterData.js`, `js/screens/letters.js`, `js/tracer.js`
+
 ## Constraints & Gotchas
 
 - **Script load order matters.** `data/animals.js` must load before `js/state.js`, which must load before everything else. See the ordered list in `CLAUDE.md` and `index.html`.
@@ -54,4 +67,14 @@
 - **`APP.audio.stopFile()` must be called before navigating away** from the complete screen, or the animal sound keeps playing in the background.
 - **Gallery uses `APP.state.completedAnimals` (a `Set`).** The gallery screen reads this on every render — it does not cache. Navigating back and forth always shows fresh state.
 - **Lowercase letters share the same viewBox as uppercase** but have different coordinate conventions: ascender `y=30`, x-height `y=110`, baseline `y=210`, descender `y=240`. The STROKE_WIDTH=48 mask covers the full stroke.
+- **Non-uniform SVG scale distorts circles.** The `scale(xScale, tA)` transform makes circles elliptical. Any stroke that is a dot (zero-length `M x,y L x,y`) must be rendered as a `<circle>` in a transform-free overlay group. See `isDot()` and `dotPos()` helpers in `tracer.js` and `letters.js`.
+- **Capital S cubic bezier is sensitive to control point placement.** Control points too wide (e.g. x=195/5) cause the thick stroke to balloon grotesquely. The target is a point-symmetric pair of cubics through centre (100,125). Good candidate: `M 150,50 C 175,50 175,140 100,125 C 25,110 25,200 50,200`.
+- **Lowercase coordinate conventions:** ascender `y=30`, x-height `y=110` (not 100), baseline `y=210`, descender `y=240`. `GUIDE_CONFIG.middle.y = 100` is the rendering position (guide coordinate), but `getLetterYTransform` maps from design coordinate 100 (x-height) to that guide y.
 - **`pickRandom` in animals.js excludes the last-played animal** to avoid immediate repeats. With maxLength=3 and only a few 3-letter animals, exhaustion is possible — the function returns `null` and the game falls back to landing.
+
+## Session Summary — 2026-05-07
+Completed: horizontal squeeze (uppercase 0.85, lowercase 0.80); GUIDE_CONFIG + getLetterYTransform; descender identity-transform fix; i/j spherical dot (circle overlay groups); n arch fix; circular counters for a/b/c/d/e/g/o/p/q; g tail extended to bowl width; letters.js review screen kept in sync
+NEXT STEP: In `js/letterData.js` update `LETTERS['S'].strokes[0].d` to `'M 150,50 C 175,50 175,140 100,125 C 25,110 25,200 50,200'`. Then add `hidden: true` to `APP.GUIDE_CONFIG.lines.middle`. Then in `js/tracer.js` and `js/screens/letters.js`, filter guideline rendering with `if (cfg.hidden) continue`.
+Blockers: none
+Half-finished: capital S fix and 3-line guideline change — both described above, no code written yet
+Security flags added: none

@@ -22,12 +22,40 @@ window.APP = window.APP || {};
     return m ? { x: parseFloat(m[1]), y: parseFloat(m[2]) } : null;
   }
 
-  const GHOST_COLOR = '#dde0ea'; // solid light blue-grey ≈ rgba(0,24,88,0.12) over white
+  const GHOST_COLOR  = '#dde0ea'; // solid light blue-grey ≈ rgba(0,24,88,0.12) over white
+  const X_SCALE_UP   = 0.85;      // horizontal squeeze for uppercase — must match tracer.js
+  const X_SCALE_LOW  = 0.80;      // horizontal squeeze for lowercase — must match tracer.js
+  const X_CENTER     = 100;       // viewBox midpoint
 
   function strokeWidths(char) {
     const up = /[A-Z]/.test(char);
     const SW = up ? 42 : 30;
     return { SW, SW_OUTLINE: SW + 8 };
+  }
+
+  // Dot-stroke helpers — mirror of tracer.js logic.
+  function isDot(d) {
+    const m = d.match(/M\s*([\d.-]+)[,\s]+([\d.-]+)\s+L\s*([\d.-]+)[,\s]+([\d.-]+)/);
+    return !!(m && parseFloat(m[1]) === parseFloat(m[3]) && parseFloat(m[2]) === parseFloat(m[4]));
+  }
+  function dotDisplayPos(d, char) {
+    const m = d.match(/M\s*([\d.-]+)[,\s]+([\d.-]+)/);
+    if (!m) return null;
+    const { a, b } = APP.getLetterYTransform(char);
+    const isUpper = /[A-Z]/.test(char);
+    const xScale  = isUpper ? X_SCALE_UP : X_SCALE_LOW;
+    const xOffset = isUpper ? X_CENTER * (1 - X_SCALE_UP) : X_CENTER * (1 - X_SCALE_LOW);
+    return { x: xScale * parseFloat(m[1]) + xOffset, y: a * parseFloat(m[2]) + b };
+  }
+
+  // Returns the SVG transform string for a glyph — combines the y-axis
+  // guide mapping with the optional x-axis squeeze for lowercase.
+  function letterTransform(char) {
+    const { a, b } = APP.getLetterYTransform(char);
+    const isUpper  = /[A-Z]/.test(char);
+    const xScale   = isUpper ? X_SCALE_UP  : X_SCALE_LOW;
+    const xOffset  = isUpper ? X_CENTER * (1 - X_SCALE_UP) : X_CENTER * (1 - X_SCALE_LOW);
+    return `translate(${xOffset},${b.toFixed(3)}) scale(${xScale},${a.toFixed(6)})`;
   }
 
   // Appends horizontal writing guidelines to an SVG element.
@@ -61,15 +89,14 @@ window.APP = window.APP || {};
     addGuidelines(svg, data.viewBox);
 
     // All letter content sits in a transformed group so paths align with guidelines.
-    const { a, b } = APP.getLetterYTransform(char);
-    const ltr = svgEl('g', { transform: `translate(0,${b.toFixed(3)}) scale(1,${a.toFixed(6)})` });
+    const ltr = svgEl('g', { transform: letterTransform(char) });
 
     // Outline: wider dark stroke — border ring visible around the ghost on top
     const outline = svgEl('g', {
       stroke: '#001858', 'stroke-width': SW_OUTLINE,
       fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
     });
-    data.strokes.forEach(s => outline.appendChild(svgEl('path', { d: s.d })));
+    data.strokes.forEach(s => { if (!isDot(s.d)) outline.appendChild(svgEl('path', { d: s.d })); });
     ltr.appendChild(outline);
 
     // Ghost: solid light grey covers the outline interior, leaving the border ring
@@ -77,7 +104,7 @@ window.APP = window.APP || {};
       stroke: GHOST_COLOR, 'stroke-width': SW,
       fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
     });
-    data.strokes.forEach(s => ghost.appendChild(svgEl('path', { d: s.d })));
+    data.strokes.forEach(s => { if (!isDot(s.d)) ghost.appendChild(svgEl('path', { d: s.d })); });
     ltr.appendChild(ghost);
 
     // Depth: cascading opacity per stroke — first stroke lightest, last darkest.
@@ -87,15 +114,39 @@ window.APP = window.APP || {};
     });
     const _dn = data.strokes.length;
     data.strokes.forEach((s, i) => {
+      if (isDot(s.d)) return;
       const t = i / Math.max(_dn - 1, 1);
       const opacity = (0.08 + t * 0.37).toFixed(2);
       depth.appendChild(svgEl('path', { d: s.d, stroke: `rgba(0,24,88,${opacity})` }));
     });
     ltr.appendChild(depth);
+    svg.appendChild(ltr);
+
+    // Dot overlay — circles rendered outside the transform group so they stay round.
+    data.strokes.forEach((s, i) => {
+      if (!isDot(s.d)) return;
+      const pos = dotDisplayPos(s.d, char);
+      if (!pos) return;
+      const t = i / Math.max(_dn - 1, 1);
+      const opacity = (0.08 + t * 0.37).toFixed(2);
+      svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW_OUTLINE / 2, fill: '#001858' }));
+      svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: GHOST_COLOR }));
+      svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: `rgba(0,24,88,${opacity})` }));
+    });
 
     // Each stroke in a unique colour + numbered start dot
     data.strokes.forEach((s, i) => {
       const color = COLORS[i % COLORS.length];
+      if (isDot(s.d)) {
+        const pos = dotDisplayPos(s.d, char);
+        if (pos) {
+          svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: 6.5, fill: color }));
+          svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: 10, fill: 'white', opacity: 0.7 }));
+          svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: 7.5, fill: color }));
+        }
+        return;
+      }
+      // Regular stroke: coloured path + numbered start dot, both inside ltr transform group.
       ltr.appendChild(svgEl('path', {
         d: s.d, stroke: color, 'stroke-width': 13,
         fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
@@ -113,7 +164,7 @@ window.APP = window.APP || {};
         ltr.appendChild(t);
       }
     });
-    svg.appendChild(ltr);
+    // ltr was already appended to svg above (before the dot overlay circles).
     return svg;
   }
 
@@ -129,8 +180,7 @@ window.APP = window.APP || {};
     const aspect  = vbParts[3] / vbParts[2];
     const svgH    = Math.round(px * aspect);
 
-    const { a, b } = APP.getLetterYTransform(char);
-    const ltrTransform = `translate(0,${b.toFixed(3)}) scale(1,${a.toFixed(6)})`;
+    const ltrTransform = letterTransform(char);
 
     data.strokes.forEach((_, idx) => {
       const svg = svgEl('svg', {
@@ -146,14 +196,14 @@ window.APP = window.APP || {};
         stroke: '#001858', 'stroke-width': SW_OUTLINE,
         fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
       });
-      data.strokes.forEach(s => outlineG.appendChild(svgEl('path', { d: s.d })));
+      data.strokes.forEach(s => { if (!isDot(s.d)) outlineG.appendChild(svgEl('path', { d: s.d })); });
       ltr.appendChild(outlineG);
 
       const ghostG = svgEl('g', {
         stroke: GHOST_COLOR, 'stroke-width': SW,
         fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
       });
-      data.strokes.forEach(s => ghostG.appendChild(svgEl('path', { d: s.d })));
+      data.strokes.forEach(s => { if (!isDot(s.d)) ghostG.appendChild(svgEl('path', { d: s.d })); });
       ltr.appendChild(ghostG);
 
       const depthG = svgEl('g', {
@@ -162,6 +212,7 @@ window.APP = window.APP || {};
       });
       const _dn2 = data.strokes.length;
       data.strokes.forEach((s, i) => {
+        if (isDot(s.d)) return;
         const t = i / Math.max(_dn2 - 1, 1);
         const opacity = (0.08 + t * 0.37).toFixed(2);
         depthG.appendChild(svgEl('path', { d: s.d, stroke: `rgba(0,24,88,${opacity})` }));
@@ -172,28 +223,62 @@ window.APP = window.APP || {};
         stroke: '#001858', 'stroke-width': SW_OUTLINE,
         fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
       });
-      for (let j = 0; j < idx; j++) doneG.appendChild(svgEl('path', { d: data.strokes[j].d }));
+      for (let j = 0; j < idx; j++) {
+        if (!isDot(data.strokes[j].d)) doneG.appendChild(svgEl('path', { d: data.strokes[j].d }));
+      }
       ltr.appendChild(doneG);
 
       const color = COLORS[idx % COLORS.length];
-      ltr.appendChild(svgEl('path', {
-        d: data.strokes[idx].d, stroke: color, 'stroke-width': SW,
-        fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
-      }));
-
-      const pt = startPt(data.strokes[idx].d);
-      if (pt) {
-        ltr.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 22, fill: 'white' }));
-        ltr.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 16, fill: color }));
-        const t = document.createElementNS(SVG_NS, 'text');
-        [['x', pt.x], ['y', pt.y], ['text-anchor', 'middle'],
-         ['dominant-baseline', 'central'], ['font-size', 18],
-         ['font-weight', 800], ['fill', 'white'],
-         ['pointer-events', 'none']].forEach(([k, v]) => t.setAttribute(k, v));
-        t.textContent = String(idx + 1);
-        ltr.appendChild(t);
+      const curStroke = data.strokes[idx];
+      if (!isDot(curStroke.d)) {
+        ltr.appendChild(svgEl('path', {
+          d: curStroke.d, stroke: color, 'stroke-width': SW,
+          fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+        }));
+        const pt = startPt(curStroke.d);
+        if (pt) {
+          ltr.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 22, fill: 'white' }));
+          ltr.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 16, fill: color }));
+          const t = document.createElementNS(SVG_NS, 'text');
+          [['x', pt.x], ['y', pt.y], ['text-anchor', 'middle'],
+           ['dominant-baseline', 'central'], ['font-size', 18],
+           ['font-weight', 800], ['fill', 'white'],
+           ['pointer-events', 'none']].forEach(([k, v]) => t.setAttribute(k, v));
+          t.textContent = String(idx + 1);
+          ltr.appendChild(t);
+        }
       }
       svg.appendChild(ltr);
+
+      // Dot overlay — circles outside the transform group so they stay perfectly round.
+      data.strokes.forEach((s, i) => {
+        if (!isDot(s.d)) return;
+        const pos = dotDisplayPos(s.d, char);
+        if (!pos) return;
+        const tVal = i / Math.max(_dn2 - 1, 1);
+        const opacity = (0.08 + tVal * 0.37).toFixed(2);
+        const isDone = i < idx;
+        const isCurrent = i === idx;
+        if (isDone) {
+          svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW_OUTLINE / 2, fill: '#001858' }));
+        } else {
+          svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW_OUTLINE / 2, fill: '#001858' }));
+          svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: GHOST_COLOR }));
+          svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: `rgba(0,24,88,${opacity})` }));
+          if (isCurrent) {
+            svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: color }));
+            svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: 22, fill: 'white' }));
+            svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: 16, fill: color }));
+            const t = document.createElementNS(SVG_NS, 'text');
+            [['x', pos.x], ['y', pos.y], ['text-anchor', 'middle'],
+             ['dominant-baseline', 'central'], ['font-size', 18],
+             ['font-weight', 800], ['fill', 'white'],
+             ['pointer-events', 'none']].forEach(([k, v]) => t.setAttribute(k, v));
+            t.textContent = String(idx + 1);
+            svg.appendChild(t);
+          }
+        }
+      });
 
       // Cell wrapper + stage number badge
       const cell = document.createElement('div');

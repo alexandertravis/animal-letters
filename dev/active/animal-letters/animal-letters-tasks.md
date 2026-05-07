@@ -75,7 +75,24 @@
 - [x] `animal-letters-context.md`
 - [x] `animal-letters-tasks.md` (this file)
 
-## Section 10 — Future / Nice-to-Have
+## Section 10 — Letter Shape Polish
+- [x] Add horizontal X-scale squeeze to all letters (uppercase 0.85, lowercase 0.80, centred at X_CENTER=100)
+- [x] Add `APP.GUIDE_CONFIG` object to `letterData.js` — centralises guideline appearance (color, opacity, dash patterns, y positions)
+- [x] Map each letter to correct guideline anchors via `APP.getLetterYTransform(char)`:
+  - Uppercase A–Z: cap-height → baseline
+  - Ascender group (b, d, f, h, k, l, t): top guide → baseline
+  - Descender group (g, j, p, q, y): identity transform, paths authored in guide coordinates
+  - Standard lowercase (others): x-height → baseline
+- [x] Fix descender letters (g, j, p, q, y) — bowl squash resolved by using identity transform
+- [x] Fix i/j dot — rendered as `<circle>` in transform-free overlay groups to avoid elliptical distortion from non-uniform SVG scale
+- [x] Fix lowercase n arch — double-quadratic so hump sits at x-height, not above
+- [x] Make circular counters for a, b, c, d, e, g, o, p, q — compensated rx so display ratio is 1:1
+- [x] Extend lowercase g tail to width of bowl
+- [x] Horizontal squeeze applied to `js/screens/letters.js` (letter-patterns review screen) to match tracer rendering
+- [ ] **Fix capital S** — current path `M 155,55 C 168,55 168,125 100,125 C 32,125 32,195 45,195` looks bad. Need two equal opposing curves with smooth diagonal crossing, point-symmetric about centre
+- [ ] **Reposition guidelines to 3 visible lines** — remove visible middle (x-height) line. Keep: top y=30 (cap height), bottom y=170 (baseline), lower y=240 (descender). Add `hidden: true` to middle entry in `APP.GUIDE_CONFIG` and filter it out in rendering loops in `tracer.js` and `js/screens/letters.js`
+
+## Section 11 — Future / Nice-to-Have
 - [ ] Real cartoon SVG artwork for all 25 animals
 - [ ] Real realistic photos for all 25 animals
 - [ ] Real animal audio MP3s for all 25 animals
