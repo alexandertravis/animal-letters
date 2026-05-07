@@ -23,6 +23,7 @@ window.APP = window.APP || {};
     wrap.appendChild(bar);
 
     const body = document.createElement('div');
+    body.className = 'complete-body';
     body.innerHTML = `
       <h1>Hooray!</h1>
       <div class="animalName">${animal.displayName.toUpperCase()}</div>
