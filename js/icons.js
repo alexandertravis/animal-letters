@@ -36,5 +36,11 @@ window.APP = window.APP || {};
       '<line x1="23" y1="9" x2="17" y2="15"/>' +
       '<line x1="17" y1="9" x2="23" y2="15"/>'
     ),
+
+    // Left-pointing arrow
+    back: icon(
+      '<line x1="19" y1="12" x2="5" y2="12"/>' +
+      '<polyline points="12 19 5 12 12 5"/>'
+    ),
   };
 })(window.APP);

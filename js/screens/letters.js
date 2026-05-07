@@ -362,7 +362,7 @@ window.APP = window.APP || {};
       const header = document.createElement('div');
       header.className = 'letters-header';
       header.innerHTML = `
-        <button class="btn icon ghost" id="ltr-back" aria-label="Back">&#8592;</button>
+        <button class="btn icon ghost" id="ltr-back" aria-label="Back">${APP.ICONS.back}</button>
         <h2>Letter Patterns</h2>
         <div class="ltr-controls">
           <div class="toggle-group">

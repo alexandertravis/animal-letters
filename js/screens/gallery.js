@@ -14,7 +14,7 @@ window.APP = window.APP || {};
     const header = document.createElement('div');
     header.className = 'gallery-header';
     header.innerHTML = `
-      <button class="btn icon ghost" aria-label="Back">&#8592;</button>
+      <button class="btn icon ghost" aria-label="Back">${APP.ICONS.back}</button>
       <h2>My Animals</h2>
       <span class="gallery-count">${doneCount}&thinsp;/&thinsp;${total}</span>
     `;

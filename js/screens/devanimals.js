@@ -69,7 +69,7 @@ window.APP = window.APP || {};
     const backBtn = document.createElement('button');
     backBtn.className = 'btn icon ghost';
     backBtn.setAttribute('aria-label', 'Back');
-    backBtn.innerHTML = '&#8592;';
+    backBtn.innerHTML = APP.ICONS.back;
     backBtn.addEventListener('click', () => {
       if (testTracer) { testTracer.destroy(); testTracer = null; }
       ctx.go('setup');
