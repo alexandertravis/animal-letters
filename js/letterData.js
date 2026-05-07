@@ -301,10 +301,10 @@ window.APP = window.APP || {};
       width:   2,
     },
     lines: {
-      top:    { y:  30, dash: '' },
-      middle: { y: 110, dash: '12 7' },
-      bottom: { y: 220, dash: '' },
-      lower:  { y: 240, dash: '7 7' },
+      top:    { y:  30, dash: '' },      //  step = 70 → equidistant spacing
+      middle: { y: 100, dash: '12 7' }, //  30 + 70
+      bottom: { y: 170, dash: '' },      //  30 + 140
+      lower:  { y: 240, dash: '7 7' },  //  30 + 210
     }
   };
 })(window.APP);
