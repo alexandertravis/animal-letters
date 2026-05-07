@@ -323,7 +323,14 @@ html, body {
   overflow: hidden;
 }
 .complete .animalImg img, .complete .animalImg svg { max-width: 90%; max-height: 90%; }
-.complete .actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.complete .actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(360px, 90vw);
+  align-self: center;
+}
+.complete .actions .btn { width: 100%; }
 
 .fallback-graphic { font-size: 6rem; }
 
