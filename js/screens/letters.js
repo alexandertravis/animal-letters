@@ -300,8 +300,11 @@ window.APP = window.APP || {};
     // Persist toggle state across redraws without re-entering render()
     let caseMode = APP.state.settings.letterCase === 'lower' ? 'lower' : 'upper';
     let viewMode = 'overview';
+    // Active practice tracer — kept here so switching views always cleans it up.
+    let practiceTracer = null;
 
     function draw() {
+      if (practiceTracer) { practiceTracer.destroy(); practiceTracer = null; }
       root.innerHTML = '';
 
       const chars = (caseMode === 'lower'
@@ -323,8 +326,9 @@ window.APP = window.APP || {};
             <button data-case="lower" class="${caseMode === 'lower' ? 'on' : ''}">abc</button>
           </div>
           <div class="toggle-group">
-            <button data-view="overview" class="${viewMode === 'overview' ? 'on' : ''}">Overview</button>
-            <button data-view="stages"   class="${viewMode === 'stages'   ? 'on' : ''}">Stages</button>
+            <button data-view="overview"  class="${viewMode === 'overview'  ? 'on' : ''}">Overview</button>
+            <button data-view="stages"    class="${viewMode === 'stages'    ? 'on' : ''}">Stages</button>
+            <button data-view="practice"  class="${viewMode === 'practice'  ? 'on' : ''}">Practice</button>
           </div>
         </div>
       `;
@@ -337,19 +341,18 @@ window.APP = window.APP || {};
 
       // ── Body ──
       const body = document.createElement('div');
-      body.className = viewMode === 'overview' ? 'letters-grid' : 'letters-stages-list';
 
-      chars.forEach(ch => {
-        const data = APP.getLetter(ch);
-        const card = document.createElement('div');
-
-        if (viewMode === 'overview') {
+      if (viewMode === 'overview') {
+        // ── Overview grid ──────────────────────────────────────────────────
+        body.className = 'letters-grid';
+        chars.forEach(ch => {
+          const data = APP.getLetter(ch);
+          const card = document.createElement('div');
           card.className = 'letter-card';
           const lbl = document.createElement('div');
           lbl.className = 'letter-card-char';
           lbl.textContent = ch;
           card.appendChild(lbl);
-
           if (data) {
             card.appendChild(overviewSVG(data, ch, 100));
             const info = document.createElement('div');
@@ -362,15 +365,20 @@ window.APP = window.APP || {};
             miss.textContent = 'no data';
             card.appendChild(miss);
           }
+          body.appendChild(card);
+        });
 
-        } else {
-          // Stages row
+      } else if (viewMode === 'stages') {
+        // ── Stages grid ────────────────────────────────────────────────────
+        body.className = 'letters-stages-list';
+        chars.forEach(ch => {
+          const data = APP.getLetter(ch);
+          const card = document.createElement('div');
           card.className = 'letter-stages-row';
           const lbl = document.createElement('div');
           lbl.className = 'letter-stages-char';
           lbl.textContent = ch;
           card.appendChild(lbl);
-
           if (data) {
             card.appendChild(stagesEl(data, ch, 100));
           } else {
@@ -379,10 +387,82 @@ window.APP = window.APP || {};
             miss.textContent = 'no data';
             card.appendChild(miss);
           }
+          body.appendChild(card);
+        });
+
+      } else if (viewMode === 'practice') {
+        // ── Practice view ──────────────────────────────────────────────────
+        body.className = 'practice-panel';
+
+        // Letter picker — compact row of all letters
+        const picker = document.createElement('div');
+        picker.className = 'practice-picker';
+        chars.forEach(ch => {
+          const btn = document.createElement('button');
+          btn.className = 'practice-letter-btn';
+          btn.textContent = ch;
+          btn.addEventListener('click', () => mountPractice(ch));
+          picker.appendChild(btn);
+        });
+        body.appendChild(picker);
+
+        // Stage — the tracer mounts here
+        const stageWrap = document.createElement('div');
+        stageWrap.className = 'practice-stage-wrap';
+        const stage = document.createElement('div');
+        stage.className = 'practice-stage';
+
+        // Placeholder shown before a letter is chosen
+        const placeholder = document.createElement('div');
+        placeholder.className = 'practice-placeholder';
+        placeholder.textContent = 'Select a letter above to start practising';
+        stage.appendChild(placeholder);
+
+        stageWrap.appendChild(stage);
+        body.appendChild(stageWrap);
+
+        // Controls bar
+        const controls = document.createElement('div');
+        controls.className = 'practice-controls';
+
+        const resetBtn = document.createElement('button');
+        resetBtn.className = 'btn ghost';
+        resetBtn.textContent = 'Try again';
+        resetBtn.disabled = true;
+        controls.appendChild(resetBtn);
+
+        const statusLabel = document.createElement('span');
+        statusLabel.className = 'practice-status';
+        controls.appendChild(statusLabel);
+
+        body.appendChild(controls);
+
+        // Mount a letter into the practice stage
+        function mountPractice(ch) {
+          if (practiceTracer) { practiceTracer.destroy(); practiceTracer = null; }
+
+          // Highlight selected button
+          picker.querySelectorAll('.practice-letter-btn').forEach(b =>
+            b.classList.toggle('active', b.textContent === ch));
+
+          stage.innerHTML = '';
+          resetBtn.disabled = false;
+          statusLabel.textContent = '';
+          statusLabel.className = 'practice-status';
+
+          practiceTracer = APP.tracer.mount(stage, ch, {
+            onComplete() {
+              statusLabel.textContent = `Great job! 🎉`;
+              statusLabel.className = 'practice-status done';
+            }
+          });
         }
 
-        body.appendChild(card);
-      });
+        resetBtn.addEventListener('click', () => {
+          const active = picker.querySelector('.practice-letter-btn.active');
+          if (active) mountPractice(active.textContent);
+        });
+      }
 
       wrap.appendChild(body);
       root.appendChild(wrap);
