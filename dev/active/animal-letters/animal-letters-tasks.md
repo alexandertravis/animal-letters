@@ -104,8 +104,7 @@
 - [x] Make circular counters for a, b, c, d, e, g, o, p, q — compensated rx so display ratio is 1:1
 - [x] Extend lowercase g tail to width of bowl
 - [x] Horizontal squeeze applied to `js/screens/letters.js` (letter-patterns review screen) to match tracer rendering
-- [ ] **Fix capital S** — current path `M 155,55 C 168,55 168,125 100,125 C 32,125 32,195 45,195` looks bad. Need two equal opposing curves with smooth diagonal crossing, point-symmetric about centre
-- [ ] **Reposition guidelines to 3 visible lines** — remove visible middle (x-height) line. Keep: top y=30 (cap height), bottom y=170 (baseline), lower y=240 (descender). Add `hidden: true` to middle entry in `APP.GUIDE_CONFIG` and filter it out in rendering loops in `tracer.js` and `js/screens/letters.js`
+- [x] **Fix capital S** — updated to smooth opposing cubics: `M 140,75 C 140,30 60,30 60,75 C 60,105 60,105 100,125 S 140,145 140,175 C 140,220 60,220 60,175`
 
 ## Section 11 — Future / Nice-to-Have
 - [ ] Real cartoon SVG artwork for all 25 animals

@@ -52,7 +52,7 @@
 
 **2026-05-07** — Decision: Circular counters achieved by compensating the design rx: `rx_design = display_ry / X_SCALE`. For standard lowercase (a=0.636): rx=43.75. For ascenders (a=0.778): rx=53.5. For identity descenders: rx=44.
 
-**2026-05-07** — Decision: `APP.GUIDE_CONFIG` centralises guideline appearance. Lines: top y=30, middle y=100, bottom y=170, lower y=240. Plan to add `hidden: true` to middle to suppress it from rendering while keeping it as an internal anchor for `getLetterYTransform`.
+**2026-05-07** — Decision: `APP.GUIDE_CONFIG` centralises guideline appearance. Lines: top y=30, middle y=100, bottom y=170, lower y=240. All four lines render visibly — the middle (x-height) line is kept visible and is used as an anchor by `getLetterYTransform`.
 
 ## Session End — 2026-05-07 (session 2)
 Git status: clean — all changes committed and pushed
@@ -84,20 +84,20 @@ Git status: clean — all changes committed and pushed
 - **Gallery uses `APP.state.completedAnimals` (a `Set`).** The gallery screen reads this on every render — it does not cache. Navigating back and forth always shows fresh state.
 - **Lowercase letters share the same viewBox as uppercase** but have different coordinate conventions: ascender `y=30`, x-height `y=110`, baseline `y=210`, descender `y=240`. The STROKE_WIDTH=48 mask covers the full stroke.
 - **Non-uniform SVG scale distorts circles.** The `scale(xScale, tA)` transform makes circles elliptical. Any stroke that is a dot (zero-length `M x,y L x,y`) must be rendered as a `<circle>` in a transform-free overlay group. See `isDot()` and `dotPos()` helpers in `tracer.js` and `letters.js`.
-- **Capital S cubic bezier is sensitive to control point placement.** Control points too wide (e.g. x=195/5) cause the thick stroke to balloon grotesquely. The target is a point-symmetric pair of cubics through centre (100,125). Good candidate: `M 150,50 C 175,50 175,140 100,125 C 25,110 25,200 50,200`.
+- **Capital S** uses smooth opposing cubics with a shorthand `S` command: `M 140,75 C 140,30 60,30 60,75 C 60,105 60,105 100,125 S 140,145 140,175 C 140,220 60,220 60,175`. Control points too far outside (e.g. x=195/5) cause the thick stroke to balloon grotesquely.
 - **Lowercase coordinate conventions:** ascender `y=30`, x-height `y=110` (not 100), baseline `y=210`, descender `y=240`. `GUIDE_CONFIG.middle.y = 100` is the rendering position (guide coordinate), but `getLetterYTransform` maps from design coordinate 100 (x-height) to that guide y.
 - **`pickRandom` in animals.js excludes the last-played animal** to avoid immediate repeats. With maxLength=3 and only a few 3-letter animals, exhaustion is possible — the function returns `null` and the game falls back to landing.
 
 ## Session Summary — 2026-05-07 (session 1)
 Completed: horizontal squeeze (uppercase 0.85, lowercase 0.80); GUIDE_CONFIG + getLetterYTransform; descender identity-transform fix; i/j spherical dot (circle overlay groups); n arch fix; circular counters for a/b/c/d/e/g/o/p/q; g tail extended to bowl width; letters.js review screen kept in sync
-NEXT STEP: In `js/letterData.js` update `LETTERS['S'].strokes[0].d` to `'M 150,50 C 175,50 175,140 100,125 C 25,110 25,200 50,200'`. Then add `hidden: true` to `APP.GUIDE_CONFIG.lines.middle`. Then in `js/tracer.js` and `js/screens/letters.js`, filter guideline rendering with `if (cfg.hidden) continue`.
+NEXT STEP: Capital S path was subsequently fixed. No outstanding letter data tasks — pick up next from Section 11 (real assets) or Section 12 UI items.
 Blockers: none
-Half-finished: capital S fix and 3-line guideline change — both described above, no code written yet
+Half-finished: none
 Security flags added: none
 
 ## Session Summary — 2026-05-07 (session 2)
-Completed: SVG icons system (`js/icons.js` with home/settings/volumeOn/volumeOff/back); previousScreen back-navigation; volume slider + mute button in Settings (with tone preview, purple fill, hover-fix, screen-edge scrollbar); master GainNode in audio.js; tileMetrics for single-row mobile name strip; Complete screen Great Job button + 2-column grid + letterCase-aware name; Gallery previous-screen back + underscore wrapping fix + larger font; Letter Patterns "Great Job!" confetti button; Animal Review Test tab (full word tracing with picker, case toggle, name strip, auto-advance); consistent Title Case labels throughout; consistent blue back button and equal button sizing on Setup screen.
-NEXT STEP: In `js/letterData.js` update `LETTERS['S'].strokes[0].d` to `'M 150,50 C 175,50 175,140 100,125 C 25,110 25,200 50,200'`. Then add `hidden: true` to `APP.GUIDE_CONFIG.lines.middle`. Then in `js/tracer.js` and `js/screens/letters.js`, filter guideline rendering with `if (cfg.hidden) continue`.
+Completed: SVG icons system (`js/icons.js` with home/settings/volumeOn/volumeOff/back); previousScreen back-navigation; volume slider + mute button in Settings (with tone preview, purple fill, hover-fix, screen-edge scrollbar); master GainNode in audio.js; tileMetrics for single-row mobile name strip; Complete screen Great Job button + 2-column grid + letterCase-aware name; Gallery previous-screen back + underscore wrapping fix + larger font; Letter Patterns "Great Job!" confetti button; Animal Review Test tab (full word tracing with picker, case toggle, name strip, auto-advance); consistent Title Case labels throughout; consistent blue back button and equal button sizing on Setup screen. Capital S path also fixed.
+NEXT STEP: No outstanding letter-shape or infrastructure tasks. Next work is likely real asset integration (cartoon SVGs, realistic photos, audio MP3s) or new feature requests.
 Blockers: none
-Half-finished: capital S fix and 3-line guideline change — carried over from previous session, still not started
+Half-finished: none
 Security flags added: none
