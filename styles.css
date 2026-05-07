@@ -706,3 +706,87 @@ html, body {
   color: #aaa;
   margin-top: 2px;
 }
+
+/* Body area shared by both views */
+.devanimals-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.devanimals-review {
+  overflow-y: auto;
+}
+
+/* ── Test view ── */
+.devanimals-test {
+  gap: 10px;
+  padding: 8px 14px 16px;
+  overflow: hidden;
+}
+.devanimals-test-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+.devanimals-animal-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+}
+.devanimals-animal-btn {
+  border: 2px solid #dde0ea;
+  background: #fff;
+  border-radius: 8px;
+  padding: 5px 13px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.devanimals-animal-btn:hover  { background: #f0f4ff; border-color: var(--accent); }
+.devanimals-animal-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* Name strip */
+.devanimals-strip {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+  min-height: 56px;
+  align-items: center;
+}
+.devanimals-strip-box {
+  width: 48px;
+  height: 52px;
+  border: 3px solid #dde0ea;
+  border-radius: 10px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  box-shadow: var(--shadow);
+}
+.devanimals-strip-box:hover {
+  border-color: var(--accent);
+}
+.devanimals-strip-box.current {
+  border-color: var(--accent);
+  color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(83, 144, 217, 0.22);
+}
+.devanimals-strip-box.done {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
