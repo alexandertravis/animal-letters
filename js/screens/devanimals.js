@@ -95,7 +95,7 @@ window.APP = window.APP || {};
         groupHeader.textContent = `${len}-letter animals`;
         list.appendChild(groupHeader);
 
-        byLength[len].forEach(animal => {
+        byLength.get(len).forEach(animal => {
           const tile = document.createElement('div');
           tile.className = 'devanimals-tile';
 
