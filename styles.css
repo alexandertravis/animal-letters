@@ -314,6 +314,7 @@ html, body {
 .complete .animalImg {
   width: min(320px, 70vw);
   height: min(320px, 70vw);
+  cursor: pointer;
   background: #fff;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
@@ -326,7 +327,6 @@ html, body {
 
 /* Animal image reveal — tap to spin and reveal colour */
 .animal-reveal {
-  cursor: pointer;
   /* brightness(0) collapses the image to black; invert(0.25) lifts it to dark grey.
      Because the result is a single flat tone, no features are visible — true silhouette. */
   filter: brightness(0) invert(0.25);
@@ -335,11 +335,9 @@ html, body {
   will-change: transform, filter;
 }
 .animal-reveal.spinning {
-  cursor: default;
   animation: z-spin-reveal 0.9s ease-in-out forwards;
 }
 .animal-reveal.revealed {
-  cursor: default;
   filter: none;
   animation: none;
 }

@@ -65,14 +65,17 @@ window.APP = window.APP || {};
     img.src = imgSrc;
     imgBox.appendChild(img);
 
-    // Tap the greyed-out image to spin it and reveal the colour.
+    // Tap anywhere in the photo box to spin and reveal the colour.
+    // Listening on imgBox (not img) so the full square is the hit target —
+    // transparent/empty areas around the silhouette still respond.
     // pointerdown fires immediately on touch (no 300 ms click delay).
-    img.addEventListener('pointerdown', () => {
+    imgBox.addEventListener('pointerdown', () => {
       if (img.classList.contains('spinning') || img.classList.contains('revealed')) return;
       img.classList.add('spinning');
       img.addEventListener('animationend', () => {
         img.classList.remove('spinning');
         img.classList.add('revealed');
+        imgBox.style.cursor = 'default';
       }, { once: true });
     });
 
