@@ -1,0 +1,12 @@
+{
+  "name": "letter-tracing-game",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^2.0.0",
+    "jsdom": "^25.0.0"
+  }
+}
