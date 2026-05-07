@@ -112,7 +112,11 @@ window.APP = window.APP || {};
     body.className = 'complete-body';
     body.innerHTML = `
       <h1>Hooray!</h1>
-      <div class="animalName">${animal.displayName.toUpperCase()}</div>
+      <div class="animalName">${
+        APP.state.settings.letterCase === 'lower'  ? animal.displayName.toLowerCase() :
+        APP.state.settings.letterCase === 'proper' ? animal.displayName :
+                                                     animal.displayName.toUpperCase()
+      }</div>
       <div class="animalImg" id="animalImg"></div>
       <div class="actions">
         <button class="btn secondary" data-act="gallery">My Animals</button>
