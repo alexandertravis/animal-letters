@@ -134,7 +134,7 @@ html, body {
   min-height: 48px;
 }
 .setup .seg button.on { background: var(--accent); color: var(--accent-ink); }
-.setup input[type=range] { width: 100%; accent-color: #a78bfa; }
+.setup input[type=range] { width: 100%; }
 .setup .actions { display: flex; gap: 12px; margin-top: 12px; }
 
 /* Volume row inside settings */
