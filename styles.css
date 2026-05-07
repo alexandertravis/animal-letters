@@ -310,7 +310,7 @@ html, body {
   margin: 0;
   color: var(--primary);
 }
-.complete .animalName { font-size: 2rem; font-weight: 800; letter-spacing: 0.08em; }
+.complete .animalName { font-size: clamp(2rem, 7vw, 3.5rem); font-weight: 800; letter-spacing: 0.08em; }
 .complete .animalImg {
   width: min(320px, 70vw);
   height: min(320px, 70vw);
@@ -395,7 +395,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: 800;
   text-align: center;
   padding: 0 6px;
