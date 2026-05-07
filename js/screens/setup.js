@@ -170,6 +170,9 @@ window.APP = window.APP || {};
         alert('No animals fit that length. Try a longer name length.');
         return;
       }
+      // "New Game" is a deliberate fresh start — reset the consecutive-found streak
+      // so the first pick is purely random regardless of what was played before.
+      APP.state.consecutiveFoundCount = 0;
       APP.startGame(animal);
       ctx.go('game');
     });

@@ -22,7 +22,18 @@ window.APP = window.APP || {};
     letterIndex: 0,        // index into currentAnimal.name
     completedLetters: [],  // letters already finished this animal
     sessionExists: false,  // true once a game has been started this session
-    completedAnimals: new Set() // animal names fully traced this session
+    completedAnimals: new Set(), // animal names fully traced this session
+
+    // ── Completion tracking ───────────────────────────────────────────────────
+    // Per-animal completion counts. Incremented each time the child traces every
+    // letter of an animal (skip does not count). Keyed by animal.name.
+    // Reserved for the upcoming challenges feature.
+    animalCompletionCounts: {},
+
+    // Counts how many consecutively completed animals were already in the gallery
+    // (i.e. previously found). Resets to 0 whenever an unfound animal is presented.
+    // When it reaches 2, pickNext() biases the next selection toward unfound animals.
+    consecutiveFoundCount: 0,
   };
 
   APP.resetSettings = function () {
@@ -30,6 +41,11 @@ window.APP = window.APP || {};
   };
 
   APP.startGame = function (animal) {
+    // Reset the consecutive-found counter whenever the child is given an animal
+    // they haven't completed before — presenting a fresh challenge breaks the streak.
+    if (!APP.state.completedAnimals.has(animal.name)) {
+      APP.state.consecutiveFoundCount = 0;
+    }
     APP.state.currentAnimal = animal;
     APP.state.letterIndex = 0;
     APP.state.completedLetters = [];
@@ -43,6 +59,20 @@ window.APP = window.APP || {};
     APP.state.completedLetters.push(animal.name[APP.state.letterIndex]);
     APP.state.letterIndex += 1;
     if (APP.state.letterIndex >= animal.name.length) {
+      // Check before adding — was this animal already found before this completion?
+      const alreadyFound = APP.state.completedAnimals.has(animal.name);
+
+      // Increment per-animal completion count (keyed by name).
+      // Used by the upcoming challenges feature; also drives consecutiveFoundCount.
+      APP.state.animalCompletionCounts[animal.name] =
+        (APP.state.animalCompletionCounts[animal.name] || 0) + 1;
+
+      // Track consecutive already-found completions so pickNext() can bias toward
+      // unfound animals once the streak reaches 2.
+      if (alreadyFound) {
+        APP.state.consecutiveFoundCount++;
+      }
+
       // Only mark as completed when the child traced every letter themselves.
       APP.state.completedAnimals.add(animal.name);
       APP.state.screen = "complete";

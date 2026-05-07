@@ -66,7 +66,7 @@ window.APP = window.APP || {};
     APP.audio.playComplete(animal.audio);
 
     wrap.querySelector('[data-act=next]').addEventListener('click', () => {
-      const next = APP.animals.pickRandom(APP.state.settings.maxLength, animal);
+      const next = APP.animals.pickNext(APP.state.settings.maxLength, animal);
       navigate(() => {
         if (!next) { ctx.go('landing'); return; }
         APP.startGame(next);

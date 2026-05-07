@@ -56,7 +56,7 @@ window.APP = window.APP || {};
     // startGame produces another exhausted animal (impossible with current data
     // but defensive programming against future edge cases).
     while (APP.state.letterIndex >= animal.name.length) {
-      const next = APP.animals.pickRandom(APP.state.settings.maxLength, animal);
+      const next = APP.animals.pickNext(APP.state.settings.maxLength, animal);
       if (!next) { ctx.go('landing'); return; }
       APP.startGame(next);
       animal = APP.state.currentAnimal; // re-read after startGame resets letterIndex
