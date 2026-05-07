@@ -241,6 +241,37 @@ window.APP = window.APP || {};
     return LETTERS[char] || null;
   };
 
+  // Returns {a, b} — the y-axis linear transform for a character.
+  // Transforms original design coordinates → current GUIDE_CONFIG positions.
+  //   y_new = a * y_old + b
+  //
+  // Design ranges (from coordinate conventions above):
+  //   Uppercase          : 30 → 220
+  //   Lowercase ascenders: 30 → 210  (b d f h k l t)
+  //   Lowercase default  : 110 → 210
+  //   Lowercase descenders: 110 → 240 (g j p q y)
+  APP.getLetterYTransform = function (char) {
+    const gc = APP.GUIDE_CONFIG;
+    const top = gc.lines.top.y;
+    const mid = gc.lines.middle.y;
+    const bot = gc.lines.bottom.y;
+    const low = gc.lines.lower.y;
+
+    let s1, s2, t1, t2;
+    if (/[A-Z]/.test(char)) {
+      s1 = 30;  s2 = 220; t1 = top; t2 = bot;
+    } else if ('bdfhklt'.includes(char)) {
+      s1 = 30;  s2 = 210; t1 = top; t2 = bot;
+    } else if ('gjpqy'.includes(char)) {
+      s1 = 110; s2 = 240; t1 = mid; t2 = low;
+    } else {
+      s1 = 110; s2 = 210; t1 = mid; t2 = bot;
+    }
+    const a = (t2 - t1) / (s2 - s1);
+    const b = t1 - a * s1;
+    return { a, b };
+  };
+
   // ── Writing-line configuration ────────────────────────────────────────────
   //
   // Four horizontal reference lines rendered behind every letter SVG.

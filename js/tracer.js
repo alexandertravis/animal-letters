@@ -40,6 +40,10 @@ window.APP = window.APP || {};
       preserveAspectRatio: 'xMidYMid meet'
     });
 
+    // Compute y-axis transform: maps design coordinates → current guide positions.
+    const { a: tA, b: tB } = APP.getLetterYTransform(character);
+    const letterTransform = `translate(0,${tB.toFixed(3)}) scale(1,${tA.toFixed(6)})`;
+
     // Mask: white letter shape on black bg → confines user ink to inside the letter.
     const defs = el('defs');
     const maskId = `mask-${Math.random().toString(36).slice(2, 9)}`;
@@ -50,7 +54,8 @@ window.APP = window.APP || {};
     }));
     const maskShapes = el('g', {
       stroke: 'white', 'stroke-width': STROKE_WIDTH, fill: 'none',
-      'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+      'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+      transform: letterTransform
     });
     data.strokes.forEach(s => maskShapes.appendChild(el('path', { d: s.d })));
     mask.appendChild(maskShapes);
@@ -83,7 +88,8 @@ window.APP = window.APP || {};
     const outlineGroup = el('g', {
       class: 'outline-group',
       stroke: '#001858', 'stroke-width': STROKE_WIDTH + 8, fill: 'none',
-      'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+      'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+      transform: letterTransform
     });
     data.strokes.forEach(s => outlineGroup.appendChild(el('path', { d: s.d })));
     svg.appendChild(outlineGroup);
@@ -93,7 +99,8 @@ window.APP = window.APP || {};
     const ghostGroup = el('g', {
       class: 'ghost-group',
       stroke: '#dde0ea', 'stroke-width': STROKE_WIDTH, fill: 'none',
-      'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+      'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+      transform: letterTransform
     });
     data.strokes.forEach(s => ghostGroup.appendChild(el('path', { d: s.d })));
     svg.appendChild(ghostGroup);
@@ -105,7 +112,8 @@ window.APP = window.APP || {};
     const depthGroup = el('g', {
       class: 'depth-group',
       'stroke-width': STROKE_WIDTH, fill: 'none',
-      'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+      'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+      transform: letterTransform
     });
     const _dn = data.strokes.length;
     data.strokes.forEach((s, i) => {
@@ -120,7 +128,8 @@ window.APP = window.APP || {};
     const doneGroup = el('g', {
       class: 'done-group',
       stroke: '#001858', 'stroke-width': STROKE_WIDTH + 8, fill: 'none',
-      'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+      'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+      transform: letterTransform
     });
     svg.appendChild(doneGroup);
 
@@ -159,7 +168,7 @@ window.APP = window.APP || {};
       for (let i = 0; i < CHECKPOINTS_PER_STROKE; i++) {
         const t = (i / (CHECKPOINTS_PER_STROKE - 1)) * len;
         const pt = p.getPointAtLength(t);
-        pts.push({ x: pt.x, y: pt.y });
+        pts.push({ x: pt.x, y: tA * pt.y + tB }); // apply same y-transform as visual groups
       }
       defs.removeChild(p);
       return pts;

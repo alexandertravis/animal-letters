@@ -51,9 +51,13 @@ window.APP = window.APP || {};
   // ── Overview SVG ──────────────────────────────────────────────────────────
   // Thin dark outline + solid light-grey ghost interior (matches game style),
   // then each stroke in its own colour with a numbered circle at the start point.
-  function overviewSVG(data, px) {
+  function overviewSVG(data, char, px) {
     const svg = svgEl('svg', { viewBox: data.viewBox, width: px, height: px });
     addGuidelines(svg, data.viewBox);
+
+    // All letter content sits in a transformed group so paths align with guidelines.
+    const { a, b } = APP.getLetterYTransform(char);
+    const ltr = svgEl('g', { transform: `translate(0,${b.toFixed(3)}) scale(1,${a.toFixed(6)})` });
 
     // Outline: wider dark stroke — border ring visible around the ghost on top
     const outline = svgEl('g', {
@@ -61,7 +65,7 @@ window.APP = window.APP || {};
       fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
     });
     data.strokes.forEach(s => outline.appendChild(svgEl('path', { d: s.d })));
-    svg.appendChild(outline);
+    ltr.appendChild(outline);
 
     // Ghost: solid light grey covers the outline interior, leaving the border ring
     const ghost = svgEl('g', {
@@ -69,10 +73,9 @@ window.APP = window.APP || {};
       fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
     });
     data.strokes.forEach(s => ghost.appendChild(svgEl('path', { d: s.d })));
-    svg.appendChild(ghost);
+    ltr.appendChild(ghost);
 
-    // Depth: cascading opacity per stroke — first stroke lightest (0.10),
-    // last stroke darkest (0.30). Overlaps compound further.
+    // Depth: cascading opacity per stroke — first stroke lightest, last darkest.
     const depth = svgEl('g', {
       'stroke-width': SW, fill: 'none',
       'stroke-linecap': 'round', 'stroke-linejoin': 'round'
@@ -83,43 +86,45 @@ window.APP = window.APP || {};
       const opacity = (0.08 + t * 0.37).toFixed(2);
       depth.appendChild(svgEl('path', { d: s.d, stroke: `rgba(0,24,88,${opacity})` }));
     });
-    svg.appendChild(depth);
+    ltr.appendChild(depth);
 
     // Each stroke in a unique colour + numbered start dot
     data.strokes.forEach((s, i) => {
       const color = COLORS[i % COLORS.length];
-      svg.appendChild(svgEl('path', {
+      ltr.appendChild(svgEl('path', {
         d: s.d, stroke: color, 'stroke-width': 13,
         fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
       }));
 
       const pt = startPt(s.d);
       if (pt) {
-        svg.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 20, fill: 'white' }));
-        svg.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 15, fill: color }));
+        ltr.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 20, fill: 'white' }));
+        ltr.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 15, fill: color }));
         const t = document.createElementNS(SVG_NS, 'text');
         [['x', pt.x], ['y', pt.y], ['text-anchor', 'middle'],
          ['dominant-baseline', 'central'], ['font-size', 18],
          ['font-weight', 800], ['fill', 'white']].forEach(([k, v]) => t.setAttribute(k, v));
         t.textContent = String(i + 1);
-        svg.appendChild(t);
+        ltr.appendChild(t);
       }
     });
+    svg.appendChild(ltr);
     return svg;
   }
 
   // ── Stages element ────────────────────────────────────────────────────────
   // N small SVGs side-by-side, each revealing one more stroke:
   //   previous strokes = dark blue (done), current = orange, future = ghost.
-  function stagesEl(data, px) {
+  function stagesEl(data, char, px) {
     const wrap = document.createElement('div');
     wrap.className = 'letter-stages';
 
-    // Derive actual rendered height from the viewBox aspect ratio so that the
-    // SVG element never overflows its cell regardless of the aspect ratio.
     const vbParts = data.viewBox.split(/\s+/).map(Number);
-    const aspect  = vbParts[3] / vbParts[2]; // height / width
+    const aspect  = vbParts[3] / vbParts[2];
     const svgH    = Math.round(px * aspect);
+
+    const { a, b } = APP.getLetterYTransform(char);
+    const ltrTransform = `translate(0,${b.toFixed(3)}) scale(1,${a.toFixed(6)})`;
 
     data.strokes.forEach((_, idx) => {
       const svg = svgEl('svg', {
@@ -128,23 +133,23 @@ window.APP = window.APP || {};
       });
       addGuidelines(svg, data.viewBox);
 
-      // Base outline — dark border for entire letter shape
+      // All letter content in a transformed group aligned to guidelines
+      const ltr = svgEl('g', { transform: ltrTransform });
+
       const outlineG = svgEl('g', {
         stroke: '#001858', 'stroke-width': SW_OUTLINE,
         fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
       });
       data.strokes.forEach(s => outlineG.appendChild(svgEl('path', { d: s.d })));
-      svg.appendChild(outlineG);
+      ltr.appendChild(outlineG);
 
-      // Base ghost — solid light grey covers interior, leaving the border ring
       const ghostG = svgEl('g', {
         stroke: GHOST_COLOR, 'stroke-width': SW,
         fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
       });
       data.strokes.forEach(s => ghostG.appendChild(svgEl('path', { d: s.d })));
-      svg.appendChild(ghostG);
+      ltr.appendChild(ghostG);
 
-      // Depth: cascading opacity — first stroke lightest, last darkest, overlaps compound
       const depthG = svgEl('g', {
         'stroke-width': SW, fill: 'none',
         'stroke-linecap': 'round', 'stroke-linejoin': 'round'
@@ -155,36 +160,34 @@ window.APP = window.APP || {};
         const opacity = (0.08 + t * 0.37).toFixed(2);
         depthG.appendChild(svgEl('path', { d: s.d, stroke: `rgba(0,24,88,${opacity})` }));
       });
-      svg.appendChild(depthG);
+      ltr.appendChild(depthG);
 
-      // Done strokes — full outline width so they fill solid with no border gap
       const doneG = svgEl('g', {
         stroke: '#001858', 'stroke-width': SW_OUTLINE,
         fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
       });
       for (let j = 0; j < idx; j++) doneG.appendChild(svgEl('path', { d: data.strokes[j].d }));
-      svg.appendChild(doneG);
+      ltr.appendChild(doneG);
 
-      // Active stroke — coloured at SW, sits inside the outline border ring
       const color = COLORS[idx % COLORS.length];
-      svg.appendChild(svgEl('path', {
+      ltr.appendChild(svgEl('path', {
         d: data.strokes[idx].d, stroke: color, 'stroke-width': SW,
         fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
       }));
 
-      // Start dot on active stroke — uses same colour as the stroke
       const pt = startPt(data.strokes[idx].d);
       if (pt) {
-        svg.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 22, fill: 'white' }));
-        svg.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 16, fill: color }));
+        ltr.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 22, fill: 'white' }));
+        ltr.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 16, fill: color }));
         const t = document.createElementNS(SVG_NS, 'text');
         [['x', pt.x], ['y', pt.y], ['text-anchor', 'middle'],
          ['dominant-baseline', 'central'], ['font-size', 18],
          ['font-weight', 800], ['fill', 'white'],
          ['pointer-events', 'none']].forEach(([k, v]) => t.setAttribute(k, v));
         t.textContent = String(idx + 1);
-        svg.appendChild(t);
+        ltr.appendChild(t);
       }
+      svg.appendChild(ltr);
 
       // Cell wrapper + stage number badge
       const cell = document.createElement('div');
@@ -256,7 +259,7 @@ window.APP = window.APP || {};
           card.appendChild(lbl);
 
           if (data) {
-            card.appendChild(overviewSVG(data, 100));
+            card.appendChild(overviewSVG(data, ch, 100));
             const info = document.createElement('div');
             info.className = 'letter-card-info';
             info.textContent = `${data.strokes.length} stroke${data.strokes.length !== 1 ? 's' : ''}`;
@@ -277,7 +280,7 @@ window.APP = window.APP || {};
           card.appendChild(lbl);
 
           if (data) {
-            card.appendChild(stagesEl(data, 76));
+            card.appendChild(stagesEl(data, ch, 76));
           } else {
             const miss = document.createElement('span');
             miss.className = 'letter-card-missing';
