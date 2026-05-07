@@ -10,6 +10,50 @@ window.APP = window.APP || {};
   // One colour per stroke (up to 5 before cycling)
   const COLORS = ['#ff8906', '#f582ae', '#8bd3dd', '#5390d9', '#7c3aed'];
 
+  // Confetti burst (same implementation as complete.js)
+  const CONFETTI_COLORS = ['#ff8906','#f582ae','#8bd3dd','#5390d9','#7c3aed','#e74c3c','#2ecc71','#f1c40f'];
+  function launchConfetti() {
+    const canvas = document.createElement('canvas');
+    canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:999';
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    const DURATION = 3500;
+    const particles = Array.from({ length: 120 }, () => ({
+      x: Math.random() * canvas.width,
+      y: -20 - Math.random() * 100,
+      vx: (Math.random() - 0.5) * 5,
+      vy: 2.5 + Math.random() * 4,
+      rotation: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.18,
+      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+      w: 7 + Math.random() * 9,
+      h: 4 + Math.random() * 6,
+      shape: Math.random() > 0.35 ? 'rect' : 'circle',
+      opacity: 1,
+    }));
+    let startTs = null, rafId;
+    function draw(ts) {
+      if (!startTs) startTs = ts;
+      const elapsed = ts - startTs;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let alive = 0;
+      particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy; p.vy += 0.09; p.vx *= 0.993; p.rotation += p.rotSpeed;
+        if (elapsed > DURATION - 1000) p.opacity = Math.max(0, (DURATION - elapsed) / 1000);
+        if (p.y < canvas.height + 50) alive++;
+        ctx.save(); ctx.globalAlpha = p.opacity; ctx.translate(p.x, p.y); ctx.rotate(p.rotation); ctx.fillStyle = p.color;
+        if (p.shape === 'circle') { ctx.beginPath(); ctx.arc(0, 0, p.w / 2, 0, Math.PI * 2); ctx.fill(); }
+        else { ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); }
+        ctx.restore();
+      });
+      if (elapsed < DURATION && alive > 0) { rafId = requestAnimationFrame(draw); } else { canvas.remove(); }
+    }
+    rafId = requestAnimationFrame(draw);
+    return () => { cancelAnimationFrame(rafId); canvas.remove(); };
+  }
+
   function svgEl(tag, attrs) {
     const e = document.createElementNS(SVG_NS, tag);
     if (attrs) for (const k in attrs) e.setAttribute(k, String(attrs[k]));
@@ -421,15 +465,17 @@ window.APP = window.APP || {};
         stageWrap.appendChild(stage);
         body.appendChild(stageWrap);
 
-        // Controls bar — status on the left (opacity:0 when hidden so button
-        // stays pinned to the right edge), Try again on the right.
+        // Controls bar — two centred buttons side by side.
+        // "Great job" uses visibility:hidden as a placeholder so "Try again"
+        // never shifts position when the completion button appears/disappears.
         const controls = document.createElement('div');
         controls.className = 'practice-controls';
 
-        // "Great job" message — always in the layout but invisible until complete
-        const statusLabel = document.createElement('div');
-        statusLabel.className = 'practice-status';
-        controls.appendChild(statusLabel);
+        const greatBtn = document.createElement('button');
+        greatBtn.className = 'btn practice-great-btn';
+        greatBtn.textContent = 'Great job! 🎉';
+        greatBtn.style.visibility = 'hidden';
+        controls.appendChild(greatBtn);
 
         const resetBtn = document.createElement('button');
         resetBtn.className = 'btn practice-reset-btn';
@@ -449,16 +495,18 @@ window.APP = window.APP || {};
 
           stage.innerHTML = '';
           resetBtn.disabled = false;
-          statusLabel.textContent = '';
-          statusLabel.classList.remove('visible');
+          greatBtn.style.visibility = 'hidden';
 
           practiceTracer = APP.tracer.mount(stage, ch, {
             onComplete() {
-              statusLabel.textContent = 'Great job! 🎉';
-              statusLabel.classList.add('visible');
+              greatBtn.style.visibility = 'visible';
             }
           });
         }
+
+        greatBtn.addEventListener('click', () => {
+          launchConfetti();
+        });
 
         resetBtn.addEventListener('click', () => {
           const active = picker.querySelector('.practice-letter-btn.active');
