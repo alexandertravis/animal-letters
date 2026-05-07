@@ -245,11 +245,11 @@ window.APP = window.APP || {};
   // Transforms original design coordinates → current GUIDE_CONFIG positions.
   //   y_new = a * y_old + b
   //
-  // Design ranges (from coordinate conventions above):
+  // Design ranges — actual path extents measured from letterData paths above:
   //   Uppercase          : 30 → 220
   //   Lowercase ascenders: 30 → 210  (b d f h k l t)
-  //   Lowercase default  : 110 → 210
-  //   Lowercase descenders: 110 → 240 (g j p q y)
+  //   Lowercase default  : 100 → 210 (paths typically reach y≈100 at x-height)
+  //   Lowercase descenders: 100 → 245 (g j p q y — bowl top y≈100, tail y≈245)
   APP.getLetterYTransform = function (char) {
     const gc = APP.GUIDE_CONFIG;
     const top = gc.lines.top.y;
@@ -263,9 +263,9 @@ window.APP = window.APP || {};
     } else if ('bdfhklt'.includes(char)) {
       s1 = 30;  s2 = 210; t1 = top; t2 = bot;
     } else if ('gjpqy'.includes(char)) {
-      s1 = 110; s2 = 240; t1 = mid; t2 = low;
+      s1 = 100; s2 = 245; t1 = mid; t2 = low;
     } else {
-      s1 = 110; s2 = 210; t1 = mid; t2 = bot;
+      s1 = 100; s2 = 210; t1 = mid; t2 = bot;
     }
     const a = (t2 - t1) / (s2 - s1);
     const b = t1 - a * s1;
