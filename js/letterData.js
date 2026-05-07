@@ -3,11 +3,12 @@ window.APP = window.APP || {};
 // Each letter is a list of strokes drawn in order. Each stroke is an SVG path `d`.
 // The tracer renders these thick to form the letter's visible shape (no separate outline path).
 // Coordinate system per letter:
-//   Uppercase: viewBox 0 0 200 240, baseline y=220, cap line y=30.
-//   Lowercase: viewBox 0 0 200 240, ascender top y=30, x-height top y=110, baseline y=210, descender to y=240.
+//   Uppercase: viewBox 0 0 200 250, baseline y=220, cap line y=30.
+//   Lowercase: viewBox 0 0 200 268, ascender top y=30, x-height top y=110, baseline y=210, descender to y=240.
+//   Extra height beyond the descender/baseline gives round stroke caps room to breathe.
 (function (APP) {
-  const VB_UP  = '0 0 200 240';
-  const VB_LOW = '0 0 200 240';
+  const VB_UP  = '0 0 200 250';
+  const VB_LOW = '0 0 200 268';
 
   const LETTERS = {};
 
@@ -238,5 +239,41 @@ window.APP = window.APP || {};
 
   APP.getLetter = function (char) {
     return LETTERS[char] || null;
+  };
+
+  // ── Writing-line configuration ────────────────────────────────────────────
+  //
+  // Four horizontal reference lines rendered behind every letter SVG.
+  // All y values are in the shared SVG coordinate space (viewBox width = 200).
+  //
+  // Zone meanings
+  //   top    – cap height; uppercase letters reach here; ascending lowercase too (b d f h k l t)
+  //   middle – x-height;  regular lowercase letters reach here
+  //   bottom – baseline;  all letters sit on this line
+  //   lower  – descender; only g j p q y extend below bottom to reach here
+  //
+  // Tweakable per line
+  //   y       – position in viewBox units  (change to move a line up/down)
+  //   dash    – stroke-dasharray string    ('' = solid, '12 7' = dashes, '3 5' = dots)
+  //   color   – overrides the default colour for just this line (optional)
+  //   opacity – overrides the default opacity for just this line (optional)
+  //
+  // Global defaults (apply when a line doesn't override them)
+  //   defaults.color   – line colour
+  //   defaults.opacity – 0 = invisible, 1 = fully opaque
+  //   defaults.width   – stroke thickness in viewBox units
+  //
+  APP.GUIDE_CONFIG = {
+    defaults: {
+      color:   '#b89a3a',   // warm amber
+      opacity: 0.50,
+      width:   2,
+    },
+    lines: {
+      top:    { y:  30, dash: '' },
+      middle: { y: 110, dash: '12 7' },
+      bottom: { y: 220, dash: '' },
+      lower:  { y: 240, dash: '7 7' },
+    }
   };
 })(window.APP);

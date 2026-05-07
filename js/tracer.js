@@ -57,35 +57,69 @@ window.APP = window.APP || {};
     defs.appendChild(mask);
     svg.appendChild(defs);
 
-    // Outline layer — a slightly wider dark stroke rendered first (bottom of stack).
-    // The ghost layer (white, same width as the mask) sits on top and covers the
-    // centre, leaving just the edges of the outline visible as a dark border.
-    // This creates the hollow / coloring-book look from the reference image while
-    // keeping full round linecap so stroke tips stay smooth with no protrusions.
+    // ── Writing guidelines (bottom of stack, behind all letter layers) ──
+    const gc = APP.GUIDE_CONFIG;
+    if (gc) {
+      const vb = data.viewBox.split(/\s+/).map(Number);
+      const x1 = vb[0], x2 = vb[0] + vb[2];
+      const glGroup = el('g', { class: 'writing-guidelines', 'pointer-events': 'none' });
+      Object.values(gc.lines).forEach(line => {
+        const color   = line.color   || gc.defaults.color;
+        const opacity = line.opacity !== undefined ? line.opacity : gc.defaults.opacity;
+        const width   = line.width   || gc.defaults.width;
+        const attrs = {
+          x1, y1: line.y, x2, y2: line.y,
+          stroke: color, 'stroke-width': width, opacity
+        };
+        if (line.dash) attrs['stroke-dasharray'] = line.dash;
+        glGroup.appendChild(el('line', attrs));
+      });
+      svg.appendChild(glGroup);
+    }
+
+    // Outline layer — slightly wider dark stroke, rendered first so it peeks out
+    // around the edges of the ghost on top, creating a thin dark border.
+    // SW + 8 = 4 units visible per side (border ring).
     const outlineGroup = el('g', {
       class: 'outline-group',
-      stroke: '#001858', 'stroke-width': STROKE_WIDTH + 16, fill: 'none',
+      stroke: '#001858', 'stroke-width': STROKE_WIDTH + 8, fill: 'none',
       'stroke-linecap': 'round', 'stroke-linejoin': 'round'
     });
     data.strokes.forEach(s => outlineGroup.appendChild(el('path', { d: s.d })));
     svg.appendChild(outlineGroup);
 
-    // Ghost layer — white stroke the same width as the mask.
-    // Covers the centre of the outline, creating a white interior with a dark
-    // border visible around the edges (8 viewBox units on each side).
+    // Ghost layer — solid light blue-grey covers the outline interior, leaving
+    // only the border ring visible.
     const ghostGroup = el('g', {
       class: 'ghost-group',
-      stroke: '#ffffff', 'stroke-width': STROKE_WIDTH, fill: 'none',
+      stroke: '#dde0ea', 'stroke-width': STROKE_WIDTH, fill: 'none',
       'stroke-linecap': 'round', 'stroke-linejoin': 'round'
     });
     data.strokes.forEach(s => ghostGroup.appendChild(el('path', { d: s.d })));
     svg.appendChild(ghostGroup);
 
-    // Done strokes layer — same width as the ghost so it neatly fills the white
-    // interior when a stroke is completed, leaving the border visible around it.
+    // Per-stroke depth layer — first stroke is lightest, each subsequent stroke
+    // is slightly more opaque (0.10 → 0.30 across the range). Where paths overlap
+    // the opacity compounds, so junctions and crossings appear darker still.
+    // All tints stay within the same blue-grey hue as the ghost.
+    const depthGroup = el('g', {
+      class: 'depth-group',
+      'stroke-width': STROKE_WIDTH, fill: 'none',
+      'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+    });
+    const _dn = data.strokes.length;
+    data.strokes.forEach((s, i) => {
+      const t = i / Math.max(_dn - 1, 1);           // 0 → 1
+      const opacity = (0.08 + t * 0.37).toFixed(2); // 0.10 → 0.30
+      depthGroup.appendChild(el('path', { d: s.d, stroke: `rgba(0,24,88,${opacity})` }));
+    });
+    svg.appendChild(depthGroup);
+
+    // Done strokes layer — same width as the outline so completed strokes fill
+    // all the way to the edge with no gap or light ring between the fill and border.
     const doneGroup = el('g', {
       class: 'done-group',
-      stroke: '#001858', 'stroke-width': STROKE_WIDTH, fill: 'none',
+      stroke: '#001858', 'stroke-width': STROKE_WIDTH + 8, fill: 'none',
       'stroke-linecap': 'round', 'stroke-linejoin': 'round'
     });
     svg.appendChild(doneGroup);

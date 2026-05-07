@@ -22,19 +22,68 @@ window.APP = window.APP || {};
     return m ? { x: parseFloat(m[1]), y: parseFloat(m[2]) } : null;
   }
 
+  const SW = 48; // base stroke width — matches tracer STROKE_WIDTH
+  const SW_OUTLINE = SW + 8; // outline width — 4 units of border visible per side
+  const GHOST_COLOR = '#dde0ea'; // solid light blue-grey ≈ rgba(0,24,88,0.12) over white
+
+  // Appends horizontal writing guidelines to an SVG element.
+  // Reads from APP.GUIDE_CONFIG — edit that object in letterData.js to restyle.
+  function addGuidelines(svg, viewBox) {
+    const gc = APP.GUIDE_CONFIG;
+    if (!gc) return;
+    const vb = viewBox.split(/\s+/).map(Number);
+    const x1 = vb[0], x2 = vb[0] + vb[2];
+    const g = svgEl('g', { 'pointer-events': 'none' });
+    Object.values(gc.lines).forEach(line => {
+      const color   = line.color   || gc.defaults.color;
+      const opacity = line.opacity !== undefined ? line.opacity : gc.defaults.opacity;
+      const width   = line.width   || gc.defaults.width;
+      const attrs = {
+        x1, y1: line.y, x2, y2: line.y,
+        stroke: color, 'stroke-width': width, opacity
+      };
+      if (line.dash) attrs['stroke-dasharray'] = line.dash;
+      g.appendChild(svgEl('line', attrs));
+    });
+    svg.appendChild(g);
+  }
+
   // ── Overview SVG ──────────────────────────────────────────────────────────
-  // Ghost outline of the full letter, then each stroke in its own colour with
-  // a numbered circle at the start point.
+  // Thin dark outline + solid light-grey ghost interior (matches game style),
+  // then each stroke in its own colour with a numbered circle at the start point.
   function overviewSVG(data, px) {
     const svg = svgEl('svg', { viewBox: data.viewBox, width: px, height: px });
+    addGuidelines(svg, data.viewBox);
 
-    // Ghost: all strokes at low opacity for shape reference
+    // Outline: wider dark stroke — border ring visible around the ghost on top
+    const outline = svgEl('g', {
+      stroke: '#001858', 'stroke-width': SW_OUTLINE,
+      fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+    });
+    data.strokes.forEach(s => outline.appendChild(svgEl('path', { d: s.d })));
+    svg.appendChild(outline);
+
+    // Ghost: solid light grey covers the outline interior, leaving the border ring
     const ghost = svgEl('g', {
-      stroke: 'rgba(0,24,88,0.13)', 'stroke-width': 48,
+      stroke: GHOST_COLOR, 'stroke-width': SW,
       fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
     });
     data.strokes.forEach(s => ghost.appendChild(svgEl('path', { d: s.d })));
     svg.appendChild(ghost);
+
+    // Depth: cascading opacity per stroke — first stroke lightest (0.10),
+    // last stroke darkest (0.30). Overlaps compound further.
+    const depth = svgEl('g', {
+      'stroke-width': SW, fill: 'none',
+      'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+    });
+    const _dn = data.strokes.length;
+    data.strokes.forEach((s, i) => {
+      const t = i / Math.max(_dn - 1, 1);
+      const opacity = (0.08 + t * 0.37).toFixed(2);
+      depth.appendChild(svgEl('path', { d: s.d, stroke: `rgba(0,24,88,${opacity})` }));
+    });
+    svg.appendChild(depth);
 
     // Each stroke in a unique colour + numbered start dot
     data.strokes.forEach((s, i) => {
@@ -77,34 +126,64 @@ window.APP = window.APP || {};
         viewBox: data.viewBox, width: px, height: svgH,
         style: 'display:block;flex-shrink:0'
       });
+      addGuidelines(svg, data.viewBox);
 
-      // Done
+      // Base outline — dark border for entire letter shape
+      const outlineG = svgEl('g', {
+        stroke: '#001858', 'stroke-width': SW_OUTLINE,
+        fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+      });
+      data.strokes.forEach(s => outlineG.appendChild(svgEl('path', { d: s.d })));
+      svg.appendChild(outlineG);
+
+      // Base ghost — solid light grey covers interior, leaving the border ring
+      const ghostG = svgEl('g', {
+        stroke: GHOST_COLOR, 'stroke-width': SW,
+        fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+      });
+      data.strokes.forEach(s => ghostG.appendChild(svgEl('path', { d: s.d })));
+      svg.appendChild(ghostG);
+
+      // Depth: cascading opacity — first stroke lightest, last darkest, overlaps compound
+      const depthG = svgEl('g', {
+        'stroke-width': SW, fill: 'none',
+        'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+      });
+      const _dn2 = data.strokes.length;
+      data.strokes.forEach((s, i) => {
+        const t = i / Math.max(_dn2 - 1, 1);
+        const opacity = (0.08 + t * 0.37).toFixed(2);
+        depthG.appendChild(svgEl('path', { d: s.d, stroke: `rgba(0,24,88,${opacity})` }));
+      });
+      svg.appendChild(depthG);
+
+      // Done strokes — full outline width so they fill solid with no border gap
       const doneG = svgEl('g', {
-        stroke: '#001858', 'stroke-width': 48,
+        stroke: '#001858', 'stroke-width': SW_OUTLINE,
         fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
       });
       for (let j = 0; j < idx; j++) doneG.appendChild(svgEl('path', { d: data.strokes[j].d }));
       svg.appendChild(doneG);
 
-      // Future (ghost)
-      const futureG = svgEl('g', {
-        stroke: 'rgba(0,24,88,0.10)', 'stroke-width': 48,
-        fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
-      });
-      for (let j = idx + 1; j < data.strokes.length; j++) futureG.appendChild(svgEl('path', { d: data.strokes[j].d }));
-      svg.appendChild(futureG);
-
-      // Active stroke (orange)
+      // Active stroke — coloured at SW, sits inside the outline border ring
+      const color = COLORS[idx % COLORS.length];
       svg.appendChild(svgEl('path', {
-        d: data.strokes[idx].d, stroke: '#ff8906', 'stroke-width': 48,
+        d: data.strokes[idx].d, stroke: color, 'stroke-width': SW,
         fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
       }));
 
-      // Start dot on active stroke
+      // Start dot on active stroke — uses same colour as the stroke
       const pt = startPt(data.strokes[idx].d);
       if (pt) {
         svg.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 22, fill: 'white' }));
-        svg.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 16, fill: '#ff8906' }));
+        svg.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 16, fill: color }));
+        const t = document.createElementNS(SVG_NS, 'text');
+        [['x', pt.x], ['y', pt.y], ['text-anchor', 'middle'],
+         ['dominant-baseline', 'central'], ['font-size', 18],
+         ['font-weight', 800], ['fill', 'white'],
+         ['pointer-events', 'none']].forEach(([k, v]) => t.setAttribute(k, v));
+        t.textContent = String(idx + 1);
+        svg.appendChild(t);
       }
 
       // Cell wrapper + stage number badge
