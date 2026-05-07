@@ -38,9 +38,16 @@ window.APP = window.APP || {};
       // Name row — full name when done, spaced underscores when locked
       const nameEl = document.createElement('div');
       nameEl.className = 'gallery-tile-name';
-      nameEl.textContent = done
-        ? animal.displayName
-        : Array(animal.name.length).fill('_').join(' ');
+      if (done) {
+        nameEl.textContent = animal.displayName;
+      } else {
+        // No space separator — CSS letter-spacing provides the gap.
+        // Scale font-size so all underscores fit on one row.
+        nameEl.textContent = Array(animal.name.length).fill('_').join('');
+        nameEl.style.whiteSpace = 'nowrap';
+        const n = animal.name.length;
+        nameEl.style.fontSize = (n <= 6 ? 1.2 : n <= 8 ? 1.0 : n <= 10 ? 0.85 : 0.72) + 'rem';
+      }
 
       tile.appendChild(nameEl);
 
