@@ -104,6 +104,7 @@ window.APP = window.APP || {};
       const x1 = vb[0], x2 = vb[0] + vb[2];
       const glGroup = el('g', { class: 'writing-guidelines', 'pointer-events': 'none' });
       Object.values(gc.lines).forEach(line => {
+        if (line.hidden) return;
         const color   = line.color   || gc.defaults.color;
         const opacity = line.opacity !== undefined ? line.opacity : gc.defaults.opacity;
         const width   = line.width   || gc.defaults.width;

@@ -101,7 +101,7 @@ window.APP = window.APP || {};
     { d: 'M 90,125 L 165,220' }
   ]};
   LETTERS['S'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 155,55 C 168,55 168,125 100,125 C 32,125 32,195 45,195' }
+    { d: 'M 140,75 C 140,30 60,30 60,75 C 60,105 60,105 100,125 S 140,145 140,175 C 140,220 60,220 60,175' }
   ]};
   LETTERS['T'] = { viewBox: VB_UP, strokes: [
     { d: 'M 30,30 L 170,30' },
@@ -207,7 +207,7 @@ window.APP = window.APP || {};
     { d: 'M 50,140 Q 80,90 140,110' }
   ]};
   LETTERS['s'] = { viewBox: VB_LOW, strokes: [
-    { d: 'M 150,115 Q 90,90 50,135 Q 30,170 100,180 Q 165,190 145,210 Q 120,225 50,210' }
+    { d: 'M 135,126 C 135,100 65,100 65,126 C 65,143 65,143 100,155 S 135,167 135,184 C 135,210 65,210 65,184' }
   ]};
   LETTERS['t'] = { viewBox: VB_LOW, strokes: [
     { d: 'M 100,50 L 100,200 Q 100,215 130,210' },
@@ -309,7 +309,7 @@ window.APP = window.APP || {};
     },
     lines: {
       top:    { y:  30, dash: '' },      //  step = 70 → equidistant spacing
-      middle: { y: 100, dash: '12 7' }, //  30 + 70
+      middle: { y: 100, dash: '12 7' },               //  30 + 70  (x-height)
       bottom: { y: 170, dash: '' },      //  30 + 140
       lower:  { y: 240, dash: '7 7' },  //  30 + 210
     }
