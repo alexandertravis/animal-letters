@@ -92,16 +92,22 @@ html, body {
 .landing .menu { display: flex; flex-direction: column; gap: 16px; width: min(320px, 80%); }
 
 /* ---------- Setup screen ---------- */
+/* .setup is the full-width scroll container so the scrollbar sits at the
+   screen edge. .setup-inner is the centred content column. */
 .setup {
   flex: 1;
-  padding: 24px;
   overflow-y: auto;
+  width: 100%;
+}
+.setup-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 18px;
-  max-width: 720px;
-  margin: 0 auto;
   width: 100%;
+  box-sizing: border-box;
 }
 .setup h2 { margin: 0; }
 .setup .field {

@@ -25,8 +25,13 @@ window.APP = window.APP || {};
     const minLen = Math.min(...nameLengths);
     const maxLen = Math.max(...nameLengths);
 
+    // .setup is full-width so the scrollbar reaches the screen edge.
+    // .setup-inner is the centred content column.
     const wrap = document.createElement('div');
     wrap.className = 'setup';
+
+    const inner = document.createElement('div');
+    inner.className = 'setup-inner';
 
     // Topbar: home icon + title
     const topbar = document.createElement('div');
@@ -36,7 +41,7 @@ window.APP = window.APP || {};
       <h2>Settings</h2>
     `;
     topbar.querySelector('#setup-home').addEventListener('click', () => ctx.go('landing'));
-    wrap.appendChild(topbar);
+    inner.appendChild(topbar);
 
     // Max name length
     const f1 = document.createElement('div');
@@ -52,7 +57,7 @@ window.APP = window.APP || {};
       APP.settings.update({ maxLength: v });
       lengthValue.textContent = v;
     });
-    wrap.appendChild(f1);
+    inner.appendChild(f1);
 
     // Letter case
     const f2 = document.createElement('div');
@@ -63,7 +68,7 @@ window.APP = window.APP || {};
       { value: 'proper', label: 'Abc (proper case)' },
       { value: 'lower',  label: 'abc (lowercase)' }
     ], s.letterCase, v => { APP.settings.update({ letterCase: v }); render(root, ctx); }));
-    wrap.appendChild(f2);
+    inner.appendChild(f2);
 
     // Depiction
     const f3 = document.createElement('div');
@@ -73,7 +78,7 @@ window.APP = window.APP || {};
       { value: 'cartoon', label: 'Cartoon' },
       { value: 'realistic', label: 'Realistic' }
     ], s.depiction, v => { APP.settings.update({ depiction: v }); render(root, ctx); }));
-    wrap.appendChild(f3);
+    inner.appendChild(f3);
 
     // Reveal mode
     const f4 = document.createElement('div');
@@ -83,7 +88,7 @@ window.APP = window.APP || {};
       { value: 'faint', label: 'Faint → bold' },
       { value: 'hidden', label: 'Hidden → reveal' }
     ], s.revealMode, v => { APP.settings.update({ revealMode: v }); render(root, ctx); }));
-    wrap.appendChild(f4);
+    inner.appendChild(f4);
 
     // Volume
     const f5 = document.createElement('div');
@@ -115,18 +120,24 @@ window.APP = window.APP || {};
     muteBtn.addEventListener('click', () => {
       APP.audio.setMuted(!APP.state.settings.muted);
       refreshMuteBtn();
+      // Play a preview tone so the user hears the result of un-muting.
+      if (!APP.state.settings.muted) APP.audio.strokeDone();
     });
 
+    // Debounce the preview tone slightly so rapid dragging doesn't stack up.
+    let volPreviewTimer = null;
     volSlider.addEventListener('input', () => {
       const v = parseInt(volSlider.value, 10) / 100;
       APP.audio.setVolume(v);
       refreshMuteBtn();
+      clearTimeout(volPreviewTimer);
+      volPreviewTimer = setTimeout(() => APP.audio.strokeDone(), 80);
     });
 
     volRow.appendChild(muteBtn);
     volRow.appendChild(volSlider);
     f5.appendChild(volRow);
-    wrap.appendChild(f5);
+    inner.appendChild(f5);
 
     // Actions
     const actions = document.createElement('div');
@@ -149,7 +160,7 @@ window.APP = window.APP || {};
     });
     actions.appendChild(back);
     actions.appendChild(start);
-    wrap.appendChild(actions);
+    inner.appendChild(actions);
 
     // Dev / review tools
     const devTools = document.createElement('div');
@@ -168,8 +179,9 @@ window.APP = window.APP || {};
     devBtns.appendChild(lettersBtn);
     devBtns.appendChild(animalsBtn);
     devTools.appendChild(devBtns);
-    wrap.appendChild(devTools);
+    inner.appendChild(devTools);
 
+    wrap.appendChild(inner);
     root.appendChild(wrap);
   }
 
