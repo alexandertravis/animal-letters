@@ -1,6 +1,14 @@
 window.APP = window.APP || {};
 
 (function (APP) {
+  // Paint the filled (left) portion of a range input purple on webkit browsers.
+  // Firefox uses ::-moz-range-progress in CSS; this handles Chrome/Safari/Edge.
+  function fillRange(input) {
+    const pct = ((input.value - input.min) / (input.max - input.min)) * 100;
+    input.style.background =
+      `linear-gradient(to right, #a78bfa ${pct}%, #e0e0e0 ${pct}%)`;
+  }
+
   function seg(name, options, current, onPick) {
     const wrap = document.createElement('div');
     wrap.className = 'seg';
@@ -52,10 +60,12 @@ window.APP = window.APP || {};
     `;
     const range = f1.querySelector('input');
     const lengthValue = f1.querySelector('.lengthValue');
+    fillRange(range);
     range.addEventListener('input', () => {
       const v = parseInt(range.value, 10);
       APP.settings.update({ maxLength: v });
       lengthValue.textContent = v;
+      fillRange(range);
     });
     inner.appendChild(f1);
 
@@ -109,6 +119,7 @@ window.APP = window.APP || {};
     volSlider.max   = '100';
     volSlider.step  = '1';
     volSlider.value = String(Math.round(s.volume * 100));
+    fillRange(volSlider);
 
     function refreshMuteBtn() {
       const muted = APP.state.settings.muted || APP.state.settings.volume < 0.01;
@@ -130,6 +141,7 @@ window.APP = window.APP || {};
       const v = parseInt(volSlider.value, 10) / 100;
       APP.audio.setVolume(v);
       refreshMuteBtn();
+      fillRange(volSlider);
       clearTimeout(volPreviewTimer);
       volPreviewTimer = setTimeout(() => APP.audio.strokeDone(), 80);
     });
