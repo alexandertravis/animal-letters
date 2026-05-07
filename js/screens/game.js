@@ -10,15 +10,33 @@ window.APP = window.APP || {};
     return name.toUpperCase();
   }
 
+  // Calculate tile dimensions so all letters fit in one row regardless of name length.
+  // Available width = viewport width minus strip horizontal padding (16px each side).
+  function tileMetrics(nameLength) {
+    const available = Math.min(window.innerWidth, 760) - 32;
+    const gap = 6;
+    const naturalW = 56;
+    const tileW = Math.min(naturalW, Math.floor((available - (nameLength - 1) * gap) / nameLength));
+    const tileH = Math.round(tileW * (72 / 56));          // keep natural aspect ratio
+    const fontSize = ((tileW / naturalW) * 2.4).toFixed(2); // scale 2.4rem linearly
+    return { tileW, tileH, fontSize: `${fontSize}rem`, gap };
+  }
+
   function buildStrip(animal) {
     const strip = document.createElement('div');
     strip.className = 'strip';
     const name = caseOf(animal.name);
     const reveal = APP.state.settings.revealMode;
+    const { tileW, tileH, fontSize, gap } = tileMetrics(name.length);
+    strip.style.gap = `${gap}px`;
+
     for (let i = 0; i < name.length; i++) {
       const tile = document.createElement('div');
       tile.className = 'tile';
       tile.textContent = name[i];
+      tile.style.width    = `${tileW}px`;
+      tile.style.height   = `${tileH}px`;
+      tile.style.fontSize = fontSize;
       if (i < APP.state.letterIndex) {
         tile.classList.add('done');
       } else if (reveal === 'faint') {

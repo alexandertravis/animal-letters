@@ -196,22 +196,20 @@ html, body {
 }
 .game .strip {
   display: flex;
-  gap: 6px;
+  gap: 6px;           /* overridden inline by tileMetrics() */
   justify-content: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;  /* JS guarantees tiles always fit in one row */
   padding: 12px 8px;
   background: #fff;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  min-height: 88px;
 }
 .game .strip .tile {
-  width: 56px;
-  height: 72px;
+  /* width, height, font-size set inline by tileMetrics() */
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.4rem;
   font-weight: 800;
   border-radius: 12px;
   background: #fafafa;
