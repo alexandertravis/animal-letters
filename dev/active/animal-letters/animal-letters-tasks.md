@@ -64,7 +64,9 @@
 - [x] Unlocked tile: full centred image, display name, accent border ring
 - [x] Completed animals tracked in `APP.state.completedAnimals` Set
 - [x] Count badge in gallery header (`done / total`)
-- [x] Back button → landing
+- [x] Back button → previous screen (via `APP.state.previousScreen`)
+- [x] Locked tile underscores: `join('')` + `white-space: nowrap` + JS font-size scaling (≤6→1.2rem, ≤8→1.0rem, ≤10→0.85rem, 11+→0.72rem) — prevents wrapping for long names
+- [x] Animal name font size increased to 1.2rem with fixed 36px height row
 
 ## Section 9 — Infrastructure & Deployment
 - [x] `CLAUDE.md` committed — architecture reference for Claude Code
@@ -74,6 +76,19 @@
 - [x] `animal-letters-plan.md`
 - [x] `animal-letters-context.md`
 - [x] `animal-letters-tasks.md` (this file)
+
+## Section 12 — UI Polish & Settings (2026-05-07 session)
+- [x] `js/icons.js` — `APP.ICONS` SVG icon system: home, settings, volumeOn, volumeOff, back — all `currentColor`, consistent across platforms
+- [x] `js/main.js` — `APP.state.previousScreen` tracking in `ctx.go()` for correct back-navigation
+- [x] `js/state.js` — `volume: 0.7` and `muted: false` added to `DEFAULT_SETTINGS`
+- [x] `js/audio.js` — master `GainNode` routing all synth tones; `setVolume()`, `setMuted()`, `_applyGain()`; tone-on-drag volume preview
+- [x] `js/screens/setup.js` — volume slider + mute button with SVG icons; `fillRange()` for purple webkit fill; scrollbar at screen edge (`.setup` full-width / `.setup-inner` centred); back button → blue secondary style; equalised button widths
+- [x] `js/screens/game.js` — `tileMetrics(nameLength)` calculates tile size from viewport width; name strip always single row on mobile; icon buttons use `APP.ICONS`
+- [x] `js/screens/complete.js` — "Great Job! 🎉" replaces "Play Sound"; 2-column grid (My Animals | Next Animal, then Great Job full-width); animal name respects `letterCase` setting; clamp font size matches "Hooray!"; icons use `APP.ICONS`
+- [x] `js/screens/gallery.js` — back uses `APP.state.previousScreen`; back button uses `APP.ICONS.back`; locked tile underscore fix; name font size increase
+- [x] `js/screens/letters.js` — `launchConfetti()` on "Great Job!" click; button labels "Great Job! 🎉" / "Try Again"; back button uses `APP.ICONS.back`
+- [x] `js/screens/devanimals.js` — Test tab: animal picker, ABC/abc case toggle, tracer stage, clickable name strip, auto-advance 600ms, confetti; Review tab retained; back uses `APP.ICONS.back`
+- [x] `styles.css` — custom range slider (no hover colour change, purple `#a78bfa` fill via `fillRange()` JS gradient + `::-moz-range-progress`); `.btn.success` green; complete screen action grid; setup full-width scroller pattern; name strip `flex-wrap: nowrap`; icon button alignment
 
 ## Section 10 — Letter Shape Polish
 - [x] Add horizontal X-scale squeeze to all letters (uppercase 0.85, lowercase 0.80, centred at X_CENTER=100)

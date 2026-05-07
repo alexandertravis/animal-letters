@@ -54,8 +54,24 @@
 
 **2026-05-07** — Decision: `APP.GUIDE_CONFIG` centralises guideline appearance. Lines: top y=30, middle y=100, bottom y=170, lower y=240. Plan to add `hidden: true` to middle to suppress it from rendering while keeping it as an internal anchor for `getLetterYTransform`.
 
-## Session End — 2026-05-07
-Git status: 3 uncommitted modified files — `js/letterData.js`, `js/screens/letters.js`, `js/tracer.js`
+## Session End — 2026-05-07 (session 2)
+Git status: clean — all changes committed and pushed
+
+**2026-05-07** — Decision: `APP.ICONS` SVG module (`js/icons.js`) provides all icon strings. Every button that previously used a Unicode char (⌂ ⚙ 🔊 🔇) now uses `innerHTML = APP.ICONS.foo`. `currentColor` means icons inherit the button's CSS color automatically.
+
+**2026-05-07** — Decision: `APP.state.previousScreen` set in `ctx.go()` before every screen transition. Back buttons read this and fall back to `'landing'` if undefined or if it would create a loop (e.g. gallery→gallery).
+
+**2026-05-07** — Decision: Volume/mute routed through a single master `GainNode` in `audio.js`. All `tone()` calls connect to `getMaster()`. `setVolume()` and `setMuted()` update both settings and the node gain atomically. The `HTMLAudioElement` (for animal sound files) has its `.volume` set separately on each `playFile()` call.
+
+**2026-05-07** — Decision: Range slider fill colour uses JS `fillRange(input)` — sets `input.style.background` to a `linear-gradient(to right, #a78bfa NN%, #e0e0e0 NN%)`. `::-webkit-slider-fill-track` is not reliably supported. Firefox uses `::-moz-range-progress` in CSS. Custom `-webkit-appearance: none` CSS with explicit `:hover`/`:active` rules matching the normal state eliminates the browser default hover darkening.
+
+**2026-05-07** — Decision: `.setup` is a full-width scroll container (no `max-width`); `.setup-inner` is the centred content column (`max-width: 720px; margin: 0 auto`). This pushes the scrollbar to the screen edge rather than the content column edge.
+
+**2026-05-07** — Decision: `tileMetrics(nameLength)` in `game.js` calculates tile `width`, `height`, and `fontSize` from `window.innerWidth` at render time. The name strip uses `flex-wrap: nowrap` and each tile gets inline `style.width/height/fontSize`. This guarantees a single-row strip at all viewport widths.
+
+**2026-05-07** — Decision: Complete screen uses CSS Grid (`grid-template-columns: 1fr 1fr`) with the last button (`grid-column: 1 / -1`) spanning full width. Order: My Animals (left), Next Animal (right), Great Job! (full row). Consistent on all viewports.
+
+**2026-05-07** — Decision: Animal name on complete screen respects `APP.state.settings.letterCase`: `lower` → `displayName.toLowerCase()`, `proper` → `displayName`, otherwise uppercase. This matches what the child just practised.
 
 ## Constraints & Gotchas
 
@@ -72,9 +88,16 @@ Git status: 3 uncommitted modified files — `js/letterData.js`, `js/screens/let
 - **Lowercase coordinate conventions:** ascender `y=30`, x-height `y=110` (not 100), baseline `y=210`, descender `y=240`. `GUIDE_CONFIG.middle.y = 100` is the rendering position (guide coordinate), but `getLetterYTransform` maps from design coordinate 100 (x-height) to that guide y.
 - **`pickRandom` in animals.js excludes the last-played animal** to avoid immediate repeats. With maxLength=3 and only a few 3-letter animals, exhaustion is possible — the function returns `null` and the game falls back to landing.
 
-## Session Summary — 2026-05-07
+## Session Summary — 2026-05-07 (session 1)
 Completed: horizontal squeeze (uppercase 0.85, lowercase 0.80); GUIDE_CONFIG + getLetterYTransform; descender identity-transform fix; i/j spherical dot (circle overlay groups); n arch fix; circular counters for a/b/c/d/e/g/o/p/q; g tail extended to bowl width; letters.js review screen kept in sync
 NEXT STEP: In `js/letterData.js` update `LETTERS['S'].strokes[0].d` to `'M 150,50 C 175,50 175,140 100,125 C 25,110 25,200 50,200'`. Then add `hidden: true` to `APP.GUIDE_CONFIG.lines.middle`. Then in `js/tracer.js` and `js/screens/letters.js`, filter guideline rendering with `if (cfg.hidden) continue`.
 Blockers: none
 Half-finished: capital S fix and 3-line guideline change — both described above, no code written yet
+Security flags added: none
+
+## Session Summary — 2026-05-07 (session 2)
+Completed: SVG icons system (`js/icons.js` with home/settings/volumeOn/volumeOff/back); previousScreen back-navigation; volume slider + mute button in Settings (with tone preview, purple fill, hover-fix, screen-edge scrollbar); master GainNode in audio.js; tileMetrics for single-row mobile name strip; Complete screen Great Job button + 2-column grid + letterCase-aware name; Gallery previous-screen back + underscore wrapping fix + larger font; Letter Patterns "Great Job!" confetti button; Animal Review Test tab (full word tracing with picker, case toggle, name strip, auto-advance); consistent Title Case labels throughout; consistent blue back button and equal button sizing on Setup screen.
+NEXT STEP: In `js/letterData.js` update `LETTERS['S'].strokes[0].d` to `'M 150,50 C 175,50 175,140 100,125 C 25,110 25,200 50,200'`. Then add `hidden: true` to `APP.GUIDE_CONFIG.lines.middle`. Then in `js/tracer.js` and `js/screens/letters.js`, filter guideline rendering with `if (cfg.hidden) continue`.
+Blockers: none
+Half-finished: capital S fix and 3-line guideline change — carried over from previous session, still not started
 Security flags added: none
