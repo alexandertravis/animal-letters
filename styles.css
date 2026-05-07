@@ -346,27 +346,40 @@ html, body {
   50%       { transform: scale(1.06); }
 }
 @keyframes z-spin-reveal {
-  /* Four flips. Each 20% block = 0.3 s at 1.5 s total.
-     Flips 1–2: fast silhouette. Flip 3: fast coloured. Flip 4: slow (40%) landing.
-     Colour snaps at scaleX(0) midway through flip 2 — invisible at speed. */
+  /* A real card flip goes scaleX: 1 → 0 → -1 → 0 → 1.
+     scaleX(-1) is the mirrored back face. Four quarter-points per flip.
+     Colour snaps at the first edge of flip 2 — invisible at speed.
 
-  /* Flip 1 — fast, silhouette (0–20%) */
-  0%   { transform: scaleX(1); filter: brightness(0) invert(0.25); }
-  10%  { transform: scaleX(0); filter: brightness(0) invert(0.25); }
-  20%  { transform: scaleX(1); filter: brightness(0) invert(0.25); }
+     Flip 1 (0–20%,  0.30 s each): fast, silhouette
+     Flip 2 (20–40%, 0.30 s):      fast, silhouette → colour at first edge
+     Flip 3 (40–60%, 0.30 s):      fast, coloured
+     Flip 4 (60–100%, 0.60 s):     slow landing (40% of timeline)        */
 
-  /* Flip 2 — fast, silhouette; colour snaps at the edge (20–40%) */
-  30%  { transform: scaleX(0); filter: brightness(0) invert(0.25); }
-  31%  { transform: scaleX(0); filter: brightness(1) invert(0); }
-  40%  { transform: scaleX(1); filter: brightness(1) invert(0); }
+  /* Flip 1 — fast, silhouette */
+  0%   { transform: scaleX(1);  filter: brightness(0) invert(0.25); }
+  5%   { transform: scaleX(0);  filter: brightness(0) invert(0.25); }
+  10%  { transform: scaleX(-1); filter: brightness(0) invert(0.25); }
+  15%  { transform: scaleX(0);  filter: brightness(0) invert(0.25); }
+  20%  { transform: scaleX(1);  filter: brightness(0) invert(0.25); }
 
-  /* Flip 3 — fast, coloured (40–60%) */
-  50%  { transform: scaleX(0); filter: brightness(1) invert(0); }
-  60%  { transform: scaleX(1); filter: brightness(1) invert(0); }
+  /* Flip 2 — fast, silhouette; colour snaps at first edge */
+  25%  { transform: scaleX(0);  filter: brightness(0) invert(0.25); }
+  26%  { transform: scaleX(0);  filter: brightness(1) invert(0); }
+  30%  { transform: scaleX(-1); filter: brightness(1) invert(0); }
+  35%  { transform: scaleX(0);  filter: brightness(1) invert(0); }
+  40%  { transform: scaleX(1);  filter: brightness(1) invert(0); }
 
-  /* Flip 4 — slow (40% of timeline), coloured, decelerates to rest (60–100%) */
-  80%  { transform: scaleX(0); filter: brightness(1) invert(0); }
-  100% { transform: scaleX(1); filter: brightness(1) invert(0); }
+  /* Flip 3 — fast, coloured */
+  45%  { transform: scaleX(0);  filter: brightness(1) invert(0); }
+  50%  { transform: scaleX(-1); filter: brightness(1) invert(0); }
+  55%  { transform: scaleX(0);  filter: brightness(1) invert(0); }
+  60%  { transform: scaleX(1);  filter: brightness(1) invert(0); }
+
+  /* Flip 4 — slow, coloured, decelerates to rest */
+  70%  { transform: scaleX(0);  filter: brightness(1) invert(0); }
+  80%  { transform: scaleX(-1); filter: brightness(1) invert(0); }
+  90%  { transform: scaleX(0);  filter: brightness(1) invert(0); }
+  100% { transform: scaleX(1);  filter: brightness(1) invert(0); }
 }
 .complete .actions {
   display: grid;
