@@ -5,8 +5,10 @@ window.APP = window.APP || {};
 //      returns { destroy() }
 (function (APP) {
   const SVG_NS = 'http://www.w3.org/2000/svg';
-  const STROKE_WIDTH = 48;       // letter thickness in viewBox units
-  const INK_WIDTH    = 44;       // user's drawing thickness
+  const STROKE_WIDTH_UP  = 42;   // uppercase letter thickness in viewBox units
+  const STROKE_WIDTH_LOW = 30;   // lowercase letter thickness
+  const INK_WIDTH_UP     = 38;   // user ink thickness — uppercase
+  const INK_WIDTH_LOW    = 26;   // user ink thickness — lowercase
   const TOLERANCE    = 32;       // viewBox units — how close pointer must come to next checkpoint
   const DRAW_RADIUS  = 52;       // viewBox units — how close to the dot before ink is deposited
   const CHECKPOINTS_PER_STROKE = 18;
@@ -40,6 +42,12 @@ window.APP = window.APP || {};
       preserveAspectRatio: 'xMidYMid meet'
     });
 
+    // Per-character stroke widths — uppercase slightly thinner than before,
+    // lowercase noticeably thinner so letters fit better within the smaller zone.
+    const isUpper = /[A-Z]/.test(character);
+    const SW  = isUpper ? STROKE_WIDTH_UP  : STROKE_WIDTH_LOW;
+    const INK = isUpper ? INK_WIDTH_UP     : INK_WIDTH_LOW;
+
     // Compute y-axis transform: maps design coordinates → current guide positions.
     const { a: tA, b: tB } = APP.getLetterYTransform(character);
     const letterTransform = `translate(0,${tB.toFixed(3)}) scale(1,${tA.toFixed(6)})`;
@@ -53,7 +61,7 @@ window.APP = window.APP || {};
       x: vbParts[0], y: vbParts[1], width: vbParts[2], height: vbParts[3], fill: 'black'
     }));
     const maskShapes = el('g', {
-      stroke: 'white', 'stroke-width': STROKE_WIDTH, fill: 'none',
+      stroke: 'white', 'stroke-width': SW, fill: 'none',
       'stroke-linecap': 'round', 'stroke-linejoin': 'round',
       transform: letterTransform
     });
@@ -87,7 +95,7 @@ window.APP = window.APP || {};
     // SW + 8 = 4 units visible per side (border ring).
     const outlineGroup = el('g', {
       class: 'outline-group',
-      stroke: '#001858', 'stroke-width': STROKE_WIDTH + 8, fill: 'none',
+      stroke: '#001858', 'stroke-width': SW + 8, fill: 'none',
       'stroke-linecap': 'round', 'stroke-linejoin': 'round',
       transform: letterTransform
     });
@@ -98,7 +106,7 @@ window.APP = window.APP || {};
     // only the border ring visible.
     const ghostGroup = el('g', {
       class: 'ghost-group',
-      stroke: '#dde0ea', 'stroke-width': STROKE_WIDTH, fill: 'none',
+      stroke: '#dde0ea', 'stroke-width': SW, fill: 'none',
       'stroke-linecap': 'round', 'stroke-linejoin': 'round',
       transform: letterTransform
     });
@@ -111,7 +119,7 @@ window.APP = window.APP || {};
     // All tints stay within the same blue-grey hue as the ghost.
     const depthGroup = el('g', {
       class: 'depth-group',
-      'stroke-width': STROKE_WIDTH, fill: 'none',
+      'stroke-width': SW, fill: 'none',
       'stroke-linecap': 'round', 'stroke-linejoin': 'round',
       transform: letterTransform
     });
@@ -127,7 +135,7 @@ window.APP = window.APP || {};
     // all the way to the edge with no gap or light ring between the fill and border.
     const doneGroup = el('g', {
       class: 'done-group',
-      stroke: '#001858', 'stroke-width': STROKE_WIDTH + 8, fill: 'none',
+      stroke: '#001858', 'stroke-width': SW + 8, fill: 'none',
       'stroke-linecap': 'round', 'stroke-linejoin': 'round',
       transform: letterTransform
     });
@@ -138,7 +146,7 @@ window.APP = window.APP || {};
     const inkGroup = el('g', {
       class: 'ink-group',
       mask: `url(#${maskId})`,
-      'stroke-width': INK_WIDTH, fill: 'none',
+      'stroke-width': INK, fill: 'none',
       'stroke-linecap': 'round', 'stroke-linejoin': 'round'
     });
     svg.appendChild(inkGroup);

@@ -22,9 +22,13 @@ window.APP = window.APP || {};
     return m ? { x: parseFloat(m[1]), y: parseFloat(m[2]) } : null;
   }
 
-  const SW = 48; // base stroke width — matches tracer STROKE_WIDTH
-  const SW_OUTLINE = SW + 8; // outline width — 4 units of border visible per side
   const GHOST_COLOR = '#dde0ea'; // solid light blue-grey ≈ rgba(0,24,88,0.12) over white
+
+  function strokeWidths(char) {
+    const up = /[A-Z]/.test(char);
+    const SW = up ? 42 : 30;
+    return { SW, SW_OUTLINE: SW + 8 };
+  }
 
   // Appends horizontal writing guidelines to an SVG element.
   // Reads from APP.GUIDE_CONFIG — edit that object in letterData.js to restyle.
@@ -52,6 +56,7 @@ window.APP = window.APP || {};
   // Thin dark outline + solid light-grey ghost interior (matches game style),
   // then each stroke in its own colour with a numbered circle at the start point.
   function overviewSVG(data, char, px) {
+    const { SW, SW_OUTLINE } = strokeWidths(char);
     const svg = svgEl('svg', { viewBox: data.viewBox, width: px, height: px });
     addGuidelines(svg, data.viewBox);
 
@@ -116,6 +121,7 @@ window.APP = window.APP || {};
   // N small SVGs side-by-side, each revealing one more stroke:
   //   previous strokes = dark blue (done), current = orange, future = ghost.
   function stagesEl(data, char, px) {
+    const { SW, SW_OUTLINE } = strokeWidths(char);
     const wrap = document.createElement('div');
     wrap.className = 'letter-stages';
 

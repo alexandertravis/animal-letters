@@ -162,11 +162,11 @@ window.APP = window.APP || {};
     { d: 'M 50,140 Q 80,100 110,100 Q 150,100 150,150 L 150,210' }
   ]};
   LETTERS['i'] = { viewBox: VB_LOW, strokes: [
-    { d: 'M 100,55 L 100,57' },
+    { d: 'M 100,56 L 100,56' },   // zero-length → perfect circle with round linecap
     { d: 'M 100,110 L 100,210' }
   ]};
   LETTERS['j'] = { viewBox: VB_LOW, strokes: [
-    { d: 'M 130,55 L 130,57' },
+    { d: 'M 130,56 L 130,56' },   // zero-length → perfect circle with round linecap
     { d: 'M 130,110 L 130,210 Q 130,238 70,235' }
   ]};
   LETTERS['k'] = { viewBox: VB_LOW, strokes: [
