@@ -44,6 +44,14 @@ describe('APP.isDot', () => {
   it('returns true for a dot path with space-separated coordinates', () => {
     expect(APP.isDot('M 100 56 L 100 56')).toBe(true);
   });
+
+  it('returns false when x-coordinates match but y-coordinates differ', () => {
+    expect(APP.isDot('M 100,56 L 100,57')).toBe(false);
+  });
+
+  it('returns false when y-coordinates match but x-coordinates differ', () => {
+    expect(APP.isDot('M 99,56 L 100,56')).toBe(false);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -219,6 +227,25 @@ describe('APP.addGuidelines', () => {
       const lineConfig = visibleLines[i];
       const expectedColor = lineConfig.color ?? APP.GUIDE_CONFIG.defaults.color;
       expect(lineEl.getAttribute('stroke')).toBe(expectedColor);
+    });
+  });
+
+  it('sets stroke-dasharray on dashed lines and omits it on solid lines', () => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    APP.addGuidelines(svg, '0 0 200 250');
+
+    const g = svg.querySelector('g.writing-guidelines');
+    const lines = [...g.querySelectorAll('line')];
+    const visibleLines = Object.values(APP.GUIDE_CONFIG.lines).filter(l => !l.hidden);
+
+    lines.forEach((lineEl, i) => {
+      const dash = visibleLines[i].dash;
+      if (dash) {
+        expect(lineEl.getAttribute('stroke-dasharray')).toBe(dash);
+      } else {
+        const attr = lineEl.getAttribute('stroke-dasharray');
+        expect(!attr || attr === '').toBe(true);
+      }
     });
   });
 });
