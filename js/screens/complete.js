@@ -117,7 +117,7 @@ window.APP = window.APP || {};
       <div class="actions">
         <button class="btn" data-act="next">Next animal</button>
         <button class="btn secondary" data-act="gallery">My Animals</button>
-        <button class="btn secondary" data-act="replay">Play sound</button>
+        <button class="btn practice-great-btn" data-act="replay">Great job! 🎉</button>
       </div>
     `;
     wrap.appendChild(body);
@@ -158,8 +158,10 @@ window.APP = window.APP || {};
     });
     wrap.querySelector('[data-act=gallery]').addEventListener('click', () =>
       navigate(() => ctx.go('gallery')));
-    wrap.querySelector('[data-act=replay]').addEventListener('click', () =>
-      APP.audio.playComplete(animal.audio));
+    wrap.querySelector('[data-act=replay]').addEventListener('click', () => {
+      APP.audio.playComplete(animal.audio);
+      launchConfetti();
+    });
   }
 
   APP.screens = APP.screens || {};
