@@ -177,6 +177,22 @@ window.APP = window.APP || {};
     actions.appendChild(start);
     inner.appendChild(actions);
 
+    // Progress reset
+    const resetField = document.createElement('div');
+    resetField.className = 'field';
+    resetField.innerHTML = `<label>Gallery progress</label>`;
+    const resetBtn = document.createElement('button');
+    resetBtn.type = 'button';
+    resetBtn.className = 'btn secondary';
+    resetBtn.textContent = `Clear gallery (${APP.state.completedAnimals.size} found)`;
+    resetBtn.addEventListener('click', () => {
+      if (!confirm('Clear all found animals and start the gallery fresh?')) return;
+      APP.clearProgress();
+      render(root, ctx); // refresh count in button label
+    });
+    resetField.appendChild(resetBtn);
+    inner.appendChild(resetField);
+
     // Dev / review tools
     const devTools = document.createElement('div');
     devTools.className = 'field setup-dev-tools';

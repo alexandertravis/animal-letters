@@ -15,6 +15,15 @@ window.APP = window.APP || {};
     muted: false
   };
 
+  // ── Persisted progress ───────────────────────────────────────────────────
+  // Load completedAnimals and animalCompletionCounts from localStorage so the
+  // gallery survives page reloads. Wrapped in try/catch — private browsing
+  // or storage-quota errors should never crash the game.
+  const _saved = (() => {
+    try { return JSON.parse(localStorage.getItem('animalProgress') || '{}'); }
+    catch (_) { return {}; }
+  })();
+
   APP.state = {
     screen: "landing",     // "landing" | "setup" | "game" | "complete" | "gallery"
     settings: { ...DEFAULT_SETTINGS },
@@ -22,18 +31,36 @@ window.APP = window.APP || {};
     letterIndex: 0,        // index into currentAnimal.name
     completedLetters: [],  // letters already finished this animal
     sessionExists: false,  // true once a game has been started this session
-    completedAnimals: new Set(), // animal names fully traced this session
+    completedAnimals: new Set(_saved.completedAnimals || []),
 
     // ── Completion tracking ───────────────────────────────────────────────────
     // Per-animal completion counts. Incremented each time the child traces every
     // letter of an animal (skip does not count). Keyed by animal.name.
     // Reserved for the upcoming challenges feature.
-    animalCompletionCounts: {},
+    animalCompletionCounts: _saved.animalCompletionCounts || {},
 
     // Counts how many consecutively completed animals were already in the gallery
     // (i.e. previously found). Resets to 0 whenever an unfound animal is presented.
     // When it reaches 2, pickNext() biases the next selection toward unfound animals.
     consecutiveFoundCount: 0,
+  };
+
+  // Writes gallery progress to localStorage. Called after every animal completion.
+  // Settings and in-progress game state are intentionally not persisted.
+  APP.saveProgress = function () {
+    try {
+      localStorage.setItem('animalProgress', JSON.stringify({
+        completedAnimals: [...APP.state.completedAnimals],
+        animalCompletionCounts: APP.state.animalCompletionCounts,
+      }));
+    } catch (_) {}
+  };
+
+  APP.clearProgress = function () {
+    try { localStorage.removeItem('animalProgress'); } catch (_) {}
+    APP.state.completedAnimals = new Set();
+    APP.state.animalCompletionCounts = {};
+    APP.state.consecutiveFoundCount = 0;
   };
 
   APP.resetSettings = function () {
@@ -75,6 +102,7 @@ window.APP = window.APP || {};
 
       // Only mark as completed when the child traced every letter themselves.
       APP.state.completedAnimals.add(animal.name);
+      APP.saveProgress();
       APP.state.screen = "complete";
     }
   };
