@@ -362,10 +362,15 @@ window.APP = window.APP || {};
       if (isNearGuide(p)) {
         // Seed the ink path at the touch point so the very first move draws
         // a line from here rather than jumping. Progress is NOT checked on
-        // pointerdown — dragging must occur before checkpoints advance.
+        // pointerdown for regular strokes — dragging must occur first.
         startStrokeIfNeeded();
         activeInkPoints.push(p);
         activeInkPath.setAttribute('d', pointsToPath(activeInkPoints));
+        // Exception: dot strokes (i/j dot) have no length to drag along.
+        // A tap on the dot is the correct gesture — complete it immediately.
+        if (isDot(data.strokes[currentStroke].d)) {
+          checkProgress(p);
+        }
       }
       e.preventDefault();
     }
