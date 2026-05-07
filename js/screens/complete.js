@@ -115,9 +115,9 @@ window.APP = window.APP || {};
       <div class="animalName">${animal.displayName.toUpperCase()}</div>
       <div class="animalImg" id="animalImg"></div>
       <div class="actions">
-        <button class="btn" data-act="next">Next animal</button>
+        <button class="btn" data-act="next">Next Animal</button>
         <button class="btn secondary" data-act="gallery">My Animals</button>
-        <button class="btn practice-great-btn" data-act="replay">Great job! 🎉</button>
+        <button class="btn success" data-act="replay">Great Job! 🎉</button>
       </div>
     `;
     wrap.appendChild(body);

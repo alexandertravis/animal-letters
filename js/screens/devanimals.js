@@ -262,14 +262,14 @@ window.APP = window.APP || {};
 
       const greatBtn = document.createElement('button');
       greatBtn.className = 'btn practice-great-btn';
-      greatBtn.textContent = 'Great job! 🎉';
+      greatBtn.textContent = 'Great Job! 🎉';
       greatBtn.style.visibility = 'hidden';
       greatBtn.addEventListener('click', () => launchConfetti());
       controls.appendChild(greatBtn);
 
       const resetBtn = document.createElement('button');
       resetBtn.className = 'btn practice-reset-btn';
-      resetBtn.textContent = 'Try again';
+      resetBtn.textContent = 'Try Again';
       resetBtn.disabled = true;
       resetBtn.addEventListener('click', () => { if (currentAnimal) mountCurrentLetter(); });
       controls.appendChild(resetBtn);

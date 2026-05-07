@@ -79,8 +79,8 @@ window.APP = window.APP || {};
         <button class="btn icon ghost" data-act="settings" aria-label="Settings">${APP.ICONS.settings}</button>
       </div>
       <div class="group">
-        <button class="btn ghost" data-act="restart">Restart letter</button>
-        <button class="btn ghost" data-act="skip">Skip animal</button>
+        <button class="btn ghost" data-act="restart">Restart Letter</button>
+        <button class="btn ghost" data-act="skip">Skip Animal</button>
       </div>
     `;
     wrap.appendChild(bar);

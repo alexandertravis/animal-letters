@@ -55,6 +55,7 @@ html, body {
 .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0, 24, 88, 0.18); }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn.secondary { background: var(--accent); color: var(--accent-ink); }
+.btn.success   { background: #2ecc71; color: #fff; }
 .btn.ghost {
   background: transparent;
   color: var(--ink);
