@@ -324,13 +324,16 @@ html, body {
 }
 .complete .animalImg img, .complete .animalImg svg { max-width: 90%; max-height: 90%; }
 .complete .actions {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
-  width: min(360px, 90vw);
+  width: min(480px, 92vw);
   align-self: center;
 }
-.complete .actions .btn { width: 100%; }
+/* "Great Job!" spans both columns to sit centred on its own row */
+.complete .actions .btn:last-child {
+  grid-column: 1 / -1;
+}
 
 .fallback-graphic { font-size: 6rem; }
 
