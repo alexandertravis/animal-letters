@@ -335,7 +335,7 @@ html, body {
   will-change: transform, filter;
 }
 .animal-reveal.spinning {
-  animation: z-spin-reveal 1.1s ease-in-out forwards;
+  animation: z-spin-reveal 1.4s linear forwards;
 }
 .animal-reveal.revealed {
   filter: none;
@@ -346,14 +346,23 @@ html, body {
   50%       { transform: scale(1.06); }
 }
 @keyframes z-spin-reveal {
-  /* scaleX flip: avoids rotateY + filter compositing bug in iOS WebKit.
-     Visually identical to a card flip. Colour snaps in at the exact moment
-     the card is edge-on (scaleX = 0) so the switch is invisible. */
+  /* Three flips. Keyframe positions control speed: flips 1–2 occupy 20%
+     each (~0.28 s), flip 3 occupies 60% (~0.84 s) for a dramatic slow-down.
+     Colour snaps at scaleX(0) between flip 1 and flip 2 — invisible at speed. */
+
+  /* Flip 1 — fast, silhouette */
   0%   { transform: scaleX(1); filter: brightness(0) invert(0.25); }
-  24%  { transform: scaleX(0); filter: brightness(0) invert(0.25); }
-  25%  { transform: scaleX(0); filter: brightness(1) invert(0); }
-  50%  { transform: scaleX(1); filter: brightness(1) invert(0); }
-  75%  { transform: scaleX(0); filter: brightness(1) invert(0); }
+  10%  { transform: scaleX(0); filter: brightness(0) invert(0.25); }
+  /* colour snaps in at the edge */
+  11%  { transform: scaleX(0); filter: brightness(1) invert(0); }
+
+  /* Flip 2 — fast, coloured */
+  20%  { transform: scaleX(1); filter: brightness(1) invert(0); }
+  30%  { transform: scaleX(0); filter: brightness(1) invert(0); }
+
+  /* Flip 3 — slow, coloured, decelerates to rest */
+  40%  { transform: scaleX(1); filter: brightness(1) invert(0); }
+  70%  { transform: scaleX(0); filter: brightness(1) invert(0); }
   100% { transform: scaleX(1); filter: brightness(1) invert(0); }
 }
 .complete .actions {
