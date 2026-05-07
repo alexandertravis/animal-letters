@@ -90,7 +90,8 @@ window.APP = window.APP || {};
     bar.querySelector('[data-act=skip]').addEventListener('click', () => {
       if (activeTracer) { activeTracer.destroy(); activeTracer = null; }
       APP.skipAnimal();
-      ctx.go('complete');
+      // skipAnimal picks a new animal (no complete screen) or falls back to landing.
+      ctx.go(APP.state.screen === 'landing' ? 'landing' : 'game');
     });
 
     mountCurrentLetter(stage, ctx);

@@ -52,7 +52,19 @@ window.APP = window.APP || {};
   };
 
   APP.skipAnimal = function () {
-    APP.state.screen = "complete";
+    // Pick a new animal without going through the complete screen.
+    // Does not count as a completion — completedAnimals is not updated.
+    const next = APP.animals
+      ? APP.animals.pickRandom(APP.state.settings.maxLength, APP.state.currentAnimal)
+      : null;
+    if (next) {
+      APP.state.currentAnimal = next;
+      APP.state.letterIndex = 0;
+      APP.state.completedLetters = [];
+    } else {
+      // No eligible animals left — go home rather than loop forever.
+      APP.state.screen = "landing";
+    }
   };
 
   APP.goHome = function () {
