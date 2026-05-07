@@ -1,21 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
-  <!-- Mane -->
-  <ellipse cx="96" cy="62" rx="16" ry="36" fill="#5a3e1e" transform="rotate(-10 96 62)"/>
-  <!-- Ears -->
-  <polygon points="70,64 60,34 86,58" fill="#c8845a"/>
-  <polygon points="72,62 66,42 84,58" fill="#e8b0a0"/>
-  <polygon points="108,62 118,34 96,58" fill="#c8845a"/>
-  <polygon points="106,62 112,42 98,58" fill="#e8b0a0"/>
-  <!-- Long head / neck -->
-  <ellipse cx="88" cy="108" rx="30" ry="60" fill="#c8845a" transform="rotate(-8 88 108)"/>
-  <!-- Nostril area -->
-  <ellipse cx="72" cy="148" rx="20" ry="16" fill="#b87848"/>
-  <!-- Eye -->
-  <circle cx="84" cy="90" r="9" fill="#fff"/>
-  <circle cx="86" cy="90" r="5" fill="#2c1800"/>
-  <circle cx="87" cy="88" r="2" fill="#fff"/>
-  <!-- Nostril -->
-  <ellipse cx="68" cy="150" rx="5" ry="4" fill="#8a5030" transform="rotate(-10 68 150)"/>
+  <!-- Mane (flowing right side) -->
+  <ellipse cx="152" cy="68" rx="20" ry="54" fill="#4a2e10" transform="rotate(22 152 68)"/>
+  <!-- Ear left -->
+  <polygon points="64,72 52,40 80,65" fill="#c8845a"/>
+  <polygon points="66,70 58,48 78,65" fill="#f0c0a8"/>
+  <!-- Ear right -->
+  <polygon points="118,70 130,40 106,65" fill="#c8845a"/>
+  <polygon points="116,68 124,48 108,65" fill="#f0c0a8"/>
+  <!-- Head — large rounded oval, prominent and clear -->
+  <ellipse cx="94" cy="92" rx="48" ry="50" fill="#c8845a"/>
+  <!-- Muzzle — distinct elongated zone below head -->
+  <ellipse cx="90" cy="158" rx="34" ry="28" fill="#b07040"/>
+  <!-- Muzzle lighter centre -->
+  <ellipse cx="90" cy="160" rx="25" ry="20" fill="#d49060"/>
+  <!-- Eyes — large and expressive, one each side -->
+  <circle cx="70" cy="90" r="13" fill="#fff"/>
+  <circle cx="118" cy="90" r="13" fill="#fff"/>
+  <circle cx="72" cy="90" r="8" fill="#2c1800"/>
+  <circle cx="120" cy="90" r="8" fill="#2c1800"/>
+  <circle cx="73" cy="88" r="3" fill="#fff"/>
+  <circle cx="121" cy="88" r="3" fill="#fff"/>
+  <!-- Nostrils -->
+  <ellipse cx="78" cy="160" rx="6" ry="5" fill="#7a4020" transform="rotate(-15 78 160)"/>
+  <ellipse cx="106" cy="162" rx="6" ry="5" fill="#7a4020" transform="rotate(8 106 162)"/>
   <!-- Mouth line -->
-  <path d="M60 158 Q72 164 82 158" stroke="#8a5030" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M68,172 Q88,180 112,172" stroke="#7a4020" stroke-width="2.5" fill="none" stroke-linecap="round"/>
 </svg>

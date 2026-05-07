@@ -5,8 +5,8 @@
   <ellipse cx="96" cy="112" rx="78" ry="44" fill="#4a7aaa"/>
   <!-- White belly -->
   <ellipse cx="88" cy="122" rx="56" ry="28" fill="#e8f0f8"/>
-  <!-- Dorsal fin -->
-  <polygon points="90,70 74,112 116,112" fill="#3a6a9a"/>
+  <!-- Dorsal fin — tip well above body; base sits flush at body top (y=68) -->
+  <polygon points="96,32 78,68 120,68" fill="#3a6a9a"/>
   <!-- Pectoral fin -->
   <polygon points="88,128 60,156 112,140" fill="#3a6a9a"/>
   <!-- Eye -->

@@ -6,27 +6,35 @@
   <polygon points="135,74 144,52 114,70" fill="#fff"/>
   <!-- Head -->
   <ellipse cx="100" cy="114" rx="66" ry="68" fill="#e8732a"/>
-  <!-- Stripes -->
-  <path d="M64 76 Q72 68 80 76" stroke="#333" stroke-width="5" fill="none" stroke-linecap="round"/>
-  <path d="M120 76 Q128 68 136 76" stroke="#333" stroke-width="5" fill="none" stroke-linecap="round"/>
-  <path d="M54 100 Q62 92 68 102" stroke="#333" stroke-width="4" fill="none" stroke-linecap="round"/>
-  <path d="M132 102 Q138 92 146 100" stroke="#333" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- Forehead stripes — three bold vertical marks -->
+  <ellipse cx="100" cy="80" rx="5" ry="17" fill="#1e1e1e"/>
+  <ellipse cx="82"  cy="78" rx="4" ry="14" fill="#1e1e1e" transform="rotate(-20 82 78)"/>
+  <ellipse cx="118" cy="78" rx="4" ry="14" fill="#1e1e1e" transform="rotate(20 118 78)"/>
+  <!-- Upper cheek stripes -->
+  <path d="M50,88  Q62,76 74,90"  stroke="#1e1e1e" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <path d="M150,88 Q138,76 126,90" stroke="#1e1e1e" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <!-- Mid cheek stripes -->
+  <path d="M44,110 Q56,98 68,112"  stroke="#1e1e1e" stroke-width="9" fill="none" stroke-linecap="round"/>
+  <path d="M156,110 Q144,98 132,112" stroke="#1e1e1e" stroke-width="9" fill="none" stroke-linecap="round"/>
+  <!-- Lower cheek stripes -->
+  <path d="M48,132 Q60,122 70,134"  stroke="#1e1e1e" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M152,132 Q140,122 130,134" stroke="#1e1e1e" stroke-width="8" fill="none" stroke-linecap="round"/>
   <!-- White muzzle -->
   <ellipse cx="100" cy="138" rx="34" ry="26" fill="#f5e6d0"/>
   <!-- Eyes -->
-  <circle cx="78" cy="100" r="10" fill="#fff"/>
+  <circle cx="78"  cy="100" r="10" fill="#fff"/>
   <circle cx="122" cy="100" r="10" fill="#fff"/>
-  <ellipse cx="80" cy="100" rx="5" ry="6" fill="#5a8a00"/>
+  <ellipse cx="80"  cy="100" rx="5" ry="6" fill="#5a8a00"/>
   <ellipse cx="124" cy="100" rx="5" ry="6" fill="#5a8a00"/>
-  <circle cx="80" cy="100" r="3" fill="#111"/>
+  <circle cx="80"  cy="100" r="3" fill="#111"/>
   <circle cx="124" cy="100" r="3" fill="#111"/>
-  <circle cx="81" cy="98" r="1.5" fill="#fff"/>
-  <circle cx="125" cy="98" r="1.5" fill="#fff"/>
+  <circle cx="81"  cy="98"  r="1.5" fill="#fff"/>
+  <circle cx="125" cy="98"  r="1.5" fill="#fff"/>
   <!-- Nose -->
   <ellipse cx="100" cy="126" rx="8" ry="6" fill="#8b3a3a"/>
   <!-- Whiskers -->
-  <line x1="40" y1="132" x2="74" y2="134" stroke="#fff" stroke-width="1.5"/>
-  <line x1="40" y1="140" x2="74" y2="140" stroke="#fff" stroke-width="1.5"/>
+  <line x1="40"  y1="132" x2="74"  y2="134" stroke="#fff" stroke-width="1.5"/>
+  <line x1="40"  y1="140" x2="74"  y2="140" stroke="#fff" stroke-width="1.5"/>
   <line x1="126" y1="134" x2="160" y2="132" stroke="#fff" stroke-width="1.5"/>
   <line x1="126" y1="140" x2="160" y2="140" stroke="#fff" stroke-width="1.5"/>
 </svg>
