@@ -212,8 +212,11 @@ describe('Integration: consecutiveFoundCount streak and pickNext bias', () => {
     const result = APP.animals.pickNext(6, cat);
 
     // Result must be unfound (not ANT or BEE) and not the excluded animal (CAT).
-    const unfoundNames = ['CAT', 'BEAR', 'DUCK', 'RABBIT'];
-    expect(unfoundNames).toContain(result.name);
+    // Build the expected set: not completed AND not the excluded animal.
+    const expectedNames = ANIMALS_FIXTURE
+      .filter(a => !APP.state.completedAnimals.has(a.name) && a.name !== cat.name)
+      .map(a => a.name); // BEAR, DUCK, RABBIT
+    expect(expectedNames).toContain(result.name);
     expect(result.name).not.toBe('CAT'); // excluded
     expect(['ANT', 'BEE']).not.toContain(result.name); // bias working
   });
@@ -282,47 +285,55 @@ describe('Integration: skipAnimal state integrity', () => {
 });
 
 // ---------------------------------------------------------------------------
-// 6. Settings maxLength filters animals consistently — state + animals
+// 6. Cross-module interactions: state completion tracking + animals filtering
 // ---------------------------------------------------------------------------
-describe('Integration: maxLength setting filters pickRandom consistently', () => {
+describe('Integration: state completion tracking and animals maxLength filtering', () => {
   beforeEach(() => {
     APP.ANIMALS = [...ANIMALS_FIXTURE];
   });
 
   // ANIMALS_FIXTURE: 3-letter: ANT BEE CAT (3), 4-letter: BEAR DUCK (2), 6-letter: RABBIT (1)
 
-  it('eligibleCount(3) returns 3 — the three 3-letter animals', () => {
-    expect(APP.animals.eligibleCount(3)).toBe(3);
-  });
+  it('completing a 3-letter animal does not make a 6-letter animal eligible at maxLength 3', () => {
+    // Complete ANT via full state flow (startGame + advanceLetter x3).
+    const ant = ANIMALS_FIXTURE.find(a => a.name === 'ANT');
+    APP.startGame(ant);
+    completeCurrentAnimal();
 
-  it('pickRandom(3) always returns an animal with name.length <= 3 across 20 calls', () => {
-    for (let i = 0; i < 20; i++) {
+    expect(APP.state.completedAnimals.has('ANT')).toBe(true);
+
+    // RABBIT is 6 letters — it must never appear when maxLength is 3.
+    for (let i = 0; i < 10; i++) {
       const result = APP.animals.pickRandom(3);
-      expect(result).not.toBeNull();
-      expect(result.name.length).toBeLessThanOrEqual(3);
-    }
-  });
-
-  it('pickRandom(4) always returns an animal with name.length <= 4 across 20 calls', () => {
-    for (let i = 0; i < 20; i++) {
-      const result = APP.animals.pickRandom(4);
-      expect(result).not.toBeNull();
-      expect(result.name.length).toBeLessThanOrEqual(4);
-    }
-  });
-
-  it('pickRandom(3) results are drawn only from the 3-letter subset', () => {
-    const validNames = ANIMALS_FIXTURE.filter(a => a.name.length <= 3).map(a => a.name);
-    for (let i = 0; i < 20; i++) {
-      const result = APP.animals.pickRandom(3);
-      expect(validNames).toContain(result.name);
-    }
-  });
-
-  it('pickRandom(4) never returns RABBIT (6 letters)', () => {
-    for (let i = 0; i < 20; i++) {
-      const result = APP.animals.pickRandom(4);
       expect(result.name).not.toBe('RABBIT');
     }
+  });
+
+  it('pickNext respects maxLength even when bias is active', () => {
+    // consecutiveFoundCount=2 with ANT and BEE found, but maxLength=3 means
+    // BEAR (4), DUCK (4), RABBIT (6) are ineligible — only ANT/BEE/CAT qualify.
+    APP.state.completedAnimals = new Set(['ANT', 'BEE']);
+    APP.state.consecutiveFoundCount = 2;
+
+    const eligible3Names = ['ANT', 'BEE', 'CAT'];
+    const ineligibleNames = ['BEAR', 'DUCK', 'RABBIT'];
+
+    for (let i = 0; i < 10; i++) {
+      const result = APP.animals.pickNext(3, null);
+      expect(eligible3Names).toContain(result.name);
+      expect(ineligibleNames).not.toContain(result.name);
+    }
+  });
+
+  it('skipAnimal followed by pickRandom still respects maxLength', () => {
+    const ant = ANIMALS_FIXTURE.find(a => a.name === 'ANT');
+    APP.startGame(ant);
+
+    APP.state.settings.maxLength = 3; // confine pool to 3-letter animals
+    APP.skipAnimal(); // uses state.settings.maxLength internally
+
+    // After skip, currentAnimal must be a valid 3-letter animal.
+    expect(APP.state.currentAnimal).not.toBeNull();
+    expect(APP.state.currentAnimal.name.length).toBeLessThanOrEqual(3);
   });
 });

@@ -118,6 +118,18 @@ describe('APP.getLetterYTransform', () => {
     expect(b).toBe(0);
   });
 
+  it('lowercase descender branch (e.g. "q"): identity transform — a=1, b=0', () => {
+    const { a, b } = APP.getLetterYTransform('q');
+    expect(a).toBe(1);
+    expect(b).toBe(0);
+  });
+
+  it('lowercase descender branch (e.g. "y"): identity transform — a=1, b=0', () => {
+    const { a, b } = APP.getLetterYTransform('y');
+    expect(a).toBe(1);
+    expect(b).toBe(0);
+  });
+
   it('lowercase default branch (e.g. "a"): maps y=100→middle(100), y=210→bottom(170)', () => {
     const { a, b } = APP.getLetterYTransform('a');
     // a = (170-100)/(210-100) = 70/110 ≈ 0.6364...
