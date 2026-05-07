@@ -187,7 +187,7 @@ html, body {
   border-radius: 3px;
   background: #e0e0e0;
 }
-.setup .actions { display: flex; gap: 12px; margin-top: 12px; }
+.setup .actions { display: flex; gap: 12px; margin-top: 12px; align-items: stretch; }
 
 /* Volume row inside settings */
 .volume-row {
@@ -211,7 +211,7 @@ html, body {
 .volume-row.muted input[type=range] {
   opacity: 0.4;
 }
-.setup .actions .btn { flex: 1; }
+.setup .actions .btn { flex: 1; min-width: 0; }
 .setup .lengthValue { font-size: 1.6rem; font-weight: 700; }
 
 /* ---------- Game screen ---------- */
