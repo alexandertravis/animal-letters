@@ -57,11 +57,24 @@ window.APP = window.APP || {};
     const imgBox = wrap.querySelector('#animalImg');
     const img = new Image();
     img.alt = animal.displayName;
+    img.className = 'animal-reveal';
     img.onerror = () => {
+      // Fallback graphic skips the reveal — just show the letter immediately.
       imgBox.innerHTML = `<div class="fallback-graphic">${animal.displayName[0].toUpperCase()}</div>`;
     };
     img.src = imgSrc;
     imgBox.appendChild(img);
+
+    // Tap the greyed-out image to spin it and reveal the colour.
+    // pointerdown fires immediately on touch (no 300 ms click delay).
+    img.addEventListener('pointerdown', () => {
+      if (img.classList.contains('spinning') || img.classList.contains('revealed')) return;
+      img.classList.add('spinning');
+      img.addEventListener('animationend', () => {
+        img.classList.remove('spinning');
+        img.classList.add('revealed');
+      }, { once: true });
+    });
 
     APP.audio.playComplete(animal.audio);
 
