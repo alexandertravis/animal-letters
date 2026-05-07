@@ -147,7 +147,10 @@ describe('APP.advanceLetter', () => {
 
     APP.advanceLetter();
 
-    expect(spy).toHaveBeenCalled();
+    expect(spy).toHaveBeenCalledWith('animalProgress', expect.any(String));
+    const [, rawValue] = spy.mock.calls[0];
+    const parsed = JSON.parse(rawValue);
+    expect(Array.isArray(parsed.completedAnimals)).toBe(true);
   });
 });
 
@@ -223,5 +226,107 @@ describe('APP.skipAnimal', () => {
     APP.skipAnimal();
 
     expect(APP.state.screen).toBe('landing');
+  });
+
+  it('resets letterIndex to 0 and completedLetters to [] on skip', () => {
+    APP.ANIMALS = [...ANIMALS_FIXTURE];
+    const original = makeAnimal({ name: 'CAT', displayName: 'Cat' });
+    APP.startGame(original);
+    APP.state.letterIndex = 2;
+    APP.state.completedLetters = ['C', 'A'];
+
+    APP.skipAnimal();
+
+    expect(APP.state.letterIndex).toBe(0);
+    expect(APP.state.completedLetters).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// APP.advanceLetter — null currentAnimal guard
+// ---------------------------------------------------------------------------
+describe('APP.advanceLetter — null guard', () => {
+  it('returns without modifying state when currentAnimal is null', () => {
+    APP.state.currentAnimal = null;
+    APP.state.letterIndex = 5;
+    APP.state.completedAnimals = new Set(['DOG']);
+    APP.state.screen = 'game';
+
+    APP.advanceLetter();
+
+    expect(APP.state.letterIndex).toBe(5);
+    expect(APP.state.completedAnimals.has('DOG')).toBe(true);
+    expect(APP.state.screen).toBe('game');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// APP.startGame — sets screen to "game"
+// ---------------------------------------------------------------------------
+describe('APP.startGame — screen', () => {
+  it('sets screen to "game" after starting', () => {
+    const animal = makeAnimal({ name: 'DOG', displayName: 'Dog' });
+    APP.state.screen = 'landing';
+
+    APP.startGame(animal);
+
+    expect(APP.state.screen).toBe('game');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// APP.goHome
+// ---------------------------------------------------------------------------
+describe('APP.goHome', () => {
+  it('sets screen to "landing" regardless of current screen', () => {
+    APP.state.screen = 'complete';
+
+    APP.goHome();
+
+    expect(APP.state.screen).toBe('landing');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// APP.resetSettings
+// ---------------------------------------------------------------------------
+describe('APP.resetSettings', () => {
+  it('restores all settings to their documented defaults', () => {
+    APP.state.settings.letterCase = 'lower';
+    APP.state.settings.volume = 0.1;
+    APP.state.settings.depiction = 'realistic';
+    APP.state.settings.revealMode = 'hidden';
+    APP.state.settings.muted = true;
+
+    APP.resetSettings();
+
+    expect(APP.state.settings.letterCase).toBe('upper');
+    expect(APP.state.settings.depiction).toBe('cartoon');
+    expect(APP.state.settings.revealMode).toBe('faint');
+    expect(APP.state.settings.volume).toBe(0.7);
+    expect(APP.state.settings.muted).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// APP.saveProgress / APP.clearProgress — localStorage error swallowing
+// ---------------------------------------------------------------------------
+describe('APP.saveProgress — error resilience', () => {
+  it('does not throw when localStorage.setItem throws', () => {
+    const ls = mockLocalStorage();
+    vi.spyOn(ls, 'setItem').mockImplementation(() => { throw new Error('QuotaExceeded'); });
+    vi.stubGlobal('localStorage', ls);
+
+    expect(() => APP.saveProgress()).not.toThrow();
+  });
+});
+
+describe('APP.clearProgress — error resilience', () => {
+  it('does not throw when localStorage.removeItem throws', () => {
+    const ls = mockLocalStorage();
+    vi.spyOn(ls, 'removeItem').mockImplementation(() => { throw new Error('SecurityError'); });
+    vi.stubGlobal('localStorage', ls);
+
+    expect(() => APP.clearProgress()).not.toThrow();
   });
 });

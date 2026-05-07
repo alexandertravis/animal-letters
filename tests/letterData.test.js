@@ -70,6 +70,75 @@ describe('APP.getLetter', () => {
     expect(APP.getLetter('!')).toBeNull();
     expect(APP.getLetter('')).toBeNull();
   });
+
+  it('returns the correct glyph for a lowercase character', () => {
+    const glyph = APP.getLetter('a');
+    expect(glyph).not.toBeNull();
+    expect(glyph).toBe(APP.LETTERS['a']);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// APP.getLetterYTransform — four branches
+// ---------------------------------------------------------------------------
+describe('APP.getLetterYTransform', () => {
+  // GUIDE_CONFIG: top.y=30, middle.y=100, bottom.y=170, lower.y=240
+
+  it('uppercase branch (e.g. "A"): maps y=30→top(30), y=220→bottom(170)', () => {
+    const { a, b } = APP.getLetterYTransform('A');
+    // a = (170-30)/(220-30) = 140/190 ≈ 0.7368...
+    // b = 30 - a*30 ≈ 7.894...
+    expect(a).toBeCloseTo(140 / 190, 10);
+    expect(b).toBeCloseTo(30 - (140 / 190) * 30, 10);
+  });
+
+  it('lowercase ascender branch (e.g. "b"): maps y=30→top(30), y=210→bottom(170)', () => {
+    const { a, b } = APP.getLetterYTransform('b');
+    // a = (170-30)/(210-30) = 140/180 ≈ 0.7778...
+    // b = 30 - a*30 ≈ 6.667...
+    expect(a).toBeCloseTo(140 / 180, 10);
+    expect(b).toBeCloseTo(30 - (140 / 180) * 30, 10);
+  });
+
+  it('lowercase descender branch (e.g. "g"): identity transform — a=1, b=0', () => {
+    const { a, b } = APP.getLetterYTransform('g');
+    expect(a).toBe(1);
+    expect(b).toBe(0);
+  });
+
+  it('lowercase default branch (e.g. "a"): maps y=100→middle(100), y=210→bottom(170)', () => {
+    const { a, b } = APP.getLetterYTransform('a');
+    // a = (170-100)/(210-100) = 70/110 ≈ 0.6364...
+    // b = 100 - a*100 ≈ 36.364...
+    expect(a).toBeCloseTo(70 / 110, 10);
+    expect(b).toBeCloseTo(100 - (70 / 110) * 100, 10);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// APP.GUIDE_CONFIG — schema check
+// ---------------------------------------------------------------------------
+describe('APP.GUIDE_CONFIG', () => {
+  it('exists with a defaults object and a lines object', () => {
+    expect(APP.GUIDE_CONFIG).toBeDefined();
+    expect(typeof APP.GUIDE_CONFIG.defaults).toBe('object');
+    expect(typeof APP.GUIDE_CONFIG.lines).toBe('object');
+  });
+
+  it('defaults has numeric color, opacity, and width', () => {
+    const { defaults } = APP.GUIDE_CONFIG;
+    expect(typeof defaults.color).toBe('string');
+    expect(typeof defaults.opacity).toBe('number');
+    expect(typeof defaults.width).toBe('number');
+  });
+
+  it('lines has top, middle, bottom, lower — each with a numeric y property', () => {
+    const { lines } = APP.GUIDE_CONFIG;
+    for (const key of ['top', 'middle', 'bottom', 'lower']) {
+      expect(lines, `lines.${key} should exist`).toHaveProperty(key);
+      expect(typeof lines[key].y, `lines.${key}.y should be a number`).toBe('number');
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -89,7 +158,6 @@ describe('APP.ANIMALS', () => {
 
   it('every animal name is uppercase and contains only A–Z characters', () => {
     for (const animal of APP.ANIMALS) {
-      expect(animal.name, `"${animal.name}" should be a non-empty string`).toBeTruthy();
       expect(/^[A-Z]+$/.test(animal.name), `"${animal.name}" should match /^[A-Z]+$/`).toBe(true);
     }
   });

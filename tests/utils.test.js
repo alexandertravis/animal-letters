@@ -40,6 +40,10 @@ describe('APP.isDot', () => {
   it('returns false for a normal multi-point path', () => {
     expect(APP.isDot(NORMAL_STROKE_PATH)).toBe(false);
   });
+
+  it('returns true for a dot path with space-separated coordinates', () => {
+    expect(APP.isDot('M 100 56 L 100 56')).toBe(true);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -61,6 +65,15 @@ describe('APP.dotTransformPos', () => {
     const result = APP.dotTransformPos('invalid', 1, 0, 1, 0);
     expect(result).toBeNull();
   });
+
+  it('returns the same {x, y} for space-separated coordinates as for comma-separated', () => {
+    // 'M 100 56 L 100 56' should parse identically to 'M 100,56 L 100,56'
+    const commaSep = APP.dotTransformPos('M 100,56 L 100,56', 0.85, 15, 0.9, 10);
+    const spaceSep = APP.dotTransformPos('M 100 56 L 100 56', 0.85, 15, 0.9, 10);
+    expect(spaceSep).not.toBeNull();
+    expect(spaceSep.x).toBeCloseTo(commaSep.x, 5);
+    expect(spaceSep.y).toBeCloseTo(commaSep.y, 5);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -80,5 +93,20 @@ describe('APP.launchConfetti', () => {
 
     // Call cancel to avoid any lingering canvas/raf state.
     cancel();
+  });
+
+  it('appends a canvas to the body and removes it when the cancel handle is called', () => {
+    vi.stubGlobal('requestAnimationFrame', vi.fn(() => 42));
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+
+    const cancel = APP.launchConfetti();
+
+    // Canvas should be in the DOM after launch.
+    expect(document.body.querySelector('canvas')).not.toBeNull();
+
+    cancel();
+
+    // Canvas should be removed after cancel.
+    expect(document.body.querySelector('canvas')).toBeNull();
   });
 });

@@ -81,6 +81,12 @@ describe('APP.animals.pickRandom', () => {
     const result = APP.animals.pickRandom(1); // nothing has length <= 1
     expect(result).toBeNull();
   });
+
+  it('returns a valid animal when exclude is null (no crash from null guard)', () => {
+    const result = APP.animals.pickRandom(3, null);
+    expect(result).not.toBeNull();
+    expect(typeof result.name).toBe('string');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -97,13 +103,13 @@ describe('APP.animals.pickNext', () => {
     APP.state.consecutiveFoundCount = 2;
 
     // Force Math.random to 0 so the first item in the unfound pool is chosen.
+    // With no exclude, unfound pool is [CAT, BEAR, DUCK, RABBIT].
+    // Math.floor(0 * 4) = 0 → index 0 → CAT.
     vi.spyOn(Math, 'random').mockReturnValue(0);
 
     const result = APP.animals.pickNext(6, null);
 
-    // Must be one of the unfound animals.
-    const unfoundNames = ['CAT', 'BEAR', 'DUCK', 'RABBIT'];
-    expect(unfoundNames).toContain(result.name);
+    expect(result.name).toBe('CAT');
   });
 
   it('falls back to pickRandom when consecutiveFoundCount >= 2 but ALL eligible animals are already found', () => {
@@ -121,20 +127,48 @@ describe('APP.animals.pickNext', () => {
   });
 
   it('does NOT apply unfound bias when consecutiveFoundCount < 2', () => {
-    // Mark most animals as found — if bias were applied, only CAT would come back.
+    // Mark most animals as found; only CAT is unfound.
+    // If bias were applied, we'd only ever get CAT.
+    // Below threshold, the full eligible pool is used — so a found animal can be returned.
     APP.state.completedAnimals = new Set(['ANT', 'BEE', 'BEAR', 'DUCK', 'RABBIT']);
     APP.state.consecutiveFoundCount = 1; // below threshold
 
-    // Run pickNext many times and check that we get animals from the full pool.
-    const results = new Set();
-    for (let i = 0; i < 50; i++) {
-      const r = APP.animals.pickNext(6, null);
-      if (r) results.add(r.name);
-    }
+    // With Math.random mocked to 0, pickRandom always picks index 0 of the full
+    // eligible pool. Eligible pool (maxLength=6) is [ANT, BEE, CAT, BEAR, DUCK, RABBIT].
+    // index 0 → ANT, which IS a found animal — proving the full pool was used.
+    vi.spyOn(Math, 'random').mockReturnValue(0);
 
-    // With 50 picks and no bias, we should eventually see some of the found animals.
-    const foundAnimals = ['ANT', 'BEE', 'BEAR', 'DUCK', 'RABBIT'];
-    const gotFoundAnimal = foundAnimals.some(n => results.has(n));
-    expect(gotFoundAnimal).toBe(true);
+    const result = APP.animals.pickNext(6, null);
+
+    expect(result.name).toBe('ANT');
+  });
+
+  it('excludes the specified animal from the unfound pool when bias is active', () => {
+    // consecutiveFoundCount >= 2, unfound animals exist, and exclude is one of them.
+    // Unfound: CAT, BEAR, DUCK, RABBIT. Exclude: CAT (index 0 of unfound).
+    // After filtering CAT out: [BEAR, DUCK, RABBIT]. Math.random=0 → index 0 → BEAR.
+    APP.state.completedAnimals = new Set(['ANT', 'BEE']);
+    APP.state.consecutiveFoundCount = 2;
+    const catAnimal = ANIMALS_FIXTURE.find(a => a.name === 'CAT');
+
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+
+    const result = APP.animals.pickNext(6, catAnimal);
+
+    expect(result.name).not.toBe('CAT');
+    expect(result.name).toBe('BEAR');
+  });
+
+  it('falls back to the full unfound list when the only unfound animal is also excluded', () => {
+    // Only CAT is unfound. Exclude CAT → filtered pool is empty → falls back to unfound (CAT).
+    APP.state.completedAnimals = new Set(['ANT', 'BEE', 'BEAR', 'DUCK', 'RABBIT']);
+    APP.state.consecutiveFoundCount = 2;
+    const catAnimal = ANIMALS_FIXTURE.find(a => a.name === 'CAT');
+
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+
+    const result = APP.animals.pickNext(6, catAnimal);
+
+    expect(result.name).toBe('CAT');
   });
 });
