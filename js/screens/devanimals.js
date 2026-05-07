@@ -201,6 +201,7 @@ window.APP = window.APP || {};
       let currentLetterIdx = 0;
       let completedSet     = new Set();
       let letterCase       = 'upper';
+      let advanceTimer     = null;   // setTimeout ID for the 600 ms auto-advance
 
       // ── Animal picker ────────────────────────────────────────────────────
       const pickerWrap = document.createElement('div');
@@ -292,6 +293,10 @@ window.APP = window.APP || {};
       }
 
       function mountCurrentLetter() {
+        // Cancel any pending auto-advance. Without this, a strip-box click during
+        // the 600 ms window would set currentLetterIdx to the clicked index, then
+        // the timeout would fire, increment it again, and mount the wrong letter.
+        if (advanceTimer !== null) { clearTimeout(advanceTimer); advanceTimer = null; }
         if (testTracer) { testTracer.destroy(); testTracer = null; }
         const rawChar = currentAnimal.name[currentLetterIdx];
         const ch = letterCase === 'upper' ? rawChar.toUpperCase() : rawChar.toLowerCase();
@@ -307,7 +312,8 @@ window.APP = window.APP || {};
             if (APP.audio && APP.audio.letterDone) APP.audio.letterDone();
 
             if (currentLetterIdx < currentAnimal.name.length - 1) {
-              setTimeout(() => {
+              advanceTimer = setTimeout(() => {
+                advanceTimer = null;
                 currentLetterIdx++;
                 mountCurrentLetter();
               }, 600);

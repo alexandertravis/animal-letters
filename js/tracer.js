@@ -222,10 +222,20 @@ window.APP = window.APP || {};
       defs.appendChild(p);
       const len = p.getTotalLength();
       const pts = [];
-      for (let i = 0; i < CHECKPOINTS_PER_STROKE; i++) {
-        const t = (i / (CHECKPOINTS_PER_STROKE - 1)) * len;
-        const pt = p.getPointAtLength(t);
-        pts.push({ x: xScale * pt.x + xOffset, y: tA * pt.y + tB }); // same transform as visual groups
+      if (len === 0) {
+        // Dot stroke (M x,y L x,y with identical coords): zero length means every
+        // getPointAtLength call returns the same point. Fill all checkpoints with
+        // that single point explicitly so the intent is clear — checkProgress will
+        // satisfy all 18 at once on the first proximity hit in onDown.
+        const pt = p.getPointAtLength(0);
+        const dot = { x: xScale * pt.x + xOffset, y: tA * pt.y + tB };
+        for (let i = 0; i < CHECKPOINTS_PER_STROKE; i++) pts.push(dot);
+      } else {
+        for (let i = 0; i < CHECKPOINTS_PER_STROKE; i++) {
+          const t = (i / (CHECKPOINTS_PER_STROKE - 1)) * len;
+          const pt = p.getPointAtLength(t);
+          pts.push({ x: xScale * pt.x + xOffset, y: tA * pt.y + tB }); // same transform as visual groups
+        }
       }
       defs.removeChild(p);
       return pts;
@@ -357,6 +367,10 @@ window.APP = window.APP || {};
       if (currentStroke >= totalStrokes) return;
       // Wake the AudioContext on the first user gesture so sounds play without delay.
       if (APP.audio) APP.audio._wake();
+      // Capture the pointer so pointermove/pointerup continue to fire on stageEl
+      // even when the pointer drifts outside it. Without this, pointerleave fires
+      // and ends the stroke prematurely when tracing near the stage edge on desktop.
+      try { stageEl.setPointerCapture(e.pointerId); } catch (_) {}
       pointerActive = true;
       const p = clientToSvg(e.clientX, e.clientY);
       if (isNearGuide(p)) {
@@ -440,11 +454,14 @@ window.APP = window.APP || {};
     }
 
     // Bind pointer events on the stage (covers svg).
+    // pointerleave is intentionally omitted: setPointerCapture in onDown keeps
+    // the pointer routed to stageEl for the full drag even outside its bounds,
+    // so pointerleave would fire only after the finger is genuinely gone.
+    // pointercancel covers unexpected interruptions (e.g. browser gesture takeover).
     stageEl.addEventListener('pointerdown', onDown);
     stageEl.addEventListener('pointermove', onMove);
     stageEl.addEventListener('pointerup', onUp);
     stageEl.addEventListener('pointercancel', onUp);
-    stageEl.addEventListener('pointerleave', onUp);
 
     return {
       destroy() {
@@ -452,7 +469,6 @@ window.APP = window.APP || {};
         stageEl.removeEventListener('pointermove', onMove);
         stageEl.removeEventListener('pointerup', onUp);
         stageEl.removeEventListener('pointercancel', onUp);
-        stageEl.removeEventListener('pointerleave', onUp);
         stageEl.innerHTML = '';
       }
     };

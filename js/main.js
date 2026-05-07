@@ -18,7 +18,9 @@
     screen.render(root, ctx);
   }
 
-  document.addEventListener('DOMContentLoaded', route);
-  // If DOMContentLoaded already fired (e.g. defer-less script at end of body), run now.
-  if (document.readyState !== 'loading') route();
+  // All <script> tags are at the end of <body> without defer, so the DOM
+  // and every APP module are already loaded when this line executes.
+  // Calling route() directly avoids a double-render that occurred when both
+  // the DOMContentLoaded listener AND the readyState guard fired in sequence.
+  route();
 })(window.APP);

@@ -106,7 +106,10 @@
 - [x] Horizontal squeeze applied to `js/screens/letters.js` (letter-patterns review screen) to match tracer rendering
 - [x] **Fix capital S** — updated to smooth opposing cubics: `M 140,75 C 140,30 60,30 60,75 C 60,105 60,105 100,125 S 140,145 140,175 C 140,220 60,220 60,175`
 
-## Section 11 — Future / Nice-to-Have
+## Section 11 — Known Behaviour (intentional)
+- ℹ️ **Stacked confetti** — clicking "Great Job! 🎉" multiple times layers additional confetti canvas animations. Each canvas self-removes after its duration. This is intentional — it's a feature, not a bug.
+
+## Section 11b — Future / Nice-to-Have
 - [ ] Real cartoon SVG artwork for all 25 animals
 - [ ] Real realistic photos for all 25 animals
 - [ ] Real animal audio MP3s for all 25 animals

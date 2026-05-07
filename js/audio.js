@@ -1,9 +1,10 @@
 window.APP = window.APP || {};
 
 (function (APP) {
-  let ac = null;           // AudioContext — created lazily on first user gesture
-  let masterGain = null;   // Single gain node all sounds route through
-  let currentAudio = null; // HTMLAudioElement for animal sound files
+  let ac = null;             // AudioContext — created lazily on first user gesture
+  let masterGain = null;     // Single gain node all sounds route through
+  let currentAudio = null;   // HTMLAudioElement for animal sound files
+  let fileTimerId = null;    // setTimeout ID for the deferred playFile inside playComplete
 
   // Create / resume the AudioContext. Must be called from within a user gesture
   // (pointerdown, click, etc.) to satisfy browser autoplay policy.
@@ -83,13 +84,16 @@ window.APP = window.APP || {};
     },
 
     stopFile() {
+      // Cancel any pending deferred playFile from playComplete so navigating
+      // away before 900 ms does not start the animal sound on the wrong screen.
+      if (fileTimerId !== null) { clearTimeout(fileTimerId); fileTimerId = null; }
       if (currentAudio) { currentAudio.pause(); currentAudio = null; }
     },
 
     // Convenience: play file + fanfare together on the complete screen.
     playComplete(src) {
       this.wordDone();
-      schedule(() => this.playFile(src), 900);
+      fileTimerId = setTimeout(() => { fileTimerId = null; this.playFile(src); }, 900);
     },
 
     // ── Volume control ───────────────────────────────────────────────────────
@@ -97,13 +101,14 @@ window.APP = window.APP || {};
     // Set master volume (0–1). Un-mutes automatically.
     setVolume(v) {
       v = Math.max(0, Math.min(1, v));
-      APP.settings.update({ volume: v, muted: v === 0 });
+      APP.state.settings.volume = v;
+      APP.state.settings.muted  = v === 0;
       this._applyGain();
     },
 
     // Toggle or explicitly set mute state.
     setMuted(bool) {
-      APP.settings.update({ muted: bool });
+      APP.state.settings.muted = bool;
       this._applyGain();
       // Adjust any currently-playing file element.
       if (currentAudio) {

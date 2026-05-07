@@ -53,18 +53,20 @@ window.APP = window.APP || {};
     if (activeTracer) { activeTracer.destroy(); activeTracer = null; }
     root.innerHTML = '';
 
-    const animal = APP.state.currentAnimal;
+    let animal = APP.state.currentAnimal;
     if (!animal) { ctx.go('landing'); return; }
 
     // Animal already fully traced (e.g. user pressed Home on the complete screen
     // then hit Continue). Silently start the next animal instead of showing a
     // blank strip with nothing left to trace.
-    if (APP.state.letterIndex >= animal.name.length) {
+    // Uses a loop rather than recursion — avoids stack growth if somehow
+    // startGame produces another exhausted animal (impossible with current data
+    // but defensive programming against future edge cases).
+    while (APP.state.letterIndex >= animal.name.length) {
       const next = APP.animals.pickRandom(APP.state.settings.maxLength, animal);
       if (!next) { ctx.go('landing'); return; }
       APP.startGame(next);
-      render(root, ctx);
-      return;
+      animal = APP.state.currentAnimal; // re-read after startGame resets letterIndex
     }
 
     const wrap = document.createElement('div');
