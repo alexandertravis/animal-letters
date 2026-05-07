@@ -70,7 +70,11 @@ html, body {
   padding: 0;
   font-size: 1.6rem;
   border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
+.btn.icon svg { display: block; }
 
 /* ---------- Landing ---------- */
 .landing {
@@ -145,14 +149,14 @@ html, body {
   accent-color: var(--accent);
 }
 .mute-btn {
-  font-size: 1.3rem;
   width: 42px;
   height: 42px;
   flex-shrink: 0;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
 }
+.mute-btn svg { display: block; }
 .volume-row.muted input[type=range] {
   opacity: 0.4;
 }

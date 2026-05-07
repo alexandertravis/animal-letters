@@ -37,7 +37,7 @@ window.APP = window.APP || {};
     const topbar = document.createElement('div');
     topbar.className = 'setup-topbar';
     topbar.innerHTML = `
-      <button class="btn icon ghost" id="setup-home" aria-label="Home">&#8962;</button>
+      <button class="btn icon ghost" id="setup-home" aria-label="Home">${APP.ICONS.home}</button>
       <h2>Settings</h2>
     `;
     topbar.querySelector('#setup-home').addEventListener('click', () => ctx.go('landing'));
@@ -111,8 +111,8 @@ window.APP = window.APP || {};
     volSlider.value = String(Math.round(s.volume * 100));
 
     function refreshMuteBtn() {
-      const muted = APP.state.settings.muted;
-      muteBtn.textContent = muted ? '🔇' : (APP.state.settings.volume < 0.01 ? '🔇' : '🔊');
+      const muted = APP.state.settings.muted || APP.state.settings.volume < 0.01;
+      muteBtn.innerHTML = muted ? APP.ICONS.volumeOff : APP.ICONS.volumeOn;
       volRow.classList.toggle('muted', muted);
     }
     refreshMuteBtn();

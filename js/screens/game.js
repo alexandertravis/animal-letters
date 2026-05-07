@@ -75,8 +75,8 @@ window.APP = window.APP || {};
     bar.className = 'topbar';
     bar.innerHTML = `
       <div class="group">
-        <button class="btn icon ghost" data-act="home" aria-label="Home">&#8962;</button>
-        <button class="btn icon ghost" data-act="settings" aria-label="Settings">&#9881;</button>
+        <button class="btn icon ghost" data-act="home" aria-label="Home">${APP.ICONS.home}</button>
+        <button class="btn icon ghost" data-act="settings" aria-label="Settings">${APP.ICONS.settings}</button>
       </div>
       <div class="group">
         <button class="btn ghost" data-act="restart">Restart letter</button>
