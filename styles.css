@@ -455,11 +455,15 @@ html, body {
 .letters-stages-list {
   flex: 1;
   overflow-y: auto;
+  overflow-x: auto;           /* whole list scrolls horizontally if viewport < min column */
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  /* 490px = padding(24) + char-label(38) + gap(10) + 4 SVGs(400) + 3 inner-gaps(18)      */
+  /* — wide enough for the longest letter (4 strokes) with no per-box scrollbar            */
+  grid-template-columns: repeat(auto-fill, minmax(490px, 1fr));
   align-content: start;
   gap: 8px;
   padding: 8px 12px 32px;
+  min-width: 0;
 }
 .letter-stages-row {
   background: #fff;
@@ -470,8 +474,7 @@ html, body {
   gap: 10px;
   padding: 10px 12px;
   min-height: 155px;   /* SVG is 100px wide × ~125px tall (aspect 1.25) + padding */
-  /* overflow:hidden clips stage SVGs that would otherwise bleed into sibling rows */
-  overflow: hidden;
+  overflow: visible;   /* no clipping — grid column is wide enough for all stages  */
 }
 .letter-stages-char {
   font-size: 2.2rem;
@@ -484,11 +487,7 @@ html, body {
 .letter-stages {
   display: flex;
   gap: 6px;
-  overflow-x: auto;
   flex: 1;
-  /* min-width:0 lets the flex child shrink below its content size so overflow-x can kick in */
-  min-width: 0;
-  padding-bottom: 4px;
   align-items: flex-start;
 }
 .stage-cell {
