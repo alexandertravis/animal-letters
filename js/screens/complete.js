@@ -1,91 +1,6 @@
 window.APP = window.APP || {};
 
 (function (APP) {
-  // ── Confetti ─────────────────────────────────────────────────────────────
-  const CONFETTI_COLORS = [
-    '#ff6b9d', '#ffd166', '#06d6a0', '#118ab2',
-    '#ff9f1c', '#c77dff', '#ff595e', '#4ecdc4'
-  ];
-  const CONFETTI_COUNT  = 140;
-  const CONFETTI_DURATION = 4000; // ms
-
-  function launchConfetti() {
-    const canvas = document.createElement('canvas');
-    canvas.style.cssText =
-      'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:999';
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-    document.body.appendChild(canvas);
-    const c = canvas.getContext('2d');
-
-    const particles = Array.from({ length: CONFETTI_COUNT }, () => ({
-      x:        Math.random() * canvas.width,
-      y:        -20 - Math.random() * 120,       // start above viewport
-      vx:       (Math.random() - 0.5) * 5,
-      vy:       2.5 + Math.random() * 4,
-      rotation: Math.random() * Math.PI * 2,
-      rotSpeed: (Math.random() - 0.5) * 0.18,
-      color:    CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
-      w:        7 + Math.random() * 9,
-      h:        4 + Math.random() * 6,
-      shape:    Math.random() > 0.35 ? 'rect' : 'circle',
-      opacity:  1,
-    }));
-
-    let startTs = null;
-    let rafId;
-
-    function draw(ts) {
-      if (!startTs) startTs = ts;
-      const elapsed = ts - startTs;
-
-      c.clearRect(0, 0, canvas.width, canvas.height);
-
-      let alive = 0;
-      particles.forEach(p => {
-        p.x        += p.vx;
-        p.y        += p.vy;
-        p.vy       += 0.09;   // gravity
-        p.vx       *= 0.993;  // gentle air drag
-        p.rotation += p.rotSpeed;
-
-        // Fade out over the final 1 s
-        if (elapsed > CONFETTI_DURATION - 1000) {
-          p.opacity = Math.max(0, (CONFETTI_DURATION - elapsed) / 1000);
-        }
-
-        if (p.y < canvas.height + 50) alive++;
-
-        c.save();
-        c.globalAlpha = p.opacity;
-        c.translate(p.x, p.y);
-        c.rotate(p.rotation);
-        c.fillStyle = p.color;
-
-        if (p.shape === 'circle') {
-          c.beginPath();
-          c.arc(0, 0, p.w / 2, 0, Math.PI * 2);
-          c.fill();
-        } else {
-          c.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-        }
-
-        c.restore();
-      });
-
-      if (elapsed < CONFETTI_DURATION && alive > 0) {
-        rafId = requestAnimationFrame(draw);
-      } else {
-        canvas.remove();
-      }
-    }
-
-    rafId = requestAnimationFrame(draw);
-
-    // Return a cleanup handle so navigation can kill it early
-    return () => { cancelAnimationFrame(rafId); canvas.remove(); };
-  }
-
   // ── Screen render ─────────────────────────────────────────────────────────
   function render(root, ctx) {
     root.innerHTML = '';
@@ -112,11 +27,7 @@ window.APP = window.APP || {};
     body.className = 'complete-body';
     body.innerHTML = `
       <h1>Hooray!</h1>
-      <div class="animalName">${
-        APP.state.settings.letterCase === 'lower'  ? animal.displayName.toLowerCase() :
-        APP.state.settings.letterCase === 'proper' ? animal.displayName :
-                                                     animal.displayName.toUpperCase()
-      }</div>
+      <div class="animalName">${APP.caseOf(animal.displayName)}</div>
       <div class="animalImg" id="animalImg"></div>
       <div class="actions">
         <button class="btn secondary" data-act="gallery">My Animals</button>
@@ -127,11 +38,13 @@ window.APP = window.APP || {};
     wrap.appendChild(body);
     root.appendChild(wrap);
 
-    // Start confetti; keep cleanup handle so early navigation removes the canvas
-    const stopConfetti = launchConfetti();
+    // Collect all confetti cleanup handles. Stacking multiple animations on
+    // "Great Job!" replay clicks is intentional — each canvas is independent.
+    // All are cancelled together when the user navigates away.
+    const confettiHandles = [APP.launchConfetti({ count: 140, duration: 4000 })];
 
     function navigate(fn) {
-      stopConfetti();
+      confettiHandles.forEach(h => h());
       APP.audio.stopFile();
       fn();
     }
@@ -164,7 +77,8 @@ window.APP = window.APP || {};
       navigate(() => ctx.go('gallery')));
     wrap.querySelector('[data-act=replay]').addEventListener('click', () => {
       APP.audio.playComplete(animal.audio);
-      launchConfetti();
+      // Store the handle so this canvas is also cancelled on navigation.
+      confettiHandles.push(APP.launchConfetti({ count: 140, duration: 4000 }));
     });
   }
 

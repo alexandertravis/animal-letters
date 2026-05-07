@@ -45,8 +45,6 @@ window.APP = window.APP || {};
     } catch (_) {}
   }
 
-  function schedule(fn, delayMs) { setTimeout(fn, delayMs); }
-
   APP.audio = {
     // Short "tick" — played each time a stroke is completed.
     strokeDone() {
@@ -56,16 +54,16 @@ window.APP = window.APP || {};
     // Ascending arpeggio — played when a whole letter is finished.
     letterDone() {
       tone(523, 0.18, 'sine', 0.22);
-      schedule(() => tone(659, 0.18, 'sine', 0.22), 90);
-      schedule(() => tone(784, 0.28, 'sine', 0.22), 180);
+      setTimeout(() => tone(659, 0.18, 'sine', 0.22), 90);
+      setTimeout(() => tone(784, 0.28, 'sine', 0.22), 180);
     },
 
     // Fanfare — played when the full word is complete.
     wordDone() {
       tone(523, 0.18, 'sine', 0.28);
-      schedule(() => tone(659, 0.18, 'sine', 0.28), 110);
-      schedule(() => tone(784, 0.18, 'sine', 0.28), 220);
-      schedule(() => {
+      setTimeout(() => tone(659, 0.18, 'sine', 0.28), 110);
+      setTimeout(() => tone(784, 0.18, 'sine', 0.28), 220);
+      setTimeout(() => {
         tone(523, 0.5, 'sine', 0.2);
         tone(659, 0.5, 'sine', 0.2);
         tone(784, 0.5, 'sine', 0.2);

@@ -3,13 +3,6 @@ window.APP = window.APP || {};
 (function (APP) {
   let activeTracer = null;
 
-  function caseOf(name) {
-    const lc = APP.state.settings.letterCase;
-    if (lc === 'lower')  return name.toLowerCase();
-    if (lc === 'proper') return name[0].toUpperCase() + name.slice(1).toLowerCase();
-    return name.toUpperCase();
-  }
-
   // Calculate tile dimensions so all letters fit in one row regardless of name length.
   // Available width = viewport width minus strip horizontal padding (16px each side).
   function tileMetrics(nameLength) {
@@ -25,7 +18,7 @@ window.APP = window.APP || {};
   function buildStrip(animal) {
     const strip = document.createElement('div');
     strip.className = 'strip';
-    const name = caseOf(animal.name);
+    const name = APP.caseOf(animal.name);
     const reveal = APP.state.settings.revealMode;
     const { tileW, tileH, fontSize, gap } = tileMetrics(name.length);
     strip.style.gap = `${gap}px`;
@@ -120,12 +113,9 @@ window.APP = window.APP || {};
   function mountCurrentLetter(stage, ctx) {
     if (activeTracer) { activeTracer.destroy(); activeTracer = null; }
     const animal = APP.state.currentAnimal;
-    const rawChar = animal.name[APP.state.letterIndex];
-    const lc = APP.state.settings.letterCase;
-    let ch;
-    if (lc === 'lower')       ch = rawChar.toLowerCase();
-    else if (lc === 'proper') ch = APP.state.letterIndex === 0 ? rawChar.toUpperCase() : rawChar.toLowerCase();
-    else                      ch = rawChar.toUpperCase();
+    // APP.caseOf applied to the full name ensures the per-character case (including
+    // the 'proper' first-letter rule) is defined in exactly one place.
+    const ch = APP.caseOf(animal.name)[APP.state.letterIndex];
     activeTracer = APP.tracer.mount(stage, ch, {
       onComplete: () => {
         APP.advanceLetter();

@@ -5,59 +5,22 @@ window.APP = window.APP || {};
 // progressive build-up step-by-step (Stages).
 // Accessible from the Settings screen.
 (function (APP) {
-  const SVG_NS = 'http://www.w3.org/2000/svg';
+  // Alias shared utilities for brevity.
+  const svgEl = APP.svgEl;
+  const isDot = APP.isDot;
 
   // One colour per stroke (up to 5 before cycling)
   const COLORS = ['#ff8906', '#f582ae', '#8bd3dd', '#5390d9', '#7c3aed'];
 
-  // Confetti burst (same implementation as complete.js)
-  const CONFETTI_COLORS = ['#ff8906','#f582ae','#8bd3dd','#5390d9','#7c3aed','#e74c3c','#2ecc71','#f1c40f'];
-  function launchConfetti() {
-    const canvas = document.createElement('canvas');
-    canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:999';
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-    document.body.appendChild(canvas);
-    const ctx = canvas.getContext('2d');
-    const DURATION = 3500;
-    const particles = Array.from({ length: 120 }, () => ({
-      x: Math.random() * canvas.width,
-      y: -20 - Math.random() * 100,
-      vx: (Math.random() - 0.5) * 5,
-      vy: 2.5 + Math.random() * 4,
-      rotation: Math.random() * Math.PI * 2,
-      rotSpeed: (Math.random() - 0.5) * 0.18,
-      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
-      w: 7 + Math.random() * 9,
-      h: 4 + Math.random() * 6,
-      shape: Math.random() > 0.35 ? 'rect' : 'circle',
-      opacity: 1,
-    }));
-    let startTs = null, rafId;
-    function draw(ts) {
-      if (!startTs) startTs = ts;
-      const elapsed = ts - startTs;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      let alive = 0;
-      particles.forEach(p => {
-        p.x += p.vx; p.y += p.vy; p.vy += 0.09; p.vx *= 0.993; p.rotation += p.rotSpeed;
-        if (elapsed > DURATION - 1000) p.opacity = Math.max(0, (DURATION - elapsed) / 1000);
-        if (p.y < canvas.height + 50) alive++;
-        ctx.save(); ctx.globalAlpha = p.opacity; ctx.translate(p.x, p.y); ctx.rotate(p.rotation); ctx.fillStyle = p.color;
-        if (p.shape === 'circle') { ctx.beginPath(); ctx.arc(0, 0, p.w / 2, 0, Math.PI * 2); ctx.fill(); }
-        else { ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); }
-        ctx.restore();
-      });
-      if (elapsed < DURATION && alive > 0) { rafId = requestAnimationFrame(draw); } else { canvas.remove(); }
-    }
-    rafId = requestAnimationFrame(draw);
-    return () => { cancelAnimationFrame(rafId); canvas.remove(); };
-  }
+  const GHOST_COLOR = '#dde0ea'; // solid light blue-grey ≈ rgba(0,24,88,0.12) over white
 
-  function svgEl(tag, attrs) {
-    const e = document.createElementNS(SVG_NS, tag);
-    if (attrs) for (const k in attrs) e.setAttribute(k, String(attrs[k]));
-    return e;
+  // Read shared letter metrics — single source of truth with tracer.js.
+  const { X_SCALE_UP, X_SCALE_LOW, X_CENTER } = APP.LETTER_METRICS;
+
+  function strokeWidths(char) {
+    const up = /[A-Z]/.test(char);
+    const SW = up ? 42 : 30;
+    return { SW, SW_OUTLINE: SW + 8 };
   }
 
   // Parse the starting point of an SVG path ("M x,y …" or "M x y …")
@@ -66,34 +29,18 @@ window.APP = window.APP || {};
     return m ? { x: parseFloat(m[1]), y: parseFloat(m[2]) } : null;
   }
 
-  const GHOST_COLOR  = '#dde0ea'; // solid light blue-grey ≈ rgba(0,24,88,0.12) over white
-  const X_SCALE_UP   = 0.85;      // horizontal squeeze for uppercase — must match tracer.js
-  const X_SCALE_LOW  = 0.80;      // horizontal squeeze for lowercase — must match tracer.js
-  const X_CENTER     = 100;       // viewBox midpoint
-
-  function strokeWidths(char) {
-    const up = /[A-Z]/.test(char);
-    const SW = up ? 42 : 30;
-    return { SW, SW_OUTLINE: SW + 8 };
-  }
-
-  // Dot-stroke helpers — mirror of tracer.js logic.
-  function isDot(d) {
-    const m = d.match(/M\s*([\d.-]+)[,\s]+([\d.-]+)\s+L\s*([\d.-]+)[,\s]+([\d.-]+)/);
-    return !!(m && parseFloat(m[1]) === parseFloat(m[3]) && parseFloat(m[2]) === parseFloat(m[4]));
-  }
+  // Returns the display-space position of a dot stroke, binding the given
+  // character's affine transform. Delegates to APP.dotTransformPos for the math.
   function dotDisplayPos(d, char) {
-    const m = d.match(/M\s*([\d.-]+)[,\s]+([\d.-]+)/);
-    if (!m) return null;
     const { a, b } = APP.getLetterYTransform(char);
-    const isUpper = /[A-Z]/.test(char);
-    const xScale  = isUpper ? X_SCALE_UP : X_SCALE_LOW;
-    const xOffset = isUpper ? X_CENTER * (1 - X_SCALE_UP) : X_CENTER * (1 - X_SCALE_LOW);
-    return { x: xScale * parseFloat(m[1]) + xOffset, y: a * parseFloat(m[2]) + b };
+    const isUpper  = /[A-Z]/.test(char);
+    const xScale   = isUpper ? X_SCALE_UP : X_SCALE_LOW;
+    const xOffset  = isUpper ? X_CENTER * (1 - X_SCALE_UP) : X_CENTER * (1 - X_SCALE_LOW);
+    return APP.dotTransformPos(d, xScale, xOffset, a, b);
   }
 
   // Returns the SVG transform string for a glyph — combines the y-axis
-  // guide mapping with the optional x-axis squeeze for lowercase.
+  // guide mapping with the horizontal squeeze.
   function letterTransform(char) {
     const { a, b } = APP.getLetterYTransform(char);
     const isUpper  = /[A-Z]/.test(char);
@@ -102,36 +49,13 @@ window.APP = window.APP || {};
     return `translate(${xOffset},${b.toFixed(3)}) scale(${xScale},${a.toFixed(6)})`;
   }
 
-  // Appends horizontal writing guidelines to an SVG element.
-  // Reads from APP.GUIDE_CONFIG — edit that object in letterData.js to restyle.
-  function addGuidelines(svg, viewBox) {
-    const gc = APP.GUIDE_CONFIG;
-    if (!gc) return;
-    const vb = viewBox.split(/\s+/).map(Number);
-    const x1 = vb[0], x2 = vb[0] + vb[2];
-    const g = svgEl('g', { 'pointer-events': 'none' });
-    Object.values(gc.lines).forEach(line => {
-      if (line.hidden) return;
-      const color   = line.color   || gc.defaults.color;
-      const opacity = line.opacity !== undefined ? line.opacity : gc.defaults.opacity;
-      const width   = line.width   || gc.defaults.width;
-      const attrs = {
-        x1, y1: line.y, x2, y2: line.y,
-        stroke: color, 'stroke-width': width, opacity
-      };
-      if (line.dash) attrs['stroke-dasharray'] = line.dash;
-      g.appendChild(svgEl('line', attrs));
-    });
-    svg.appendChild(g);
-  }
-
   // ── Overview SVG ──────────────────────────────────────────────────────────
   // Thin dark outline + solid light-grey ghost interior (matches game style),
   // then each stroke in its own colour with a numbered circle at the start point.
   function overviewSVG(data, char, px) {
     const { SW, SW_OUTLINE } = strokeWidths(char);
     const svg = svgEl('svg', { viewBox: data.viewBox, width: px, height: px });
-    addGuidelines(svg, data.viewBox);
+    APP.addGuidelines(svg, data.viewBox);
 
     // All letter content sits in a transformed group so paths align with guidelines.
     const ltr = svgEl('g', { transform: letterTransform(char) });
@@ -157,10 +81,10 @@ window.APP = window.APP || {};
       'stroke-width': SW, fill: 'none',
       'stroke-linecap': 'round', 'stroke-linejoin': 'round'
     });
-    const _dn = data.strokes.length;
+    const strokeCount = data.strokes.length;
     data.strokes.forEach((s, i) => {
       if (isDot(s.d)) return;
-      const t = i / Math.max(_dn - 1, 1);
+      const t = i / Math.max(strokeCount - 1, 1);
       const opacity = (0.08 + t * 0.37).toFixed(2);
       depth.appendChild(svgEl('path', { d: s.d, stroke: `rgba(0,24,88,${opacity})` }));
     });
@@ -172,7 +96,7 @@ window.APP = window.APP || {};
       if (!isDot(s.d)) return;
       const pos = dotDisplayPos(s.d, char);
       if (!pos) return;
-      const t = i / Math.max(_dn - 1, 1);
+      const t = i / Math.max(strokeCount - 1, 1);
       const opacity = (0.08 + t * 0.37).toFixed(2);
       svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW_OUTLINE / 2, fill: '#001858' }));
       svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: GHOST_COLOR }));
@@ -201,12 +125,10 @@ window.APP = window.APP || {};
       if (pt) {
         ltr.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 20, fill: 'white' }));
         ltr.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 15, fill: color }));
-        const t = document.createElementNS(SVG_NS, 'text');
-        [['x', pt.x], ['y', pt.y], ['text-anchor', 'middle'],
-         ['dominant-baseline', 'central'], ['font-size', 18],
-         ['font-weight', 800], ['fill', 'white']].forEach(([k, v]) => t.setAttribute(k, v));
-        t.textContent = String(i + 1);
-        ltr.appendChild(t);
+        ltr.appendChild(svgEl('text', {
+          x: pt.x, y: pt.y, 'text-anchor': 'middle', 'dominant-baseline': 'central',
+          'font-size': 18, 'font-weight': 800, fill: 'white'
+        }, String(i + 1)));
       }
     });
     // ltr was already appended to svg above (before the dot overlay circles).
@@ -225,17 +147,17 @@ window.APP = window.APP || {};
     const aspect  = vbParts[3] / vbParts[2];
     const svgH    = Math.round(px * aspect);
 
-    const ltrTransform = letterTransform(char);
+    const glyphTransform = letterTransform(char);
 
     data.strokes.forEach((_, idx) => {
       const svg = svgEl('svg', {
         viewBox: data.viewBox, width: px, height: svgH,
         style: 'display:block;flex-shrink:0'
       });
-      addGuidelines(svg, data.viewBox);
+      APP.addGuidelines(svg, data.viewBox);
 
       // All letter content in a transformed group aligned to guidelines
-      const ltr = svgEl('g', { transform: ltrTransform });
+      const ltr = svgEl('g', { transform: glyphTransform });
 
       const outlineG = svgEl('g', {
         stroke: '#001858', 'stroke-width': SW_OUTLINE,
@@ -255,10 +177,10 @@ window.APP = window.APP || {};
         'stroke-width': SW, fill: 'none',
         'stroke-linecap': 'round', 'stroke-linejoin': 'round'
       });
-      const _dn2 = data.strokes.length;
+      const strokeCount = data.strokes.length;
       data.strokes.forEach((s, i) => {
         if (isDot(s.d)) return;
-        const t = i / Math.max(_dn2 - 1, 1);
+        const t = i / Math.max(strokeCount - 1, 1);
         const opacity = (0.08 + t * 0.37).toFixed(2);
         depthG.appendChild(svgEl('path', { d: s.d, stroke: `rgba(0,24,88,${opacity})` }));
       });
@@ -284,13 +206,10 @@ window.APP = window.APP || {};
         if (pt) {
           ltr.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 22, fill: 'white' }));
           ltr.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 16, fill: color }));
-          const t = document.createElementNS(SVG_NS, 'text');
-          [['x', pt.x], ['y', pt.y], ['text-anchor', 'middle'],
-           ['dominant-baseline', 'central'], ['font-size', 18],
-           ['font-weight', 800], ['fill', 'white'],
-           ['pointer-events', 'none']].forEach(([k, v]) => t.setAttribute(k, v));
-          t.textContent = String(idx + 1);
-          ltr.appendChild(t);
+          ltr.appendChild(svgEl('text', {
+            x: pt.x, y: pt.y, 'text-anchor': 'middle', 'dominant-baseline': 'central',
+            'font-size': 18, 'font-weight': 800, fill: 'white', 'pointer-events': 'none'
+          }, String(idx + 1)));
         }
       }
       svg.appendChild(ltr);
@@ -300,27 +219,23 @@ window.APP = window.APP || {};
         if (!isDot(s.d)) return;
         const pos = dotDisplayPos(s.d, char);
         if (!pos) return;
-        const tVal = i / Math.max(_dn2 - 1, 1);
+        const tVal = i / Math.max(strokeCount - 1, 1);
         const opacity = (0.08 + tVal * 0.37).toFixed(2);
-        const isDone = i < idx;
+        const isDone    = i < idx;
         const isCurrent = i === idx;
-        if (isDone) {
-          svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW_OUTLINE / 2, fill: '#001858' }));
-        } else {
-          svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW_OUTLINE / 2, fill: '#001858' }));
+        // Dark outline circle is drawn in every state (done, current, and future).
+        svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW_OUTLINE / 2, fill: '#001858' }));
+        if (!isDone) {
           svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: GHOST_COLOR }));
           svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: `rgba(0,24,88,${opacity})` }));
           if (isCurrent) {
             svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: color }));
             svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: 22, fill: 'white' }));
             svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: 16, fill: color }));
-            const t = document.createElementNS(SVG_NS, 'text');
-            [['x', pos.x], ['y', pos.y], ['text-anchor', 'middle'],
-             ['dominant-baseline', 'central'], ['font-size', 18],
-             ['font-weight', 800], ['fill', 'white'],
-             ['pointer-events', 'none']].forEach(([k, v]) => t.setAttribute(k, v));
-            t.textContent = String(idx + 1);
-            svg.appendChild(t);
+            svg.appendChild(svgEl('text', {
+              x: pos.x, y: pos.y, 'text-anchor': 'middle', 'dominant-baseline': 'central',
+              'font-size': 18, 'font-weight': 800, fill: 'white', 'pointer-events': 'none'
+            }, String(idx + 1)));
           }
         }
       });
@@ -341,7 +256,9 @@ window.APP = window.APP || {};
 
   // ── Main render ───────────────────────────────────────────────────────────
   function render(root, ctx) {
-    // Persist toggle state across redraws without re-entering render()
+    // Persist toggle state across redraws without re-entering render().
+    // This screen only supports two case modes (upper/lower); 'proper' from settings
+    // falls back to 'upper' intentionally — the toggle lets the user switch manually.
     let caseMode = APP.state.settings.letterCase === 'lower' ? 'lower' : 'upper';
     let viewMode = 'overview';
     // Active practice tracer — kept here so switching views always cleans it up.
@@ -505,7 +422,7 @@ window.APP = window.APP || {};
         }
 
         greatBtn.addEventListener('click', () => {
-          launchConfetti();
+          APP.launchConfetti();
         });
 
         resetBtn.addEventListener('click', () => {

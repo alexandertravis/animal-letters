@@ -62,7 +62,7 @@ window.APP = window.APP || {};
     const lengthValue = f1.querySelector('.lengthValue');
     fillRange(range);
     range.addEventListener('input', () => {
-      const v = parseInt(range.value, 10);
+      const v = range.valueAsNumber;
       APP.settings.update({ maxLength: v });
       lengthValue.textContent = v;
       fillRange(range);
@@ -138,7 +138,7 @@ window.APP = window.APP || {};
     // Debounce the preview tone slightly so rapid dragging doesn't stack up.
     let volPreviewTimer = null;
     volSlider.addEventListener('input', () => {
-      const v = parseInt(volSlider.value, 10) / 100;
+      const v = volSlider.valueAsNumber / 100;
       APP.audio.setVolume(v);
       refreshMuteBtn();
       fillRange(volSlider);

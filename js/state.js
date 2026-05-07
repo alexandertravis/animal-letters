@@ -49,10 +49,6 @@ window.APP = window.APP || {};
     }
   };
 
-  APP.restartLetter = function () {
-    // Tracer module re-renders current letter; nothing to mutate here.
-  };
-
   APP.skipAnimal = function () {
     // Pick a new animal without going through the complete screen.
     // Does not count as a completion — completedAnimals is not updated.

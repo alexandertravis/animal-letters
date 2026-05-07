@@ -8,50 +8,6 @@ window.APP = window.APP || {};
 // Accessible from the Settings screen.
 (function (APP) {
 
-  // ── Confetti (shared with letters.js / complete.js) ──────────────────────
-  const CONFETTI_COLORS = ['#ff8906','#f582ae','#8bd3dd','#5390d9','#7c3aed','#e74c3c','#2ecc71','#f1c40f'];
-  function launchConfetti() {
-    const canvas = document.createElement('canvas');
-    canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:999';
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-    document.body.appendChild(canvas);
-    const ctx = canvas.getContext('2d');
-    const DURATION = 3500;
-    const particles = Array.from({ length: 120 }, () => ({
-      x: Math.random() * canvas.width,
-      y: -20 - Math.random() * 100,
-      vx: (Math.random() - 0.5) * 5,
-      vy: 2.5 + Math.random() * 4,
-      rotation: Math.random() * Math.PI * 2,
-      rotSpeed: (Math.random() - 0.5) * 0.18,
-      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
-      w: 7 + Math.random() * 9,
-      h: 4 + Math.random() * 6,
-      shape: Math.random() > 0.35 ? 'rect' : 'circle',
-      opacity: 1,
-    }));
-    let startTs = null, rafId;
-    function drawFrame(ts) {
-      if (!startTs) startTs = ts;
-      const elapsed = ts - startTs;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      let alive = 0;
-      particles.forEach(p => {
-        p.x += p.vx; p.y += p.vy; p.vy += 0.09; p.vx *= 0.993; p.rotation += p.rotSpeed;
-        if (elapsed > DURATION - 1000) p.opacity = Math.max(0, (DURATION - elapsed) / 1000);
-        if (p.y < canvas.height + 50) alive++;
-        ctx.save(); ctx.globalAlpha = p.opacity; ctx.translate(p.x, p.y); ctx.rotate(p.rotation); ctx.fillStyle = p.color;
-        if (p.shape === 'circle') { ctx.beginPath(); ctx.arc(0, 0, p.w / 2, 0, Math.PI * 2); ctx.fill(); }
-        else { ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); }
-        ctx.restore();
-      });
-      if (elapsed < DURATION && alive > 0) { rafId = requestAnimationFrame(drawFrame); } else { canvas.remove(); }
-    }
-    rafId = requestAnimationFrame(drawFrame);
-    return () => { cancelAnimationFrame(rafId); canvas.remove(); };
-  }
-
   // ── Main render ───────────────────────────────────────────────────────────
   function render(root, ctx) {
     root.innerHTML = '';
@@ -126,14 +82,14 @@ window.APP = window.APP || {};
       const list = document.createElement('div');
       list.className = 'devanimals-list';
 
-      const byLength = {};
+      const byLength = new Map();
       APP.ANIMALS.forEach(a => {
         const len = a.name.length;
-        if (!byLength[len]) byLength[len] = [];
-        byLength[len].push(a);
+        if (!byLength.has(len)) byLength.set(len, []);
+        byLength.get(len).push(a);
       });
 
-      Object.keys(byLength).sort((a, b) => a - b).forEach(len => {
+      [...byLength.keys()].sort((a, b) => a - b).forEach(len => {
         const groupHeader = document.createElement('div');
         groupHeader.className = 'devanimals-group-header';
         groupHeader.textContent = `${len}-letter animals`;
@@ -178,6 +134,8 @@ window.APP = window.APP || {};
 
           const assets = document.createElement('div');
           assets.className = 'devanimals-assets';
+          // These checks confirm a path is configured in animals.js — not that
+          // the actual file exists on disk (missing files fall back gracefully).
           const hasCartoon   = animal.images.cartoon   ? '🖼' : '✗';
           const hasRealistic = animal.images.realistic  ? '📷' : '✗';
           const hasAudio     = animal.audio             ? '🔊' : '✗';
@@ -265,7 +223,7 @@ window.APP = window.APP || {};
       greatBtn.className = 'btn practice-great-btn';
       greatBtn.textContent = 'Great Job! 🎉';
       greatBtn.style.visibility = 'hidden';
-      greatBtn.addEventListener('click', () => launchConfetti());
+      greatBtn.addEventListener('click', () => APP.launchConfetti());
       controls.appendChild(greatBtn);
 
       const resetBtn = document.createElement('button');

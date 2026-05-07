@@ -4,14 +4,14 @@ window.APP = window.APP || {};
 // API: APP.tracer.mount(stageEl, character, { onComplete })
 //      returns { destroy() }
 (function (APP) {
-  const SVG_NS = 'http://www.w3.org/2000/svg';
+  // Alias shared utilities for brevity within this module.
+  const el = APP.svgEl;
+  const { X_SCALE_UP, X_SCALE_LOW, X_CENTER } = APP.LETTER_METRICS;
+
   const STROKE_WIDTH_UP  = 42;   // uppercase letter thickness in viewBox units
   const STROKE_WIDTH_LOW = 30;   // lowercase letter thickness
   const INK_WIDTH_UP     = 38;   // user ink thickness — uppercase
   const INK_WIDTH_LOW    = 26;   // user ink thickness — lowercase
-  const X_SCALE_UP       = 0.85; // horizontal squeeze for uppercase — tune to taste
-  const X_SCALE_LOW      = 0.80; // horizontal squeeze for lowercase — tune to taste
-  const X_CENTER         = 100;  // viewBox midpoint around which x-scale is applied
   const TOLERANCE    = 32;       // viewBox units — how close pointer must come to next checkpoint
   const DRAW_RADIUS  = 52;       // viewBox units — how close to the dot before ink is deposited
   const CHECKPOINTS_PER_STROKE = 18;
@@ -19,13 +19,6 @@ window.APP = window.APP || {};
   // One colour per stroke — matches the letter-patterns review screen so
   // the child sees the same numbering system in both places.
   const STROKE_COLORS = ['#ff8906', '#f582ae', '#8bd3dd', '#5390d9', '#7c3aed'];
-
-  function el(tag, attrs, children) {
-    const e = document.createElementNS(SVG_NS, tag);
-    if (attrs) for (const k in attrs) e.setAttribute(k, attrs[k]);
-    if (children) children.forEach(c => e.appendChild(c));
-    return e;
-  }
 
   function mount(stageEl, character, opts) {
     const data = APP.getLetter(character);
@@ -59,26 +52,22 @@ window.APP = window.APP || {};
     const xOffset = isUpper ? X_CENTER * (1 - X_SCALE_UP) : X_CENTER * (1 - X_SCALE_LOW);
     const letterTransform = `translate(${xOffset},${tB.toFixed(3)}) scale(${xScale},${tA.toFixed(6)})`;
 
-    // Zero-length "dot" strokes (M x,y L x,y) need special handling: a non-uniform
-    // scale turns the round linecap elliptical.  We detect them and render them as
-    // real <circle> elements in transform-free overlay groups instead.
-    function isDot(d) {
-      const m = d.match(/M\s*([\d.-]+)[,\s]+([\d.-]+)\s+L\s*([\d.-]+)[,\s]+([\d.-]+)/);
-      return !!(m && parseFloat(m[1]) === parseFloat(m[3]) && parseFloat(m[2]) === parseFloat(m[4]));
-    }
-    function dotPos(d) { // centre in display-space (transform already applied)
-      const m = d.match(/M\s*([\d.-]+)[,\s]+([\d.-]+)/);
-      if (!m) return null;
-      return { x: xScale * parseFloat(m[1]) + xOffset, y: tA * parseFloat(m[2]) + tB };
-    }
+    // Zero-length "dot" strokes (M x,y L x,y with identical coords) need special
+    // handling: a non-uniform scale turns the round linecap elliptical. Detect them
+    // and render as real <circle> elements in transform-free overlay groups instead.
+    // isDot is shared (APP.isDot); dotPos is a thin wrapper that binds this letter's transform.
+    const isDot = APP.isDot;
+    function dotPos(d) { return APP.dotTransformPos(d, xScale, xOffset, tA, tB); }
+
+    // Parse viewBox once — used for the mask rect and guideline x-extents.
+    const vb = data.viewBox.split(/\s+/).map(Number);
 
     // Mask: white letter shape on black bg → confines user ink to inside the letter.
     const defs = el('defs');
     const maskId = `mask-${Math.random().toString(36).slice(2, 9)}`;
     const mask = el('mask', { id: maskId, maskUnits: 'userSpaceOnUse' });
-    const vbParts = data.viewBox.split(/\s+/).map(Number);
     mask.appendChild(el('rect', {
-      x: vbParts[0], y: vbParts[1], width: vbParts[2], height: vbParts[3], fill: 'black'
+      x: vb[0], y: vb[1], width: vb[2], height: vb[3], fill: 'black'
     }));
     const maskShapes = el('g', {
       stroke: 'white', 'stroke-width': SW, fill: 'none',
@@ -98,25 +87,7 @@ window.APP = window.APP || {};
     svg.appendChild(defs);
 
     // ── Writing guidelines (bottom of stack, behind all letter layers) ──
-    const gc = APP.GUIDE_CONFIG;
-    if (gc) {
-      const vb = data.viewBox.split(/\s+/).map(Number);
-      const x1 = vb[0], x2 = vb[0] + vb[2];
-      const glGroup = el('g', { class: 'writing-guidelines', 'pointer-events': 'none' });
-      Object.values(gc.lines).forEach(line => {
-        if (line.hidden) return;
-        const color   = line.color   || gc.defaults.color;
-        const opacity = line.opacity !== undefined ? line.opacity : gc.defaults.opacity;
-        const width   = line.width   || gc.defaults.width;
-        const attrs = {
-          x1, y1: line.y, x2, y2: line.y,
-          stroke: color, 'stroke-width': width, opacity
-        };
-        if (line.dash) attrs['stroke-dasharray'] = line.dash;
-        glGroup.appendChild(el('line', attrs));
-      });
-      svg.appendChild(glGroup);
-    }
+    APP.addGuidelines(svg, data.viewBox);
 
     // Outline layer — slightly wider dark stroke, rendered first so it peeks out
     // around the edges of the ghost on top, creating a thin dark border.
@@ -151,10 +122,10 @@ window.APP = window.APP || {};
       'stroke-linecap': 'round', 'stroke-linejoin': 'round',
       transform: letterTransform
     });
-    const _dn = data.strokes.length;
+    const strokeCount = data.strokes.length;
     data.strokes.forEach((s, i) => {
       if (isDot(s.d)) return;
-      const t = i / Math.max(_dn - 1, 1);
+      const t = i / Math.max(strokeCount - 1, 1);
       const opacity = (0.08 + t * 0.37).toFixed(2);
       depthGroup.appendChild(el('path', { d: s.d, stroke: `rgba(0,24,88,${opacity})` }));
     });
@@ -168,7 +139,7 @@ window.APP = window.APP || {};
       if (!isDot(s.d)) return;
       const pos = dotPos(s.d);
       if (!pos) return;
-      const t = i / Math.max(_dn - 1, 1);
+      const t = i / Math.max(strokeCount - 1, 1);
       const opacity = (0.08 + t * 0.37).toFixed(2);
       dotBaseLayer.appendChild(el('circle', { cx: pos.x, cy: pos.y, r: (SW + 8) / 2, fill: '#001858' }));
       dotBaseLayer.appendChild(el('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: '#dde0ea' }));
@@ -216,8 +187,7 @@ window.APP = window.APP || {};
 
     // Build per-stroke checkpoint lists using a hidden temp path for getPointAtLength.
     const checkpoints = data.strokes.map(s => {
-      const p = document.createElementNS(SVG_NS, 'path');
-      p.setAttribute('d', s.d);
+      const p = el('path', { d: s.d });
       // path must be in document tree for getTotalLength on some browsers — append to defs.
       defs.appendChild(p);
       const len = p.getTotalLength();
@@ -293,17 +263,11 @@ window.APP = window.APP || {};
         fill: color
       }));
       // Stroke number inside the dot so the child can follow the order.
-      const numLabel = document.createElementNS(SVG_NS, 'text');
-      numLabel.setAttribute('x', lead.x);
-      numLabel.setAttribute('y', lead.y);
-      numLabel.setAttribute('text-anchor', 'middle');
-      numLabel.setAttribute('dominant-baseline', 'central');
-      numLabel.setAttribute('font-size', '15');
-      numLabel.setAttribute('font-weight', '800');
-      numLabel.setAttribute('fill', 'white');
-      numLabel.setAttribute('pointer-events', 'none');
-      numLabel.textContent = String(currentStroke + 1);
-      guideGroup.appendChild(numLabel);
+      guideGroup.appendChild(el('text', {
+        x: lead.x, y: lead.y,
+        'text-anchor': 'middle', 'dominant-baseline': 'central',
+        'font-size': 15, 'font-weight': 800, fill: 'white', 'pointer-events': 'none'
+      }, String(currentStroke + 1)));
     }
 
     function markStrokeDone(strokeIdx) {
