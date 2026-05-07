@@ -372,7 +372,7 @@ window.APP = window.APP || {};
           card.appendChild(lbl);
 
           if (data) {
-            card.appendChild(stagesEl(data, ch, 76));
+            card.appendChild(stagesEl(data, ch, 100));
           } else {
             const miss = document.createElement('span');
             miss.className = 'letter-card-missing';

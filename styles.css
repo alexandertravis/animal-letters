@@ -422,6 +422,8 @@ html, body {
   overflow-y: auto;
   display: grid;
   grid-template-columns: repeat(auto-fill, 122px);
+  grid-auto-rows: max-content;   /* rows size to content, not to fill height */
+  align-content: start;          /* pack rows to the top, no stretching      */
   justify-content: center;
   gap: 10px;
   padding: 10px 14px 32px;
@@ -466,6 +468,7 @@ html, body {
   align-items: center;
   gap: 10px;
   padding: 8px 12px;
+  min-height: 130px;   /* tall enough for the stage SVGs (px=100, aspect≈1.25 → 125px + padding) */
   /* overflow:hidden clips stage SVGs that would otherwise bleed into sibling rows */
   overflow: hidden;
 }
