@@ -418,18 +418,18 @@ window.APP = window.APP || {};
         placeholder.textContent = 'Select a letter above to start practising';
         stage.appendChild(placeholder);
 
-        // "Great job" overlay — absolutely positioned inside the stage wrap so
-        // it never affects the controls bar layout when it appears/disappears.
-        const statusLabel = document.createElement('div');
-        statusLabel.className = 'practice-status';
-        stageWrap.appendChild(statusLabel);
-
         stageWrap.appendChild(stage);
         body.appendChild(stageWrap);
 
-        // Controls bar — left-aligned so the button has a fixed position
+        // Controls bar — status on the left (opacity:0 when hidden so button
+        // stays pinned to the right edge), Try again on the right.
         const controls = document.createElement('div');
         controls.className = 'practice-controls';
+
+        // "Great job" message — always in the layout but invisible until complete
+        const statusLabel = document.createElement('div');
+        statusLabel.className = 'practice-status';
+        controls.appendChild(statusLabel);
 
         const resetBtn = document.createElement('button');
         resetBtn.className = 'btn practice-reset-btn';

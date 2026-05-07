@@ -572,10 +572,9 @@ html, body {
 .practice-controls {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   gap: 14px;
   flex-shrink: 0;
-  padding-left: 8px;
 }
 .practice-reset-btn {
   border: 2px solid var(--ink);
@@ -586,6 +585,7 @@ html, body {
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
+  flex-shrink: 0;
   transition: background 0.15s, color 0.15s;
 }
 .practice-reset-btn:hover:not(:disabled) {
@@ -596,18 +596,18 @@ html, body {
   opacity: 0.35;
   cursor: default;
 }
+/* Status label sits on the left of the controls bar.
+   Uses opacity (not display:none) so it always occupies space
+   and keeps the "Try again" button pinned to the right edge. */
 .practice-status {
-  position: absolute;
-  bottom: 16px;
-  left: 0;
-  right: 0;
-  text-align: center;
+  flex: 1;
+  text-align: left;
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--primary);
-  pointer-events: none;
   opacity: 0;
   transition: opacity 0.2s;
+  pointer-events: none;
 }
 .practice-status.visible {
   opacity: 1;
