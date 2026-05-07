@@ -145,7 +145,10 @@ window.APP = window.APP || {};
     const back = document.createElement('button');
     back.className = 'btn ghost';
     back.textContent = 'Back';
-    back.addEventListener('click', () => ctx.go(APP.state.sessionExists ? 'game' : 'landing'));
+    back.addEventListener('click', () => {
+      const prev = APP.state.previousScreen;
+      ctx.go(prev && prev !== 'setup' ? prev : 'landing');
+    });
     const start = document.createElement('button');
     start.className = 'btn';
     start.textContent = 'New Game';

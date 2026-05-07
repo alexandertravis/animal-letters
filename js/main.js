@@ -3,6 +3,7 @@
 
   const ctx = {
     go(screen) {
+      APP.state.previousScreen = APP.state.screen; // remember where we came from
       APP.state.screen = screen;
       route();
     }
