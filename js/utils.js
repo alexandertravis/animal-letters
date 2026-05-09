@@ -66,6 +66,22 @@ window.APP = window.APP || {};
     return { x: xScale * parseFloat(m[1]) + xOffset, y: tA * parseFloat(m[2]) + tB };
   };
 
+  // ── Font positioning helper ────────────────────────────────────────────────
+  // Returns { fontSize, baseline } from APP.FONT_CONFIG for a given character,
+  // selecting the correct size/baseline group (uppercase, ascender, descender,
+  // or standard lowercase). Used by tracer.js and letters.js to position the
+  // <clipPath><text> and ghost <text> elements consistently.
+  const _DESCENDERS_LC = 'gjpqy';
+  const _ASCENDERS_LC  = 'bdfhklt';
+  APP.getFontPos = function (char) {
+    const fc = APP.FONT_CONFIG;
+    if (!fc) return { fontSize: 195, baseline: 170 }; // safe fallback
+    if (/[A-Z]/.test(char))           return { fontSize: fc.fontSizeUC,        baseline: fc.baselineUC };
+    if (_DESCENDERS_LC.includes(char)) return { fontSize: fc.fontSizeDescender, baseline: fc.baselineDescender };
+    if (_ASCENDERS_LC.includes(char))  return { fontSize: fc.fontSizeAscender,  baseline: fc.baselineAscender };
+    return                                    { fontSize: fc.fontSizeLC,         baseline: fc.baselineLC };
+  };
+
   // ── Case conversion ────────────────────────────────────────────────────────
   // Converts an animal name string to the display case from current settings.
   // Used by game.js, complete.js, and anywhere else a name needs case-aware display.

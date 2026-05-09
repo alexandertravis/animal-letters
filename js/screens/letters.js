@@ -49,95 +49,109 @@ window.APP = window.APP || {};
     return `translate(${xOffset},${b.toFixed(3)}) scale(${xScale},${a.toFixed(6)})`;
   }
 
+  // ── Ghost text helper ─────────────────────────────────────────────────────
+  // Returns a <text> element rendering the Quicksand glyph at low opacity —
+  // the "target letter shape" the child traces inside in the review screens.
+  function ghostText(char, vb) {
+    const fc = APP.FONT_CONFIG;
+    const { fontSize, baseline } = APP.getFontPos(char);
+    const cx = vb[0] + vb[2] / 2;
+    return svgEl('text', {
+      class: 'letter-ghost',
+      x: cx,
+      y: baseline,
+      'font-family': fc.family,
+      'font-size': fontSize,
+      'font-weight': fc.weight,
+      'text-anchor': 'middle',
+      'dominant-baseline': 'auto',
+      fill: GHOST_COLOR,
+      stroke: '#001858',
+      'stroke-width': 10,
+      'paint-order': 'stroke fill',
+    }, char);
+  }
+
+  // Returns a unique clipPath id and appends the <clipPath><text> to defs.
+  function addClipPath(defs, char, vb) {
+    const fc = APP.FONT_CONFIG;
+    const { fontSize, baseline } = APP.getFontPos(char);
+    const cx = vb[0] + vb[2] / 2;
+    const clipId = `ltr-clip-${Math.random().toString(36).slice(2, 9)}`;
+    const cp = svgEl('clipPath', { id: clipId });
+    cp.appendChild(svgEl('text', {
+      x: cx,
+      y: baseline,
+      'font-family': fc.family,
+      'font-size': fontSize,
+      'font-weight': fc.weight,
+      'text-anchor': 'middle',
+      'dominant-baseline': 'auto',
+    }, char));
+    defs.appendChild(cp);
+    return clipId;
+  }
+
   // ── Overview SVG ──────────────────────────────────────────────────────────
-  // Thin dark outline + solid light-grey ghost interior (matches game style),
-  // then each stroke in its own colour with a numbered circle at the start point.
+  // Ghost Quicksand letter shape + each stroke in its own colour with a
+  // numbered circle at the start point. Strokes clipped to the font glyph
+  // so any guide paths that overshoot the letter are hidden (Phase 3 audit).
   function overviewSVG(data, char, px) {
-    const { SW, SW_OUTLINE } = strokeWidths(char);
+    const vb = data.viewBox.split(/\s+/).map(Number);
     const svg = svgEl('svg', { viewBox: data.viewBox, width: px, height: px });
+
+    // defs — clipPath for coloured strokes
+    const defs = svgEl('defs');
+    const clipId = addClipPath(defs, char, vb);
+    svg.appendChild(defs);
+
     APP.addGuidelines(svg, data.viewBox);
 
-    // All letter content sits in a transformed group so paths align with guidelines.
-    const ltr = svgEl('g', { transform: letterTransform(char) });
+    // Ghost: Quicksand glyph with dark border + light fill
+    svg.appendChild(ghostText(char, vb));
 
-    // Outline: wider dark stroke — border ring visible around the ghost on top
-    const outline = svgEl('g', {
-      stroke: '#001858', 'stroke-width': SW_OUTLINE,
-      fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+    // Coloured stroke paths + numbered start dots, clipped to font glyph
+    const ltr = svgEl('g', {
+      transform: letterTransform(char),
+      'clip-path': `url(#${clipId})`,
     });
-    data.strokes.forEach(s => { if (!isDot(s.d)) outline.appendChild(svgEl('path', { d: s.d })); });
-    ltr.appendChild(outline);
 
-    // Ghost: solid light grey covers the outline interior, leaving the border ring
-    const ghost = svgEl('g', {
-      stroke: GHOST_COLOR, 'stroke-width': SW,
-      fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
-    });
-    data.strokes.forEach(s => { if (!isDot(s.d)) ghost.appendChild(svgEl('path', { d: s.d })); });
-    ltr.appendChild(ghost);
-
-    // Depth: cascading opacity per stroke — first stroke lightest, last darkest.
-    const depth = svgEl('g', {
-      'stroke-width': SW, fill: 'none',
-      'stroke-linecap': 'round', 'stroke-linejoin': 'round'
-    });
-    const strokeCount = data.strokes.length;
     data.strokes.forEach((s, i) => {
       if (isDot(s.d)) return;
-      const t = i / Math.max(strokeCount - 1, 1);
-      const opacity = (0.08 + t * 0.37).toFixed(2);
-      depth.appendChild(svgEl('path', { d: s.d, stroke: `rgba(0,24,88,${opacity})` }));
-    });
-    ltr.appendChild(depth);
-    svg.appendChild(ltr);
-
-    // Dot overlay — circles rendered outside the transform group so they stay round.
-    data.strokes.forEach((s, i) => {
-      if (!isDot(s.d)) return;
-      const pos = dotDisplayPos(s.d, char);
-      if (!pos) return;
-      const t = i / Math.max(strokeCount - 1, 1);
-      const opacity = (0.08 + t * 0.37).toFixed(2);
-      svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW_OUTLINE / 2, fill: '#001858' }));
-      svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: GHOST_COLOR }));
-      svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: `rgba(0,24,88,${opacity})` }));
-    });
-
-    // Each stroke in a unique colour + numbered start dot
-    data.strokes.forEach((s, i) => {
       const color = COLORS[i % COLORS.length];
-      if (isDot(s.d)) {
-        const pos = dotDisplayPos(s.d, char);
-        if (pos) {
-          svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: 6.5, fill: color }));
-          svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: 10, fill: 'white', opacity: 0.7 }));
-          svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: 7.5, fill: color }));
-        }
-        return;
-      }
-      // Regular stroke: coloured path + numbered start dot, both inside ltr transform group.
       ltr.appendChild(svgEl('path', {
         d: s.d, stroke: color, 'stroke-width': 13,
         fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
       }));
-
       const pt = startPt(s.d);
       if (pt) {
         ltr.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 20, fill: 'white' }));
         ltr.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 15, fill: color }));
         ltr.appendChild(svgEl('text', {
           x: pt.x, y: pt.y, 'text-anchor': 'middle', 'dominant-baseline': 'central',
-          'font-size': 18, 'font-weight': 800, fill: 'white'
+          'font-size': 18, 'font-weight': 700, fill: 'white'
         }, String(i + 1)));
       }
     });
-    // ltr was already appended to svg above (before the dot overlay circles).
+    svg.appendChild(ltr);
+
+    // Dot stroke indicators — drawn in display space (no letterTransform distortion)
+    data.strokes.forEach((s, i) => {
+      if (!isDot(s.d)) return;
+      const pos = dotDisplayPos(s.d, char);
+      if (!pos) return;
+      const color = COLORS[i % COLORS.length];
+      svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: 10, fill: 'white', opacity: 0.7 }));
+      svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: 7.5, fill: color }));
+    });
+
     return svg;
   }
 
   // ── Stages element ────────────────────────────────────────────────────────
   // N small SVGs side-by-side, each revealing one more stroke:
   //   previous strokes = dark blue (done), current = orange, future = ghost.
+  // All stroke content is clipped to the Quicksand glyph outline.
   function stagesEl(data, char, px) {
     const { SW, SW_OUTLINE } = strokeWidths(char);
     const wrap = document.createElement('div');
@@ -146,6 +160,7 @@ window.APP = window.APP || {};
     const vbParts = data.viewBox.split(/\s+/).map(Number);
     const aspect  = vbParts[3] / vbParts[2];
     const svgH    = Math.round(px * aspect);
+    const vb      = vbParts;
 
     const glyphTransform = letterTransform(char);
 
@@ -154,90 +169,71 @@ window.APP = window.APP || {};
         viewBox: data.viewBox, width: px, height: svgH,
         style: 'display:block;flex-shrink:0'
       });
+
+      // Each SVG gets its own clipPath (ids must be unique per document)
+      const defs = svgEl('defs');
+      const clipId = addClipPath(defs, char, vb);
+      svg.appendChild(defs);
+
       APP.addGuidelines(svg, data.viewBox);
 
-      // All letter content in a transformed group aligned to guidelines
-      const ltr = svgEl('g', { transform: glyphTransform });
+      // Ghost: Quicksand letter shape as the background target
+      svg.appendChild(ghostText(char, vb));
 
-      const outlineG = svgEl('g', {
-        stroke: '#001858', 'stroke-width': SW_OUTLINE,
-        fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
-      });
-      data.strokes.forEach(s => { if (!isDot(s.d)) outlineG.appendChild(svgEl('path', { d: s.d })); });
-      ltr.appendChild(outlineG);
-
-      const ghostG = svgEl('g', {
-        stroke: GHOST_COLOR, 'stroke-width': SW,
-        fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
-      });
-      data.strokes.forEach(s => { if (!isDot(s.d)) ghostG.appendChild(svgEl('path', { d: s.d })); });
-      ltr.appendChild(ghostG);
-
-      const depthG = svgEl('g', {
-        'stroke-width': SW, fill: 'none',
-        'stroke-linecap': 'round', 'stroke-linejoin': 'round'
-      });
-      const strokeCount = data.strokes.length;
-      data.strokes.forEach((s, i) => {
-        if (isDot(s.d)) return;
-        const t = i / Math.max(strokeCount - 1, 1);
-        const opacity = (0.08 + t * 0.37).toFixed(2);
-        depthG.appendChild(svgEl('path', { d: s.d, stroke: `rgba(0,24,88,${opacity})` }));
-      });
-      ltr.appendChild(depthG);
-
+      // Done strokes (strokes before idx) — dark blue, clipped to font glyph
       const doneG = svgEl('g', {
         stroke: '#001858', 'stroke-width': SW_OUTLINE,
-        fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+        fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+        transform: glyphTransform,
+        'clip-path': `url(#${clipId})`,
       });
       for (let j = 0; j < idx; j++) {
         if (!isDot(data.strokes[j].d)) doneG.appendChild(svgEl('path', { d: data.strokes[j].d }));
       }
-      ltr.appendChild(doneG);
+      svg.appendChild(doneG);
 
+      // Current stroke — coloured, with numbered start dot; clipped to font glyph
       const color = COLORS[idx % COLORS.length];
       const curStroke = data.strokes[idx];
       if (!isDot(curStroke.d)) {
-        ltr.appendChild(svgEl('path', {
+        const curG = svgEl('g', {
+          transform: glyphTransform,
+          'clip-path': `url(#${clipId})`,
+        });
+        curG.appendChild(svgEl('path', {
           d: curStroke.d, stroke: color, 'stroke-width': SW,
           fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
         }));
         const pt = startPt(curStroke.d);
         if (pt) {
-          ltr.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 22, fill: 'white' }));
-          ltr.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 16, fill: color }));
-          ltr.appendChild(svgEl('text', {
+          curG.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 22, fill: 'white' }));
+          curG.appendChild(svgEl('circle', { cx: pt.x, cy: pt.y, r: 16, fill: color }));
+          curG.appendChild(svgEl('text', {
             x: pt.x, y: pt.y, 'text-anchor': 'middle', 'dominant-baseline': 'central',
-            'font-size': 18, 'font-weight': 800, fill: 'white', 'pointer-events': 'none'
+            'font-size': 18, 'font-weight': 700, fill: 'white', 'pointer-events': 'none'
           }, String(idx + 1)));
         }
+        svg.appendChild(curG);
       }
-      svg.appendChild(ltr);
 
-      // Dot overlay — circles outside the transform group so they stay perfectly round.
+      // Dot strokes — circles in display space (avoids transform distortion)
       data.strokes.forEach((s, i) => {
         if (!isDot(s.d)) return;
         const pos = dotDisplayPos(s.d, char);
         if (!pos) return;
-        const tVal = i / Math.max(strokeCount - 1, 1);
-        const opacity = (0.08 + tVal * 0.37).toFixed(2);
         const isDone    = i < idx;
         const isCurrent = i === idx;
-        // Dark outline circle is drawn in every state (done, current, and future).
-        svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW_OUTLINE / 2, fill: '#001858' }));
-        if (!isDone) {
-          svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: GHOST_COLOR }));
-          svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: `rgba(0,24,88,${opacity})` }));
-          if (isCurrent) {
-            svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: color }));
-            svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: 22, fill: 'white' }));
-            svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: 16, fill: color }));
-            svg.appendChild(svgEl('text', {
-              x: pos.x, y: pos.y, 'text-anchor': 'middle', 'dominant-baseline': 'central',
-              'font-size': 18, 'font-weight': 800, fill: 'white', 'pointer-events': 'none'
-            }, String(idx + 1)));
-          }
+        if (isDone) {
+          svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: SW_OUTLINE / 2, fill: '#001858' }));
+        } else if (isCurrent) {
+          svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: 22, fill: 'white' }));
+          svg.appendChild(svgEl('circle', { cx: pos.x, cy: pos.y, r: 16, fill: color }));
+          svg.appendChild(svgEl('text', {
+            x: pos.x, y: pos.y, 'text-anchor': 'middle', 'dominant-baseline': 'central',
+            'font-size': 18, 'font-weight': 700, fill: 'white', 'pointer-events': 'none'
+          }, String(idx + 1)));
         }
+        // Future dot strokes — shown via the ghost text element, no extra circle needed
       });
 
       // Cell wrapper + stage number badge

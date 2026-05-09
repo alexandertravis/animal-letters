@@ -24,47 +24,49 @@ window.APP = window.APP || {};
     file: 'assets/fonts/Quicksand-VariableFont_wght.ttf',
 
     // ── SVG viewport ─────────────────────────────────────────────────────────
-    // All glyphs are rendered inside a 200×270 viewBox. The extra height vs the
-    // previous 200×250 gives a small amount of breathing room below the baseline.
-    // Accented characters (U+00C0–017E) use viewBoxHAccent, which adds ~30 units
-    // of headroom above the cap-height for diacritical marks.
+    // Glyph positioning is based on GUIDE_CONFIG line positions:
+    //   top    y=30   — cap line / ascender top
+    //   middle y=100  — x-height top
+    //   bottom y=170  — baseline (all letters rest here)
+    //   lower  y=240  — descender bottom
+    //
+    // viewBoxH/viewBoxHAccent are reserved for Phase 4 dynamic viewBox logic.
     viewBoxW: 200,
     viewBoxH: 270,        // standard — unaccented uppercase and lowercase
     viewBoxHAccent: 300,  // accented characters that carry a mark above cap-height
 
-    // ── Default font size (viewBox units) ────────────────────────────────────
-    // Shared by uppercase, standard lowercase, and ascender-group glyphs.
-    // Tuned so the Quicksand cap-height fills from approximately y=30 to y=215,
-    // matching the existing guide-line positions used by GUIDE_CONFIG.
-    // Will be refined empirically in Phase 2 once the <text> clip is live.
-    fontSizeDefault: 185,
-
     // ── Uppercase glyph positioning ───────────────────────────────────────────
-    // baselineUC: y coordinate of the text baseline for uppercase glyphs.
-    // Font sits at: cap-height ≈ baselineUC − (fontSizeDefault × capHeightRatio).
-    // Quicksand cap-height ratio ≈ 0.72, so cap-top ≈ 215 − (185 × 0.72) ≈ 82.
-    baselineUC: 215,
+    // Fills cap zone top→bottom (y=30→y=170).
+    // At Quicksand cap-height ratio ≈ 0.72:
+    //   cap-top = baselineUC − (fontSizeUC × 0.72) = 170 − (195 × 0.72) ≈ 29 ✓
+    fontSizeUC: 195,
+    baselineUC: 170,
 
-    // ── Standard lowercase glyph positioning ─────────────────────────────────
-    // Standard lowercase (a, c, e, m, n, etc.) — same font-size, same baseline.
-    // The x-height naturally lands at approximately the middle guide line.
-    baselineLC: 215,
+    // ── Standard lowercase (a c e i m n o r s u v w x z) ────────────────────
+    // Fills x-height zone only (middle→bottom, y=100→y=170).
+    // At Quicksand x-height ratio ≈ 0.56:
+    //   x-top = baselineLC − (fontSizeLC × 0.56) = 170 − (125 × 0.56) ≈ 100 ✓
+    fontSizeLC: 125,
+    baselineLC: 170,
 
-    // ── Ascender-group lowercase (b, d, f, h, k, l, t) ───────────────────────
-    // Same as standard lowercase — ascenders fill the extra space above x-height.
-    baselineAscender: 215,
+    // ── Ascender-group lowercase (b d f h k l t) ─────────────────────────────
+    // Ascenders reach the top guide (y=30) — same full-height zone as uppercase.
+    fontSizeAscender: 195,
+    baselineAscender: 170,
 
-    // ── Descender-group lowercase (g, j, p, q, y) ────────────────────────────
-    // Descenders require the baseline to sit higher so the tail has room below.
-    // Shift baseline up ~25 units from the standard position.
-    fontSizeDescender: 185,
-    baselineDescender: 190,
+    // ── Descender-group lowercase (g j p q y) ────────────────────────────────
+    // Larger font + lower baseline so the bowl sits in the x-height zone and
+    // the tail reaches close to the lower guide (y=240).
+    // At ratios 0.56 (x-height) and 0.25 (descender):
+    //   x-top  = 195 − (155 × 0.56) ≈ 108   (close to middle guide y=100)
+    //   tail   = 195 + (155 × 0.25) ≈ 234   (close to lower guide y=240)
+    fontSizeDescender: 155,
+    baselineDescender: 195,
 
-    // ── Accented character positioning ────────────────────────────────────────
-    // Used with viewBoxHAccent (200×300). Baseline is lower in the taller viewBox
-    // to keep the letter body in the same visual position while the extra height
-    // above y=0 provides headroom for diacritical marks above cap-height.
-    fontSizeAccentUC: 175,   // slightly smaller to leave room for the accent mark
-    baselineAccentUC: 230,   // baseline sits lower in the taller 300-unit viewBox
+    // ── Accented uppercase ────────────────────────────────────────────────────
+    // Used with viewBoxHAccent (200×300). Slightly smaller to leave headroom for
+    // diacritical marks above cap-height. Baseline at the same absolute position.
+    fontSizeAccentUC: 175,
+    baselineAccentUC: 170,
   };
 })(window.APP);
