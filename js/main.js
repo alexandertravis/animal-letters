@@ -27,5 +27,5 @@
   // On a warm cache or fast connection the delay is imperceptible; on slow
   // connections the font-display:swap fallback in CSS prevents blank text
   // while this promise is pending.
-  document.fonts.ready.then(route);
+  document.fonts.ready.then(() => route());
 })(window.APP);

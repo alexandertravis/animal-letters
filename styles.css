@@ -1,13 +1,16 @@
 /* ---------- Quicksand variable font ----------
    font-weight: 300 700 covers the full wght axis of the variable font.
-   font-display: swap prevents invisible text on slow connections while
-   still honouring the document.fonts.ready gate in main.js.           */
+   font-display: block holds the fonts.ready promise until Quicksand has
+   actually loaded (or timed out after ~3 s). This is intentional: main.js
+   gates the first render behind document.fonts.ready so that Phase 2's
+   <clipPath><text> is never built in a fallback font. swap would resolve
+   fonts.ready after only a 100 ms block period, defeating that guarantee. */
 @font-face {
   font-family: 'Quicksand';
   src: url('assets/fonts/Quicksand-VariableFont_wght.ttf') format('truetype');
   font-weight: 300 700;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 :root {
