@@ -37,6 +37,23 @@
 
 ## Decisions Log
 
+2026-05-10 - Decision: `font-display: block` (not swap). With swap, browsers
+             resolve `document.fonts.ready` after only a 100 ms block period
+             regardless of whether the font actually loaded. Block holds the
+             promise until the font loads or times out (~3 s), which is required
+             for the Phase 2 `<clipPath><text>` gate to be effective.
+
+2026-05-10 - Decision: Separate fontSizeUC / fontSizeLC / fontSizeAscender /
+             fontSizeDescender (not collapsed to one value). Uppercase and ascender
+             letters fill the full cap zone (y=30→170, fontSize≈195); standard
+             lowercase fills only the x-height zone (y=100→170, fontSize≈125);
+             descenders need a third size (fontSize≈155) to position both bowl
+             and tail relative to the guides.
+
+2026-05-10 - Decision: `APP.getFontPos(char)` in utils.js (not local to tracer/
+             letters). Centralises character → font-size/baseline dispatch so
+             adding a new character group is a one-file change.
+
 2026-05-09 - Decision: Use Quicksand variable font (not static weights) for
              deployment — single file, weight range accessible via CSS
              `font-weight`. Use `Quicksand-VariableFont_wght.ttf`.
@@ -112,5 +129,22 @@
   expand the loop once entries are added.
 
 - **Font file size:** `Quicksand-VariableFont_wght.ttf` is 127 KB. Acceptable
-  for web; add `font-display: swap` in `@font-face` to prevent invisible text
-  during load on slow connections.
+  for web. Using `font-display: block` (not swap) to ensure `document.fonts.ready`
+  correctly gates the first render. Slow connections see a brief blank screen
+  (max ~3 s browser timeout) before the app loads.
+
+- **Phase 2 font positioning calibration:** FONT_CONFIG baselines are calibrated
+  to GUIDE_CONFIG line positions (top y=30, middle y=100, bottom y=170, lower y=240).
+  Values were computed from Quicksand cap-height ratio ≈ 0.72 and x-height ratio ≈ 0.56.
+  These are estimates — empirical browser verification is required (Phase 3 items).
+  Descender letters use fontSize 155/baseline 195 which places x-height top at ≈108
+  (vs guide middle y=100) and tail at ≈234 (vs lower guide y=240) — close but not exact.
+
+- **clipPath coordinate system:** The `<clipPath><text>` is positioned in SVG display
+  space (FONT_CONFIG coordinates). The stroke guide paths (letterTransform group) are
+  also mapped to display space via `getLetterYTransform`. These two systems should
+  broadly overlap; Phase 3 audit confirms alignment letter by letter.
+
+- **Phase 2 APP.getFontPos() helper:** Added to `utils.js`. Returns `{ fontSize, baseline }`
+  for a character, dispatching to the correct FONT_CONFIG group. Both tracer.js and
+  letters.js call this — change the group logic here, applies everywhere.

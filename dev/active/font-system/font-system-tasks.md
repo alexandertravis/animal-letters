@@ -7,38 +7,39 @@
 - [x] Create `dev/active/font-system/` dev docs
 
 ## Section 2 — Font Foundation
-- [ ] Copy `Quicksand-VariableFont_wght.ttf` to `assets/fonts/`
-- [ ] Add `@font-face` in `styles.css` (family name, file path, weight range,
-      `font-display: swap`)
-- [ ] Apply `font-family: 'Quicksand'` to UI text (body, buttons, headings,
+- [x] Copy `Quicksand-VariableFont_wght.ttf` to `assets/fonts/`
+- [x] Add `@font-face` in `styles.css` (family name, file path, weight range,
+      `font-display: block` — changed from swap to correctly hold fonts.ready)
+- [x] Apply `font-family: 'Quicksand'` to UI text (body, buttons, headings,
       name strip tiles, gallery tile names)
-- [ ] Create `js/fontConfig.js` — `APP.FONT_CONFIG` object with:
+- [x] Create `js/fontConfig.js` — `APP.FONT_CONFIG` object with:
       - `family`, `weight`, `file`
-      - `fontSize` (SVG units, tune so uppercase fills viewBox)
+      - `fontSizeUC/LC/Ascender/Descender` (calibrated to guide positions)
       - `baselineUC`, `baselineLC`, `baselineAscender`, `baselineDescender`
-      - `viewBoxW`, `viewBoxH`, `viewBoxH_accent`
-- [ ] Add `fontConfig.js` to `index.html` load order (after `letterData.js`,
+      - `viewBoxW`, `viewBoxH`, `viewBoxHAccent`
+- [x] Add `fontConfig.js` to `index.html` load order (after `letterData.js`,
       before `utils.js`)
-- [ ] Gate initial `route()` in `main.js` behind `document.fonts.ready` promise
+- [x] Gate initial `route()` in `main.js` behind `document.fonts.ready` promise
 - [ ] Verify Quicksand renders correctly on desktop Chrome, iOS Safari, Android Chrome
 
 ## Section 3 — SVG Clip Mask Integration (tracer.js)
-- [ ] Replace the thickened-stroke `<mask>` in `tracer.js` with a
+- [x] Replace the thickened-stroke `<mask>` in `tracer.js` with a
       `<clipPath id="letter-clip"><text>` using Quicksand
-- [ ] Set `<text>` attributes from `APP.FONT_CONFIG`:
+- [x] Set `<text>` attributes from `APP.FONT_CONFIG` via `APP.getFontPos()`:
       `font-family`, `font-size`, `font-weight`, `x`, `y`, `text-anchor="middle"`
-- [ ] Replace ghost layer strokes with a `<text>` ghost element (same font,
-      low opacity, no clip)
-- [ ] Remove per-glyph stroke outline rendering from tracer layers (mask and
+- [x] Replace ghost layer strokes with a `<text>` ghost element (same font,
+      dark border via `paint-order:stroke fill`, light fill, no clip)
+- [x] Remove per-glyph stroke outline rendering from tracer layers (mask and
       ghost no longer use `letterData.js` stroke paths for shape)
-- [ ] Confirm ink canvas is correctly clipped to the Quicksand glyph outline
-- [ ] Confirm `destroy()` cleans up the new element structure correctly
+- [x] Confirm ink canvas is correctly clipped to the Quicksand glyph outline
+- [x] Confirm `destroy()` cleans up the new element structure correctly
+      (`stageEl.innerHTML=''` removes the SVG including defs/clipPath)
 - [ ] Test A, B, C, a, b, c, i, j manually in browser (including dot rendering)
 
 ## Section 4 — Sync letters.js Review Screen
-- [ ] Apply the same `<clipPath><text>` approach to `js/screens/letters.js`
+- [x] Apply the same `<clipPath><text>` approach to `js/screens/letters.js`
       so the review screen faithfully matches in-game rendering
-- [ ] Update ghost rendering in `letters.js` to use `<text>` element
+- [x] Update ghost rendering in `letters.js` to use `<text>` element
 - [ ] Confirm review screen still shows all 52 glyphs correctly
 
 ## Section 5 — Stroke Guide Audit (Phase 3)
