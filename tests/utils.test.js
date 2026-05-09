@@ -109,10 +109,14 @@ describe('APP.launchConfetti', () => {
 
     const cancel = APP.launchConfetti();
 
-    // Canvas should be in the DOM after launch.
-    expect(document.body.querySelector('canvas')).not.toBeNull();
-
-    cancel();
+    // Use try/finally so cancel() always runs even if an assertion throws,
+    // preventing a canvas leak that would affect subsequent tests.
+    try {
+      // Canvas should be in the DOM after launch.
+      expect(document.body.querySelector('canvas')).not.toBeNull();
+    } finally {
+      cancel();
+    }
 
     // Canvas should be removed after cancel.
     expect(document.body.querySelector('canvas')).toBeNull();

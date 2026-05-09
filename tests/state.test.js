@@ -147,6 +147,7 @@ describe('APP.advanceLetter', () => {
 
     APP.advanceLetter();
 
+    expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith('animalProgress', expect.any(String));
     const [, rawValue] = spy.mock.calls[0];
     const parsed = JSON.parse(rawValue);
@@ -208,8 +209,15 @@ describe('APP.clearProgress', () => {
 // APP.skipAnimal
 // ---------------------------------------------------------------------------
 describe('APP.skipAnimal', () => {
-  it('picks a new animal without updating completedAnimals or navigating to "complete"', () => {
+  // Ensure ANIMALS_FIXTURE is in place for every test in this block.
+  // Individual tests that need a different ANIMALS array (e.g. []) override
+  // this within the test body; the global beforeEach in setup.js restores
+  // the original list after each test regardless.
+  beforeEach(() => {
     APP.ANIMALS = [...ANIMALS_FIXTURE];
+  });
+
+  it('picks a new animal without updating completedAnimals or navigating to "complete"', () => {
     const original = makeAnimal({ name: 'ANT', displayName: 'Ant' });
     APP.startGame(original);
     const originalName = original.name;
@@ -235,7 +243,6 @@ describe('APP.skipAnimal', () => {
   });
 
   it('resets letterIndex to 0 and completedLetters to [] on skip', () => {
-    APP.ANIMALS = [...ANIMALS_FIXTURE];
     const original = makeAnimal({ name: 'CAT', displayName: 'Cat' });
     APP.startGame(original);
     APP.state.letterIndex = 2;
@@ -303,6 +310,8 @@ describe('APP.resetSettings', () => {
     APP.state.settings.depiction = 'realistic';
     APP.state.settings.revealMode = 'hidden';
     APP.state.settings.muted = true;
+    // Also corrupt maxLength so we can verify it gets reset to the real default.
+    APP.state.settings.maxLength = 1;
 
     APP.resetSettings();
 
@@ -311,6 +320,10 @@ describe('APP.resetSettings', () => {
     expect(APP.state.settings.revealMode).toBe('faint');
     expect(APP.state.settings.volume).toBe(0.7);
     expect(APP.state.settings.muted).toBe(false);
+    // maxLength default is the longest name in the full APP.ANIMALS list.
+    // Compute it dynamically so the assertion stays correct if animals are added.
+    const expectedMaxLength = Math.max(...APP.ANIMALS.map(a => a.name.length));
+    expect(APP.state.settings.maxLength).toBe(expectedMaxLength);
   });
 });
 

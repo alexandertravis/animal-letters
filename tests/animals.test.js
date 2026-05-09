@@ -16,14 +16,19 @@ import { makeAnimal, ANIMALS_FIXTURE } from './fixtures.js';
 //   4-letter: BEAR, DUCK
 //   6-letter: RABBIT
 
+// All tests in this file use ANIMALS_FIXTURE instead of the full production
+// animal list so results are deterministic and fast. Individual tests that
+// need a different array (e.g. a single-animal list) replace APP.ANIMALS
+// inside the test body; the global beforeEach in setup.js restores the
+// original list after each test.
+beforeEach(() => {
+  APP.ANIMALS = [...ANIMALS_FIXTURE];
+});
+
 // ---------------------------------------------------------------------------
 // APP.animals.eligibleCount
 // ---------------------------------------------------------------------------
 describe('APP.animals.eligibleCount', () => {
-  beforeEach(() => {
-    APP.ANIMALS = [...ANIMALS_FIXTURE];
-  });
-
   it('returns correct count for maxLength=3 (3-letter animals only)', () => {
     expect(APP.animals.eligibleCount(3)).toBe(3); // ANT BEE CAT
   });
@@ -45,10 +50,6 @@ describe('APP.animals.eligibleCount', () => {
 // APP.animals.pickRandom
 // ---------------------------------------------------------------------------
 describe('APP.animals.pickRandom', () => {
-  beforeEach(() => {
-    APP.ANIMALS = [...ANIMALS_FIXTURE];
-  });
-
   it('returns an animal with name.length <= maxLength', () => {
     const result = APP.animals.pickRandom(3);
     expect(result).not.toBeNull();
@@ -77,7 +78,6 @@ describe('APP.animals.pickRandom', () => {
   });
 
   it('returns null when no animals are eligible', () => {
-    APP.ANIMALS = [...ANIMALS_FIXTURE];
     const result = APP.animals.pickRandom(1); // nothing has length <= 1
     expect(result).toBeNull();
   });
@@ -93,10 +93,6 @@ describe('APP.animals.pickRandom', () => {
 // APP.animals.pickNext — bias toward unfound animals
 // ---------------------------------------------------------------------------
 describe('APP.animals.pickNext', () => {
-  beforeEach(() => {
-    APP.ANIMALS = [...ANIMALS_FIXTURE];
-  });
-
   it('returns an unfound animal when consecutiveFoundCount >= 2 and unfound animals exist', () => {
     // Mark ANT and BEE as found; CAT, BEAR, DUCK, RABBIT remain unfound.
     APP.state.completedAnimals = new Set(['ANT', 'BEE']);
