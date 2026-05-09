@@ -32,6 +32,20 @@
 2026-05-07 - Decision: Scope limited to state.js, animals.js, utils.js,
              letterData.js — the four pure-logic modules with no DOM dependency.
 
+2026-05-07 - Decision: Integration tests added in tests/integration.test.js
+             covering 6 cross-module scenarios (20 tests). Wires state +
+             animals + letterData + localStorage together.
+
+2026-05-09 - Decision: Pre-commit pipeline run before task close. All blocking
+             issues fixed: resetSettings maxLength assertion added dynamically
+             (Math.max over APP.ANIMALS), skipAnimal describe given its own
+             beforeEach, spy.mock.calls[0] guarded with toHaveBeenCalledTimes(1),
+             canvas DOM leak prevented with try/finally, redundant beforeEach
+             blocks in animals.test.js consolidated to file-level.
+
+## Session End — 2026-05-09
+Git status: clean (all committed and pushed to origin/main)
+
 ## Constraints & Gotchas
 
 - **IIFE load order**: data/animals.js must be imported before state.js
@@ -56,3 +70,24 @@
 - **launchConfetti in utils.js**: calls document.createElement('canvas') —
   jsdom supports this, but requestAnimationFrame is a no-op. Tests should
   only verify the returned cancel handle is a function, not the animation.
+
+- **resetSettings maxLength**: DEFAULT_SETTINGS.maxLength is computed at module
+  evaluation time from the live APP.ANIMALS list. setup.js beforeEach hardcodes
+  maxLength:6 for isolation, but the resetSettings test must use
+  Math.max(...APP.ANIMALS.map(a => a.name.length)) to assert the correct default.
+
+## Session Summary — 2026-05-09
+Completed:
+- Full /pre-commit pipeline (bug review, security triage GREEN, code quality)
+- Fixed CRITICAL: resetSettings test now asserts maxLength dynamically
+- Fixed HIGH: skipAnimal describe block has own beforeEach (no test-order dep)
+- Fixed MEDIUM: spy.mock.calls[0] guarded with toHaveBeenCalledTimes(1)
+- Fixed MEDIUM: canvas DOM leak in launchConfetti tests prevented with try/finally
+- Fixed Quality HIGH: consolidated 3 redundant APP.ANIMALS beforeEach into
+  file-level beforeEach in animals.test.js
+- All 102 tests pass; committed and pushed to origin/main
+NEXT STEP: Task is complete. Move dev/active/add-tests/ to dev/complete/ or
+           start the next task (e.g. challenges feature using animalCompletionCounts)
+Blockers: none
+Half-finished: none
+Security flags added: none
