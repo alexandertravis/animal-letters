@@ -5,12 +5,15 @@ window.APP = window.APP || {};
 (function (APP) {
 
   // ── Shared letter metrics ──────────────────────────────────────────────────
-  // Horizontal squeeze applied to every glyph so letters look less wide.
+  // Horizontal scale applied to every glyph's stroke guide paths.
+  // Set to 1.0 (no squeeze) because the Quicksand font now provides the letter
+  // shape — guides must trace the font's natural proportions, not the narrower
+  // geometric shapes of the old stroke-drawn letters.
   // Both tracer.js and letters.js read from here — edit once, applies everywhere.
   APP.LETTER_METRICS = {
-    X_SCALE_UP:  0.85,  // squeeze factor for uppercase
-    X_SCALE_LOW: 0.80,  // squeeze factor for lowercase
-    X_CENTER:    100,   // viewBox midpoint around which x-scale is applied
+    X_SCALE_UP:  1.0,   // no squeeze — match Quicksand uppercase width
+    X_SCALE_LOW: 1.0,   // no squeeze — match Quicksand lowercase width
+    X_CENTER:    100,   // viewBox midpoint (kept for compatibility, unused when scale=1)
   };
 
   // ── SVG element factory ────────────────────────────────────────────────────

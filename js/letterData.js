@@ -56,9 +56,8 @@ window.APP = window.APP || {};
     { d: 'M 50,125 L 150,125' }
   ]};
   LETTERS['I'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 70,30 L 130,30' },
-    { d: 'M 100,30 L 100,220' },
-    { d: 'M 70,220 L 130,220' }
+    // Quicksand uppercase I has no serifs — plain vertical stem only.
+    { d: 'M 100,30 L 100,220' }
   ]};
   LETTERS['J'] = { viewBox: VB_UP, strokes: [
     { d: 'M 70,30 L 150,30' },
@@ -93,7 +92,10 @@ window.APP = window.APP || {};
   ]};
   LETTERS['Q'] = { viewBox: VB_UP, strokes: [
     { d: 'M 100,30 Q 30,30 30,125 Q 30,220 100,220 Q 170,220 170,125 Q 170,30 100,30' },
-    { d: 'M 130,170 L 180,225' }
+    // Tail repositioned to stay within Quicksand Q's glyph area.
+    // Old path (M 130,170 L 180,225) ended outside the oval; this one ends
+    // near the lower-right edge of the Quicksand glyph where Q's tail sits.
+    { d: 'M 130,155 L 168,195' }
   ]};
   LETTERS['R'] = { viewBox: VB_UP, strokes: [
     { d: 'M 50,30 L 50,220' },
