@@ -166,9 +166,9 @@
 <div id="status" class="status waiting">📂 Pick the font file to begin (works on file:// and http://)</div>
 
 <div class="toolbar">
-  <button class="btn" onclick="pickFontFile()" title="Pick PlaywriteGBSGuides-Regular.ttf — remembers last folder">
+  <label class="btn" for="fontPicker" title="Pick PlaywriteGBSGuides-Regular.ttf">
     📂 Pick font file
-  </button>
+  </label>
   <input type="file" id="fontPicker" accept=".ttf,.otf" style="display:none" onchange="loadFontFromFile(this)">
   <button class="btn sec" id="btnShowGuides" onclick="toggleGuides()" disabled>Show game guides</button>
   <button class="btn sec" id="btnShowFont"   onclick="toggleFontGuides()" disabled>Show font guides</button>
@@ -341,11 +341,10 @@
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
             <button class="btn sec" style="font-size:11px;" onclick="edCopyOutput()">Copy</button>
             <button class="btn sec" style="font-size:11px;" onclick="edDownloadSnippet()">⬇ Snippet</button>
-            <button class="btn sec" style="font-size:11px;"
-                    onclick="pickLetterDataFile()"
-                    title="Load letterData.js — auto-populates existing strokes for the active letter">
+            <label class="btn sec" style="font-size:11px;" for="edFileInput"
+                   title="Load letterData.js — auto-populates existing strokes for the active letter">
               📂 Load letterData.js
-            </button>
+            </label>
             <input type="file" id="edFileInput" accept=".js" style="display:none" onchange="edLoadFromFile(this)">
             <button class="btn sec" style="font-size:11px;" id="btnEdDownloadFull" onclick="edDownloadFull()"
                     disabled title="Download full updated letterData.js (only available once a file is loaded)">⬇ Full file</button>
