@@ -44,6 +44,11 @@ window.APP = window.APP || {};
     GUIDE_OFFSET:         12,
   };
 
+  // ── Stroke colours ─────────────────────────────────────────────────────────
+  // One colour per stroke, cycled. Shared by tracer.js and letters.js so both
+  // always use the same sequence — edit once here, applies everywhere.
+  APP.STROKE_COLORS = ['#ff8906', '#f582ae', '#8bd3dd', '#5390d9', '#7c3aed'];
+
   // ── SVG element factory ────────────────────────────────────────────────────
   // Replaces local `el` in tracer.js and `svgEl` in letters.js.
   // Accepts attrs object and optional textContent string.

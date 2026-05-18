@@ -10,7 +10,7 @@ window.APP = window.APP || {};
   const isDot = APP.isDot;
 
   // One colour per stroke (up to 5 before cycling)
-  const COLORS = ['#ff8906', '#f582ae', '#8bd3dd', '#5390d9', '#7c3aed'];
+  const COLORS = APP.STROKE_COLORS; // shared with tracer.js — edit in utils.js
 
   const GHOST_COLOR = '#dde0ea'; // solid light blue-grey ≈ rgba(0,24,88,0.12) over white
 

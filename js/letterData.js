@@ -13,7 +13,7 @@ window.APP = window.APP || {};
 //   Extra viewBox height beyond paths gives round stroke caps room to breathe.
 (function (APP) {
   const VB_UP  = '0 0 200 250';
-  const VB_LOW = '0 0 200 268';
+  const VB_LOW = '0 0 200 270'; // matches the 270-high viewBox used by all display-coord lowercase entries
 
   const LETTERS = {};
 

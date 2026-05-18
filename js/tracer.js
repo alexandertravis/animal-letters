@@ -11,9 +11,9 @@ window.APP = window.APP || {};
   // All tunable constants come from APP.TRACER_CONFIG (js/utils.js) — edit there.
   const CHECKPOINTS_PER_STROKE = 36; // more points = smoother guide polyline approximating bezier curves
 
-  // One colour per stroke — matches the letter-patterns review screen so
-  // the child sees the same numbering system in both places.
-  const STROKE_COLORS = ['#ff8906', '#f582ae', '#8bd3dd', '#5390d9', '#7c3aed'];
+  // One colour per stroke — shared with letters.js via APP.STROKE_COLORS (utils.js).
+  // Edit there; the alias here keeps call sites readable.
+  const STROKE_COLORS = APP.STROKE_COLORS;
 
   function mount(stageEl, character, opts) {
     const data = APP.getLetter(character);
