@@ -42,6 +42,13 @@ window.APP = window.APP || {};
     // Set to 0 to restore exact centreline positions (matches raw font metric positions).
     // Good starting values: SW_LOW/2 = 12 (lowercase), SW_UP/2 = 18 (uppercase).
     GUIDE_OFFSET:         12,
+    // Start-dot radius for the coloured guide dot on each stroke.
+    // SW/2 places the dot edge exactly on the letter border (half inside, half outside).
+    // Smaller = dot sits fully inside the letter; larger = dot overlaps the border more.
+    // DOT_RING_PAD adds extra radius to the white halo behind the dot for legibility.
+    DOT_RADIUS_UP:        18,   // uppercase dot radius  (SW_UP  / 2 = 18)
+    DOT_RADIUS_LOW:       12,   // lowercase dot radius  (SW_LOW / 2 = 12)
+    DOT_RING_PAD:          4,   // white ring = dot radius + this value
   };
 
   // ── Stroke colours ─────────────────────────────────────────────────────────
