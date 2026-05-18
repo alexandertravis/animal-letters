@@ -1,8 +1,16 @@
 window.APP = window.APP || {};
 
 (function (APP) {
+  // Return the animal list for the active locale.
+  // Falls back to the English list if no locale-specific list exists.
+  function getAnimalList() {
+    const locale = APP.state && APP.state.settings.locale;
+    if (locale === 'pt' && APP.ANIMALS_PT && APP.ANIMALS_PT.length) return APP.ANIMALS_PT;
+    return APP.ANIMALS;
+  }
+
   function eligible(maxLength) {
-    return APP.ANIMALS.filter(a => a.name.length <= maxLength);
+    return getAnimalList().filter(a => a.name.length <= maxLength);
   }
 
   APP.animals = {
@@ -39,6 +47,12 @@ window.APP = window.APP || {};
 
     eligibleCount(maxLength) {
       return eligible(maxLength).length;
+    },
+
+    // All animals for the current locale (no length filter).
+    // Used by setup.js to compute the slider min/max from the active list.
+    eligibleAll() {
+      return getAnimalList();
     }
   };
 })(window.APP);

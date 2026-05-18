@@ -6,13 +6,13 @@ window.APP = window.APP || {};
     const wrap = document.createElement('div');
     wrap.className = 'landing';
     wrap.innerHTML = `
-      <h1>Animal Letters</h1>
-      <p class="subtitle">Trace the letters. Meet the animal!</p>
+      <h1>${APP.t('landing.title')}</h1>
+      <p class="subtitle">${APP.t('landing.subtitle')}</p>
       <div class="menu">
-        <button class="btn" data-act="new">New Game</button>
-        <button class="btn secondary" data-act="continue" ${APP.state.sessionExists ? '' : 'disabled'}>Continue</button>
-        <button class="btn secondary" data-act="gallery">My Animals</button>
-        <button class="btn ghost" data-act="settings">Settings</button>
+        <button class="btn" data-act="new">${APP.t('landing.newGame')}</button>
+        <button class="btn secondary" data-act="continue" ${APP.state.sessionExists ? '' : 'disabled'}>${APP.t('landing.continue')}</button>
+        <button class="btn secondary" data-act="gallery">${APP.t('landing.myAnimals')}</button>
+        <button class="btn ghost" data-act="settings">${APP.t('landing.settings')}</button>
       </div>
     `;
     root.appendChild(wrap);

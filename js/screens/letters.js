@@ -18,7 +18,7 @@ window.APP = window.APP || {};
   const { X_SCALE_UP, X_SCALE_LOW, X_CENTER } = APP.LETTER_METRICS;
 
   function strokeWidths(char) {
-    const up = /[A-Z]/.test(char);
+    const up = APP.isUpperLetter(char);
     const SW = up ? 42 : 30;
     return { SW, SW_OUTLINE: SW + 8 };
   }
@@ -38,7 +38,7 @@ window.APP = window.APP || {};
       return { a: 1, b: 0, xScale: 1, xOffset: 0 };
     }
     const { a, b } = APP.getLetterYTransform(char);
-    const isUpper = /[A-Z]/.test(char);
+    const isUpper = APP.isUpperLetter(char);
     const xScale  = isUpper ? X_SCALE_UP  : X_SCALE_LOW;
     const xOffset = isUpper ? X_CENTER * (1 - X_SCALE_UP) : X_CENTER * (1 - X_SCALE_LOW);
     return { a, b, xScale, xOffset };

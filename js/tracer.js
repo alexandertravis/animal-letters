@@ -34,7 +34,7 @@ window.APP = window.APP || {};
     });
 
     // Per-character stroke widths — read from APP.TRACER_CONFIG (js/utils.js).
-    const isUpper = /[A-Z]/.test(character);
+    const isUpper = APP.isUpperLetter(character);
     const cfg = APP.TRACER_CONFIG;
     const SW  = isUpper ? cfg.SW_UP  : cfg.SW_LOW;
     const INK = isUpper ? cfg.INK_UP : cfg.INK_LOW;
