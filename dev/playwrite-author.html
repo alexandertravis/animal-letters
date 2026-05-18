@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Playwrite Author — dev tool</title>
+  <script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #f0f0f4; margin: 0; padding: 16px; color: #1a1a2e; font-size: 13px; }
+    h1 { font-size: 18px; font-weight: 700; margin: 0 0 2px; }
+    .sub { font-size: 11px; color: #888; margin: 0 0 12px; font-family: monospace; }
+
+    .status { padding: 8px 12px; border-radius: 7px; font-family: monospace; font-size: 11px; margin-bottom: 12px; }
+    .status.waiting { background: #fff8e1; border: 1.5px solid #f0c060; }
+    .status.loading { background: #e8f0ff; border: 1.5px solid #4a90e2; }
+    .status.ok      { background: #e8f8f0; border: 1.5px solid #2ecc71; }
+    .status.err     { background: #fdf0ef; border: 1.5px solid #e74c3c; }
+
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+    .btn {
+      padding: 6px 14px; border: 1.5px solid #1a1a2e; border-radius: 6px;
+      background: #1a1a2e; color: #fff; cursor: pointer; font-size: 12px; font-weight: 600;
+    }
+    .btn:hover { background: #2d2d4e; }
+    .btn:disabled { opacity: 0.35; cursor: default; }
+    .btn.sec { background: #fff; color: #1a1a2e; }
+    .btn.sec:hover { background: #eee; }
+    .btn.active { background: #3da9fc; border-color: #3da9fc; }
+
+    /* Metrics panel */
+    .metrics { display: flex; gap: 20px; flex-wrap: wrap; background: #fff; border: 1.5px solid #ddd;
+               border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; display: none; }
+    .metric { display: flex; flex-direction: column; gap: 2px; }
+    .metric .label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.06em; }
+    .metric .val { font-size: 14px; font-weight: 700; font-family: monospace; }
+
+    /* Legend */
+    .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; font-size: 11px; }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+    .swatch { width: 24px; height: 3px; display: inline-block; border-radius: 2px; }
+    .swatch.dashed { background: none; border-top: 2px dashed; width: 24px; }
+
+    /* Section labels */
+    .sec-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
+                 color: #999; margin: 10px 0 5px; }
+
+    /* Letter grids */
+    .letter-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .lcard {
+      background: #fff; border: 1.5px solid #ddd; border-radius: 7px; padding: 4px;
+      cursor: pointer; transition: border-color 0.1s; display: flex; flex-direction: column;
+      align-items: center; gap: 2px;
+    }
+    .lcard:hover  { border-color: #3da9fc; }
+    .lcard.active { border-color: #ff8906; border-width: 2px; }
+    .lcard svg { display: block; }
+    .lcard .lbl { font-size: 9px; color: #bbb; font-family: monospace; }
+
+    /* Detail panel */
+    .detail-panel {
+      display: none; background: #fff; border: 1.5px solid #ddd; border-radius: 10px;
+      padding: 14px; margin-top: 12px;
+    }
+    .detail-panel.visible { display: block; }
+    .detail-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+    .detail-char { font-size: 32px; font-weight: 700; width: 40px; }
+    .detail-info { font-size: 11px; color: #666; font-family: monospace; line-height: 1.6; }
+
+    .detail-views { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
+    .detail-view { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .detail-view .view-label { font-size: 10px; font-weight: 600; text-transform: uppercase;
+                               letter-spacing: 0.05em; color: #999; }
+    .detail-view svg { border: 1px solid #eee; border-radius: 4px; background: #fafafa; display: block; }
+
+    /* Contour list */
+    .contour-list { margin-top: 10px; font-size: 11px; font-family: monospace; }
+    .contour-row { display: flex; gap: 8px; padding: 3px 6px; border-radius: 4px; }
+    .contour-row.guide { background: #fff0f0; }
+    .contour-row.letter { background: #f0fff4; }
+    .contour-tag { font-weight: 700; width: 45px; flex-shrink: 0; }
+    .contour-tag.guide { color: #e74c3c; }
+    .contour-tag.letter { color: #2ecc71; }
+
+    /* Guide line position table */
+    .guide-table { border-collapse: collapse; font-size: 11px; font-family: monospace; margin-top: 10px; }
+    .guide-table th { background: #f0f0f4; padding: 4px 8px; text-align: left; font-size: 10px; border: 1px solid #ddd; }
+    .guide-table td { padding: 4px 8px; border: 1px solid #ddd; }
+    .guide-table .match { color: #2ecc71; font-weight: 700; }
+    .guide-table .mismatch { color: #e74c3c; font-weight: 700; }
+
+    /* ── Unified Stroke Editor ──────────────────────────────────────────────── */
+    .ed-section {
+      background: #fff; border: 2px solid #3da9fc; border-radius: 10px;
+      padding: 14px; margin-top: 16px; display: none;
+    }
+    .ed-section.visible { display: block; }
+    .author-letter-row { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+    .author-lbtn {
+      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid #ddd; border-radius: 5px; background: #fafafa;
+      cursor: pointer; font-size: 15px; font-weight: 700; font-family: monospace;
+      transition: border-color 0.1s, background 0.1s; user-select: none;
+    }
+    .author-lbtn:hover  { border-color: #3da9fc; background: #e8f4ff; }
+    .author-lbtn.active { border-color: #ff8906; background: #fff5e6; color: #ff8906; }
+    #edSvg {
+      border: 2px solid #ddd; border-radius: 8px; background: #fff;
+      display: block; touch-action: none; cursor: crosshair;
+    }
+    .ed-layout { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; margin-top: 10px; }
+    .ed-canvas-col { position: relative; flex-shrink: 0; }
+    .ed-svg-wrap   { position: relative; display: inline-block; }
+    #edLoupe {
+      position: absolute; width: 180px; height: 180px;
+      border: 2px solid #3da9fc; border-radius: 8px; background: #fff;
+      display: none; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+      /* top/left/right/bottom set dynamically by edUpdateLoupe() — moves to the
+         quadrant opposite the cursor so it never covers the area being edited */
+    }
+    .ed-right { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 10px; }
+    .ed-textarea {
+      font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.6;
+      width: 100%; min-height: 80px; border: 1.5px solid #ddd; border-radius: 6px;
+      padding: 8px; resize: vertical; color: #1a1a2e;
+    }
+    .ed-textarea.ed-error { border-color: #e74c3c; background: #fff8f8; }
+    .ed-parse-msg { font-size: 11px; font-family: monospace; min-height: 16px; }
+    .ed-parse-msg.ok  { color: #2ecc71; }
+    .ed-parse-msg.err { color: #e74c3c; }
+    .ed-cmd-list { max-height: 200px; overflow-y: auto; border: 1px solid #eee; border-radius: 6px; }
+    .ed-cmd-row {
+      display: flex; align-items: baseline; gap: 6px; padding: 3px 8px;
+      font-size: 10px; font-family: monospace; cursor: pointer; border-bottom: 1px solid #f5f5f5;
+    }
+    .ed-cmd-row:hover { background: #f0f8ff; }
+    .ed-cmd-row.ed-sel { background: #fff0e8; }
+    .ed-cmd-idx  { color: #bbb; width: 18px; flex-shrink: 0; }
+    .ed-cmd-type { font-weight: 700; color: #e74c3c; width: 14px; flex-shrink: 0; }
+    .ed-cmd-args { color: #333; line-height: 1.5; }
+    .ed-cmd-args .ed-h { color: #3da9fc; }
+    .ed-sep { color: #ddd; font-size: 16px; margin: 0 2px; }
+    .stroke-item {
+      display: flex; gap: 8px; align-items: center; padding: 4px 6px;
+      border-radius: 4px; margin-bottom: 3px; font-size: 10px; font-family: monospace;
+      cursor: pointer; transition: background 0.1s;
+    }
+    .stroke-item:hover { background: #f0f8ff; }
+    .stroke-item.ed-active-stroke { background: #fff5e6; outline: 1.5px solid #ff8906; }
+    .stroke-swatch { width: 18px; height: 4px; border-radius: 2px; flex-shrink: 0; }
+    .stroke-num { font-weight: 700; flex-shrink: 0; }
+    .stroke-path { word-break: break-all; color: #555; line-height: 1.5; flex: 1; min-width: 0; }
+    .ed-output {
+      background: #1a1a2e; color: #a8d8a8; font-size: 11px; font-family: monospace;
+      padding: 12px; border-radius: 8px; overflow-x: auto; margin: 0 0 6px;
+      white-space: pre; max-height: 240px; overflow-y: auto;
+    }
+    .ed-hint { font-size: 11px; color: #888; font-style: italic; }
+  </style>
+</head>
+<body>
+
+<h1>Playwrite GB S Guides — Author Tool</h1>
+<p class="sub">Phase 1 + 2: glyph display · guide detection · coordinate mapping · ready for stroke authoring</p>
+
+<div id="status" class="status waiting">📂 Pick the font file to begin (works on file:// and http://)</div>
+
+<div class="toolbar">
+  <button class="btn" onclick="pickFontFile()" title="Pick PlaywriteGBSGuides-Regular.ttf — remembers last folder">
+    📂 Pick font file
+  </button>
+  <input type="file" id="fontPicker" accept=".ttf,.otf" style="display:none" onchange="loadFontFromFile(this)">
+  <button class="btn sec" id="btnShowGuides" onclick="toggleGuides()" disabled>Show game guides</button>
+  <button class="btn sec" id="btnShowFont"   onclick="toggleFontGuides()" disabled>Show font guides</button>
+  <button class="btn sec" id="btnStripGuides" onclick="toggleStrip()" disabled>Strip guide contours</button>
+  <button class="btn" id="btnGenConfig" onclick="generateConfig()" disabled title="Generate FONT_PROFILE + GUIDE_CONFIG block to paste into letterData.js">⬇ Generate config</button>
+  <button class="btn" id="btnEditor" onclick="toggleEditorPanel()" disabled title="Open the unified stroke editor — draw, edit and export letterData.js entries">✏️ Stroke Editor</button>
+</div>
+
+<div id="configOutput" style="display:none; margin-bottom:12px;">
+  <div style="font-size:11px;font-weight:700;margin-bottom:4px;color:#555;">
+    Copy this block into <code>js/letterData.js</code> — replace the existing FONT_PROFILE + GUIDE_CONFIG:
+  </div>
+  <pre id="configCode" style="background:#1a1a2e;color:#a8d8a8;font-size:11px;padding:12px;border-radius:8px;overflow-x:auto;margin:0;white-space:pre;"></pre>
+  <button class="btn sec" style="margin-top:6px;font-size:11px;" onclick="copyConfig()">Copy to clipboard</button>
+</div>
+
+<div class="metrics" id="metricsPanel">
+  <div class="metric"><span class="label">UPM</span><span class="val" id="mUpm">—</span></div>
+  <div class="metric"><span class="label">Cap height</span><span class="val" id="mCap">—</span></div>
+  <div class="metric"><span class="label">x-height</span><span class="val" id="mXh">—</span></div>
+  <div class="metric"><span class="label">Ascender</span><span class="val" id="mAsc">—</span></div>
+  <div class="metric"><span class="label">Descender</span><span class="val" id="mDsc">—</span></div>
+  <div class="metric"><span class="label">Scale (cap→30,base→170)</span><span class="val" id="mScale">—</span></div>
+  <div class="metric"><span class="label">Glyphs</span><span class="val" id="mGlyphs">—</span></div>
+</div>
+
+<div class="legend" id="legend" style="display:none">
+  <div class="legend-item"><span class="swatch" style="background:#f0c060"></span> Cap line (game y=30)</div>
+  <div class="legend-item"><span class="swatch" style="background:#f0c060; opacity:.5"></span> x-height (game y=90)</div>
+  <div class="legend-item"><span class="swatch" style="background:#f0c060"></span> Baseline (game y=170)</div>
+  <div class="legend-item"><span class="swatch" style="background:#f0c060; opacity:.5"></span> Descender (game y=230)</div>
+  <div class="legend-item"><span class="swatch" style="background:#3da9fc"></span> Font cap/x/base/desc</div>
+  <div class="legend-item"><span class="swatch" style="background:#e74c3c; opacity:.7"></span> Guide contour</div>
+  <div class="legend-item"><span class="swatch" style="background:#2ecc71; opacity:.7"></span> Letter contour</div>
+</div>
+
+<div class="sec-label">Uppercase A–Z</div>
+<div class="letter-grid" id="upperGrid"></div>
+<div class="sec-label">Lowercase a–z</div>
+<div class="letter-grid" id="lowerGrid"></div>
+
+<!-- ── Unified Stroke Editor ──────────────────────────────────────────────────── -->
+<div id="editorSection" class="ed-section">
+  <h2 style="font-size:15px;font-weight:700;margin:0 0 4px">✏️ Stroke Editor</h2>
+  <p style="font-size:11px;color:#666;margin:0 0 10px">
+    Pick a letter, build each stroke with the path editor, commit it, then export or save straight back to
+    <code>letterData.js</code> — no copy-pasting needed.
+  </p>
+
+  <div class="sec-label">Pick a letter</div>
+  <div style="margin-bottom:10px;">
+    <div class="author-letter-row" id="edUpperRow"></div>
+    <div class="author-letter-row" id="edLowerRow"></div>
+  </div>
+
+  <div id="edEditArea" style="display:none">
+
+    <!-- Toolbar row 1: add commands · delete · convert · snap · auto-trace -->
+    <div class="toolbar" style="margin-bottom:6px;padding-bottom:8px;border-bottom:1px solid #eee;flex-wrap:wrap;row-gap:4px;">
+      <span style="font-size:11px;color:#666;font-weight:700;">ADD</span>
+      <button class="btn sec" onclick="edAddM()" title="Add Move-to (M)">M</button>
+      <button class="btn sec" onclick="edAddL()" title="Add Line-to (L)">L</button>
+      <button class="btn sec" onclick="edAddC()" title="Add Cubic bezier (C)">C</button>
+      <button class="btn sec" onclick="edAddQ()" title="Add Quadratic bezier (Q)">Q</button>
+      <button class="btn sec" onclick="edAddZ()" title="Close path (Z)">Z</button>
+      <span class="ed-sep">|</span>
+      <button class="btn sec" id="btnEdDelete"  onclick="edDeleteCmd()"  disabled title="Delete selected command">✕ Del</button>
+      <button class="btn sec" id="btnEdConvert" onclick="edCmdConvert()" disabled title="Convert selected segment L↔C">⇄ L↔C</button>
+      <span class="ed-sep">|</span>
+      <button class="btn sec active" id="btnEdGrid"   onclick="edToggleGrid()" title="Toggle grid">⊞ Grid</button>
+      <button class="btn sec active" id="btnEdSnap10" onclick="edSetSnap(10)"  title="Snap to 10-unit grid">Snap 10</button>
+      <button class="btn sec"        id="btnEdSnap5"  onclick="edSetSnap(5)"   title="Snap to 5-unit grid">Snap 5</button>
+      <button class="btn sec"        id="btnEdSnap1"  onclick="edSetSnap(1)"   title="Snap to 1-unit grid">Snap 1</button>
+      <button class="btn sec"        id="btnEdSnap0"  onclick="edSetSnap(0)"   title="No snap">Free</button>
+      <span class="ed-sep">|</span>
+      <button class="btn sec" id="btnEdAutoTrace" onclick="edAutoTrace()"
+              title="Auto-generate stroke skeleton via Zhang-Suen thinning">🦴 Auto-trace</button>
+      <label style="font-size:11px;color:#555;display:flex;align-items:center;gap:4px;">
+        ε <input type="range" id="edEpsSlider" min="0.5" max="5" step="0.5" value="1.5"
+                  style="width:70px;" oninput="document.getElementById('edEpsVal').textContent=this.value">
+        <span id="edEpsVal">1.5</span>
+      </label>
+    </div>
+
+    <!-- Toolbar row 2: node opacity · zoom · stroke actions -->
+    <div class="toolbar" style="margin-bottom:10px;flex-wrap:wrap;row-gap:4px;">
+      <span style="font-size:11px;color:#666;font-weight:700;">NODES</span>
+      <label style="font-size:11px;color:#555;display:flex;align-items:center;gap:4px;">
+        Opacity
+        <input type="range" id="edNodeOpacitySlider" min="0" max="100" value="80" style="width:70px;"
+               oninput="edSetNodeOpacity(this.value/100)">
+        <span id="edNodeOpacityVal">80%</span>
+      </label>
+      <button class="btn sec active" id="btnEdNodes" onclick="edToggleNodes()" title="Toggle node &amp; handle visibility">👁 Nodes</button>
+      <span class="ed-sep">|</span>
+      <span style="font-size:11px;color:#666;font-weight:700;">ZOOM</span>
+      <button class="btn sec" onclick="edZoomIn()"    title="Zoom in  (or scroll wheel)">＋</button>
+      <button class="btn sec" onclick="edZoomOut()"   title="Zoom out (or scroll wheel)">－</button>
+      <button class="btn sec" onclick="edZoomReset()" title="Reset zoom to full view">⊙ Reset</button>
+      <span class="ed-sep">|</span>
+      <button class="btn" id="btnEdCommit" onclick="edCommitStroke()" disabled
+              title="Save current path as a numbered stroke">✓ Commit stroke</button>
+      <button class="btn sec" onclick="edNewStroke()"  title="Commit current path (if any) and start a new blank stroke">+ New stroke</button>
+      <button class="btn sec" onclick="edUndo()"       title="Remove last command">↩ Undo</button>
+      <button class="btn sec" onclick="edClearPath()"  title="Clear current working path">✕ Path</button>
+      <button class="btn sec" onclick="edClearAll()"   title="Clear all strokes + current path">✕ All</button>
+    </div>
+
+    <div class="ed-layout">
+
+      <!-- Left: SVG canvas + loupe -->
+      <div class="ed-canvas-col">
+        <div style="font-size:11px;margin-bottom:5px;color:#555;">
+          <strong id="edCharLabel">—</strong>
+          &nbsp;·&nbsp; <span id="edCursorLabel" style="font-family:monospace;color:#999;">x=— y=—</span>
+          &nbsp;·&nbsp; <span id="edHint" class="ed-hint">click canvas to add M point, then more points</span>
+        </div>
+        <div class="ed-svg-wrap">
+          <svg id="edSvg" width="400" height="540" viewBox="0 0 200 270">
+            <g id="edGridLayer"></g>
+            <g id="edGlyphLayer"></g>
+            <g id="edGuideLayer"></g>
+            <g id="edDoneLayer"></g>
+            <g id="edPathLayer"></g>
+            <g id="edHandleLayer"></g>
+            <g id="edNodeLayer"></g>
+          </svg>
+          <!-- Loupe: zoomed inset SVG shown while dragging a node -->
+          <svg id="edLoupe" viewBox="80 120 40 40" style="background:#fafafa;">
+            <g id="loupeGridLayer"></g>
+            <g id="loupeGlyphLayer"></g>
+            <g id="loupeGuideLayer"></g>
+            <g id="loupeDoneLayer"></g>
+            <g id="loupePathLayer"></g>
+            <g id="loupeHandleLayer"></g>
+            <g id="loupeNodeLayer"></g>
+          </svg>
+        </div>
+        <div style="font-size:10px;color:#aaa;margin-top:5px;line-height:1.6;">
+          <strong>Click</strong> canvas = add point &nbsp;·&nbsp;
+          <strong>Drag ●</strong> = move endpoint &nbsp;·&nbsp;
+          <strong>Drag ◆</strong> = adjust curve &nbsp;·&nbsp;
+          <strong>Scroll wheel</strong> = zoom
+        </div>
+      </div>
+
+      <!-- Right: path text · stroke list · output -->
+      <div class="ed-right">
+
+        <div>
+          <div class="sec-label">Current path <span style="font-weight:400;color:#aaa;font-size:10px;">(editable — visual updates live)</span></div>
+          <textarea id="edTextarea" class="ed-textarea" oninput="edOnTextInput(this.value)"
+                    placeholder="M 100,30 C 50,30 30,90 30,170 ..."></textarea>
+          <div id="edParseMsg" class="ed-parse-msg"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+            <button class="btn sec" style="font-size:11px;" onclick="edCopyPath()">Copy path</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="sec-label">Committed strokes (<span id="edStrokeCount">0</span>)</div>
+          <div id="edStrokeList" style="min-height:24px;">
+            <div class="ed-hint">No strokes yet</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="sec-label">letterData.js output</div>
+          <pre id="edOutput" class="ed-output">// Pick a letter and commit strokes to see output</pre>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="btn sec" style="font-size:11px;" onclick="edCopyOutput()">Copy</button>
+            <button class="btn sec" style="font-size:11px;" onclick="edDownloadSnippet()">⬇ Snippet</button>
+            <button class="btn sec" style="font-size:11px;"
+                    onclick="pickLetterDataFile()"
+                    title="Load letterData.js — auto-populates existing strokes for the active letter">
+              📂 Load letterData.js
+            </button>
+            <input type="file" id="edFileInput" accept=".js" style="display:none" onchange="edLoadFromFile(this)">
+            <button class="btn sec" style="font-size:11px;" id="btnEdDownloadFull" onclick="edDownloadFull()"
+                    disabled title="Download full updated letterData.js (only available once a file is loaded)">⬇ Full file</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="sec-label">Commands (<span id="edCmdCount">0</span>) — click to select</div>
+          <div class="ed-cmd-list" id="edCmdList"></div>
+        </div>
+
+        <div style="font-size:10px;color:#aaa;line-height:1.6;">
+          viewBox: 0 0 200 270 &nbsp;·&nbsp; cap y=30 · x-height y=90 · baseline y=170 · descender y=230
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="detail-panel" id="detailPanel">
+  <div class="detail-header">
+    <div class="detail-char" id="detailChar">—</div>
+    <div class="detail-info" id="detailInfo"></div>
+  </div>
+  <div class="detail-views" id="detailViews"></div>
+  <div class="contour-list" id="contourList"></div>
+  <table class="guide-table" id="guideTable" style="display:none">
+    <thead>
+      <tr>
+        <th>Guide line</th>
+        <th>Font units</th>
+        <th>→ viewBox y (font metric)</th>
+        <th>Game guide y</th>
+        <th>Diff</th>
+      </tr>
+    </thead>
+    <tbody id="guideTableBody"></tbody>
+  </table>
+</div>
+
+<script>
+(function () {
+'use strict';
+
+// ── Constants ────────────────────────────────────────────────────────────────
+
+const SVG_NS  = 'http://www.w3.org/2000/svg';
+const ALL     = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+const VB_W = 200, VB_H = 270;
+
+// Our game's fixed guide positions (in viewBox coords)
+const GAME_GUIDES = { cap: 30, xh: 90, base: 170, desc: 230 };
+
+// Display state
+let showGameGuides  = true;
+let showFontGuides  = true;
+let stripGuides     = false;
+let activeChar      = null;
+let font            = null;
+let SCALE           = 0;   // font units → viewBox units
+let X_OFFSET_BASE   = 0;   // x centering for a given glyph (computed per-glyph)
+
+// Derived from font metrics (filled after font load)
+let FM = {};  // { cap, xh, base, desc } in viewBox y coords
+
+// ── SVG helper ────────────────────────────────────────────────────────────────
+function svgEl(tag, attrs, content) {
+  const e = document.createElementNS(SVG_NS, tag);
+  if (attrs) for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (content !== undefined) e.textContent = content;
+  return e;
+}
+
+function makeSVG(w, h, vb) {
+  return svgEl('svg', { width: w, height: h, viewBox: vb || `0 0 ${w} ${h}` });
+}
+
+// ── Font loading ──────────────────────────────────────────────────────────────
+function setStatus(msg, cls) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status ' + cls;
+}
+
+// ─── Smart file pickers ───────────────────────────────────────────────────────
+// Uses the File System Access API (showOpenFilePicker) when available so the
+// browser remembers the last-used folder and opens there next time.
+// Falls back to the hidden <input type="file"> on browsers that don't support it.
+let _lastFontFileHandle    = null; // remembered across picks this session
+let _lastLetterDataHandle  = null;
+
+async function pickFontFile() {
+  if ('showOpenFilePicker' in window) {
+    try {
+      const opts = {
+        types: [{ description: 'Font files', accept: { 'font/ttf': ['.ttf'], 'font/otf': ['.otf'] } }],
+        multiple: false,
+      };
+      if (_lastFontFileHandle) opts.startIn = _lastFontFileHandle;
+      const [handle] = await window.showOpenFilePicker(opts);
+      _lastFontFileHandle = handle;
+      const file = await handle.getFile();
+      loadFontFromFile({ files: [file] });
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return; // user cancelled — don't fall through
+    }
+  }
+  document.getElementById('fontPicker').click(); // fallback
+}
+
+async function pickLetterDataFile() {
+  if ('showOpenFilePicker' in window) {
+    try {
+      const opts = {
+        types: [{ description: 'JavaScript files', accept: { 'text/javascript': ['.js'] } }],
+        multiple: false,
+      };
+      if (_lastLetterDataHandle) opts.startIn = _lastLetterDataHandle;
+      else if (_lastFontFileHandle) opts.startIn = _lastFontFileHandle; // start near font file
+      const [handle] = await window.showOpenFilePicker(opts);
+      _lastLetterDataHandle = handle;
+      const file = await handle.getFile();
+      edLoadFromFile({ files: [file] });
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+    }
+  }
+  document.getElementById('edFileInput').click(); // fallback
+}
+
+window.loadFontFromFile = function (input) {
+  const file = input.files[0];
+  if (!file) return;
+  setStatus('⏳ Reading ' + file.name + ' …', 'loading');
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      font = opentype.parse(e.target.result);
+      onFontLoaded(file.name);
+    } catch (err) {
+      setStatus('❌ Failed to parse: ' + err, 'err');
+    }
+  };
+  reader.onerror = () => setStatus('❌ FileReader error', 'err');
+  reader.readAsArrayBuffer(file);
+};
+
+function onFontLoaded(name) {
+  const os2 = font.tables.os2;
+  const UPM = font.unitsPerEm;
+
+  // Map font baseline → viewBox y=170, font capHeight → viewBox y=30
+  // All other positions derived from same linear scale
+  SCALE = (GAME_GUIDES.base - GAME_GUIDES.cap) / os2.sCapHeight;  // 140/875 ≈ 0.16
+
+  // Actual font metric positions in our viewBox y-space
+  FM = {
+    cap:  GAME_GUIDES.base - os2.sCapHeight    * SCALE,  // should = 30
+    xh:   GAME_GUIDES.base - os2.sxHeight      * SCALE,
+    base: GAME_GUIDES.base,                               // = 170
+    desc: GAME_GUIDES.base - os2.sTypoDescender * SCALE,
+    asc:  GAME_GUIDES.base - os2.sTypoAscender  * SCALE, // likely negative (off top)
+  };
+
+  setStatus(
+    `✅ ${name} loaded — UPM:${UPM}  capHeight:${os2.sCapHeight}  xHeight:${os2.sxHeight}` +
+    `  ascender:${os2.sTypoAscender}  descender:${os2.sTypoDescender}  glyphs:${font.numGlyphs}` +
+    `  scale:${SCALE.toFixed(4)}  font-xh→y:${FM.xh.toFixed(1)}  font-desc→y:${FM.desc.toFixed(1)}`,
+    'ok'
+  );
+
+  // Update metrics panel
+  document.getElementById('mUpm').textContent    = UPM;
+  document.getElementById('mCap').textContent    = os2.sCapHeight;
+  document.getElementById('mXh').textContent     = os2.sxHeight;
+  document.getElementById('mAsc').textContent    = os2.sTypoAscender;
+  document.getElementById('mDsc').textContent    = os2.sTypoDescender;
+  document.getElementById('mScale').textContent  = SCALE.toFixed(4);
+  document.getElementById('mGlyphs').textContent = font.numGlyphs;
+  document.getElementById('metricsPanel').style.display = 'flex';
+  document.getElementById('legend').style.display = 'flex';
+
+  // Enable buttons
+  ['btnShowGuides','btnShowFont','btnStripGuides','btnGenConfig','btnEditor'].forEach(id =>
+    document.getElementById(id).disabled = false);
+
+  buildGrids();
+}
+
+// ── Coordinate transforms ─────────────────────────────────────────────────────
+// Font glyph commands are in font units (y up). Convert to SVG viewBox (y down).
+function fontXToVB(fx, xOff) { return xOff + fx * SCALE; }
+function fontYToVB(fy)        { return GAME_GUIDES.base - fy * SCALE; }
+
+// Build the SVG path data for one glyph, transforming to our viewBox.
+// If guideStrip=true, contours detected as guide-lines are omitted.
+function glyphToPath(glyph, guideStrip) {
+  const xOff   = (VB_W - glyph.advanceWidth * SCALE) / 2;
+  const cmds   = glyph.path.commands;
+  const contours = splitContours(cmds);
+  let d = '';
+  contours.forEach(c => {
+    if (guideStrip && isGuideContour(c, glyph)) return;
+    d += contourToPath(c, xOff);
+  });
+  return d;
+}
+
+function splitContours(cmds) {
+  const contours = [];
+  let cur = [];
+  cmds.forEach(cmd => {
+    if (cmd.type === 'M' && cur.length) { contours.push(cur); cur = []; }
+    cur.push(cmd);
+  });
+  if (cur.length) contours.push(cur);
+  return contours;
+}
+
+function contourBBox(contour) {
+  let x0=Infinity, y0=Infinity, x1=-Infinity, y1=-Infinity;
+  const visit = (x, y) => {
+    if (x < x0) x0=x; if (x > x1) x1=x;
+    if (y < y0) y0=y; if (y > y1) y1=y;
+  };
+  contour.forEach(cmd => {
+    if (cmd.x  !== undefined) visit(cmd.x,  cmd.y);
+    if (cmd.x1 !== undefined) visit(cmd.x1, cmd.y1);
+    if (cmd.x2 !== undefined) visit(cmd.x2, cmd.y2);
+  });
+  return { x0, y0, x1, y1, w: x1-x0, h: y1-y0 };
+}
+
+// A contour is a "guide line" if it is a thin horizontal band
+// spanning most of the glyph's advance width (horizontal ruling).
+function isGuideContour(contour, glyph) {
+  const bb = contourBBox(contour);
+  const adv = glyph.advanceWidth;
+  return bb.h < 80 && bb.w > adv * 0.25;
+}
+
+function contourToPath(contour, xOff) {
+  let d = '';
+  contour.forEach(cmd => {
+    switch (cmd.type) {
+      case 'M': d += `M ${fontXToVB(cmd.x,xOff).toFixed(2)},${fontYToVB(cmd.y).toFixed(2)} `; break;
+      case 'L': d += `L ${fontXToVB(cmd.x,xOff).toFixed(2)},${fontYToVB(cmd.y).toFixed(2)} `; break;
+      case 'C': d += `C ${fontXToVB(cmd.x1,xOff).toFixed(2)},${fontYToVB(cmd.y1).toFixed(2)} `
+                    + `${fontXToVB(cmd.x2,xOff).toFixed(2)},${fontYToVB(cmd.y2).toFixed(2)} `
+                    + `${fontXToVB(cmd.x,xOff).toFixed(2)},${fontYToVB(cmd.y).toFixed(2)} `; break;
+      case 'Q': d += `Q ${fontXToVB(cmd.x1,xOff).toFixed(2)},${fontYToVB(cmd.y1).toFixed(2)} `
+                    + `${fontXToVB(cmd.x,xOff).toFixed(2)},${fontYToVB(cmd.y).toFixed(2)} `; break;
+      case 'Z': d += 'Z '; break;
+    }
+  });
+  return d.trim();
+}
+
+// ── Guide line drawing ────────────────────────────────────────────────────────
+function addGuideLines(svg, vbW) {
+  const g = svgEl('g', { class: 'guides', 'pointer-events': 'none' });
+  if (showGameGuides) {
+    // Game guide lines (gold)
+    [
+      { y: GAME_GUIDES.cap,  dash: '',       opacity: 1,   label: 'cap' },
+      { y: GAME_GUIDES.xh,   dash: '4 3',    opacity: 0.7, label: 'xh' },
+      { y: GAME_GUIDES.base, dash: '',       opacity: 1,   label: 'base' },
+      { y: GAME_GUIDES.desc, dash: '4 3',    opacity: 0.5, label: 'desc' },
+    ].forEach(({ y, dash, opacity }) => {
+      const attrs = { x1: 0, y1: y, x2: vbW, y2: y, stroke: '#c8a800', 'stroke-width': 0.7, opacity };
+      if (dash) attrs['stroke-dasharray'] = dash;
+      g.appendChild(svgEl('line', attrs));
+    });
+  }
+  if (showFontGuides) {
+    // Font metric guide lines (blue)
+    [
+      { y: FM.cap,  label: 'font-cap' },
+      { y: FM.xh,   label: 'font-xh' },
+      { y: FM.base, label: 'font-base' },
+      { y: FM.desc, label: 'font-desc' },
+    ].forEach(({ y }) => {
+      if (y < -20 || y > VB_H + 20) return; // skip if way off-screen
+      g.appendChild(svgEl('line', {
+        x1: 0, y1: y, x2: vbW, y2: y,
+        stroke: '#3da9fc', 'stroke-width': 0.5, opacity: 0.8,
+        'stroke-dasharray': '2 2'
+      }));
+    });
+  }
+  svg.appendChild(g);
+}
+
+// ── Grid building ─────────────────────────────────────────────────────────────
+function buildGrids() {
+  buildGrid('ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'upperGrid');
+  buildGrid('abcdefghijklmnopqrstuvwxyz', 'lowerGrid');
+}
+
+function buildGrid(chars, containerId) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  chars.split('').forEach(ch => {
+    const card = buildCard(ch);
+    container.appendChild(card);
+  });
+}
+
+function buildCard(ch) {
+  const card = document.createElement('div');
+  card.className = 'lcard';
+  card.dataset.char = ch;
+  card.onclick = () => showDetail(ch);
+
+  const W = 56, H = 76;
+  const sx = W / VB_W, sy = H / VB_H;
+  const svg = makeSVG(W, H, `0 0 ${VB_W} ${VB_H}`);
+
+  const glyph = font.charToGlyph(ch);
+  const d = glyphToPath(glyph, stripGuides);
+  if (d) {
+    svg.appendChild(svgEl('path', { d, fill: '#1a1a2e', opacity: 0.85 }));
+  }
+  addGuideLines(svg, VB_W);
+
+  const lbl = document.createElement('div');
+  lbl.className = 'lbl';
+  lbl.textContent = ch;
+
+  card.appendChild(svg);
+  card.appendChild(lbl);
+  return card;
+}
+
+// ── Detail view ───────────────────────────────────────────────────────────────
+function showDetail(ch) {
+  activeChar = ch;
+  document.querySelectorAll('.lcard').forEach(c =>
+    c.classList.toggle('active', c.dataset.char === ch));
+
+  const glyph = font.charToGlyph(ch);
+  const cmds  = glyph.path.commands;
+  const contours = splitContours(cmds);
+  const guideCs  = contours.filter(c => isGuideContour(c, glyph));
+  const letterCs = contours.filter(c => !isGuideContour(c, glyph));
+  const xOff = (VB_W - glyph.advanceWidth * SCALE) / 2;
+
+  document.getElementById('detailChar').textContent = ch;
+  document.getElementById('detailInfo').innerHTML =
+    `advanceWidth: ${glyph.advanceWidth}  |  ` +
+    `total contours: ${contours.length}  |  ` +
+    `guide contours: <span style="color:#e74c3c;font-weight:700">${guideCs.length}</span>  |  ` +
+    `letter contours: <span style="color:#2ecc71;font-weight:700">${letterCs.length}</span><br>` +
+    `xOffset (centering): ${xOff.toFixed(2)}  |  glyph width in viewBox: ${(glyph.advanceWidth * SCALE).toFixed(1)}px`;
+
+  // Build three side-by-side views
+  const views = document.getElementById('detailViews');
+  views.innerHTML = '';
+
+  const VIEW_W = 200, VIEW_H = 270;
+
+  // View 1: Full glyph (guides + letter)
+  views.appendChild(makeDetailView('Full glyph', ch, glyph, contours, contours, VIEW_W, VIEW_H, xOff));
+
+  // View 2: Colour-coded contours (guide=red, letter=green)
+  views.appendChild(makeColorView('Contour classification', ch, glyph, contours, guideCs, VIEW_W, VIEW_H, xOff));
+
+  // View 3: Letter only (guides stripped)
+  views.appendChild(makeDetailView('Letter only (stripped)', ch, glyph, letterCs, letterCs, VIEW_W, VIEW_H, xOff));
+
+  // Contour list
+  const list = document.getElementById('contourList');
+  list.innerHTML = '<div style="font-weight:700;margin-bottom:4px">Contour breakdown:</div>';
+  contours.forEach((c, i) => {
+    const bb  = contourBBox(c);
+    const isG = isGuideContour(c, glyph);
+    const row = document.createElement('div');
+    row.className = 'contour-row ' + (isG ? 'guide' : 'letter');
+    row.innerHTML =
+      `<span class="contour-tag ${isG ? 'guide' : 'letter'}">${isG ? 'GUIDE' : 'LETTER'}</span>` +
+      `#${i+1}  cmds:${c.length}  ` +
+      `bbox font-units: x[${bb.x0.toFixed(0)}→${bb.x1.toFixed(0)}] y[${bb.y0.toFixed(0)}→${bb.y1.toFixed(0)}]  ` +
+      `w:${bb.w.toFixed(0)} h:${bb.h.toFixed(0)}`;
+    list.appendChild(row);
+  });
+
+  // Guide position table (show once for first letter opened)
+  buildGuideTable();
+
+  document.getElementById('detailPanel').className = 'detail-panel visible';
+}
+
+function makeDetailView(label, ch, glyph, renderContours, colorContours, W, H, xOff) {
+  const wrap = document.createElement('div');
+  wrap.className = 'detail-view';
+  const lbl = document.createElement('div');
+  lbl.className = 'view-label';
+  lbl.textContent = label;
+
+  const svg = makeSVG(W, H, `0 0 ${VB_W} ${VB_H}`);
+  addGuideLines(svg, VB_W);
+
+  renderContours.forEach(c => {
+    const d = contourToPath(c, xOff);
+    if (d) svg.appendChild(svgEl('path', { d, fill: '#1a1a2e', opacity: 0.85 }));
+  });
+
+  wrap.appendChild(lbl);
+  wrap.appendChild(svg);
+  return wrap;
+}
+
+function makeColorView(label, ch, glyph, allContours, guideCs, W, H, xOff) {
+  const wrap = document.createElement('div');
+  wrap.className = 'detail-view';
+  const lbl = document.createElement('div');
+  lbl.className = 'view-label';
+  lbl.textContent = label;
+
+  const svg = makeSVG(W, H, `0 0 ${VB_W} ${VB_H}`);
+  addGuideLines(svg, VB_W);
+
+  const guideSet = new Set(guideCs);
+  allContours.forEach(c => {
+    const d = contourToPath(c, xOff);
+    if (!d) return;
+    const isG = guideSet.has(c);
+    svg.appendChild(svgEl('path', {
+      d,
+      fill: isG ? 'rgba(231,76,60,0.55)' : 'rgba(46,204,113,0.65)',
+      stroke: isG ? '#e74c3c' : '#27ae60',
+      'stroke-width': 0.3
+    }));
+  });
+
+  wrap.appendChild(lbl);
+  wrap.appendChild(svg);
+  return wrap;
+}
+
+function buildGuideTable() {
+  const table = document.getElementById('guideTable');
+  const tbody = document.getElementById('guideTableBody');
+  tbody.innerHTML = '';
+
+  const os2  = font.tables.os2;
+  const rows = [
+    { name: 'Cap height', fontUnits: os2.sCapHeight,     fontY: FM.cap,  gameY: GAME_GUIDES.cap  },
+    { name: 'x-height',   fontUnits: os2.sxHeight,       fontY: FM.xh,   gameY: GAME_GUIDES.xh   },
+    { name: 'Baseline',   fontUnits: 0,                  fontY: FM.base, gameY: GAME_GUIDES.base  },
+    { name: 'Descender',  fontUnits: os2.sTypoDescender, fontY: FM.desc, gameY: GAME_GUIDES.desc  },
+  ];
+  rows.forEach(r => {
+    const diff  = (r.fontY - r.gameY).toFixed(1);
+    const match = Math.abs(parseFloat(diff)) < 1;
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      `<td>${r.name}</td>` +
+      `<td>${r.fontUnits}</td>` +
+      `<td>${r.fontY.toFixed(1)}</td>` +
+      `<td>${r.gameY}</td>` +
+      `<td class="${match ? 'match' : 'mismatch'}">${match ? '✓ match' : diff + 'px off'}</td>`;
+    tbody.appendChild(tr);
+  });
+  table.style.display = 'table';
+}
+
+// ── Toggle handlers ───────────────────────────────────────────────────────────
+window.toggleGuides = function () {
+  showGameGuides = !showGameGuides;
+  document.getElementById('btnShowGuides').classList.toggle('active', showGameGuides);
+  rebuildAll();
+};
+window.toggleFontGuides = function () {
+  showFontGuides = !showFontGuides;
+  document.getElementById('btnShowFont').classList.toggle('active', showFontGuides);
+  rebuildAll();
+};
+window.toggleStrip = function () {
+  stripGuides = !stripGuides;
+  document.getElementById('btnStripGuides').classList.toggle('active', stripGuides);
+  rebuildAll();
+};
+
+function rebuildAll() {
+  buildGrids();
+  if (activeChar) showDetail(activeChar);
+}
+
+// ── Config generator — repeatable for any font ───────────────────────────────
+// Outputs a ready-to-paste FONT_PROFILE + GUIDE_CONFIG block for letterData.js.
+// Process for a new font:
+//   1. Pick the new font's TTF in this tool
+//   2. Click "Generate config" → copy the output
+//   3. Paste into letterData.js (replace existing FONT_PROFILE + GUIDE_CONFIG)
+//   4. Re-author any stroke paths that land outside the new guide zones
+window.generateConfig = function () {
+  if (!font) return;
+  const os2   = font.tables.os2;
+  const UPM   = font.unitsPerEm;
+  const scale = SCALE;
+
+  // Round to 4 decimal places for display
+  const r = v => parseFloat(v.toFixed(4));
+
+  // Derived guide y positions
+  const yTop  = +(GAME_GUIDES.base - os2.sCapHeight    * scale).toFixed(1);
+  const yMid  = +(GAME_GUIDES.base - os2.sxHeight      * scale).toFixed(1);
+  const yBase = GAME_GUIDES.base;
+  const yLow  = +(GAME_GUIDES.base - os2.sTypoDescender * scale).toFixed(1);
+
+  // Get clean font name from name table if available
+  const nameTable  = font.names;
+  const familyName = (nameTable && nameTable.fontFamily && nameTable.fontFamily.en) || 'Unknown Font';
+  const postScript = (nameTable && nameTable.postScriptName && nameTable.postScriptName.en) || '';
+
+  const block = `  // ── Font profile ──────────────────────────────────────────────────────────
+  // Generated by dev/playwrite-author.html — do not edit manually.
+  // To switch fonts: open the tool, pick the new TTF, click "Generate config".
+  APP.FONT_PROFILE = {
+    name:            '${familyName}',
+    file:            '${postScript || familyName.replace(/\s+/g,'-')}-Regular.ttf',
+    unitsPerEm:      ${UPM},
+    sCapHeight:       ${os2.sCapHeight},
+    sxHeight:         ${os2.sxHeight},
+    sTypoAscender:   ${os2.sTypoAscender},
+    sTypoDescender:  ${os2.sTypoDescender},
+    // Anchors: capHeight → y=${yTop}, baseline → y=${yBase}
+    // scale = (${yBase} - ${yTop}) / ${os2.sCapHeight} = ${r(scale)}
+    scale:           ${r(scale)},
+  };
+
+  // ── Writing-line configuration ────────────────────────────────────────────
+  // Derived from FONT_PROFILE metrics:  y = ${yBase} - fontUnits * ${r(scale)}
+  APP.GUIDE_CONFIG = {
+    defaults: {
+      color:   '#b89a3a',
+      opacity: 0.50,
+      width:   2,
+    },
+    lines: {
+      top:    { y: ${yTop.toString().padStart(3)}, dash: '' },      // cap height  — ${yBase} - ${os2.sCapHeight} * ${r(scale)} = ${yTop}
+      middle: { y: ${yMid.toString().padStart(3)}, dash: '12 7' }, // x-height    — ${yBase} - ${os2.sxHeight}  * ${r(scale)} = ${yMid}
+      bottom: { y: ${yBase}, dash: '' },     // baseline    — ${yBase} - 0 = ${yBase}
+      lower:  { y: ${yLow.toString().padStart(3)}, dash: '7 7' }, // descender   — ${yBase} - (${os2.sTypoDescender}) * ${r(scale)} = ${yLow}
+    }
+  };`;
+
+  document.getElementById('configCode').textContent = block;
+  document.getElementById('configOutput').style.display = 'block';
+};
+
+window.copyConfig = function () {
+  const text = document.getElementById('configCode').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = 'Copy to clipboard', 1500);
+  });
+};
+
+// ── Unified Stroke Editor ─────────────────────────────────────────────────────
+// (replaces former Phase 3 anchor-point author + separate path editor)
+
+const STROKE_COLORS = [
+  '#e74c3c','#3da9fc','#2ecc71','#ff8906',
+  '#9b59b6','#f39c12','#1abc9c','#e91e63','#0d7377','#c0392b'
+];
+
+// ─── Editor state ─────────────────────────────────────────────────────────────
+let edChar        = null;
+let edCmds        = [];        // [{type,x,y,...}] current working path, always absolute
+let edSel         = null;      // {cmdIdx, part:'end'|'cp1'|'cp2'} | null
+let edDrag        = false;
+let edActiveDrag  = null;      // {cmdIdx, part, orig}
+let edSnapSz      = 10;
+let edShowGrid    = true;
+let edNodeOpacity = 0.8;
+let edShowNodes   = true;
+let edStrokes     = [];        // committed strokes: [{d, color}]
+let edActiveStroke = null;     // index of stroke being re-edited, or null
+let edVbX = 0, edVbY = 0, edVbW = VB_W, edVbH = VB_H;
+let edFullFileText = null;
+const edRnd = v => +v.toFixed(1);
+const edSvgEl = (tag, attrs) => {
+  const el = document.createElementNS(SVG_NS, tag);
+  Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, v));
+  return el;
+};
+
+// ─── Panel toggle ─────────────────────────────────────────────────────────────
+window.toggleEditorPanel = function () {
+  const sec = document.getElementById('editorSection');
+  const btn = document.getElementById('btnEditor');
+  const opening = !sec.classList.contains('visible');
+  sec.classList.toggle('visible', opening);
+  btn.classList.toggle('active', opening);
+  if (opening) {
+    if (!document.getElementById('edUpperRow').children.length) edBuildLetterPicker();
+    sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+};
+
+// ─── Letter picker ────────────────────────────────────────────────────────────
+function edBuildLetterPicker() {
+  [['ABCDEFGHIJKLMNOPQRSTUVWXYZ','edUpperRow'],
+   ['abcdefghijklmnopqrstuvwxyz','edLowerRow']].forEach(([chars, id]) => {
+    const row = document.getElementById(id);
+    row.innerHTML = '';
+    [...chars].forEach(ch => {
+      const b = document.createElement('div');
+      b.className = 'author-lbtn';
+      b.textContent = ch; b.dataset.char = ch;
+      b.title = "Author strokes for '" + ch + "'";
+      b.addEventListener('click', () => edActivateLetter(ch));
+      row.appendChild(b);
+    });
+  });
+}
+
+function edActivateLetter(ch) {
+  edChar = ch;
+  document.querySelectorAll('#edUpperRow .author-lbtn, #edLowerRow .author-lbtn')
+    .forEach(b => b.classList.toggle('active', b.dataset.char === ch));
+  document.getElementById('edCharLabel').textContent = "'" + ch + "'";
+  document.getElementById('edEditArea').style.display = 'block';
+  edCmds = []; edSel = null; edStrokes = []; edActiveStroke = null;
+  edFullFileText = null;
+  document.getElementById('btnEdDownloadFull').disabled = true;
+  edRenderGlyph(); edRefresh(); edUpdateStrokeList(); edUpdateOutput();
+}
+
+// ─── viewBox / zoom ───────────────────────────────────────────────────────────
+function edApplyViewBox() {
+  document.getElementById('edSvg').setAttribute('viewBox',
+    edVbX + ' ' + edVbY + ' ' + edVbW + ' ' + edVbH);
+}
+window.edZoomIn = () => {
+  const cx=edVbX+edVbW/2, cy=edVbY+edVbH/2;
+  edVbW=Math.max(30,edVbW*0.7); edVbH=Math.max(40,edVbH*0.7);
+  edVbX=cx-edVbW/2; edVbY=cy-edVbH/2; edApplyViewBox();
+};
+window.edZoomOut = () => {
+  const cx=edVbX+edVbW/2, cy=edVbY+edVbH/2;
+  edVbW=Math.min(VB_W*2,edVbW/0.7); edVbH=Math.min(VB_H*2,edVbH/0.7);
+  edVbX=cx-edVbW/2; edVbY=cy-edVbH/2; edApplyViewBox();
+};
+window.edZoomReset = () => { edVbX=0; edVbY=0; edVbW=VB_W; edVbH=VB_H; edApplyViewBox(); };
+
+// ─── Loupe ────────────────────────────────────────────────────────────────────
+function edUpdateLoupe(vbx, vby) {
+  const loupe = document.getElementById('edLoupe');
+  const R = 18;
+  const lx = Math.max(0, Math.min(VB_W-R*2, vbx-R));
+  const ly = Math.max(0, Math.min(VB_H-R*2, vby-R));
+  loupe.setAttribute('viewBox', lx + ' ' + ly + ' ' + (R*2) + ' ' + (R*2));
+  // Copy all visible layers — grid, glyph outline and guides give spatial context
+  ['Grid','Glyph','Guide','Done','Path','Handle','Node'].forEach(name => {
+    const src = document.getElementById('ed' + name + 'Layer');
+    const dst = document.getElementById('loupe' + name + 'Layer');
+    if (src && dst) dst.innerHTML = src.innerHTML;
+  });
+  // Position in the quadrant opposite the cursor so it never obscures the edit point.
+  // Right-half cursor → loupe on left; top-half cursor → loupe on bottom; etc.
+  const inRight  = vbx > VB_W / 2;
+  const inBottom = vby > VB_H / 2;
+  loupe.style.left   = inRight  ? '8px'  : 'auto';
+  loupe.style.right  = inRight  ? 'auto' : '8px';
+  loupe.style.top    = inBottom ? '8px'  : 'auto';
+  loupe.style.bottom = inBottom ? 'auto' : '8px';
+  loupe.style.display = 'block';
+}
+function edHideLoupe() { document.getElementById('edLoupe').style.display = 'none'; }
+
+// ─── Node opacity / visibility ────────────────────────────────────────────────
+window.edSetNodeOpacity = function(v) {
+  edNodeOpacity = v;
+  document.getElementById('edNodeOpacityVal').textContent = Math.round(v*100) + '%';
+  edRefreshNodeOpacity();
+};
+window.edToggleNodes = function() {
+  edShowNodes = !edShowNodes;
+  document.getElementById('btnEdNodes').classList.toggle('active', edShowNodes);
+  edRefreshNodeOpacity();
+};
+function edRefreshNodeOpacity() {
+  const op = edShowNodes ? edNodeOpacity : 0;
+  ['edHandleLayer','edNodeLayer'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.setAttribute('opacity', op);
+  });
+}
+
+// ─── Grid + guides ────────────────────────────────────────────────────────────
+window.edToggleGrid = function() {
+  edShowGrid = !edShowGrid;
+  document.getElementById('btnEdGrid').classList.toggle('active', edShowGrid);
+  edRenderGrid();
+};
+function edRenderGrid() {
+  const layer = document.getElementById('edGridLayer');
+  layer.innerHTML = '';
+  if (!edShowGrid) return;
+  for (let x=0; x<=VB_W; x+=10) {
+    const major = x%50===0;
+    layer.appendChild(edSvgEl('line',{x1:x,y1:0,x2:x,y2:VB_H,
+      stroke:major?'#c8d0e8':'#e8ecf4','stroke-width':major?0.5:0.25,'pointer-events':'none'}));
+    if (major && x>0 && x<VB_W) {
+      const t=edSvgEl('text',{x:x+1,y:8,'font-size':4,fill:'#bbb','pointer-events':'none'});
+      t.textContent=x; layer.appendChild(t);
+    }
+  }
+  for (let y=0; y<=VB_H; y+=10) {
+    const major = y%50===0;
+    layer.appendChild(edSvgEl('line',{x1:0,y1:y,x2:VB_W,y2:y,
+      stroke:major?'#c8d0e8':'#e8ecf4','stroke-width':major?0.5:0.25,'pointer-events':'none'}));
+    if (major && y>0 && y<VB_H) {
+      const t=edSvgEl('text',{x:1,y:y-1,'font-size':4,fill:'#bbb','pointer-events':'none'});
+      t.textContent=y; layer.appendChild(t);
+    }
+  }
+}
+function edRenderGuides() {
+  const layer = document.getElementById('edGuideLayer');
+  layer.innerHTML = '';
+  [{y:GAME_GUIDES.cap,op:0.6},{y:GAME_GUIDES.xh,op:0.35,dash:'4 3'},
+   {y:GAME_GUIDES.base,op:0.6},{y:GAME_GUIDES.desc,op:0.35,dash:'4 3'}]
+  .forEach(({y,op,dash}) => {
+    const a={x1:0,y1:y,x2:VB_W,y2:y,stroke:'#c8a800','stroke-width':0.6,opacity:op,'pointer-events':'none'};
+    if (dash) a['stroke-dasharray']=dash;
+    layer.appendChild(edSvgEl('line',a));
+  });
+}
+function edRenderGlyph() {
+  const layer = document.getElementById('edGlyphLayer');
+  layer.innerHTML = '';
+  if (!font||!edChar) return;
+  const d = glyphToPath(font.charToGlyph(edChar), true);
+  if (d) layer.appendChild(edSvgEl('path',{d,fill:'#001858',opacity:0.10,'pointer-events':'none'}));
+}
+
+// ─── Snap ─────────────────────────────────────────────────────────────────────
+window.edSetSnap = function(sz) {
+  edSnapSz = sz;
+  [['btnEdSnap10',10],['btnEdSnap5',5],['btnEdSnap1',1],['btnEdSnap0',0]].forEach(([id,v]) =>
+    document.getElementById(id).classList.toggle('active', v===sz));
+};
+
+function edClientToSvg(cx, cy) {
+  const svg = document.getElementById('edSvg');
+  const pt = svg.createSVGPoint(); pt.x=cx; pt.y=cy;
+  const tp = pt.matrixTransform(svg.getScreenCTM().inverse());
+  if (edSnapSz>0) { tp.x=Math.round(tp.x/edSnapSz)*edSnapSz; tp.y=Math.round(tp.y/edSnapSz)*edSnapSz; }
+  return {x:edRnd(tp.x), y:edRnd(tp.y)};
+}
+
+// ─── SVG path parsing / serialization ─────────────────────────────────────────
+function parseSvgPath(d) {
+  const cmds=[]; let cx=0,cy=0,sx=0,sy=0,lastType='';
+  // [\s\S]*? matches any character (including spaces and newlines) lazily —
+  // captures everything between one SVG command letter and the next.
+  // /[\s,]+/ splits coordinate strings on whitespace and/or commas.
+  // (Previously these were [sS] and [s,] — a \s→s template-literal escape bug
+  //  that caused parseSvgPath to always return [] and blank the canvas on any
+  //  manual text edit.)
+  const re=/([MmLlHhVvCcSsQqTtZz])([\s\S]*?)(?=[MmLlHhVvCcSsQqTtZz]|$)/g;
+  let m;
+  while ((m=re.exec(d))!==null) {
+    const type=m[1];
+    const args=m[2].trim().split(/[\s,]+/).filter(Boolean).map(Number);
+    let i=0;
+    const consume=n=>args.slice(i,i+=n);
+    const low=type===type.toLowerCase()&&type!=='Z'&&type!=='z';
+    const T=type.toUpperCase();
+    do {
+      switch(T) {
+        case 'M':{ const [x,y]=consume(2); cx=low?cx+x:x; cy=low?cy+y:y;
+          if(!cmds.length||lastType==='Z'){sx=cx;sy=cy;} cmds.push({type:'M',x:edRnd(cx),y:edRnd(cy)}); break; }
+        case 'L':{ const [x,y]=consume(2); cx=low?cx+x:x; cy=low?cy+y:y;
+          cmds.push({type:'L',x:edRnd(cx),y:edRnd(cy)}); break; }
+        case 'H':{ const [x]=consume(1); cx=low?cx+x:x;
+          cmds.push({type:'L',x:edRnd(cx),y:edRnd(cy)}); break; }
+        case 'V':{ const [y]=consume(1); cy=low?cy+y:y;
+          cmds.push({type:'L',x:edRnd(cx),y:edRnd(cy)}); break; }
+        case 'C':{ const [x1,y1,x2,y2,x,y]=consume(6);
+          const ax1=low?cx+x1:x1,ay1=low?cy+y1:y1,ax2=low?cx+x2:x2,ay2=low?cy+y2:y2;
+          cx=low?cx+x:x; cy=low?cy+y:y;
+          cmds.push({type:'C',x1:edRnd(ax1),y1:edRnd(ay1),x2:edRnd(ax2),y2:edRnd(ay2),x:edRnd(cx),y:edRnd(cy)}); break; }
+        case 'S':{ const pr=cmds[cmds.length-1];
+          const rx1=pr&&pr.type==='C'?2*cx-pr.x2:cx, ry1=pr&&pr.type==='C'?2*cy-pr.y2:cy;
+          const [x2,y2,x,y]=consume(4);
+          const ax2=low?cx+x2:x2,ay2=low?cy+y2:y2; cx=low?cx+x:x; cy=low?cy+y:y;
+          cmds.push({type:'C',x1:edRnd(rx1),y1:edRnd(ry1),x2:edRnd(ax2),y2:edRnd(ay2),x:edRnd(cx),y:edRnd(cy)}); break; }
+        case 'Q':{ const [x1,y1,x,y]=consume(4);
+          const ax1=low?cx+x1:x1,ay1=low?cy+y1:y1; cx=low?cx+x:x; cy=low?cy+y:y;
+          cmds.push({type:'Q',x1:edRnd(ax1),y1:edRnd(ay1),x:edRnd(cx),y:edRnd(cy)}); break; }
+        case 'T':{ const pr=cmds[cmds.length-1];
+          const rx1=pr&&pr.type==='Q'?2*cx-pr.x1:cx, ry1=pr&&pr.type==='Q'?2*cy-pr.y1:cy;
+          const [x,y]=consume(2); cx=low?cx+x:x; cy=low?cy+y:y;
+          cmds.push({type:'Q',x1:edRnd(rx1),y1:edRnd(ry1),x:edRnd(cx),y:edRnd(cy)}); break; }
+        case 'Z':{ cmds.push({type:'Z'}); cx=sx; cy=sy; break; }
+      }
+      lastType=T;
+    } while (i<args.length);
+  }
+  return cmds;
+}
+function serializeSvgPath(cmds) {
+  return cmds.map(c=>{
+    switch(c.type){
+      case 'M': return 'M ' + c.x + ',' + c.y;
+      case 'L': return 'L ' + c.x + ',' + c.y;
+      case 'C': return 'C ' + c.x1 + ',' + c.y1 + ' ' + c.x2 + ',' + c.y2 + ' ' + c.x + ',' + c.y;
+      case 'Q': return 'Q ' + c.x1 + ',' + c.y1 + ' ' + c.x + ',' + c.y;
+      case 'Z': return 'Z';
+      default:  return '';
+    }
+  }).join(' ');
+}
+
+// ─── Render layers ────────────────────────────────────────────────────────────
+function edRenderPath() {
+  const layer=document.getElementById('edPathLayer'); layer.innerHTML='';
+  if (!edCmds.length) return;
+  layer.appendChild(edSvgEl('path',{d:serializeSvgPath(edCmds),fill:'none',stroke:'#e74c3c',
+    'stroke-width':1.5,'stroke-linecap':'round','stroke-linejoin':'round','pointer-events':'none'}));
+}
+function edRenderHandles() {
+  const layer=document.getElementById('edHandleLayer'); layer.innerHTML='';
+  let px=0,py=0;
+  edCmds.forEach((c,i)=>{
+    if (c.type==='C') {
+      layer.appendChild(edSvgEl('line',{x1:px,y1:py,x2:c.x1,y2:c.y1,stroke:'#3da9fc',
+        'stroke-width':0.6,'stroke-dasharray':'2 2','pointer-events':'none'}));
+      layer.appendChild(edSvgEl('line',{x1:c.x,y1:c.y,x2:c.x2,y2:c.y2,stroke:'#3da9fc',
+        'stroke-width':0.6,'stroke-dasharray':'2 2','pointer-events':'none'}));
+      const s1=edSel&&edSel.cmdIdx===i&&edSel.part==='cp1';
+      layer.appendChild(edSvgEl('circle',{cx:c.x1,cy:c.y1,r:3,fill:s1?'#ff8906':'#3da9fc',
+        stroke:'#fff','stroke-width':0.5,'data-idx':i,'data-part':'cp1',cursor:'move'}));
+      const s2=edSel&&edSel.cmdIdx===i&&edSel.part==='cp2';
+      layer.appendChild(edSvgEl('circle',{cx:c.x2,cy:c.y2,r:3,fill:s2?'#ff8906':'#3da9fc',
+        stroke:'#fff','stroke-width':0.5,'data-idx':i,'data-part':'cp2',cursor:'move'}));
+    } else if (c.type==='Q') {
+      layer.appendChild(edSvgEl('line',{x1:px,y1:py,x2:c.x1,y2:c.y1,stroke:'#3da9fc',
+        'stroke-width':0.6,'stroke-dasharray':'2 2','pointer-events':'none'}));
+      layer.appendChild(edSvgEl('line',{x1:c.x,y1:c.y,x2:c.x1,y2:c.y1,stroke:'#3da9fc',
+        'stroke-width':0.6,'stroke-dasharray':'2 2','pointer-events':'none'}));
+      const s1=edSel&&edSel.cmdIdx===i&&edSel.part==='cp1';
+      layer.appendChild(edSvgEl('circle',{cx:c.x1,cy:c.y1,r:3,fill:s1?'#ff8906':'#3da9fc',
+        stroke:'#fff','stroke-width':0.5,'data-idx':i,'data-part':'cp1',cursor:'move'}));
+    }
+    if ('x' in c) { px=c.x; py=c.y; }
+  });
+}
+function edRenderNodes() {
+  const layer=document.getElementById('edNodeLayer'); layer.innerHTML='';
+  edCmds.forEach((c,i)=>{
+    if (c.type==='Z'||!('x' in c)) return;
+    const sel=edSel&&edSel.cmdIdx===i&&edSel.part==='end';
+    if (c.type==='M') {
+      layer.appendChild(edSvgEl('rect',{x:c.x-4,y:c.y-4,width:8,height:8,
+        fill:sel?'#ff8906':'#ff6600',stroke:'#fff','stroke-width':0.8,
+        transform:'rotate(45 ' + c.x + ' ' + c.y + ')',
+        'data-idx':i,'data-part':'end',cursor:'move'}));
+    } else {
+      layer.appendChild(edSvgEl('circle',{cx:c.x,cy:c.y,r:4,
+        fill:sel?'#ff8906':'#e74c3c',stroke:'#fff','stroke-width':0.8,
+        'data-idx':i,'data-part':'end',cursor:'move'}));
+    }
+    const t=edSvgEl('text',{x:c.x+5,y:c.y-3,'font-size':4.5,fill:'#999','pointer-events':'none'});
+    t.textContent=i; layer.appendChild(t);
+  });
+}
+function edRenderDone() {
+  const layer=document.getElementById('edDoneLayer'); layer.innerHTML='';
+  edStrokes.forEach((s,i)=>{
+    const isActive=edActiveStroke===i;
+    layer.appendChild(edSvgEl('path',{d:s.d,fill:'none',stroke:s.color,
+      'stroke-width':isActive?2:1.5,'stroke-linecap':'round','stroke-linejoin':'round',
+      opacity:isActive?1:0.55,'pointer-events':'none'}));
+  });
+}
+function edRefresh() {
+  edRenderGrid(); edRenderGuides(); edRenderGlyph();
+  edRenderDone(); edRenderPath(); edRenderHandles(); edRenderNodes();
+  edRefreshNodeOpacity();
+  const btnCommit = document.getElementById('btnEdCommit');
+  if (btnCommit) btnCommit.disabled = edCmds.length < 2;
+  const btnDel = document.getElementById('btnEdDelete');
+  if (btnDel) btnDel.disabled = !edSel;
+  const btnConv = document.getElementById('btnEdConvert');
+  if (btnConv) btnConv.disabled = !edSel || edSel.part !== 'end' ||
+    !edCmds[edSel?.cmdIdx] || ['M','Z'].includes(edCmds[edSel?.cmdIdx]?.type);
+}
+function edUpdateText() {
+  const ta = document.getElementById('edTextarea');
+  if (ta) ta.value = serializeSvgPath(edCmds);
+}
+window.edOnTextInput = function(val) {
+  try {
+    edCmds=parseSvgPath(val); edSel=null;
+    edRefresh(); edUpdateCmdList();
+    const msg=document.getElementById('edParseMsg');
+    msg.className='ed-parse-msg ok';
+    msg.textContent='✓ ' + edCmds.length + ' command' + (edCmds.length!==1?'s':'');
+    document.getElementById('edTextarea').classList.remove('ed-error');
+  } catch(e) {
+    const msg=document.getElementById('edParseMsg');
+    msg.className='ed-parse-msg err'; msg.textContent='✕ ' + e.message;
+    document.getElementById('edTextarea').classList.add('ed-error');
+  }
+};
+function edUpdateCmdList() {
+  const list=document.getElementById('edCmdList');
+  const count=document.getElementById('edCmdCount');
+  if (!list||!count) return;
+  list.innerHTML=''; count.textContent=edCmds.length;
+  edCmds.forEach((c,i)=>{
+    const row=document.createElement('div');
+    row.className='ed-cmd-row'+(edSel&&edSel.cmdIdx===i?' ed-sel':'');
+    row.onclick=()=>{ edSel={cmdIdx:i,part:'end'}; edRefresh(); edUpdateCmdList(); };
+    let argsHtml='';
+    switch(c.type){
+      case 'M': case 'L': argsHtml = c.x + ', ' + c.y; break;
+      case 'C': argsHtml = '<span class="ed-h">' + c.x1 + ',' + c.y1 + ' ' + c.x2 + ',' + c.y2 + '</span> ' + c.x + ',' + c.y; break;
+      case 'Q': argsHtml = '<span class="ed-h">' + c.x1 + ',' + c.y1 + '</span> ' + c.x + ',' + c.y; break;
+    }
+    row.innerHTML='<span class="ed-cmd-idx">' + i + '</span><span class="ed-cmd-type">' + c.type + '</span><span class="ed-cmd-args">' + argsHtml + '</span>';
+    list.appendChild(row);
+  });
+}
+
+// ─── Add / delete / convert commands ─────────────────────────────────────────
+function edGetInsertPoint() {
+  const ref = edSel ? edCmds[edSel.cmdIdx] : edCmds[edCmds.length-1];
+  return ref && 'x' in ref ? {x:ref.x+20, y:ref.y} : {x:100,y:100};
+}
+function edInsertAfterSel(cmd) {
+  const idx=edSel?edSel.cmdIdx+1:edCmds.length;
+  edCmds.splice(idx,0,cmd);
+  edSel={cmdIdx:idx,part:'end'};
+  edRefresh(); edUpdateText(); edUpdateCmdList();
+}
+window.edAddM = ()=>{ const p=edGetInsertPoint(); edInsertAfterSel({type:'M',x:p.x,y:p.y}); };
+window.edAddL = ()=>{ const p=edGetInsertPoint(); edInsertAfterSel({type:'L',x:p.x,y:p.y}); };
+window.edAddC = ()=>{
+  const p=edGetInsertPoint();
+  const prev=edCmds[edSel?edSel.cmdIdx:edCmds.length-1]||{x:p.x-30,y:p.y};
+  edInsertAfterSel({type:'C',x1:prev.x+10,y1:prev.y-20,x2:p.x-10,y2:p.y-20,x:p.x,y:p.y});
+};
+window.edAddQ = ()=>{
+  const p=edGetInsertPoint();
+  const prev=edCmds[edSel?edSel.cmdIdx:edCmds.length-1]||{x:p.x-30,y:p.y};
+  edInsertAfterSel({type:'Q',x1:(prev.x+p.x)/2,y1:prev.y-30,x:p.x,y:p.y});
+};
+window.edAddZ = ()=> edInsertAfterSel({type:'Z'});
+
+window.edDeleteCmd = ()=>{
+  if (!edSel) return;
+  edCmds.splice(edSel.cmdIdx,1); edSel=null;
+  edRefresh(); edUpdateText(); edUpdateCmdList();
+};
+window.edCmdConvert = ()=>{
+  if (!edSel) return;
+  const c=edCmds[edSel.cmdIdx];
+  if (!c||c.type==='M'||c.type==='Z') return;
+  const prev=edCmds.slice(0,edSel.cmdIdx).reverse().find(p=>'x' in p)||{x:0,y:0};
+  if (c.type==='L') {
+    edCmds[edSel.cmdIdx]={type:'C',
+      x1:edRnd(prev.x+(c.x-prev.x)*0.33), y1:edRnd(prev.y+(c.y-prev.y)*0.33-20),
+      x2:edRnd(prev.x+(c.x-prev.x)*0.67), y2:edRnd(prev.y+(c.y-prev.y)*0.67-20),
+      x:c.x,y:c.y};
+  } else {
+    edCmds[edSel.cmdIdx]={type:'L',x:c.x,y:c.y};
+  }
+  edRefresh(); edUpdateText(); edUpdateCmdList();
+};
+window.edClearPath = ()=>{ edCmds=[]; edSel=null; edActiveStroke=null; edRefresh(); edUpdateText(); edUpdateCmdList(); };
+window.edClearAll  = ()=>{ edCmds=[]; edSel=null; edStrokes=[]; edActiveStroke=null; edRefresh(); edUpdateText(); edUpdateCmdList(); edUpdateStrokeList(); edUpdateOutput(); };
+window.edUndo      = ()=>{ if (edCmds.length){ edCmds.pop(); edSel=null; edRefresh(); edUpdateText(); edUpdateCmdList(); } };
+window.edCopyPath  = ()=>{
+  navigator.clipboard.writeText(serializeSvgPath(edCmds)).then(()=>{
+    const btn=event.target; btn.textContent='✓ Copied!';
+    setTimeout(()=>btn.textContent='Copy path',1500);
+  });
+};
+
+// ─── Stroke management ────────────────────────────────────────────────────────
+window.edCommitStroke = ()=>{
+  const d=serializeSvgPath(edCmds);
+  if (!d||edCmds.length<2) return;
+  const color=STROKE_COLORS[edStrokes.length%STROKE_COLORS.length];
+  if (edActiveStroke!==null) { edStrokes[edActiveStroke].d=d; }
+  else { edStrokes.push({d,color}); }
+  edCmds=[]; edSel=null; edActiveStroke=null;
+  edRefresh(); edUpdateText(); edUpdateCmdList(); edUpdateStrokeList(); edUpdateOutput();
+};
+window.edNewStroke = ()=>{
+  if (edCmds.length>=2) edCommitStroke();
+  edCmds=[]; edSel=null; edActiveStroke=null;
+  edRefresh(); edUpdateText(); edUpdateCmdList();
+  const hint=document.getElementById('edHint');
+  if (hint) hint.textContent='New stroke — click canvas to start';
+};
+function edLoadStrokeForEdit(i) {
+  if (edCmds.length>=2 && edActiveStroke!==i) {
+    if (!confirm('Commit current path before editing stroke ' + (i+1) + '?')) return;
+    edCommitStroke();
+  }
+  edActiveStroke=i;
+  edCmds=parseSvgPath(edStrokes[i].d); edSel=null;
+  edRefresh(); edUpdateText(); edUpdateCmdList(); edUpdateStrokeList();
+}
+function edDeleteStroke(i) {
+  if (edActiveStroke===i){ edCmds=[]; edSel=null; edActiveStroke=null; }
+  else if (edActiveStroke!==null&&edActiveStroke>i) edActiveStroke--;
+  edStrokes.splice(i,1);
+  edRefresh(); edUpdateText(); edUpdateCmdList(); edUpdateStrokeList(); edUpdateOutput();
+}
+function edUpdateStrokeList() {
+  const list=document.getElementById('edStrokeList');
+  const count=document.getElementById('edStrokeCount');
+  if (!list||!count) return;
+  count.textContent=edStrokes.length;
+  if (!edStrokes.length){ list.innerHTML='<div class="ed-hint">No strokes yet</div>'; return; }
+  list.innerHTML='';
+  edStrokes.forEach((s,i)=>{
+    const row=document.createElement('div');
+    row.className='stroke-item'+(edActiveStroke===i?' ed-active-stroke':'');
+    const sw=document.createElement('div'); sw.className='stroke-swatch'; sw.style.background=s.color;
+    const num=document.createElement('span'); num.className='stroke-num'; num.textContent=i+1;
+    const path=document.createElement('span'); path.className='stroke-path';
+    path.textContent=s.d.length>60?s.d.slice(0,60)+'…':s.d;
+    const editBtn=document.createElement('button');
+    editBtn.className='btn sec'; editBtn.style.cssText='font-size:10px;padding:1px 7px;flex-shrink:0;';
+    editBtn.textContent='✎ Edit'; editBtn.onclick=e=>{ e.stopPropagation(); edLoadStrokeForEdit(i); };
+    const delBtn=document.createElement('button');
+    delBtn.className='btn sec'; delBtn.style.cssText='font-size:10px;padding:1px 7px;flex-shrink:0;color:#e74c3c;';
+    delBtn.textContent='✕'; delBtn.onclick=e=>{ e.stopPropagation(); edDeleteStroke(i); };
+    row.appendChild(sw); row.appendChild(num); row.appendChild(path);
+    row.appendChild(editBtn); row.appendChild(delBtn);
+    row.onclick=()=>edLoadStrokeForEdit(i);
+    list.appendChild(row);
+  });
+}
+
+// ─── letterData.js output ─────────────────────────────────────────────────────
+function edGenerateOutput() {
+  if (!edChar||!edStrokes.length) return '// Pick a letter and commit strokes to see output';
+  const NL = String.fromCharCode(10);
+  const parts = [
+    "APP.LETTERS['" + edChar + "'] = {",
+    "  viewBox: '0 0 " + VB_W + " " + VB_H + "',",
+    "  coords: 'display',",
+    "  strokes: ["
+  ];
+  edStrokes.forEach((s,i) => parts.push("    { d: '" + s.d + "' }" + (i < edStrokes.length-1 ? ',' : '')));
+  parts.push("  ]");
+  parts.push("};");
+  return parts.join(NL);
+}
+function edUpdateOutput() {
+  const el=document.getElementById('edOutput');
+  if (el) el.textContent=edGenerateOutput();
+}
+window.edCopyOutput = ()=>{
+  navigator.clipboard.writeText(edGenerateOutput()).then(()=>{
+    const btn=event.target; btn.textContent='✓ Copied!';
+    setTimeout(()=>btn.textContent='Copy',1500);
+  });
+};
+window.edDownloadSnippet = ()=>{
+  const blob=new Blob([edGenerateOutput()],{type:'text/javascript'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='letter_' + edChar + '.js'; a.click();
+};
+window.edLoadFromFile = function(input) {
+  if (!input.files[0]) return;
+  if (!edChar){ alert('Pick a letter first, then load letterData.js'); return; }
+  const reader=new FileReader();
+  reader.onload=e=>{
+    edFullFileText=e.target.result;
+    edParseLetterFromFile(edChar,edFullFileText);
+    document.getElementById('btnEdDownloadFull').disabled=false;
+  };
+  reader.readAsText(input.files[0]);
+  input.value='';
+};
+function edParseLetterFromFile(ch,text) {
+  // ch is always a single letter — no regex escaping needed.
+  // Matches both bare LETTERS['x'] (inside IIFE in letterData.js) and
+  // APP.LETTERS['x'] (the format produced by the dev tool's output panel).
+  const re=new RegExp("(?:APP\\.)?LETTERS\\[[\'\"]" + ch + "[\'\"]\\]\\s*=\\s*\\{([\\s\\S]*?)\\};","m");
+  const m=text.match(re);
+  if (!m){ alert("No entry for '" + ch + "' in letterData.js"); return; }
+  const strokeRe=/d:\s*['""]([^'"]+)['"]/g;
+  const newStrokes=[]; let sm;
+  while ((sm=strokeRe.exec(m[0]))!==null) {
+    const color=STROKE_COLORS[newStrokes.length%STROKE_COLORS.length];
+    newStrokes.push({d:sm[1],color});
+  }
+  if (!newStrokes.length){ alert("Entry for '" + ch + "' has no strokes"); return; }
+  edStrokes=newStrokes; edCmds=[]; edSel=null; edActiveStroke=null;
+  edRefresh(); edUpdateText(); edUpdateCmdList(); edUpdateStrokeList(); edUpdateOutput();
+  const hint=document.getElementById('edHint');
+  if (hint) hint.textContent='Loaded ' + newStrokes.length + ' stroke(s) — click ✎ Edit to modify';
+}
+window.edDownloadFull = ()=>{
+  if (!edFullFileText||!edChar) return;
+  const snippet=edGenerateOutput();
+  // Match both bare LETTERS['x'] and APP.LETTERS['x'] when replacing existing entries
+  const re=new RegExp("(?:APP\\.)?LETTERS\\[[\'\"]" + edChar + "[\'\"]\\]\\s*=\\s*\\{[\\s\\S]*?\\};","m");
+  const NL=String.fromCharCode(10);
+  const updated=re.test(edFullFileText)?edFullFileText.replace(re,snippet):edFullFileText+NL+NL+snippet;
+  const blob=new Blob([updated],{type:'text/javascript'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='letterData.js'; a.click();
+};
+
+// ─── SVG interaction ──────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', ()=>{
+  const svg=document.getElementById('edSvg');
+  if (!svg) return;
+
+  svg.addEventListener('mousemove', e=>{
+    if (!edChar) return;
+    const pt=edClientToSvg(e.clientX,e.clientY);
+    const lbl=document.getElementById('edCursorLabel');
+    if (lbl) lbl.textContent='x=' + pt.x + ' y=' + pt.y;
+  });
+
+  svg.addEventListener('wheel', e=>{
+    e.preventDefault();
+    const svgEl=document.getElementById('edSvg');
+    const pt2=svgEl.createSVGPoint(); pt2.x=e.clientX; pt2.y=e.clientY;
+    const vpt=pt2.matrixTransform(svgEl.getScreenCTM().inverse());
+    const factor=e.deltaY>0?1.15:0.87;
+    edVbW=Math.min(VB_W*2,Math.max(30,edVbW*factor));
+    edVbH=Math.min(VB_H*2,Math.max(40,edVbH*factor));
+    edVbX=vpt.x-(vpt.x-edVbX)*factor; edVbY=vpt.y-(vpt.y-edVbY)*factor;
+    edApplyViewBox();
+  },{passive:false});
+
+  svg.addEventListener('pointerdown', e=>{
+    if (!edChar) return;
+    e.preventDefault();
+    svg.setPointerCapture(e.pointerId);
+    const pt=edClientToSvg(e.clientX,e.clientY);
+    const el=e.target;
+    const idx=parseInt(el.dataset.idx);
+    const part=el.dataset.part;
+    if (!isNaN(idx)&&part) {
+      edActiveDrag={cmdIdx:idx,part,orig:JSON.parse(JSON.stringify(edCmds[idx]))};
+      edSel={cmdIdx:idx,part};
+      edRefresh(); edUpdateCmdList();
+    } else {
+      const lastCmd=edCmds[edCmds.length-1];
+      if (!edCmds.length||(lastCmd&&lastCmd.type==='Z')) edCmds.push({type:'M',x:pt.x,y:pt.y});
+      else edCmds.push({type:'L',x:pt.x,y:pt.y});
+      const newIdx=edCmds.length-1;
+      edSel={cmdIdx:newIdx,part:'end'};
+      edActiveDrag={cmdIdx:newIdx,part:'end',orig:JSON.parse(JSON.stringify(edCmds[newIdx]))};
+      edRefresh(); edUpdateText(); edUpdateCmdList();
+    }
+    edDrag=true;
+  });
+
+  svg.addEventListener('pointermove', e=>{
+    if (!edDrag||!edActiveDrag) return;
+    const pt=edClientToSvg(e.clientX,e.clientY);
+    const c=edCmds[edActiveDrag.cmdIdx];
+    if (!c) return;
+    if (edActiveDrag.part==='end') {
+      if (c.type==='C'){ c.x2+=pt.x-c.x; c.y2+=pt.y-c.y; }
+      c.x=pt.x; c.y=pt.y;
+    } else if (edActiveDrag.part==='cp1') { c.x1=pt.x; c.y1=pt.y; }
+    else if (edActiveDrag.part==='cp2')   { c.x2=pt.x; c.y2=pt.y; }
+    edRefresh(); edUpdateText(); edUpdateCmdList();
+    edUpdateLoupe(pt.x,pt.y);
+  });
+
+  const edEndDrag=()=>{ edHideLoupe(); edDrag=false; edActiveDrag=null; };
+  svg.addEventListener('pointerup',     edEndDrag);
+  svg.addEventListener('pointercancel', edEndDrag);
+});
+
+
+// ── Auto-trace (Zhang-Suen MAT) ───────────────────────────────────────────────
+
+/**
+ * Zhang-Suen morphological thinning.
+ * data: Uint8Array of 0/1 values, W×H row-major.
+ * Modifies in-place; returns when no more deletions occur.
+ */
+function zhangSuenThin(data, W, H) {
+  const idx = (x, y) => y * W + x;
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (let pass = 0; pass < 2; pass++) {
+      const toDelete = [];
+      for (let y = 1; y < H - 1; y++) {
+        for (let x = 1; x < W - 1; x++) {
+          if (!data[idx(x, y)]) continue;
+          // 8-neighbours in order: p2..p9 (p2=top, clockwise)
+          const p2 = data[idx(x,   y-1)];
+          const p3 = data[idx(x+1, y-1)];
+          const p4 = data[idx(x+1, y)];
+          const p5 = data[idx(x+1, y+1)];
+          const p6 = data[idx(x,   y+1)];
+          const p7 = data[idx(x-1, y+1)];
+          const p8 = data[idx(x-1, y)];
+          const p9 = data[idx(x-1, y-1)];
+          // B: number of ON neighbours
+          const B = p2+p3+p4+p5+p6+p7+p8+p9;
+          if (B < 2 || B > 6) continue;
+          // A: number of 0→1 transitions in the ordered ring
+          const ring = [p2,p3,p4,p5,p6,p7,p8,p9,p2];
+          let A = 0;
+          for (let k = 0; k < 8; k++) if (!ring[k] && ring[k+1]) A++;
+          if (A !== 1) continue;
+          if (pass === 0) {
+            if (p2*p4*p6 !== 0) continue;
+            if (p4*p6*p8 !== 0) continue;
+          } else {
+            if (p2*p4*p8 !== 0) continue;
+            if (p2*p6*p8 !== 0) continue;
+          }
+          toDelete.push(idx(x, y));
+        }
+      }
+      if (toDelete.length) { changed = true; toDelete.forEach(i => { data[i] = 0; }); }
+    }
+  }
+}
+
+/**
+ * Greedy skeleton tracer.
+ * Returns an array of segments, each segment is an array of {x,y} pixel coords.
+ */
+function traceSkeleton(data, W, H) {
+  const idx  = (x, y) => y * W + x;
+  const vis  = new Uint8Array(data.length);
+  const nbrs = (x, y) => {
+    const out = [];
+    for (let dy = -1; dy <= 1; dy++)
+      for (let dx = -1; dx <= 1; dx++)
+        if ((dx||dy) && x+dx>=0 && x+dx<W && y+dy>=0 && y+dy<H && data[idx(x+dx,y+dy)])
+          out.push({x:x+dx,y:y+dy});
+    return out;
+  };
+
+  // Collect all skeleton pixels; classify by degree
+  const pixels = [];
+  for (let y = 0; y < H; y++)
+    for (let x = 0; x < W; x++)
+      if (data[idx(x,y)]) pixels.push({x,y,deg:nbrs(x,y).length});
+
+  // Sort: endpoints (deg=1) first, then junctions, then internal
+  pixels.sort((a,b) => {
+    const pa = a.deg===1?0:a.deg>=3?1:2;
+    const pb = b.deg===1?0:b.deg>=3?1:2;
+    return pa-pb;
+  });
+
+  const segments = [];
+
+  // Walk chains from unvisited pixels
+  for (const start of pixels) {
+    if (vis[idx(start.x,start.y)]) continue;
+    if (!data[idx(start.x,start.y)]) continue;
+    vis[idx(start.x,start.y)] = 1;
+
+    const seg = [{x:start.x,y:start.y}];
+    let cur = start;
+
+    while (true) {
+      const cands = nbrs(cur.x,cur.y).filter(n=>!vis[idx(n.x,n.y)]);
+      if (!cands.length) break;
+      // Prefer continuing in the same direction
+      let best = cands[0];
+      if (seg.length >= 2) {
+        const prev = seg[seg.length-2];
+        const ddx = cur.x - prev.x, ddy = cur.y - prev.y;
+        let bestScore = -Infinity;
+        for (const c of cands) {
+          const score = (c.x-cur.x)*ddx + (c.y-cur.y)*ddy;
+          if (score > bestScore) { bestScore = score; best = c; }
+        }
+      }
+      vis[idx(best.x,best.y)] = 1;
+      seg.push(best);
+      cur = best;
+      // Stop at junctions so they become endpoints of multiple segments
+      if (nbrs(cur.x,cur.y).filter(n=>!vis[idx(n.x,n.y)]).length > 1) break;
+    }
+
+    if (seg.length >= 2) segments.push(seg);
+  }
+  return segments;
+}
+
+/**
+ * Ramer-Douglas-Peucker simplification.
+ * pts: array of {x,y}; eps: tolerance.
+ */
+function rdpSkel(pts, eps) {
+  if (pts.length <= 2) return pts.slice();
+  const s = pts[0], e = pts[pts.length-1];
+  const dx = e.x-s.x, dy = e.y-s.y, len = Math.hypot(dx,dy);
+  let maxD = 0, maxI = 0;
+  for (let i = 1; i < pts.length-1; i++) {
+    const d = len < 1e-9
+      ? Math.hypot(pts[i].x-s.x, pts[i].y-s.y)
+      : Math.abs(dy*pts[i].x - dx*pts[i].y + e.x*s.y - e.y*s.x) / len;
+    if (d > maxD) { maxD = d; maxI = i; }
+  }
+  if (maxD <= eps) return [s, e];
+  return [...rdpSkel(pts.slice(0,maxI+1),eps), ...rdpSkel(pts.slice(maxI),eps).slice(1)];
+}
+
+/**
+ * Main auto-trace: rasterize the current glyph, thin, trace, simplify,
+ * load into path editor.
+ */
+window.edAutoTrace = function () {
+  if (!font || !edChar) {
+    alert('Load a font and select a letter first.');
+    return;
+  }
+
+  const CS = 4;                       // canvas scale factor
+  const CW = VB_W * CS, CH = VB_H * CS;
+
+  // 1 — Rasterize glyph to offscreen canvas
+  const cvs = document.createElement('canvas');
+  cvs.width = CW; cvs.height = CH;
+  const cx = cvs.getContext('2d');
+  cx.fillStyle = '#000'; cx.fillRect(0, 0, CW, CH);
+
+  const glyph = font.charToGlyph(edChar);
+  const d = glyphToPath(glyph, true);   // guide-stripped outline path
+  if (!d) { alert('No path data for this glyph.'); return; }
+
+  cx.save();
+  cx.scale(CS, CS);
+  cx.fillStyle = '#fff';
+  cx.fill(new Path2D(d));
+  cx.restore();
+
+  // 2 — Binary image from red channel
+  const imgData = cx.getImageData(0, 0, CW, CH).data;
+  const bin = new Uint8Array(CW * CH);
+  for (let i = 0; i < CW * CH; i++) bin[i] = imgData[i * 4] > 64 ? 1 : 0;
+
+  // 3 — Zhang-Suen thinning
+  zhangSuenThin(bin, CW, CH);
+
+  // 4 — Skeleton tracing
+  const rawSegs = traceSkeleton(bin, CW, CH);
+
+  // 5 — Convert pixel coords → viewBox coords, RDP simplify, filter short segs
+  const eps = parseFloat(document.getElementById('edEpsSlider').value) || 1.5;
+  const MIN_PTS = 3;
+  const newCmds = [];
+
+  for (const seg of rawSegs) {
+    const vbPts = seg.map(p => ({ x: +(p.x / CS).toFixed(1), y: +(p.y / CS).toFixed(1) }));
+    const simplified = rdpSkel(vbPts, eps);
+    if (simplified.length < MIN_PTS) continue;
+    newCmds.push({ type: 'M', x: simplified[0].x, y: simplified[0].y });
+    for (let i = 1; i < simplified.length; i++) {
+      newCmds.push({ type: 'L', x: simplified[i].x, y: simplified[i].y });
+    }
+  }
+
+  if (!newCmds.length) {
+    alert('Auto-trace produced no strokes — try adjusting ε or check the glyph is visible.');
+    return;
+  }
+
+  // 6 — Load into unified editor
+  edCmds = newCmds;
+  edSel  = null;
+  edUpdateText();
+  edRefresh();
+  edUpdateCmdList();
+
+  const hint = document.getElementById('edHint');
+  if (hint) hint.textContent =
+    `Auto-trace: ${rawSegs.length} raw segment(s) → ${newCmds.filter(c=>c.type==='M').length} path(s). Refine nodes, then ✓ Commit stroke.`;
+};
+
+// ── Auto-load attempt (http:// only) ─────────────────────────────────────────
+window.addEventListener('load', () => {
+  const url = '../assets/fonts/PlaywriteGBSGuides-Regular.ttf';
+  opentype.load(url, (err, f) => {
+    if (err) return; // silently fail — user uses file picker
+    font = f;
+    onFontLoaded('PlaywriteGBSGuides-Regular.ttf');
+  });
+});
+
+})();
+</script>
+</body>
+</html>
