@@ -95,7 +95,7 @@ window.APP = window.APP || {};
     svg.appendChild(defs);
 
     // ── Writing guidelines (bottom of stack, behind all letter layers) ──
-    APP.addGuidelines(svg, data.viewBox);
+    APP.addGuidelines(svg, data.viewBox, isUpper);
 
     // Outline layer — slightly wider dark stroke, rendered first so it peeks out
     // around the edges of the ghost on top, creating a thin dark border.

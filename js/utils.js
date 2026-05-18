@@ -36,12 +36,14 @@ window.APP = window.APP || {};
     CHECKPOINT_TOLERANCE: 28,   // mid-stroke checkpoint proximity (viewBox units)
     FINAL_TOLERANCE:      14,   // last-checkpoint proximity — tighter to prevent early completion
     DRAW_RADIUS:          52,   // proximity to start-dot before ink is deposited
-    // Guide-line offset: each line shifts outward by this many viewBox units so the
-    // guide sits at the visual edge of a stroke rather than its centreline.
+    // Guide-line offsets: each line shifts outward so the guide sits at the visual
+    // edge of a stroke rather than its centreline.
     // top/middle shift UP, bottom/lower shift DOWN (see expand: ±1 in GUIDE_CONFIG).
-    // Set to 0 to restore exact centreline positions (matches raw font metric positions).
-    // Good starting values: SW_LOW/2 = 12 (lowercase), SW_UP/2 = 18 (uppercase).
-    GUIDE_OFFSET:         3,
+    // Correct values are SW/2 per case — half the stroke width places the guide
+    // exactly at the outer edge of the rendered stroke.
+    // Set both to 0 to restore exact centreline positions.
+    GUIDE_OFFSET_UP:      18,   // uppercase: SW_UP/2  = 36/2 = 18
+    GUIDE_OFFSET_LOW:     12,   // lowercase: SW_LOW/2 = 24/2 = 12
     // Start-dot radius for the coloured guide dot on each stroke.
     // SW/2 places the dot edge exactly on the letter border (half inside, half outside).
     // Smaller = dot sits fully inside the letter; larger = dot overlaps the border more.
@@ -71,14 +73,18 @@ window.APP = window.APP || {};
   // Appends horizontal guide lines to an SVG element. Call before other layers
   // so the lines sit at the bottom of the stacking order.
   // Reads APP.GUIDE_CONFIG — edit that object in letterData.js to restyle.
-  APP.addGuidelines = function (svg, viewBox) {
+  // isUpper — pass true for uppercase letters, false/omitted for lowercase.
+  // Selects GUIDE_OFFSET_UP or GUIDE_OFFSET_LOW so the guide sits at the stroke
+  // edge regardless of case (uppercase strokes are wider than lowercase ones).
+  APP.addGuidelines = function (svg, viewBox, isUpper) {
     const gc = APP.GUIDE_CONFIG;
     if (!gc) return;
     const vb = viewBox.split(/\s+/).map(Number);
     const x1 = vb[0], x2 = vb[0] + vb[2];
-    // Outward offset so guides sit at stroke edges rather than centrelines.
-    // Reads TRACER_CONFIG.GUIDE_OFFSET; falls back to 0 if config not yet loaded.
-    const offset = (APP.TRACER_CONFIG && APP.TRACER_CONFIG.GUIDE_OFFSET) || 0;
+    const cfg = APP.TRACER_CONFIG;
+    const offset = cfg
+      ? (isUpper ? (cfg.GUIDE_OFFSET_UP || 0) : (cfg.GUIDE_OFFSET_LOW || 0))
+      : 0;
     const g = APP.svgEl('g', { class: 'writing-guidelines', 'pointer-events': 'none' });
     Object.values(gc.lines).forEach(line => {
       if (line.hidden) return;

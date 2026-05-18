@@ -64,7 +64,7 @@ window.APP = window.APP || {};
   function overviewSVG(data, char, px) {
     const { SW, SW_OUTLINE } = strokeWidths(char);
     const svg = svgEl('svg', { viewBox: data.viewBox, width: px, height: px });
-    APP.addGuidelines(svg, data.viewBox);
+    APP.addGuidelines(svg, data.viewBox, APP.isUpperLetter(char));
 
     // All letter content sits in a transformed group so paths align with guidelines.
     const ltr = svgEl('g', { transform: letterTransform(char) });
@@ -163,7 +163,7 @@ window.APP = window.APP || {};
         viewBox: data.viewBox, width: px, height: svgH,
         style: 'display:block;flex-shrink:0'
       });
-      APP.addGuidelines(svg, data.viewBox);
+      APP.addGuidelines(svg, data.viewBox, APP.isUpperLetter(char));
 
       // All letter content in a transformed group aligned to guidelines
       const ltr = svgEl('g', { transform: glyphTransform });
