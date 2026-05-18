@@ -32,7 +32,7 @@ window.APP = window.APP || {};
     pickNext(maxLength, exclude) {
       if (APP.state.consecutiveFoundCount >= 2) {
         const unfound = eligible(maxLength).filter(
-          a => !APP.state.completedAnimals.has(a.name)
+          a => !APP.state.completedAnimals.has(APP.animalId(a))
         );
         if (unfound.length > 0) {
           // Exclude the just-played animal from unfound too — no immediate repeats.

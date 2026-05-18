@@ -4,9 +4,24 @@ window.APP = window.APP || {};
   function render(root, ctx) {
     root.innerHTML = '';
 
-    const animalList = APP.animals ? APP.animals.eligibleAll() : APP.ANIMALS;
-    const total      = animalList.length;
-    const doneCount  = APP.state.completedAnimals.size;
+    // Build a deduplicated list of all unique animals across every language list,
+    // preferring the current locale's entry for display names and images.
+    // This means the gallery always shows every creature regardless of language,
+    // and found status is shared — completing "DOG" marks "CÃO" as found too.
+    const currentList = APP.animals ? APP.animals.eligibleAll() : APP.ANIMALS;
+    const allLists    = [APP.ANIMALS || [], APP.ANIMALS_PT || []];
+    const byId        = new Map();
+    // Seed with all known animals (any locale), then override with current locale
+    // so the display name and image match what the child is currently playing in.
+    allLists.forEach(list => list.forEach(a => {
+      if (!byId.has(APP.animalId(a))) byId.set(APP.animalId(a), a);
+    }));
+    currentList.forEach(a => byId.set(APP.animalId(a), a));
+    const animalList = [...byId.values()];
+
+    const total     = animalList.length;
+    const doneCount = [...APP.state.completedAnimals]
+      .filter(id => byId.has(id)).length;
 
     const wrap = document.createElement('div');
     wrap.className = 'gallery';
@@ -30,7 +45,7 @@ window.APP = window.APP || {};
     grid.className = 'gallery-grid';
 
     animalList.forEach(animal => {
-      const done   = APP.state.completedAnimals.has(animal.name);
+      const done   = APP.state.completedAnimals.has(APP.animalId(animal));
       const imgSrc = animal.images.cartoon;
 
       const tile = document.createElement('div');

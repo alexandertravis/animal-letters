@@ -96,6 +96,15 @@ window.APP = window.APP || {};
     svg.appendChild(g);
   };
 
+  // ── Locale-independent animal ID ──────────────────────────────────────────
+  // Derives a stable ID from the cartoon image path so found status is shared
+  // across languages — the same creature has the same ID regardless of locale.
+  // e.g. { images: { cartoon: 'assets/images/cartoon/dog.svg' } } → 'dog'
+  //      GATO and DOG both resolve to 'dog' since they share the same SVG.
+  APP.animalId = function (animal) {
+    return animal.images.cartoon.split('/').pop().replace('.svg', '');
+  };
+
   // ── Unicode-safe case detection ────────────────────────────────────────────
   // /[A-Z]/ misses accented uppercase letters (Á, Ã, É, Ç …).
   // This helper works for any Unicode character without a hardcoded list.
