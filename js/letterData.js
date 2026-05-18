@@ -204,7 +204,7 @@ window.APP = window.APP || {};
     coords: 'display',
     strokes: [
       { d: 'M 97,93 L 97,155 C 96,172 113,174 119,158' },
-      { d: 'M 97,53 L 97,54' }
+      { d: 'M 97,53 L 97,53' }  // dot — equal coords so APP.isDot detects it correctly
     ]
   };
   LETTERS['j'] = {
@@ -212,7 +212,7 @@ window.APP = window.APP || {};
     coords: 'display',
     strokes: [
       { d: 'M 99,92 L 99,209 C 100,235 78,231 71,221' },
-      { d: 'M 99,53 L 99,54' }
+      { d: 'M 99,53 L 99,53' }  // dot — equal coords so APP.isDot detects it correctly
     ]
   };
   LETTERS['k'] = {

@@ -119,7 +119,13 @@ window.APP = window.APP || {};
 
   APP.isDot = function (d) {
     const m = d.match(/M\s*([\d.-]+)[,\s]+([\d.-]+)\s+L\s*([\d.-]+)[,\s]+([\d.-]+)/);
-    return !!(m && parseFloat(m[1]) === parseFloat(m[3]) && parseFloat(m[2]) === parseFloat(m[4]));
+    if (!m) return false;
+    const dx = parseFloat(m[1]) - parseFloat(m[3]);
+    const dy = parseFloat(m[2]) - parseFloat(m[4]);
+    // Treat any path shorter than 4 viewBox units as a dot. This handles both
+    // exact zero-length paths (M x,y L x,y) and near-zero paths from the authoring
+    // tool, which outputs M x,y L x,y+1 rather than identical coordinates.
+    return Math.sqrt(dx * dx + dy * dy) < 4;
   };
 
   // Returns the display-space centre of a dot stroke after applying the
