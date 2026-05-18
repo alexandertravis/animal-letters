@@ -18,9 +18,9 @@
     screen.render(root, ctx);
   }
 
-  // All <script> tags are at the end of <body> without defer, so the DOM
-  // and every APP module are already loaded when this line executes.
-  // Calling route() directly avoids a double-render that occurred when both
-  // the DOMContentLoaded listener AND the readyState guard fired in sequence.
-  route();
+  // Gate on document.fonts.ready so the Quicksand font is fully parsed before
+  // the first screen renders. Without this, a slow/cold-cache load may render
+  // UI text (buttons, name strip, headings) in the fallback font briefly.
+  // fonts.ready resolves immediately on repeat loads when the font is cached.
+  document.fonts.ready.then(() => route());
 })(window.APP);

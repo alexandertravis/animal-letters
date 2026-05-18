@@ -8,17 +8,12 @@ window.APP = window.APP || {};
   const el = APP.svgEl;
   const { X_SCALE_UP, X_SCALE_LOW, X_CENTER } = APP.LETTER_METRICS;
 
-  const STROKE_WIDTH_UP  = 42;   // uppercase letter thickness in viewBox units
-  const STROKE_WIDTH_LOW = 30;   // lowercase letter thickness
-  const INK_WIDTH_UP     = 38;   // user ink thickness — uppercase
-  const INK_WIDTH_LOW    = 26;   // user ink thickness — lowercase
-  const TOLERANCE    = 32;       // viewBox units — how close pointer must come to next checkpoint
-  const DRAW_RADIUS  = 52;       // viewBox units — how close to the dot before ink is deposited
-  const CHECKPOINTS_PER_STROKE = 18;
+  // All tunable constants come from APP.TRACER_CONFIG (js/utils.js) — edit there.
+  const CHECKPOINTS_PER_STROKE = 36; // more points = smoother guide polyline approximating bezier curves
 
-  // One colour per stroke — matches the letter-patterns review screen so
-  // the child sees the same numbering system in both places.
-  const STROKE_COLORS = ['#ff8906', '#f582ae', '#8bd3dd', '#5390d9', '#7c3aed'];
+  // One colour per stroke — shared with letters.js via APP.STROKE_COLORS (utils.js).
+  // Edit there; the alias here keeps call sites readable.
+  const STROKE_COLORS = APP.STROKE_COLORS;
 
   function mount(stageEl, character, opts) {
     const data = APP.getLetter(character);
@@ -38,18 +33,29 @@ window.APP = window.APP || {};
       preserveAspectRatio: 'xMidYMid meet'
     });
 
-    // Per-character stroke widths — uppercase slightly thinner than before,
-    // lowercase noticeably thinner so letters fit better within the smaller zone.
+    // Per-character stroke widths — read from APP.TRACER_CONFIG (js/utils.js).
     const isUpper = /[A-Z]/.test(character);
-    const SW  = isUpper ? STROKE_WIDTH_UP  : STROKE_WIDTH_LOW;
-    const INK = isUpper ? INK_WIDTH_UP     : INK_WIDTH_LOW;
+    const cfg = APP.TRACER_CONFIG;
+    const SW  = isUpper ? cfg.SW_UP  : cfg.SW_LOW;
+    const INK = isUpper ? cfg.INK_UP : cfg.INK_LOW;
+    const TOLERANCE       = cfg.CHECKPOINT_TOLERANCE;
+    const FINAL_TOLERANCE = cfg.FINAL_TOLERANCE;
+    const DRAW_RADIUS     = cfg.DRAW_RADIUS;
 
     // Compute y-axis transform: maps design coordinates → current guide positions.
-    const { a: tA, b: tB } = APP.getLetterYTransform(character);
+    // When a letter has coords:'display', its paths are already authored in guide-line
+    // coordinate space (top=30, mid=90, bottom=170, lower=230) — skip the design→display
+    // transform and use identity for both axes so the strokes align with the guides.
+    const displayCoords = data.coords === 'display';
+    const { a: _tA, b: _tB } = APP.getLetterYTransform(character);
     // Lowercase letters get a horizontal squeeze so they look more circular.
     // Scaling around the viewBox centre (x=100): new_x = xScale*x + X_CENTER*(1-xScale).
-    const xScale  = isUpper ? X_SCALE_UP  : X_SCALE_LOW;
-    const xOffset = isUpper ? X_CENTER * (1 - X_SCALE_UP) : X_CENTER * (1 - X_SCALE_LOW);
+    const _xScale  = isUpper ? X_SCALE_UP  : X_SCALE_LOW;
+    const _xOffset = isUpper ? X_CENTER * (1 - X_SCALE_UP) : X_CENTER * (1 - X_SCALE_LOW);
+    const tA      = displayCoords ? 1 : _tA;
+    const tB      = displayCoords ? 0 : _tB;
+    const xScale  = displayCoords ? 1 : _xScale;
+    const xOffset = displayCoords ? 0 : _xOffset;
     const letterTransform = `translate(${xOffset},${tB.toFixed(3)}) scale(${xScale},${tA.toFixed(6)})`;
 
     // Zero-length "dot" strokes (M x,y L x,y with identical coords) need special
@@ -382,8 +388,12 @@ window.APP = window.APP || {};
       if (currentStroke >= totalStrokes) return;
       const cps = checkpoints[currentStroke];
       // Advance through any consecutive checkpoints within tolerance (handles fast drags).
+      // The last checkpoint uses FINAL_TOLERANCE (tighter than CHECKPOINT_TOLERANCE) so
+      // a stroke can't snap complete before the child's finger actually reaches the end.
       let advanced = false;
-      while (currentCheckpoint < cps.length && dist(p, cps[currentCheckpoint]) <= TOLERANCE) {
+      while (currentCheckpoint < cps.length) {
+        const tol = currentCheckpoint === cps.length - 1 ? FINAL_TOLERANCE : TOLERANCE;
+        if (dist(p, cps[currentCheckpoint]) > tol) break;
         currentCheckpoint++;
         advanced = true;
       }

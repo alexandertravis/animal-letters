@@ -10,7 +10,7 @@ window.APP = window.APP || {};
   const isDot = APP.isDot;
 
   // One colour per stroke (up to 5 before cycling)
-  const COLORS = ['#ff8906', '#f582ae', '#8bd3dd', '#5390d9', '#7c3aed'];
+  const COLORS = APP.STROKE_COLORS; // shared with tracer.js — edit in utils.js
 
   const GHOST_COLOR = '#dde0ea'; // solid light blue-grey ≈ rgba(0,24,88,0.12) over white
 
@@ -29,23 +29,32 @@ window.APP = window.APP || {};
     return m ? { x: parseFloat(m[1]), y: parseFloat(m[2]) } : null;
   }
 
+  // Resolves the affine transform coefficients for a character.
+  // Letters with coords:'display' are authored in guide-line space already —
+  // they get identity (a=1, b=0, xScale=1, xOffset=0) so no further mapping is applied.
+  function resolveTransform(char) {
+    const data = APP.getLetter(char);
+    if (data && data.coords === 'display') {
+      return { a: 1, b: 0, xScale: 1, xOffset: 0 };
+    }
+    const { a, b } = APP.getLetterYTransform(char);
+    const isUpper = /[A-Z]/.test(char);
+    const xScale  = isUpper ? X_SCALE_UP  : X_SCALE_LOW;
+    const xOffset = isUpper ? X_CENTER * (1 - X_SCALE_UP) : X_CENTER * (1 - X_SCALE_LOW);
+    return { a, b, xScale, xOffset };
+  }
+
   // Returns the display-space position of a dot stroke, binding the given
   // character's affine transform. Delegates to APP.dotTransformPos for the math.
   function dotDisplayPos(d, char) {
-    const { a, b } = APP.getLetterYTransform(char);
-    const isUpper  = /[A-Z]/.test(char);
-    const xScale   = isUpper ? X_SCALE_UP : X_SCALE_LOW;
-    const xOffset  = isUpper ? X_CENTER * (1 - X_SCALE_UP) : X_CENTER * (1 - X_SCALE_LOW);
+    const { a, b, xScale, xOffset } = resolveTransform(char);
     return APP.dotTransformPos(d, xScale, xOffset, a, b);
   }
 
   // Returns the SVG transform string for a glyph — combines the y-axis
   // guide mapping with the horizontal squeeze.
   function letterTransform(char) {
-    const { a, b } = APP.getLetterYTransform(char);
-    const isUpper  = /[A-Z]/.test(char);
-    const xScale   = isUpper ? X_SCALE_UP  : X_SCALE_LOW;
-    const xOffset  = isUpper ? X_CENTER * (1 - X_SCALE_UP) : X_CENTER * (1 - X_SCALE_LOW);
+    const { a, b, xScale, xOffset } = resolveTransform(char);
     return `translate(${xOffset},${b.toFixed(3)}) scale(${xScale},${a.toFixed(6)})`;
   }
 
