@@ -5,15 +5,37 @@ window.APP = window.APP || {};
 (function (APP) {
 
   // ── Shared letter metrics ──────────────────────────────────────────────────
-  // Horizontal scale applied to every glyph's stroke guide paths.
-  // Set to 1.0 (no squeeze) because the Quicksand font now provides the letter
-  // shape — guides must trace the font's natural proportions, not the narrower
-  // geometric shapes of the old stroke-drawn letters.
+  // Horizontal squeeze applied to every glyph so letters look less wide.
   // Both tracer.js and letters.js read from here — edit once, applies everywhere.
   APP.LETTER_METRICS = {
-    X_SCALE_UP:  1.0,   // no squeeze — match Quicksand uppercase width
-    X_SCALE_LOW: 1.0,   // no squeeze — match Quicksand lowercase width
-    X_CENTER:    100,   // viewBox midpoint (kept for compatibility, unused when scale=1)
+    X_SCALE_UP:  0.85,  // squeeze factor for uppercase
+    X_SCALE_LOW: 0.80,  // squeeze factor for lowercase
+    X_CENTER:    100,   // viewBox midpoint around which x-scale is applied
+  };
+
+  // ── Tracer visual & interaction config ────────────────────────────────────
+  // All tunable constants for the letter-tracing mechanic in one place.
+  // Edit here; tracer.js reads from this object at runtime.
+  //
+  // Stroke widths (viewBox units):
+  //   Thicker = letter looks bolder but narrows enclosed gaps (e.g. eye of 'e',
+  //   angles in 'k'). Reduce if strokes overlap or gaps close up.
+  //
+  // Tolerances (viewBox units):
+  //   CHECKPOINT_TOLERANCE — how close the pointer must come to advance through
+  //     mid-stroke waypoints. Larger = more forgiving, smaller = stricter.
+  //   FINAL_TOLERANCE — applied only to the last checkpoint of each stroke.
+  //     Kept tighter than CHECKPOINT_TOLERANCE so a stroke doesn't snap complete
+  //     before the child has actually reached the end.
+  //   DRAW_RADIUS — how close to the start-dot before ink begins depositing.
+  APP.TRACER_CONFIG = {
+    SW_UP:                36,   // uppercase outline stroke width
+    SW_LOW:               24,   // lowercase outline stroke width
+    INK_UP:               32,   // uppercase user-ink width
+    INK_LOW:              20,   // lowercase user-ink width
+    CHECKPOINT_TOLERANCE: 28,   // mid-stroke checkpoint proximity (viewBox units)
+    FINAL_TOLERANCE:      18,   // last-checkpoint proximity — tighter to prevent early completion
+    DRAW_RADIUS:          52,   // proximity to start-dot before ink is deposited
   };
 
   // ── SVG element factory ────────────────────────────────────────────────────
@@ -67,22 +89,6 @@ window.APP = window.APP || {};
     const m = d.match(/M\s*([\d.-]+)[,\s]+([\d.-]+)/);
     if (!m) return null;
     return { x: xScale * parseFloat(m[1]) + xOffset, y: tA * parseFloat(m[2]) + tB };
-  };
-
-  // ── Font positioning helper ────────────────────────────────────────────────
-  // Returns { fontSize, baseline } from APP.FONT_CONFIG for a given character,
-  // selecting the correct size/baseline group (uppercase, ascender, descender,
-  // or standard lowercase). Used by tracer.js and letters.js to position the
-  // <clipPath><text> and ghost <text> elements consistently.
-  const _DESCENDERS_LC = 'gjpqy';
-  const _ASCENDERS_LC  = 'bdfhklt';
-  APP.getFontPos = function (char) {
-    const fc = APP.FONT_CONFIG;
-    if (!fc) return { fontSize: 195, baseline: 170 }; // safe fallback
-    if (/[A-Z]/.test(char))           return { fontSize: fc.fontSizeUC,        baseline: fc.baselineUC };
-    if (_DESCENDERS_LC.includes(char)) return { fontSize: fc.fontSizeDescender, baseline: fc.baselineDescender };
-    if (_ASCENDERS_LC.includes(char))  return { fontSize: fc.fontSizeAscender,  baseline: fc.baselineAscender };
-    return                                    { fontSize: fc.fontSizeLC,         baseline: fc.baselineLC };
   };
 
   // ── Case conversion ────────────────────────────────────────────────────────

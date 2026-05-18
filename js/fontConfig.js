@@ -6,8 +6,10 @@ window.APP = window.APP || {};
 // edit this object (family, weight, file) and tune the numeric constants to
 // match the new typeface's metrics.
 //
-// Phase 2 will use these values to build <clipPath><text> elements in the SVG
-// tracer. In Phase 1 they are defined here but not yet consumed by the tracer.
+// Values are derived from the Quicksand OS/2 font table via dev/font-metrics.ps1:
+//   sCapHeight=700, sxHeight=503, sTypoDescender=-250, unitsPerEm=1000.
+// To recalibrate after a font swap, run dev/font-metrics.ps1 and update the
+// fontSize* / baseline* constants below using the printed FONT_CONFIG values.
 (function (APP) {
   APP.FONT_CONFIG = {
     // ── Font identity ────────────────────────────────────────────────────────
@@ -36,32 +38,34 @@ window.APP = window.APP || {};
     viewBoxHAccent: 300,  // accented characters that carry a mark above cap-height
 
     // ── Uppercase glyph positioning ───────────────────────────────────────────
-    // Fills cap zone top→bottom (y=30→y=170).
-    // At Quicksand cap-height ratio ≈ 0.72:
-    //   cap-top = baselineUC − (fontSizeUC × 0.72) = 170 − (195 × 0.72) ≈ 29 ✓
-    fontSizeUC: 195,
+    // Fills cap zone top→bottom (y=30→y=170, width=140).
+    // Derived from OS/2 sCapHeight=700, unitsPerEm=1000 → capHeightRatio=0.70.
+    //   fontSizeUC = 140 / 0.70 = 200
+    //   cap-top = 170 − (200 × 0.70) = 30 ✓
+    fontSizeUC: 200,
     baselineUC: 170,
 
     // ── Standard lowercase (a c e i m n o r s u v w x z) ────────────────────
-    // Fills x-height zone only (middle→bottom, y=100→y=170).
-    // At Quicksand x-height ratio ≈ 0.56:
-    //   x-top = baselineLC − (fontSizeLC × 0.56) = 170 − (125 × 0.56) ≈ 100 ✓
-    fontSizeLC: 125,
+    // Fills x-height zone only (middle→bottom, y=100→y=170, width=70).
+    // Derived from OS/2 sxHeight=503, unitsPerEm=1000 → xHeightRatio=0.503.
+    //   fontSizeLC = 70 / 0.503 ≈ 139
+    //   x-top = 170 − (139 × 0.503) ≈ 100 ✓
+    fontSizeLC: 139,
     baselineLC: 170,
 
     // ── Ascender-group lowercase (b d f h k l t) ─────────────────────────────
     // Ascenders reach the top guide (y=30) — same full-height zone as uppercase.
-    fontSizeAscender: 195,
+    fontSizeAscender: 200,
     baselineAscender: 170,
 
     // ── Descender-group lowercase (g j p q y) ────────────────────────────────
-    // Larger font + lower baseline so the bowl sits in the x-height zone and
-    // the tail reaches close to the lower guide (y=240).
-    // At ratios 0.56 (x-height) and 0.25 (descender):
-    //   x-top  = 195 − (155 × 0.56) ≈ 108   (close to middle guide y=100)
-    //   tail   = 195 + (155 × 0.25) ≈ 234   (close to lower guide y=240)
-    fontSizeDescender: 155,
-    baselineDescender: 195,
+    // Bowl in x-height zone (y=100→y=170) and tail to lower guide (y=240).
+    // Derived: fontSizeDescender = 140 / (xHeightRatio + descenderRatio)
+    //          = 140 / (0.503 + 0.25) ≈ 186
+    //   x-top  = 193.5 − (186 × 0.503) ≈ 100 ✓
+    //   tail   = 193.5 + (186 × 0.25) ≈ 240 ✓
+    fontSizeDescender: 186,
+    baselineDescender: 193.5,
 
     // ── Accented uppercase ────────────────────────────────────────────────────
     // Used with viewBoxHAccent (200×300). Slightly smaller to leave headroom for

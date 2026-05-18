@@ -45,10 +45,18 @@
 
 2026-05-10 - Decision: Separate fontSizeUC / fontSizeLC / fontSizeAscender /
              fontSizeDescender (not collapsed to one value). Uppercase and ascender
-             letters fill the full cap zone (y=30→170, fontSize≈195); standard
-             lowercase fills only the x-height zone (y=100→170, fontSize≈125);
-             descenders need a third size (fontSize≈155) to position both bowl
-             and tail relative to the guides.
+             letters fill the full cap zone (y=30→170, fontSize=200); standard
+             lowercase fills only the x-height zone (y=100→170, fontSize=139);
+             descenders need a third size (fontSize=186, baseline=193.5) to
+             position both bowl and tail relative to the guides. All values
+             derived from real OS/2 font metrics via dev/font-metrics.ps1.
+
+2026-05-10 - Decision: FONT_CONFIG values must come from real OS/2 font metrics,
+             not estimates. Estimated xHeightRatio=0.56 gave fontSizeLC=125 and
+             produced visibly undersized lowercase glyphs. Real ratio (0.503 from
+             OS/2 sxHeight=503/UPM=1000) gives fontSizeLC=139 — all lowercase
+             letters now sit correctly in the x-height zone. For future font swaps:
+             run dev/font-metrics.ps1 to regenerate the four fontSize values.
 
 2026-05-10 - Decision: `APP.getFontPos(char)` in utils.js (not local to tracer/
              letters). Centralises character → font-size/baseline dispatch so
@@ -133,12 +141,19 @@
   correctly gates the first render. Slow connections see a brief blank screen
   (max ~3 s browser timeout) before the app loads.
 
-- **Phase 2 font positioning calibration:** FONT_CONFIG baselines are calibrated
-  to GUIDE_CONFIG line positions (top y=30, middle y=100, bottom y=170, lower y=240).
-  Values were computed from Quicksand cap-height ratio ≈ 0.72 and x-height ratio ≈ 0.56.
-  These are estimates — empirical browser verification is required (Phase 3 items).
-  Descender letters use fontSize 155/baseline 195 which places x-height top at ≈108
-  (vs guide middle y=100) and tail at ≈234 (vs lower guide y=240) — close but not exact.
+- **FONT_CONFIG values derived from real OS/2 metrics (not estimated):**
+  Quicksand OS/2 table (version 4): unitsPerEm=1000, sCapHeight=700, sxHeight=503,
+  sTypoDescender=-250. Ratios: capHeight=0.70, xHeight=0.503, descender=0.25.
+  NOTE: The OS/2 table has `sxHeight` at byte offset +86 and `sCapHeight` at +88
+  from the table start — off-by-two from what one might expect reading the spec;
+  `dev/font-metrics.ps1` now uses the correct offsets.
+  Computed FONT_CONFIG values that place guides exactly on target lines:
+    fontSizeUC=200   (cap-top = 170 − 200×0.70 = 30 ✓)
+    fontSizeLC=139   (x-top   = 170 − 139×0.503 = 100 ✓)
+    fontSizeDescender=186, baselineDescender=193.5
+                     (x-top = 100 ✓, tail = 240 ✓)
+  The old estimated xHeightRatio of 0.56 gave fontSizeLC=125, which caused
+  the lowercase letters to render noticeably too small, misaligning guides.
 
 - **clipPath coordinate system:** The `<clipPath><text>` is positioned in SVG display
   space (FONT_CONFIG coordinates). The stroke guide paths (letterTransform group) are

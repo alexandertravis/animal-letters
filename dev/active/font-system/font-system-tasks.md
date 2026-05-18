@@ -20,6 +20,9 @@
 - [x] Add `fontConfig.js` to `index.html` load order (after `letterData.js`,
       before `utils.js`)
 - [x] Gate initial `route()` in `main.js` behind `document.fonts.ready` promise
+- [x] Extract real Quicksand OS/2 metrics via dev/font-metrics.ps1 and update
+      FONT_CONFIG with exact values (fontSizeUC=200, fontSizeLC=139,
+      fontSizeDescender=186, baselineDescender=193.5)
 - [ ] Verify Quicksand renders correctly on desktop Chrome, iOS Safari, Android Chrome
 
 ## Section 3 — SVG Clip Mask Integration (tracer.js)
@@ -43,13 +46,19 @@
 - [ ] Confirm review screen still shows all 52 glyphs correctly
 
 ## Section 5 — Stroke Guide Audit (Phase 3)
-Open the "Letter Patterns" review screen, scroll through all 52 glyphs,
-compare stroke guide paths against the Quicksand letter shapes.
-- [ ] **Uppercase A–Z audit** — check all 26; note any that overshoot
-- [ ] **Lowercase a–z audit** — check all 26; note any that overshoot
-- [ ] Fix any guide paths that fall outside the Quicksand glyph outline
-      (priority: S, G, Q, g, s, a — these diverge most from geometric shapes)
-- [ ] Re-run `npm test` — confirm all 102 tests still pass after guide adjustments
+Use `dev/stroke-author.html` to check each letter. Red overflow = path exits
+glyph; coloured (clipped) layer = what child actually sees in game.
+- [x] **Uppercase A–Z audit** — A, D, E, I, Q, S, T, U visually confirmed;
+      I simplified to 1 stroke (no serifs in Quicksand); Q tail repositioned
+      to M 130,155 L 168,195 to stay inside clip boundary
+- [ ] **Uppercase A–Z audit** — complete remaining letters (B, C, F, G, H, J,
+      K, L, M, N, O, P, R, V, W, X, Y, Z)
+- [x] **Lowercase a–z audit** — a, b, f, g, h, i, j, n, p, q, r, s, v, y, z
+      visually confirmed; all sit correctly in x-height / descender zones
+- [ ] **Lowercase a–z audit** — complete remaining letters (c, d, e, k, l, m,
+      o, t, u, w, x)
+- [ ] Fix any guide paths still found outside the Quicksand glyph outline
+- [x] Re-run `npm test` — all 102 tests pass
 - [ ] Document which glyphs were adjusted in the Decisions Log
 
 ## Section 6 — Accent ViewBox & Guidelines (Phase 4)
@@ -85,6 +94,13 @@ compare stroke guide paths against the Quicksand letter shapes.
 - [ ] Add integration test: accented animal runs through startGame →
       advanceLetter cycle without errors
 - [ ] Run full test suite — confirm all tests pass
+
+## Section 5b — Dev Tooling
+- [x] `dev/font-metrics.ps1` — extracts OS/2 metrics from any TTF, prints exact
+      FONT_CONFIG values to copy into fontConfig.js
+- [x] `dev/stroke-author.html` — visual overlay: font glyph + guide lines +
+      stroke paths; red = overflow (clipped away); coloured = what child sees;
+      toggle layers; stroke path text selectable; keyboard navigation
 
 ## Section 9 — Pre-commit & Merge
 - [ ] Run `/pre-commit` across all changed files

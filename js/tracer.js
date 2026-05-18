@@ -8,13 +8,8 @@ window.APP = window.APP || {};
   const el = APP.svgEl;
   const { X_SCALE_UP, X_SCALE_LOW, X_CENTER } = APP.LETTER_METRICS;
 
-  const STROKE_WIDTH_UP  = 42;   // uppercase letter thickness in viewBox units
-  const STROKE_WIDTH_LOW = 30;   // lowercase letter thickness
-  const INK_WIDTH_UP     = 38;   // user ink thickness — uppercase
-  const INK_WIDTH_LOW    = 26;   // user ink thickness — lowercase
-  const TOLERANCE    = 32;       // viewBox units — how close pointer must come to next checkpoint
-  const DRAW_RADIUS  = 52;       // viewBox units — how close to the dot before ink is deposited
-  const CHECKPOINTS_PER_STROKE = 18;
+  // All tunable constants come from APP.TRACER_CONFIG (js/utils.js) — edit there.
+  const CHECKPOINTS_PER_STROKE = 36; // more points = smoother guide polyline approximating bezier curves
 
   // One colour per stroke — matches the letter-patterns review screen so
   // the child sees the same numbering system in both places.
@@ -38,18 +33,29 @@ window.APP = window.APP || {};
       preserveAspectRatio: 'xMidYMid meet'
     });
 
-    // Per-character stroke widths — uppercase slightly thinner than before,
-    // lowercase noticeably thinner so letters fit better within the smaller zone.
+    // Per-character stroke widths — read from APP.TRACER_CONFIG (js/utils.js).
     const isUpper = /[A-Z]/.test(character);
-    const SW  = isUpper ? STROKE_WIDTH_UP  : STROKE_WIDTH_LOW;
-    const INK = isUpper ? INK_WIDTH_UP     : INK_WIDTH_LOW;
+    const cfg = APP.TRACER_CONFIG;
+    const SW  = isUpper ? cfg.SW_UP  : cfg.SW_LOW;
+    const INK = isUpper ? cfg.INK_UP : cfg.INK_LOW;
+    const TOLERANCE       = cfg.CHECKPOINT_TOLERANCE;
+    const FINAL_TOLERANCE = cfg.FINAL_TOLERANCE;
+    const DRAW_RADIUS     = cfg.DRAW_RADIUS;
 
     // Compute y-axis transform: maps design coordinates → current guide positions.
-    const { a: tA, b: tB } = APP.getLetterYTransform(character);
+    // When a letter has coords:'display', its paths are already authored in guide-line
+    // coordinate space (top=30, mid=90, bottom=170, lower=230) — skip the design→display
+    // transform and use identity for both axes so the strokes align with the guides.
+    const displayCoords = data.coords === 'display';
+    const { a: _tA, b: _tB } = APP.getLetterYTransform(character);
     // Lowercase letters get a horizontal squeeze so they look more circular.
     // Scaling around the viewBox centre (x=100): new_x = xScale*x + X_CENTER*(1-xScale).
-    const xScale  = isUpper ? X_SCALE_UP  : X_SCALE_LOW;
-    const xOffset = isUpper ? X_CENTER * (1 - X_SCALE_UP) : X_CENTER * (1 - X_SCALE_LOW);
+    const _xScale  = isUpper ? X_SCALE_UP  : X_SCALE_LOW;
+    const _xOffset = isUpper ? X_CENTER * (1 - X_SCALE_UP) : X_CENTER * (1 - X_SCALE_LOW);
+    const tA      = displayCoords ? 1 : _tA;
+    const tB      = displayCoords ? 0 : _tB;
+    const xScale  = displayCoords ? 1 : _xScale;
+    const xOffset = displayCoords ? 0 : _xOffset;
     const letterTransform = `translate(${xOffset},${tB.toFixed(3)}) scale(${xScale},${tA.toFixed(6)})`;
 
     // Zero-length "dot" strokes (M x,y L x,y with identical coords) need special
@@ -59,74 +65,113 @@ window.APP = window.APP || {};
     const isDot = APP.isDot;
     function dotPos(d) { return APP.dotTransformPos(d, xScale, xOffset, tA, tB); }
 
-    // Parse viewBox once — used for guideline x-extents and clip text x-centre.
+    // Parse viewBox once — used for the mask rect and guideline x-extents.
     const vb = data.viewBox.split(/\s+/).map(Number);
-    const cx = vb[0] + vb[2] / 2;  // horizontal centre of the viewBox (= 100)
 
-    // ── defs: clipPath using the Quicksand font glyph ────────────────────────
-    // The child's ink is clipped to the actual font outline so drawing always
-    // stays within the letter shape regardless of how they trace the guide paths.
+    // Mask: white letter shape on black bg → confines user ink to inside the letter.
     const defs = el('defs');
-    const clipId = `clip-${Math.random().toString(36).slice(2, 9)}`;
-    const clipPath = el('clipPath', { id: clipId });
-    const { fontSize: clipFontSize, baseline: clipBaseline } = APP.getFontPos(character);
-    const fc = APP.FONT_CONFIG;
-    clipPath.appendChild(el('text', {
-      x: cx,
-      y: clipBaseline,
-      'font-family': fc.family,
-      'font-size': clipFontSize,
-      'font-weight': fc.weight,
-      'text-anchor': 'middle',
-      'dominant-baseline': 'auto',
-    }, character));
-    defs.appendChild(clipPath);
+    const maskId = `mask-${Math.random().toString(36).slice(2, 9)}`;
+    const mask = el('mask', { id: maskId, maskUnits: 'userSpaceOnUse' });
+    mask.appendChild(el('rect', {
+      x: vb[0], y: vb[1], width: vb[2], height: vb[3], fill: 'black'
+    }));
+    const maskShapes = el('g', {
+      stroke: 'white', 'stroke-width': SW, fill: 'none',
+      'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+      transform: letterTransform
+    });
+    data.strokes.forEach(s => {
+      if (isDot(s.d)) {
+        const pos = dotPos(s.d);
+        if (pos) mask.appendChild(el('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: 'white' }));
+      } else {
+        maskShapes.appendChild(el('path', { d: s.d }));
+      }
+    });
+    mask.appendChild(maskShapes);
+    defs.appendChild(mask);
     svg.appendChild(defs);
 
     // ── Writing guidelines (bottom of stack, behind all letter layers) ──
     APP.addGuidelines(svg, data.viewBox);
 
-    // ── Ghost: Quicksand glyph shown as the target letter the child traces ───
-    // Dark stroke painted behind the fill (paint-order:stroke fill) creates the
-    // border ring without a separate outline layer.
-    svg.appendChild(el('text', {
-      class: 'letter-ghost',
-      x: cx,
-      y: clipBaseline,
-      'font-family': fc.family,
-      'font-size': clipFontSize,
-      'font-weight': fc.weight,
-      'text-anchor': 'middle',
-      'dominant-baseline': 'auto',
-      fill: '#dde0ea',
-      stroke: '#001858',
-      'stroke-width': 10,
-      'paint-order': 'stroke fill',
-    }, character));
+    // Outline layer — slightly wider dark stroke, rendered first so it peeks out
+    // around the edges of the ghost on top, creating a thin dark border.
+    // SW + 8 = 4 units visible per side (border ring).
+    const outlineGroup = el('g', {
+      class: 'outline-group',
+      stroke: '#001858', 'stroke-width': SW + 8, fill: 'none',
+      'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+      transform: letterTransform
+    });
+    data.strokes.forEach(s => { if (!isDot(s.d)) outlineGroup.appendChild(el('path', { d: s.d })); });
+    svg.appendChild(outlineGroup);
 
-    // Done strokes layer — completed strokes painted in dark blue, clipped to
-    // the Quicksand glyph so the fill matches the font shape exactly.
+    // Ghost layer — solid light blue-grey covers the outline interior, leaving
+    // only the border ring visible.
+    const ghostGroup = el('g', {
+      class: 'ghost-group',
+      stroke: '#dde0ea', 'stroke-width': SW, fill: 'none',
+      'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+      transform: letterTransform
+    });
+    data.strokes.forEach(s => { if (!isDot(s.d)) ghostGroup.appendChild(el('path', { d: s.d })); });
+    svg.appendChild(ghostGroup);
+
+    // Per-stroke depth layer — first stroke is lightest, each subsequent stroke
+    // is slightly more opaque (0.10 → 0.30 across the range). Where paths overlap
+    // the opacity compounds, so junctions and crossings appear darker still.
+    // All tints stay within the same blue-grey hue as the ghost.
+    const depthGroup = el('g', {
+      class: 'depth-group',
+      'stroke-width': SW, fill: 'none',
+      'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+      transform: letterTransform
+    });
+    const strokeCount = data.strokes.length;
+    data.strokes.forEach((s, i) => {
+      if (isDot(s.d)) return;
+      const t = i / Math.max(strokeCount - 1, 1);
+      const opacity = (0.08 + t * 0.37).toFixed(2);
+      depthGroup.appendChild(el('path', { d: s.d, stroke: `rgba(0,24,88,${opacity})` }));
+    });
+    svg.appendChild(depthGroup);
+
+    // Dot base layer — perfect circles for zero-length dot strokes (i, j dots etc).
+    // Lives outside the letterTransform group so the non-uniform scale can't distort them.
+    // Stacks outline → ghost → depth tint, matching the visual layering of regular strokes.
+    const dotBaseLayer = el('g', { 'pointer-events': 'none' });
+    data.strokes.forEach((s, i) => {
+      if (!isDot(s.d)) return;
+      const pos = dotPos(s.d);
+      if (!pos) return;
+      const t = i / Math.max(strokeCount - 1, 1);
+      const opacity = (0.08 + t * 0.37).toFixed(2);
+      dotBaseLayer.appendChild(el('circle', { cx: pos.x, cy: pos.y, r: (SW + 8) / 2, fill: '#001858' }));
+      dotBaseLayer.appendChild(el('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: '#dde0ea' }));
+      dotBaseLayer.appendChild(el('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: `rgba(0,24,88,${opacity})` }));
+    });
+    svg.appendChild(dotBaseLayer);
+
+    // Done strokes layer — same width as the outline so completed strokes fill
+    // all the way to the edge with no gap or light ring between the fill and border.
     const doneGroup = el('g', {
       class: 'done-group',
-      'clip-path': `url(#${clipId})`,
       stroke: '#001858', 'stroke-width': SW + 8, fill: 'none',
       'stroke-linecap': 'round', 'stroke-linejoin': 'round',
       transform: letterTransform
     });
     svg.appendChild(doneGroup);
 
-    // Overlay for completed dot strokes (i, j dots) — circles clipped to glyph.
-    const doneDotLayer = el('g', {
-      'clip-path': `url(#${clipId})`,
-      'pointer-events': 'none'
-    });
+    // Overlay for completed dot strokes — sits above the done group.
+    const doneDotLayer = el('g', { 'pointer-events': 'none' });
     svg.appendChild(doneDotLayer);
 
-    // User ink layer — clipped to the Quicksand glyph outline.
-    // No group-level stroke colour; each path gets its own colour from STROKE_COLORS.
+    // User ink layer (masked to letter shape).
+    // No group-level stroke colour — each path gets its own colour from STROKE_COLORS.
     const inkGroup = el('g', {
       class: 'ink-group',
-      'clip-path': `url(#${clipId})`,
+      mask: `url(#${maskId})`,
       'stroke-width': INK, fill: 'none',
       'stroke-linecap': 'round', 'stroke-linejoin': 'round'
     });
@@ -343,8 +388,12 @@ window.APP = window.APP || {};
       if (currentStroke >= totalStrokes) return;
       const cps = checkpoints[currentStroke];
       // Advance through any consecutive checkpoints within tolerance (handles fast drags).
+      // The last checkpoint uses FINAL_TOLERANCE (tighter than CHECKPOINT_TOLERANCE) so
+      // a stroke can't snap complete before the child's finger actually reaches the end.
       let advanced = false;
-      while (currentCheckpoint < cps.length && dist(p, cps[currentCheckpoint]) <= TOLERANCE) {
+      while (currentCheckpoint < cps.length) {
+        const tol = currentCheckpoint === cps.length - 1 ? FINAL_TOLERANCE : TOLERANCE;
+        if (dist(p, cps[currentCheckpoint]) > tol) break;
         currentCheckpoint++;
         advanced = true;
       }
