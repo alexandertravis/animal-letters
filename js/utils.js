@@ -36,6 +36,12 @@ window.APP = window.APP || {};
     CHECKPOINT_TOLERANCE: 28,   // mid-stroke checkpoint proximity (viewBox units)
     FINAL_TOLERANCE:      18,   // last-checkpoint proximity — tighter to prevent early completion
     DRAW_RADIUS:          52,   // proximity to start-dot before ink is deposited
+    // Guide-line offset: each line shifts outward by this many viewBox units so the
+    // guide sits at the visual edge of a stroke rather than its centreline.
+    // top/middle shift UP, bottom/lower shift DOWN (see expand: ±1 in GUIDE_CONFIG).
+    // Set to 0 to restore exact centreline positions (matches raw font metric positions).
+    // Good starting values: SW_LOW/2 = 12 (lowercase), SW_UP/2 = 18 (uppercase).
+    GUIDE_OFFSET:         12,
   };
 
   // ── SVG element factory ────────────────────────────────────────────────────
@@ -58,15 +64,20 @@ window.APP = window.APP || {};
     if (!gc) return;
     const vb = viewBox.split(/\s+/).map(Number);
     const x1 = vb[0], x2 = vb[0] + vb[2];
+    // Outward offset so guides sit at stroke edges rather than centrelines.
+    // Reads TRACER_CONFIG.GUIDE_OFFSET; falls back to 0 if config not yet loaded.
+    const offset = (APP.TRACER_CONFIG && APP.TRACER_CONFIG.GUIDE_OFFSET) || 0;
     const g = APP.svgEl('g', { class: 'writing-guidelines', 'pointer-events': 'none' });
     Object.values(gc.lines).forEach(line => {
       if (line.hidden) return;
+      // Apply outward shift: top/middle lines move up (expand:-1), bottom/lower move down (expand:+1).
+      const y = line.y + (line.expand || 0) * offset;
       // Use nullish coalescing so an explicit 0 width or '' color is not
       // accidentally overridden by the default (unlike the || fallback).
       const color   = line.color   ?? gc.defaults.color;
       const opacity = line.opacity ?? gc.defaults.opacity;
       const width   = line.width   ?? gc.defaults.width;
-      const attrs   = { x1, y1: line.y, x2, y2: line.y, stroke: color, 'stroke-width': width, opacity };
+      const attrs   = { x1, y1: y, x2, y2: y, stroke: color, 'stroke-width': width, opacity };
       if (line.dash) attrs['stroke-dasharray'] = line.dash;
       g.appendChild(APP.svgEl('line', attrs));
     });

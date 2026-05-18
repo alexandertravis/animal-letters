@@ -458,10 +458,13 @@ window.APP = window.APP || {};
       width:   2,
     },
     lines: {
-      top:    { y:  30, dash: '' },      // cap height  — 170 - 875  * 0.16 = 30
-      middle: { y:  90, dash: '12 7' }, // x-height    — 170 - 500  * 0.16 = 90
-      bottom: { y: 170, dash: '' },     // baseline    — 170 - 0    * 0.16 = 170
-      lower:  { y: 230, dash: '7 7' }, // descender   — 170 - (-375) * 0.16 = 230
+      // expand: -1 = line shifts UP   by APP.TRACER_CONFIG.GUIDE_OFFSET (top-zone lines)
+      // expand: +1 = line shifts DOWN by APP.TRACER_CONFIG.GUIDE_OFFSET (bottom-zone lines)
+      // Set GUIDE_OFFSET to 0 in TRACER_CONFIG to restore exact centreline positions.
+      top:    { y:  30, dash: '',     expand: -1 },  // cap height  — shifts up  to stroke top edge
+      middle: { y:  90, dash: '12 7', expand: -1 },  // x-height    — shifts up  to stroke top edge
+      bottom: { y: 170, dash: '',     expand:  1 },  // baseline    — shifts down to stroke bottom edge
+      lower:  { y: 230, dash: '7 7',  expand:  1 },  // descender   — shifts down to stroke bottom edge
     }
   };
 })(window.APP);
