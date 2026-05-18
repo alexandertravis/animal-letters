@@ -56,18 +56,17 @@ window.APP = window.APP || {};
     const f0 = document.createElement('div');
     f0.className = 'field';
     f0.innerHTML = `<label for="locale-select">${APP.t('setup.language')}</label>`;
-    const locales = [
-      { value: 'en', label: '🇬🇧 English' },
-      { value: 'pt', label: '🇵🇹 Português' },
+    const locales = (APP.I18N && APP.I18N.LOCALES) || [
+      { code: 'en', label: 'English', flag: '🇬🇧' },
     ];
     const select = document.createElement('select');
     select.id = 'locale-select';
     select.className = 'locale-select';
     locales.forEach(loc => {
       const opt = document.createElement('option');
-      opt.value = loc.value;
-      opt.textContent = loc.label;
-      if (loc.value === s.locale) opt.selected = true;
+      opt.value = loc.code;
+      opt.textContent = loc.flag + ' ' + loc.label;
+      if (loc.code === s.locale) opt.selected = true;
       select.appendChild(opt);
     });
     select.addEventListener('change', () => {

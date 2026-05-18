@@ -12,130 +12,210 @@ window.APP = window.APP || {};
 //   All letters use viewBox '0 0 200 268' (lowercase) or '0 0 200 250' (uppercase).
 //   Extra viewBox height beyond paths gives round stroke caps room to breathe.
 (function (APP) {
-  const VB_UP  = '0 0 200 250';
+  const VB_UP  = '0 0 200 270';
   const VB_LOW = '0 0 200 270'; // matches the 270-high viewBox used by all display-coord lowercase entries
+  // Expanded viewBox for uppercase letters with above-accent marks (acute, grave, circumflex,
+  // tilde, diaeresis, ring). Adds 60 units of headroom above y=0 so accent strokes (which can
+  // reach y≈-12 as authored, then shifted up a further ACCENT_OFFSET_ABOVE units) are not
+  // clipped. Total height 330 keeps the same physical canvas; letter body appears ~10% smaller.
+  // If you increase ACCENT_OFFSET_ABOVE beyond ~25, also increase this pad accordingly.
+  const VB_UP_ACCENT = '0 -60 200 330';
 
   const LETTERS = {};
 
   // ----- Uppercase -----
-  LETTERS['A'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 100,30 L 30,220' },
-    { d: 'M 100,30 L 170,220' },
-    { d: 'M 60,150 L 140,150' }
+  LETTERS['A'] = { 
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+    { d: 'M 100,30 L 49,168' },
+    { d: 'M 100,30 L 151,168' },
+    { d: 'M 65,125 L 135,125' }
   ]};
-  LETTERS['B'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 50,30 L 50,220' },
-    { d: 'M 50,30 Q 150,30 150,80 Q 150,125 50,125' },
-    { d: 'M 50,125 Q 160,125 160,170 Q 160,220 50,220' }
+  LETTERS['B'] = { 
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+    { d: 'M 69,34 L 69,165' },
+    { d: 'M 69,34 L 106,34 C 121,34 139,39 140,61 C 140,72 125,95 101,95 L 69,95' },
+    { d: 'M 69,96 L 102,96 C 146,100 147,123 146,132 C 144,153 120,166 101,166 L 69,166' }
   ]};
-  LETTERS['C'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 165,55 Q 30,30 30,125 Q 30,220 165,195' }
+  LETTERS['C'] = {
+    viewBox: '0 0 200 270',
+     coords: 'display',
+     strokes: [
+    { d: 'M 146,46 C 101,9 67,52 62,69 C 55,91 55,123 67,144 C 88,177 125,179 151,140' }
   ]};
-  LETTERS['D'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 50,30 L 50,220' },
-    { d: 'M 50,30 Q 170,30 170,125 Q 170,220 50,220' }
+  LETTERS['D'] = { 
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+    { d: 'M 57,34 L 58,165' },
+    { d: 'M 57,34 L 89,34 C 130,34 149,62 150,93 C 151,124 132,165 88,165 L 58,165' }
   ]};
-  LETTERS['E'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 50,30 L 50,220' },
-    { d: 'M 50,30 L 160,30' },
-    { d: 'M 50,125 L 140,125' },
-    { d: 'M 50,220 L 160,220' }
+  LETTERS['E'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 74,34 L 74,165' },
+      { d: 'M 74,34 L 143,34' },
+      { d: 'M 74,96 L 133,96' },
+      { d: 'M 74,165 L 143,165' }
   ]};
-  LETTERS['F'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 50,30 L 50,220' },
-    { d: 'M 50,30 L 160,30' },
-    { d: 'M 50,125 L 140,125' }
+  LETTERS['F'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 77,34 L 77,168' },
+      { d: 'M 77,34 L 144,34' },
+      { d: 'M 77,100 L 134,100' }
   ]};
-  LETTERS['G'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 165,55 Q 30,30 30,125 Q 30,220 165,195 L 165,135' },
-    { d: 'M 165,135 L 110,135' }
+  LETTERS['G'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 146,47 C 125,25 87,26 67,49 C 54,64 49,88 49,106 C 48,160 83,168 93,168 C 126,169 145,117 149,97' },
+      { d: 'M 150,97 L 149,167' }
   ]};
-  LETTERS['H'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 50,30 L 50,220' },
-    { d: 'M 150,30 L 150,220' },
-    { d: 'M 50,125 L 150,125' }
+  LETTERS['H'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 56,31 L 56,170' },
+      { d: 'M 56,96 L 144,96' },
+      { d: 'M 144,31 L 144,170' }
+    ]};
+  LETTERS['I'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 100,31 L 100,169' }
+    ]};
+  LETTERS['J'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 128,31 L 128,136 C 128,156 113,170 98,169 C 79,171 65,156 61,144' }
+    ]};
+  LETTERS['K'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 72,31 L 72,169' },
+      { d: 'M 147,31 L 78,96' },
+      { d: 'M 78,96 L 149,169' }
   ]};
-  LETTERS['I'] = { viewBox: VB_UP, strokes: [
-    // Quicksand uppercase I has no serifs — plain vertical stem only.
-    { d: 'M 100,30 L 100,220' }
+  LETTERS['L'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 77,31 L 77,166' },
+      { d: 'M 77,166 L 144,166' }
+    ]};
+  LETTERS['M'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 52,32 L 26,168' },
+      { d: 'M 52,32 L 100,168' },
+      { d: 'M 100,168 L 147,32' },
+      { d: 'M 147,32 L 174,168' }
   ]};
-  LETTERS['J'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 70,30 L 150,30' },
-    { d: 'M 130,30 L 130,170 Q 130,220 80,220 Q 30,220 30,180' }
+  LETTERS['N'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 55,31 L 56,168' },
+      { d: 'M 55,31 L 144,168' },
+      { d: 'M 144,168 L 144,31' }
   ]};
-  LETTERS['K'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 50,30 L 50,220' },
-    { d: 'M 150,30 L 50,125' },
-    { d: 'M 50,125 L 160,220' }
+  LETTERS['O'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 100,32 C 57,36 45,75 45,100 C 45,128 58,166 100,169 C 142,168 156,126 155,100 C 154,63 138,34 100,32' }
+    ]};
+  LETTERS['P'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 71,34 L 71,167' },
+      { d: 'M 71,34 L 100,34 C 130,34 148,47 145,68 C 142,100 107,107 72,108' }
+    ]};
+  LETTERS['Q'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 100,32 C 57,36 45,75 45,100 C 45,128 58,166 100,169 C 142,168 156,126 155,100 C 154,63 138,34 100,32' },
+      { d: 'M 103,147 L 135,193' }
   ]};
-  LETTERS['L'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 50,30 L 50,220' },
-    { d: 'M 50,220 L 160,220' }
-  ]};
-  LETTERS['M'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 30,30 L 30,220' },
-    { d: 'M 30,30 L 100,170' },
-    { d: 'M 100,170 L 170,30' },
-    { d: 'M 170,30 L 170,220' }
-  ]};
-  LETTERS['N'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 50,30 L 50,220' },
-    { d: 'M 50,30 L 150,220' },
-    { d: 'M 150,30 L 150,220' }
-  ]};
-  LETTERS['O'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 100,30 Q 30,30 30,125 Q 30,220 100,220 Q 170,220 170,125 Q 170,30 100,30' }
-  ]};
-  LETTERS['P'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 50,30 L 50,220' },
-    { d: 'M 50,30 Q 160,30 160,80 Q 160,125 50,125' }
-  ]};
-  LETTERS['Q'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 100,30 Q 30,30 30,125 Q 30,220 100,220 Q 170,220 170,125 Q 170,30 100,30' },
-    // Tail repositioned to stay within Quicksand Q's glyph area.
-    // Old path (M 130,170 L 180,225) ended outside the oval; this one ends
-    // near the lower-right edge of the Quicksand glyph where Q's tail sits.
-    { d: 'M 130,155 L 168,195' }
-  ]};
-  LETTERS['R'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 50,30 L 50,220' },
-    { d: 'M 50,30 Q 160,30 160,80 Q 160,125 50,125' },
-    { d: 'M 90,125 L 165,220' }
-  ]};
-  LETTERS['S'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 140,75 C 140,30 60,30 60,75 C 60,105 60,105 100,125 S 140,145 140,175 C 140,220 60,220 60,175' }
-  ]};
-  LETTERS['T'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 30,30 L 170,30' },
-    { d: 'M 100,30 L 100,220' }
-  ]};
-  LETTERS['U'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 50,30 L 50,170 Q 50,220 100,220 Q 150,220 150,170 L 150,30' }
-  ]};
-  LETTERS['V'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 30,30 L 100,220' },
-    { d: 'M 170,30 L 100,220' }
-  ]};
-  LETTERS['W'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 20,30 L 60,220' },
-    { d: 'M 60,220 L 100,90' },
-    { d: 'M 100,90 L 140,220' },
-    { d: 'M 140,220 L 180,30' }
-  ]};
-  LETTERS['X'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 30,30 L 170,220' },
-    { d: 'M 170,30 L 30,220' }
-  ]};
-  LETTERS['Y'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 30,30 L 100,125' },
-    { d: 'M 170,30 L 100,125' },
-    { d: 'M 100,125 L 100,220' }
-  ]};
-  LETTERS['Z'] = { viewBox: VB_UP, strokes: [
-    { d: 'M 30,30 L 170,30' },
-    { d: 'M 170,30 L 30,220' },
-    { d: 'M 30,220 L 170,220' }
-  ]};
+  LETTERS['R'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 72,34 L 71,167' },
+      { d: 'M 72,34 C 138,31 140,48 140,66 C 136,95 108,99 72,102' },
+      { d: 'M 75,102 L 144,167' }
+    ]};
+  LETTERS['S'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 136,47 C 113,20 72,32 68,53 C 61,79 83,93 109,101 C 153,115 140,156 122,164 C 101,176 75,165 61,152' }
+    ]};
+  LETTERS['T'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 50,34 L 150,34' },
+      { d: 'M 100,34 L 100,170' }
+    ]};
+  LETTERS['U'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 55,31 L 54,119 C 52,144 62,168 82,168 C 130,167 144,103 144,83 L 144,31' },
+      { d: 'M 144,31 L 144,168' }
+    ]};
+  LETTERS['V'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 50,31 L 100,168' },
+      { d: 'M 100,168 L 150,31' }
+    ]};
+  LETTERS['W'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 12,31 L 53,168' },
+      { d: 'M 53,168 L 100,31' },
+      { d: 'M 100,31 L 146,168' },
+      { d: 'M 146,168 L 188,31' }
+    ]};
+  LETTERS['X'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 58,31 L 143,169' },
+      { d: 'M 143,31 L 56,169' }
+    ]};
+  LETTERS['Y'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 57,31 L 100,108' },
+      { d: 'M 143,31 L 100,108' },
+      { d: 'M 100,108 L 100,167' }
+    ]};
+  LETTERS['Z'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 62,34 L 139,34' },
+      { d: 'M 139,34 L 59,166' },
+      { d: 'M 59,166 L 143,166' }
+    ]};
 
   // ----- Lowercase -----
   LETTERS['a'] = {
@@ -365,12 +445,23 @@ window.APP = window.APP || {};
   //
   // strokes:[] means the accent is not yet authored — the base letter is traced
   // alone (graceful degradation) while paths are pending.
+  // above:true  — accent sits above the letter body (acute, grave, circumflex, tilde,
+  //               diaeresis, ring). ACCENT_OFFSET_ABOVE shifts these upward at render time
+  //               to reduce overlap with thick strokes, and VB_UP_ACCENT expands the canvas.
+  // above:false — accent sits below baseline (cedilla). No upward shift or canvas expansion.
   APP.ACCENTS = {
-    acute:      { upper: [], lower: [] },  // ´  Á á É é Í í Ó ó Ú ú
-    circumflex: { upper: [], lower: [] },  // ^  Â â Ê ê Ô ô
-    tilde:      { upper: [], lower: [] },  // ~  Ã ã Õ õ
-    grave:      { upper: [], lower: [] },  // `  (reserved — not in PT set but generic)
-    cedilla:    { upper: [], lower: [] },  // ¸  Ç ç  (mark sits below baseline)
+    acute:      { above: true,  upper: [{ d: 'M 91,16 L 117,-7' }], lower: [{ d: 'M 90,67 L 111,40' }] },  // ´
+    circumflex: { above: true,  upper: [{ d: 'M 75,16 L 100,-6' }, { d: 'M 100,-6 L 125,16' }],
+                                lower: [{ d: 'M 74,67 L 98,41' },  { d: 'M 98,41 L 121,67' }] },            // ^
+    tilde:      { above: true,  upper: [{ d: 'M 75,11 C 76,1 82,-11 102,6 C 115,17 126,10 124,-4' }],
+                                lower: [{ d: 'M 73,62 C 75,48 80,40 100,56 C 115,67 122,60 122,47' }] },    // ~
+    grave:      { above: true,  upper: [{ d: 'M 82,-7 L 109,16' }], lower: [{ d: 'M 84,40 L 106,67' }] },  // `
+    cedilla:    { above: false, upper: [{ d: 'M 109,169 L 101,187' }, { d: 'M 101,187 C 126,180 128,219 93,206' }],
+                                lower: [{ d: 'M 103,170 L 96,187' }, { d: 'M 96,187 C 128,185 115,219 88,206' }] }, // ¸
+    diaeresis:  { above: true,  upper: [{ d: 'M 80,6 L 80,6' }, { d: 'M 120,6 L 120,6' }],
+                                lower: [{ d: 'M 80,52 L 80,52' }, { d: 'M 116,52 L 116,52' }] },           // ¨
+    ring:       { above: true,  upper: [{ d: 'M 100,-12 C 78,-12 78,18 100,18 C 122,18 122,-12 100,-12' }],
+                                lower: [{ d: 'M 98,37 C 75,37 75,69 98,70 C 120,69 120,37 98,37' }] },     // °
   };
 
   // ── Accented character references ─────────────────────────────────────────
@@ -387,6 +478,8 @@ window.APP = window.APP || {};
   LETTERS['é'] = { base: 'e', accent: 'acute' };
   LETTERS['Ê'] = { base: 'E', accent: 'circumflex' };
   LETTERS['ê'] = { base: 'e', accent: 'circumflex' };
+  LETTERS['Î'] = { base: 'I', accent: 'circumflex' };
+  LETTERS['î'] = { base: 'i', accent: 'circumflex' };
   LETTERS['Í'] = { base: 'I', accent: 'acute' };
   LETTERS['í'] = { base: 'i', accent: 'acute' };
   LETTERS['Ó'] = { base: 'O', accent: 'acute' };
@@ -395,12 +488,122 @@ window.APP = window.APP || {};
   LETTERS['ô'] = { base: 'o', accent: 'circumflex' };
   LETTERS['Õ'] = { base: 'O', accent: 'tilde' };
   LETTERS['õ'] = { base: 'o', accent: 'tilde' };
+  LETTERS['Û'] = { base: 'U', accent: 'circumflex' };
+  LETTERS['û'] = { base: 'u', accent: 'circumflex' };
   LETTERS['Ú'] = { base: 'U', accent: 'acute' };
   LETTERS['ú'] = { base: 'u', accent: 'acute' };
   LETTERS['Ç'] = { base: 'C', accent: 'cedilla' };
   LETTERS['ç'] = { base: 'c', accent: 'cedilla' };
 
+  // ── Grave accent ──────────────────────────────────────────────────────────
+  LETTERS['À'] = { base: 'A', accent: 'grave' };
+  LETTERS['à'] = { base: 'a', accent: 'grave' };
+  LETTERS['È'] = { base: 'E', accent: 'grave' };
+  LETTERS['è'] = { base: 'e', accent: 'grave' };
+  LETTERS['Ì'] = { base: 'I', accent: 'grave' };
+  LETTERS['ì'] = { base: 'i', accent: 'grave' };
+  LETTERS['Ò'] = { base: 'O', accent: 'grave' };
+  LETTERS['ò'] = { base: 'o', accent: 'grave' };
+  LETTERS['Ù'] = { base: 'U', accent: 'grave' };
+  LETTERS['ù'] = { base: 'u', accent: 'grave' };
+
+  // ── Diaeresis (umlaut) ────────────────────────────────────────────────────
+  LETTERS['Ä'] = { base: 'A', accent: 'diaeresis' };
+  LETTERS['ä'] = { base: 'a', accent: 'diaeresis' };
+  LETTERS['Ë'] = { base: 'E', accent: 'diaeresis' };
+  LETTERS['ë'] = { base: 'e', accent: 'diaeresis' };
+  LETTERS['Ï'] = { base: 'I', accent: 'diaeresis' };
+  LETTERS['ï'] = { base: 'i', accent: 'diaeresis' };
+  LETTERS['Ö'] = { base: 'O', accent: 'diaeresis' };
+  LETTERS['ö'] = { base: 'o', accent: 'diaeresis' };
+  LETTERS['Ü'] = { base: 'U', accent: 'diaeresis' };
+  LETTERS['ü'] = { base: 'u', accent: 'diaeresis' };
+
+  // ── Ring ──────────────────────────────────────────────────────────────────
+  LETTERS['Å'] = { base: 'A', accent: 'ring' };
+  LETTERS['å'] = { base: 'a', accent: 'ring' };
+
+  // ── Tilde on N (Spanish) ──────────────────────────────────────────────────
+  LETTERS['Ñ'] = { base: 'N', accent: 'tilde' };
+  LETTERS['ñ'] = { base: 'n', accent: 'tilde' };
+
+  // ── Ligatures & special characters ───────────────────────────────────────
+  // These cannot be expressed as base+accent; each needs its own authored strokes.
+  // strokes:[] = graceful degradation until paths are authored in the dev tool.
+  LETTERS['Æ'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 100,33 L 31,167' },
+      { d: 'M 104,33 L 106,167' },
+      { d: 'M 104,33 L 167,33' },
+      { d: 'M 67,100 L 155,100' },
+      { d: 'M 106,167 L 167,167' }
+    ]};
+  LETTERS['æ'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 111,98 C 73,79 47,99 44,126 C 40,161 60,175 69,169 C 91,163 99,116 110,99' },
+      { d: 'M 104,138 C 143,137 165,110 157,103 C 136,75 95,97 104,138 C 111,179 145,175 161,151' }
+    ]};
+  LETTERS['Œ'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 123,96 C 124,52 90,31 70,32 C 26,35 16,78 17,96 C 18,144 35,165 70,168 C 113,167 124,123 123,96' },
+      { d: 'M 123,34 L 123,167' },
+      { d: 'M 123,34 L 192,34' },
+      { d: 'M 123,96 L 183,96' },
+      { d: 'M 123,167 L 192,167' }
+    ] };
+  LETTERS['œ'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 103,129 C 104,106 87,89 72,91 C 54,92 42,108 43,130 C 43,159 60,170 73,169 C 99,166 104,144 103,130' },
+      { d: 'M 104,139 C 148,133 157,115 157,106 C 157,93 143,90 132,92 C 106,94 99,128 108,152 C 115,171 144,178 161,151' }
+    ] };
+  LETTERS['ß'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 70,229 L 70,79 C 67,57 79,31 103,30 C 132,32 136,50 133,67 C 128,85 114,89 95,92' },
+      { d: 'M 96,93 C 134,95 139,120 139,134 C 140,163 109,178 86,164' }
+    ]};
+  LETTERS['Ø'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 100,32 C 56,35 45,67 45,100 C 45,157 85,170 102,169 C 149,165 155,114 155,102 C 157,63 136,34 100,32' },
+      { d: 'M 144,24 L 56,178' }
+    ]};
+  LETTERS['ø'] = {
+    viewBox: '0 0 200 270',
+    coords: 'display',
+    strokes: [
+      { d: 'M 100,91 C 84,91 68,106 69,130 C 69,151 79,169 100,169 C 123,169 132,146 131,128 C 130,105 117,91 100,91' },
+      { d: 'M 127,83 L 72,178' }
+    ]};
+
   APP.LETTERS = LETTERS;
+
+  // ── Path y-shift helper ────────────────────────────────────────────────────
+  // Shifts all y-coordinates in an absolute SVG path `d` string by `dy` units.
+  // Only handles absolute M, L, C, Q — which covers all game stroke paths.
+  // Used to apply ACCENT_OFFSET_ABOVE to above-letter accent strokes at runtime.
+  function shiftPathY(d, dy) {
+    if (!dy) return d;
+    return d.replace(/([MLCQ])([^MLCQZmlcqz]*)/g, function (_, cmd, coords) {
+      const nums = coords.trim().split(/[\s,]+/).filter(Boolean).map(Number);
+      const out  = [];
+      for (let i = 0; i < nums.length; i++) {
+        // Coordinates alternate x, y — shift only y (odd index)
+        out.push(i % 2 === 0 ? nums[i] : +(nums[i] + dy).toFixed(1));
+      }
+      return cmd + ' ' + out.join(',');
+    });
+  }
 
   // Resolve a character to its letter definition, composing base + accent strokes
   // for accented characters. Returns null if the character is unknown.
@@ -415,18 +618,63 @@ window.APP = window.APP || {};
 
       const accentDef = APP.ACCENTS && APP.ACCENTS[entry.accent];
       const isUpper   = APP.isUpperLetter(char);
-      const accentStrokes = accentDef
+      const rawAccent = accentDef
         ? (isUpper ? (accentDef.upper || []) : (accentDef.lower || []))
         : [];
 
+      // For above-letter accents (acute, grave, tilde, etc.), shift the stroke
+      // paths upward by ACCENT_OFFSET_ABOVE to reduce overlap with thick letter
+      // strokes. Cedilla (above:false) is never shifted — it sits below baseline.
+      const isAbove = accentDef && accentDef.above;
+      const cfg     = APP.TRACER_CONFIG;
+      const dy      = (isAbove && cfg && cfg.ACCENT_OFFSET_ABOVE)
+        ? -cfg.ACCENT_OFFSET_ABOVE
+        : 0;
+      const accentStrokes = dy
+        ? rawAccent.map(s => ({ d: shiftPathY(s.d, dy) }))
+        : rawAccent;
+
+      // Uppercase above-accent characters need extra canvas headroom above y=0.
+      // VB_UP_ACCENT extends the viewBox to y=-60, accommodating the authored
+      // positions (some reach y≈-12) plus the upward shift.
+      const viewBox = (isUpper && isAbove) ? VB_UP_ACCENT : baseDef.viewBox;
+
       return {
-        viewBox: baseDef.viewBox,
+        viewBox,
         coords:  baseDef.coords,
         strokes: [...baseDef.strokes, ...accentStrokes],
       };
     }
 
     return entry;
+  };
+
+  // ── Session-level viewBox ─────────────────────────────────────────────────
+  // Returns one viewBox string to use for ALL letters in the current session
+  // (accented or not), so the canvas never shifts size between individual letters.
+  //
+  // Logic: if any character in the current locale's animal names is an above-accent
+  // uppercase char (acute, grave, tilde, circumflex, diaeresis, ring), ALL uppercase
+  // letters in this session use VB_UP_ACCENT. Lowercase accents fit within the
+  // standard viewBox so they always use VB_LOW.
+  //
+  // Called by tracer.js and letters.js instead of data.viewBox.
+  APP.getSessionViewBox = function (isUpper) {
+    if (!isUpper) return VB_LOW;  // lowercase accents (y≈37-70) fit within 0..270
+
+    // Scan the current locale's animal names for any above-accent uppercase character.
+    const list = (APP.animals && APP.animals.eligibleAll()) || APP.ANIMALS || [];
+    const needsAccentPad = list.some(function (animal) {
+      return animal.name.split('').some(function (ch) {
+        // Animal names are stored uppercase (per CLAUDE.md) — ch is already uppercase.
+        const entry = LETTERS[ch];
+        if (!entry || entry.accent === undefined) return false;
+        const accentDef = APP.ACCENTS && APP.ACCENTS[entry.accent];
+        return accentDef && accentDef.above === true;
+      });
+    });
+
+    return needsAccentPad ? VB_UP_ACCENT : VB_UP;
   };
 
   // Returns {a, b} — the y-axis linear transform for a character.

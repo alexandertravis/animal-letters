@@ -4,24 +4,15 @@ window.APP = window.APP || {};
   function render(root, ctx) {
     root.innerHTML = '';
 
-    // Build a deduplicated list of all unique animals across every language list,
-    // preferring the current locale's entry for display names and images.
-    // This means the gallery always shows every creature regardless of language,
-    // and found status is shared — completing "DOG" marks "CÃO" as found too.
-    const currentList = APP.animals ? APP.animals.eligibleAll() : APP.ANIMALS;
-    const allLists    = [APP.ANIMALS || [], APP.ANIMALS_PT || []];
-    const byId        = new Map();
-    // Seed with all known animals (any locale), then override with current locale
-    // so the display name and image match what the child is currently playing in.
-    allLists.forEach(list => list.forEach(a => {
-      if (!byId.has(APP.animalId(a))) byId.set(APP.animalId(a), a);
-    }));
-    currentList.forEach(a => byId.set(APP.animalId(a), a));
-    const animalList = [...byId.values()];
+    // Show the current locale's animals.
+    // Found-status is tracked by creature ID (image path), so completing "DOG" in
+    // English marks the same creature as found when you switch to Portuguese (CÃO).
+    const animalList = APP.animals ? APP.animals.eligibleAll() : (APP.ANIMALS || []);
 
     const total     = animalList.length;
-    const doneCount = [...APP.state.completedAnimals]
-      .filter(id => byId.has(id)).length;
+    // Count only found creatures that are in this locale's list
+    const localIds  = new Set(animalList.map(a => APP.animalId(a)));
+    const doneCount = [...APP.state.completedAnimals].filter(id => localIds.has(id)).length;
 
     const wrap = document.createElement('div');
     wrap.className = 'gallery';
@@ -44,7 +35,7 @@ window.APP = window.APP || {};
     const grid = document.createElement('div');
     grid.className = 'gallery-grid';
 
-    animalList.forEach(animal => {
+    animalList.forEach(function (animal) {
       const done   = APP.state.completedAnimals.has(APP.animalId(animal));
       const imgSrc = animal.images.cartoon;
 

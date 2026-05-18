@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Large flat antlers (left) -->
+  <path d="M68 52 C48 44 30 30 28 16 C32 8 42 12 44 24 C48 12 56 8 60 18 C58 28 52 36 56 44" fill="#8b5e3c" stroke="#7a4e2c" stroke-width="2"/>
+  <!-- Antler tines (left) -->
+  <path d="M36 14 L28 6 M44 10 L40 2 M52 8 L50 0" stroke="#8b5e3c" stroke-width="4" stroke-linecap="round"/>
+  <!-- Large flat antlers (right) -->
+  <path d="M132 52 C152 44 170 30 172 16 C168 8 158 12 156 24 C152 12 144 8 140 18 C142 28 148 36 144 44" fill="#8b5e3c" stroke="#7a4e2c" stroke-width="2"/>
+  <!-- Antler tines (right) -->
+  <path d="M164 14 L172 6 M156 10 L160 2 M148 8 L150 0" stroke="#8b5e3c" stroke-width="4" stroke-linecap="round"/>
+  <!-- Head -->
+  <ellipse cx="100" cy="100" rx="48" ry="52" fill="#8b5e3c"/>
+  <!-- Long bulbous snout -->
+  <ellipse cx="100" cy="132" rx="32" ry="26" fill="#7a4e2c"/>
+  <!-- Bell (dewlap) -->
+  <path d="M92 148 C88 160 86 172 90 178" stroke="#8b5e3c" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <!-- Eyes -->
+  <circle cx="76" cy="90" r="9" fill="#fff"/>
+  <circle cx="124" cy="90" r="9" fill="#fff"/>
+  <circle cx="77" cy="90" r="6" fill="#222"/>
+  <circle cx="125" cy="90" r="6" fill="#222"/>
+  <circle cx="78" cy="88" r="2" fill="#fff"/>
+  <circle cx="126" cy="88" r="2" fill="#fff"/>
+  <!-- Nostrils (large) -->
+  <ellipse cx="90" cy="140" rx="7" ry="5" fill="#5a3820"/>
+  <ellipse cx="110" cy="140" rx="7" ry="5" fill="#5a3820"/>
+  <!-- Ears -->
+  <ellipse cx="62" cy="64" rx="10" ry="16" fill="#8b5e3c" transform="rotate(-20 62 64)"/>
+  <ellipse cx="138" cy="64" rx="10" ry="16" fill="#8b5e3c" transform="rotate(20 138 64)"/>
+</svg>

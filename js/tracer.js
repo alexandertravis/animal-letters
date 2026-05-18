@@ -26,15 +26,20 @@ window.APP = window.APP || {};
 
     stageEl.innerHTML = '';
 
+    // Per-character stroke widths — read from APP.TRACER_CONFIG (js/utils.js).
+    const isUpper = APP.isUpperLetter(character);
+
+    // Use the session-level viewBox (same for every letter in this locale session)
+    // rather than data.viewBox, which varies per accented vs plain letter.
+    // Consistent canvas size means the letter display never jumps between chars.
+    const sessionVb = APP.getSessionViewBox(isUpper);
+
     // ---- SVG scaffold ----
     const svg = el('svg', {
       class: 'tracer-letter',
-      viewBox: data.viewBox,
+      viewBox: sessionVb,
       preserveAspectRatio: 'xMidYMid meet'
     });
-
-    // Per-character stroke widths — read from APP.TRACER_CONFIG (js/utils.js).
-    const isUpper = APP.isUpperLetter(character);
     const cfg = APP.TRACER_CONFIG;
     const SW  = isUpper ? cfg.SW_UP  : cfg.SW_LOW;
     const INK = isUpper ? cfg.INK_UP : cfg.INK_LOW;
@@ -67,8 +72,8 @@ window.APP = window.APP || {};
     const isDot = APP.isDot;
     function dotPos(d) { return APP.dotTransformPos(d, xScale, xOffset, tA, tB); }
 
-    // Parse viewBox once — used for the mask rect and guideline x-extents.
-    const vb = data.viewBox.split(/\s+/).map(Number);
+    // Parse the session viewBox once — used for the mask rect and guideline x-extents.
+    const vb = sessionVb.split(/\s+/).map(Number);
 
     // Mask: white letter shape on black bg → confines user ink to inside the letter.
     const defs = el('defs');
@@ -95,7 +100,7 @@ window.APP = window.APP || {};
     svg.appendChild(defs);
 
     // ── Writing guidelines (bottom of stack, behind all letter layers) ──
-    APP.addGuidelines(svg, data.viewBox, isUpper);
+    APP.addGuidelines(svg, sessionVb, isUpper);
 
     // Outline layer — slightly wider dark stroke, rendered first so it peeks out
     // around the edges of the ghost on top, creating a thin dark border.

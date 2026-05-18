@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Wide curved horns -->
+  <path d="M56 56 C38 44 20 34 18 20 C20 10 32 12 38 24 C42 10 52 8 54 22" stroke="#d4a96a" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <path d="M144 56 C162 44 180 34 182 20 C180 10 168 12 162 24 C158 10 148 8 146 22" stroke="#d4a96a" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <!-- Head (very large and wide) -->
+  <ellipse cx="100" cy="100" rx="68" ry="60" fill="#7a5530"/>
+  <!-- Muzzle -->
+  <ellipse cx="100" cy="130" rx="44" ry="32" fill="#a07850"/>
+  <!-- Nostrils (large) -->
+  <ellipse cx="84" cy="132" rx="11" ry="9" fill="#5a3820"/>
+  <ellipse cx="116" cy="132" rx="11" ry="9" fill="#5a3820"/>
+  <!-- Eyes -->
+  <circle cx="66" cy="82" r="12" fill="#fff"/>
+  <circle cx="134" cy="82" r="12" fill="#fff"/>
+  <circle cx="68" cy="82" r="8" fill="#222"/>
+  <circle cx="136" cy="82" r="8" fill="#222"/>
+  <circle cx="69" cy="80" r="3" fill="#fff"/>
+  <circle cx="137" cy="80" r="3" fill="#fff"/>
+  <!-- Ears -->
+  <ellipse cx="42" cy="74" rx="14" ry="10" fill="#7a5530" transform="rotate(-20 42 74)"/>
+  <ellipse cx="158" cy="74" rx="14" ry="10" fill="#7a5530" transform="rotate(20 158 74)"/>
+  <ellipse cx="42" cy="74" rx="8" ry="6" fill="#c8a080" transform="rotate(-20 42 74)"/>
+  <ellipse cx="158" cy="74" rx="8" ry="6" fill="#c8a080" transform="rotate(20 158 74)"/>
+  <!-- Ring in nose -->
+  <circle cx="100" cy="148" r="8" fill="none" stroke="#888" stroke-width="3"/>
+</svg>

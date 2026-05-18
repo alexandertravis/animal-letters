@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Big fluffy tail (behind body) -->
+  <path d="M110 140 C130 120 160 100 168 70 C174 48 168 28 154 24 C140 20 132 36 136 54 C140 70 148 82 140 100 C132 118 114 128 108 148" fill="#c8700a"/>
+  <!-- Tail inner (lighter) -->
+  <path d="M112 138 C128 120 154 104 160 78 C164 58 158 40 148 38 C140 36 136 48 140 62 C144 76 148 90 140 106 C132 120 116 130 112 146" fill="#f5a030"/>
+  <!-- Body -->
+  <ellipse cx="88" cy="130" rx="36" ry="42" fill="#c8700a"/>
+  <!-- Head -->
+  <ellipse cx="92" cy="78" rx="38" ry="36" fill="#c8700a"/>
+  <!-- Ears (pointed) -->
+  <path d="M72 54 L64 34 L82 46" fill="#c8700a"/>
+  <path d="M74 52 L68 38 L80 47" fill="#f5a030"/>
+  <path d="M112 54 L120 34 L102 46" fill="#c8700a"/>
+  <path d="M110 52 L116 38 L104 47" fill="#f5a030"/>
+  <!-- White belly -->
+  <ellipse cx="86" cy="136" rx="22" ry="30" fill="#f5e0c0"/>
+  <!-- Cheek pouches -->
+  <circle cx="70" cy="86" r="10" fill="#d4820a"/>
+  <circle cx="114" cy="86" r="10" fill="#d4820a"/>
+  <!-- Eyes -->
+  <circle cx="78" cy="72" r="8" fill="#fff"/>
+  <circle cx="106" cy="72" r="8" fill="#fff"/>
+  <circle cx="79" cy="72" r="5" fill="#222"/>
+  <circle cx="107" cy="72" r="5" fill="#222"/>
+  <circle cx="80" cy="71" r="2" fill="#fff"/>
+  <circle cx="108" cy="71" r="2" fill="#fff"/>
+  <!-- Nose -->
+  <ellipse cx="92" cy="90" rx="6" ry="4" fill="#8b4500"/>
+  <!-- Paws (holding a nut) -->
+  <ellipse cx="76" cy="116" rx="10" ry="8" fill="#c8700a"/>
+  <ellipse cx="100" cy="116" rx="10" ry="8" fill="#c8700a"/>
+  <ellipse cx="88" cy="114" rx="10" ry="7" fill="#8b5e3c"/>
+</svg>

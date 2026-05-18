@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Body -->
+  <ellipse cx="90" cy="108" rx="75" ry="40" fill="#7ab3e0" transform="rotate(-8 90 108)"/>
+  <!-- White belly -->
+  <ellipse cx="88" cy="116" rx="52" ry="24" fill="#d8edf8" transform="rotate(-8 88 116)"/>
+  <!-- Snout/beak -->
+  <path d="M22 102 L10 108 L22 114" fill="#7ab3e0"/>
+  <!-- Dorsal fin -->
+  <path d="M110 70 L128 45 L140 72 Z" fill="#5b9bd5"/>
+  <!-- Tail flukes -->
+  <path d="M162 95 C176 78 190 84 186 102"/>
+  <path d="M162 95 C178 80 192 82 188 100 C185 115 174 114 162 105" fill="#5b9bd5"/>
+  <path d="M162 105 C174 120 185 120 188 134 C192 152 178 156 162 140 Z" fill="#5b9bd5"/>
+  <!-- Eye -->
+  <circle cx="36" cy="100" r="7" fill="#fff"/>
+  <circle cx="37" cy="100" r="4" fill="#222"/>
+  <circle cx="37" cy="99" r="1.5" fill="#fff"/>
+  <!-- Smile -->
+  <path d="M12 112 Q24 122 36 114" stroke="#5b9bd5" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Pectoral fin -->
+  <ellipse cx="84" cy="136" rx="22" ry="9" fill="#5b9bd5" transform="rotate(25 84 136)"/>
+</svg>

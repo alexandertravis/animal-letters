@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Body -->
+  <ellipse cx="105" cy="130" rx="72" ry="34" fill="#5aab63"/>
+  <!-- Bumpy back -->
+  <ellipse cx="65" cy="102" rx="10" ry="7" fill="#3d7a42"/>
+  <ellipse cx="85" cy="98" rx="10" ry="7" fill="#3d7a42"/>
+  <ellipse cx="105" cy="96" rx="10" ry="7" fill="#3d7a42"/>
+  <ellipse cx="125" cy="98" rx="10" ry="7" fill="#3d7a42"/>
+  <ellipse cx="145" cy="102" rx="10" ry="7" fill="#3d7a42"/>
+  <!-- Belly (lighter) -->
+  <ellipse cx="105" cy="138" rx="58" ry="22" fill="#78c27e"/>
+  <!-- Tail -->
+  <path d="M174 126 C185 120 194 130 190 142 C186 154 174 148 170 138" fill="#5aab63"/>
+  <!-- Head (long snout) -->
+  <ellipse cx="44" cy="118" rx="44" ry="22" fill="#5aab63"/>
+  <!-- Upper jaw -->
+  <rect x="6" y="102" width="52" height="16" rx="8" fill="#3d7a42"/>
+  <!-- Teeth -->
+  <polygon points="12,118 16,110 20,118" fill="#f5f5f0"/>
+  <polygon points="22,118 26,108 30,118" fill="#f5f5f0"/>
+  <polygon points="32,118 36,110 40,118" fill="#f5f5f0"/>
+  <polygon points="42,118 46,108 50,118" fill="#f5f5f0"/>
+  <!-- Lower jaw -->
+  <rect x="6" y="118" width="50" height="14" rx="7" fill="#5aab63"/>
+  <!-- Eyes (on top of head) -->
+  <ellipse cx="46" cy="102" rx="10" ry="8" fill="#3d7a42"/>
+  <circle cx="46" cy="100" r="6" fill="#fff"/>
+  <ellipse cx="47" cy="100" rx="3" ry="4" fill="#222"/>
+  <ellipse cx="68" cy="102" rx="10" ry="8" fill="#3d7a42"/>
+  <circle cx="68" cy="100" r="6" fill="#fff"/>
+  <ellipse cx="69" cy="100" rx="3" ry="4" fill="#222"/>
+  <!-- Legs -->
+  <ellipse cx="76" cy="158" rx="14" ry="8" fill="#4a9050" transform="rotate(10 76 158)"/>
+  <ellipse cx="136" cy="158" rx="14" ry="8" fill="#4a9050" transform="rotate(-10 136 158)"/>
+</svg>

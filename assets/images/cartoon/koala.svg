@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Big fluffy ears -->
+  <circle cx="50" cy="70" r="36" fill="#a0a0a8"/>
+  <circle cx="50" cy="70" r="24" fill="#d8d8e0"/>
+  <circle cx="150" cy="70" r="36" fill="#a0a0a8"/>
+  <circle cx="150" cy="70" r="24" fill="#d8d8e0"/>
+  <!-- Head -->
+  <circle cx="100" cy="100" r="60" fill="#a0a0a8"/>
+  <!-- Face (lighter round area) -->
+  <circle cx="100" cy="108" r="44" fill="#c8c8d0"/>
+  <!-- Big oval nose -->
+  <ellipse cx="100" cy="112" rx="22" ry="16" fill="#5a5a60"/>
+  <ellipse cx="94" cy="110" rx="6" ry="5" fill="#444"/>
+  <ellipse cx="106" cy="110" rx="6" ry="5" fill="#444"/>
+  <!-- Eyes -->
+  <circle cx="80" cy="88" r="9" fill="#fff"/>
+  <circle cx="120" cy="88" r="9" fill="#fff"/>
+  <circle cx="81" cy="88" r="6" fill="#222"/>
+  <circle cx="121" cy="88" r="6" fill="#222"/>
+  <circle cx="82" cy="86" r="2.5" fill="#fff"/>
+  <circle cx="122" cy="86" r="2.5" fill="#fff"/>
+  <!-- Mouth -->
+  <path d="M88 126 Q100 134 112 126" stroke="#888890" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+</svg>

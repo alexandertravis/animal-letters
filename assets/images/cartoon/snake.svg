@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Coiled body -->
+  <ellipse cx="100" cy="130" rx="60" ry="30" fill="#5aab63" stroke="#3d7a42" stroke-width="3"/>
+  <ellipse cx="100" cy="118" rx="42" ry="18" fill="#78c27e"/>
+  <!-- Middle coil -->
+  <ellipse cx="100" cy="105" rx="35" ry="22" fill="#5aab63" stroke="#3d7a42" stroke-width="3"/>
+  <ellipse cx="100" cy="96" rx="20" ry="12" fill="#78c27e"/>
+  <!-- Head -->
+  <ellipse cx="132" cy="78" rx="24" ry="16" fill="#5aab63"/>
+  <!-- Eyes -->
+  <ellipse cx="138" cy="72" rx="5" ry="6" fill="#f5c842"/>
+  <ellipse cx="138" cy="72" rx="2" ry="5" fill="#222"/>
+  <!-- Nostril -->
+  <circle cx="152" cy="80" r="2" fill="#3d7a42"/>
+  <!-- Tongue -->
+  <path d="M155 82 L168 80 M168 80 L174 76 M168 80 L174 84" stroke="#e06060" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Pattern spots on body -->
+  <ellipse cx="80" cy="128" rx="8" ry="5" fill="#3d7a42" opacity="0.6"/>
+  <ellipse cx="110" cy="132" rx="8" ry="5" fill="#3d7a42" opacity="0.6"/>
+  <ellipse cx="140" cy="125" rx="6" ry="4" fill="#3d7a42" opacity="0.6"/>
+  <ellipse cx="90" cy="105" rx="6" ry="4" fill="#3d7a42" opacity="0.6"/>
+</svg>
