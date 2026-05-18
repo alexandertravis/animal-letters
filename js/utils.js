@@ -34,7 +34,7 @@ window.APP = window.APP || {};
     INK_UP:               32,   // uppercase user-ink width
     INK_LOW:              20,   // lowercase user-ink width
     CHECKPOINT_TOLERANCE: 28,   // mid-stroke checkpoint proximity (viewBox units)
-    FINAL_TOLERANCE:      18,   // last-checkpoint proximity — tighter to prevent early completion
+    FINAL_TOLERANCE:      12,   // last-checkpoint proximity — tighter to prevent early completion
     DRAW_RADIUS:          52,   // proximity to start-dot before ink is deposited
     // Guide-line offset: each line shifts outward by this many viewBox units so the
     // guide sits at the visual edge of a stroke rather than its centreline.
