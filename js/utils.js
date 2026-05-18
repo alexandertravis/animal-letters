@@ -29,26 +29,34 @@ window.APP = window.APP || {};
   //     before the child has actually reached the end.
   //   DRAW_RADIUS — how close to the start-dot before ink begins depositing.
   APP.TRACER_CONFIG = {
-    SW_UP:                36,   // uppercase outline stroke width
-    SW_LOW:               24,   // lowercase outline stroke width
-    INK_UP:               32,   // uppercase user-ink width
+    SW_UP:                24,   // uppercase outline stroke width
+    SW_LOW:               20,   // lowercase outline stroke width
+    INK_UP:               24,   // uppercase user-ink width
     INK_LOW:              20,   // lowercase user-ink width
     CHECKPOINT_TOLERANCE: 28,   // mid-stroke checkpoint proximity (viewBox units)
     FINAL_TOLERANCE:      14,   // last-checkpoint proximity — tighter to prevent early completion
     DRAW_RADIUS:          52,   // proximity to start-dot before ink is deposited
-    // Guide-line offset: each line shifts outward by this many viewBox units so the
-    // guide sits at the visual edge of a stroke rather than its centreline.
+    // Guide-line offsets: each line shifts outward so the guide sits at the visual
+    // edge of a stroke rather than its centreline.
     // top/middle shift UP, bottom/lower shift DOWN (see expand: ±1 in GUIDE_CONFIG).
-    // Set to 0 to restore exact centreline positions (matches raw font metric positions).
-    // Good starting values: SW_LOW/2 = 12 (lowercase), SW_UP/2 = 18 (uppercase).
-    GUIDE_OFFSET:         3,
+    // Correct values are SW/2 per case — half the stroke width places the guide
+    // exactly at the outer edge of the rendered stroke.
+    // Set both to 0 to restore exact centreline positions.
+    GUIDE_OFFSET_UP:      12,   // uppercase: SW_UP/2  = 36/2 = 18
+    GUIDE_OFFSET_LOW:     12,   // lowercase: SW_LOW/2 = 24/2 = 12
     // Start-dot radius for the coloured guide dot on each stroke.
     // SW/2 places the dot edge exactly on the letter border (half inside, half outside).
     // Smaller = dot sits fully inside the letter; larger = dot overlaps the border more.
     // DOT_RING_PAD adds extra radius to the white halo behind the dot for legibility.
-    DOT_RADIUS_UP:        12,   // uppercase dot radius  — reduce toward 0 to move fully inside letter
+    DOT_RADIUS_UP:        10,   // uppercase dot radius  — reduce toward 0 to move fully inside letter
     DOT_RADIUS_LOW:       10,   // lowercase dot radius  — reduce toward 0 to move fully inside letter
     DOT_RING_PAD:          4,   // white ring = dot radius + this value
+    // Extra upward shift (viewBox units) applied to accent marks that sit ABOVE the letter body:
+    // acute, grave, circumflex, tilde, diaeresis, ring — NOT cedilla (which sits below).
+    // Increase to pull accents further from thick letter strokes. 0 = use as authored.
+    // NOTE: VB_UP_ACCENT in letterData.js must provide (ACCENT_OFFSET_ABOVE + SW_UP/2 + ~20)
+    // units of headroom above y=0 or the shifted accents will be clipped by the viewBox.
+    ACCENT_OFFSET_ABOVE:  15,
   };
 
   // ── Stroke colours ─────────────────────────────────────────────────────────
@@ -71,14 +79,18 @@ window.APP = window.APP || {};
   // Appends horizontal guide lines to an SVG element. Call before other layers
   // so the lines sit at the bottom of the stacking order.
   // Reads APP.GUIDE_CONFIG — edit that object in letterData.js to restyle.
-  APP.addGuidelines = function (svg, viewBox) {
+  // isUpper — pass true for uppercase letters, false/omitted for lowercase.
+  // Selects GUIDE_OFFSET_UP or GUIDE_OFFSET_LOW so the guide sits at the stroke
+  // edge regardless of case (uppercase strokes are wider than lowercase ones).
+  APP.addGuidelines = function (svg, viewBox, isUpper) {
     const gc = APP.GUIDE_CONFIG;
     if (!gc) return;
     const vb = viewBox.split(/\s+/).map(Number);
     const x1 = vb[0], x2 = vb[0] + vb[2];
-    // Outward offset so guides sit at stroke edges rather than centrelines.
-    // Reads TRACER_CONFIG.GUIDE_OFFSET; falls back to 0 if config not yet loaded.
-    const offset = (APP.TRACER_CONFIG && APP.TRACER_CONFIG.GUIDE_OFFSET) || 0;
+    const cfg = APP.TRACER_CONFIG;
+    const offset = cfg
+      ? (isUpper ? (cfg.GUIDE_OFFSET_UP || 0) : (cfg.GUIDE_OFFSET_LOW || 0))
+      : 0;
     const g = APP.svgEl('g', { class: 'writing-guidelines', 'pointer-events': 'none' });
     Object.values(gc.lines).forEach(line => {
       if (line.hidden) return;
@@ -96,6 +108,15 @@ window.APP = window.APP || {};
     svg.appendChild(g);
   };
 
+  // ── Locale-independent animal ID ──────────────────────────────────────────
+  // Derives a stable ID from the cartoon image path so found status is shared
+  // across languages — the same creature has the same ID regardless of locale.
+  // e.g. { images: { cartoon: 'assets/images/cartoon/dog.svg' } } → 'dog'
+  //      GATO and DOG both resolve to 'dog' since they share the same SVG.
+  APP.animalId = function (animal) {
+    return animal.images.cartoon.split('/').pop().replace('.svg', '');
+  };
+
   // ── Unicode-safe case detection ────────────────────────────────────────────
   // /[A-Z]/ misses accented uppercase letters (Á, Ã, É, Ç …).
   // This helper works for any Unicode character without a hardcoded list.
@@ -110,7 +131,13 @@ window.APP = window.APP || {};
 
   APP.isDot = function (d) {
     const m = d.match(/M\s*([\d.-]+)[,\s]+([\d.-]+)\s+L\s*([\d.-]+)[,\s]+([\d.-]+)/);
-    return !!(m && parseFloat(m[1]) === parseFloat(m[3]) && parseFloat(m[2]) === parseFloat(m[4]));
+    if (!m) return false;
+    const dx = parseFloat(m[1]) - parseFloat(m[3]);
+    const dy = parseFloat(m[2]) - parseFloat(m[4]);
+    // Treat any path shorter than 4 viewBox units as a dot. This handles both
+    // exact zero-length paths (M x,y L x,y) and near-zero paths from the authoring
+    // tool, which outputs M x,y L x,y+1 rather than identical coordinates.
+    return Math.sqrt(dx * dx + dy * dy) < 4;
   };
 
   // Returns the display-space centre of a dot stroke after applying the

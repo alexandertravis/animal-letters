@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Body -->
+  <ellipse cx="95" cy="100" rx="62" ry="46" fill="#f5a623"/>
+  <!-- Belly (lighter) -->
+  <ellipse cx="95" cy="110" rx="42" ry="28" fill="#f8c870"/>
+  <!-- Stripes -->
+  <ellipse cx="80" cy="100" rx="6" ry="38" fill="#e8820a" opacity="0.5"/>
+  <ellipse cx="100" cy="100" rx="6" ry="40" fill="#e8820a" opacity="0.5"/>
+  <ellipse cx="120" cy="100" rx="6" ry="36" fill="#e8820a" opacity="0.5"/>
+  <!-- Tail fin -->
+  <path d="M155 80 L182 58 L182 142 L155 120 Z" fill="#e8820a"/>
+  <!-- Dorsal fin -->
+  <path d="M80 56 L100 36 L120 56" fill="#e8820a"/>
+  <!-- Pectoral fin -->
+  <ellipse cx="76" cy="116" rx="22" ry="10" fill="#e8820a" transform="rotate(25 76 116)"/>
+  <!-- Ventral fin -->
+  <ellipse cx="96" cy="140" rx="18" ry="8" fill="#e8820a"/>
+  <!-- Eye -->
+  <circle cx="42" cy="88" r="12" fill="#fff"/>
+  <circle cx="44" cy="88" r="8" fill="#222"/>
+  <circle cx="45" cy="86" r="3" fill="#fff"/>
+  <!-- Mouth -->
+  <path d="M22 102 Q30 110 40 102" stroke="#c8680a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Scales (subtle arcs) -->
+  <path d="M70 72 Q80 80 70 88" stroke="#e8820a" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <path d="M90 68 Q100 76 90 84" stroke="#e8820a" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <path d="M110 70 Q120 78 110 86" stroke="#e8820a" stroke-width="1.5" fill="none" opacity="0.6"/>
+</svg>

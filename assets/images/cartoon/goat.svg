@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Curved horns -->
+  <path d="M76 46 C62 34 54 20 64 14 C72 8 78 22 78 36" stroke="#d4a96a" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M124 46 C138 34 146 20 136 14 C128 8 122 22 122 36" stroke="#d4a96a" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <!-- Ears -->
+  <ellipse cx="62" cy="68" rx="14" ry="9" fill="#f0e8e0" transform="rotate(-20 62 68)"/>
+  <ellipse cx="138" cy="68" rx="14" ry="9" fill="#f0e8e0" transform="rotate(20 138 68)"/>
+  <!-- Head -->
+  <ellipse cx="100" cy="90" rx="48" ry="52" fill="#f0e8e0"/>
+  <!-- Eyes (with rectangular pupils) -->
+  <circle cx="78" cy="78" r="9" fill="#fff"/>
+  <circle cx="122" cy="78" r="9" fill="#fff"/>
+  <ellipse cx="79" cy="78" rx="3" ry="5" fill="#222"/>
+  <ellipse cx="123" cy="78" rx="3" ry="5" fill="#222"/>
+  <!-- Muzzle -->
+  <ellipse cx="100" cy="112" rx="28" ry="22" fill="#e0d4c8"/>
+  <!-- Nostrils -->
+  <ellipse cx="92" cy="116" rx="5" ry="4" fill="#c8b4a0"/>
+  <ellipse cx="108" cy="116" rx="5" ry="4" fill="#c8b4a0"/>
+  <!-- Mouth -->
+  <path d="M88 126 Q100 134 112 126" stroke="#c8b4a0" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Beard -->
+  <path d="M96 136 C94 148 92 158 96 164" stroke="#d4a96a" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M104 136 C106 148 108 158 104 164" stroke="#d4a96a" stroke-width="5" fill="none" stroke-linecap="round"/>
+</svg>

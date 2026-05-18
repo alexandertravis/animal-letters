@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Long neck -->
+  <rect x="82" y="60" width="36" height="90" rx="18" fill="#f5c842"/>
+  <!-- Brown patches on neck -->
+  <ellipse cx="98" cy="75" rx="10" ry="8" fill="#c8821a" opacity="0.8"/>
+  <ellipse cx="90" cy="100" rx="8" ry="6" fill="#c8821a" opacity="0.8"/>
+  <ellipse cx="108" cy="118" rx="9" ry="7" fill="#c8821a" opacity="0.8"/>
+  <!-- Head -->
+  <ellipse cx="100" cy="48" rx="26" ry="22" fill="#f5c842"/>
+  <!-- Ossicones (horns) -->
+  <rect x="84" y="26" width="7" height="18" rx="3" fill="#c8821a"/>
+  <circle cx="87" cy="25" r="4" fill="#8b5e1a"/>
+  <rect x="109" y="26" width="7" height="18" rx="3" fill="#c8821a"/>
+  <circle cx="112" cy="25" r="4" fill="#8b5e1a"/>
+  <!-- Eyes -->
+  <circle cx="86" cy="44" r="6" fill="#fff"/>
+  <circle cx="114" cy="44" r="6" fill="#fff"/>
+  <circle cx="87" cy="44" r="3" fill="#222"/>
+  <circle cx="115" cy="44" r="3" fill="#222"/>
+  <circle cx="87" cy="43" r="1" fill="#fff"/>
+  <circle cx="115" cy="43" r="1" fill="#fff"/>
+  <!-- Nostril -->
+  <ellipse cx="94" cy="60" rx="4" ry="3" fill="#c8821a"/>
+  <ellipse cx="106" cy="60" rx="4" ry="3" fill="#c8821a"/>
+  <!-- Mane -->
+  <path d="M90 50 L85 65 L90 60 L88 75 L93 68 L92 82 L97 76 L96 88" stroke="#c8821a" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- Body (just bottom bit visible) -->
+  <ellipse cx="100" cy="170" rx="40" ry="28" fill="#f5c842"/>
+  <ellipse cx="85" cy="162" rx="7" ry="6" fill="#c8821a" opacity="0.7"/>
+  <ellipse cx="115" cy="165" rx="9" ry="7" fill="#c8821a" opacity="0.7"/>
+</svg>

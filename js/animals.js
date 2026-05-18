@@ -5,7 +5,10 @@ window.APP = window.APP || {};
   // Falls back to the English list if no locale-specific list exists.
   function getAnimalList() {
     const locale = APP.state && APP.state.settings.locale;
-    if (locale === 'pt' && APP.ANIMALS_PT && APP.ANIMALS_PT.length) return APP.ANIMALS_PT;
+    if (locale && locale !== 'en') {
+      const list = APP['ANIMALS_' + locale.toUpperCase()];
+      if (list && list.length) return list;
+    }
     return APP.ANIMALS;
   }
 
@@ -32,7 +35,7 @@ window.APP = window.APP || {};
     pickNext(maxLength, exclude) {
       if (APP.state.consecutiveFoundCount >= 2) {
         const unfound = eligible(maxLength).filter(
-          a => !APP.state.completedAnimals.has(a.name)
+          a => !APP.state.completedAnimals.has(APP.animalId(a))
         );
         if (unfound.length > 0) {
           // Exclude the just-played animal from unfound too — no immediate repeats.

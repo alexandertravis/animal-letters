@@ -63,8 +63,14 @@ window.APP = window.APP || {};
   // then each stroke in its own colour with a numbered circle at the start point.
   function overviewSVG(data, char, px) {
     const { SW, SW_OUTLINE } = strokeWidths(char);
-    const svg = svgEl('svg', { viewBox: data.viewBox, width: px, height: px });
-    APP.addGuidelines(svg, data.viewBox);
+    const isUpper  = APP.isUpperLetter(char);
+    const sessionVb = APP.getSessionViewBox(isUpper);
+    // Height follows the viewBox aspect ratio so accented-language sessions
+    // show the full canvas (including above-cap space) without letterboxing.
+    const vbParts = sessionVb.split(/\s+/).map(Number);
+    const svgH = Math.round(px * vbParts[3] / vbParts[2]);
+    const svg = svgEl('svg', { viewBox: sessionVb, width: px, height: svgH });
+    APP.addGuidelines(svg, sessionVb, isUpper);
 
     // All letter content sits in a transformed group so paths align with guidelines.
     const ltr = svgEl('g', { transform: letterTransform(char) });
@@ -152,18 +158,20 @@ window.APP = window.APP || {};
     const wrap = document.createElement('div');
     wrap.className = 'letter-stages';
 
-    const vbParts = data.viewBox.split(/\s+/).map(Number);
-    const aspect  = vbParts[3] / vbParts[2];
-    const svgH    = Math.round(px * aspect);
+    const isUpper    = APP.isUpperLetter(char);
+    const sessionVb  = APP.getSessionViewBox(isUpper);
+    const vbParts    = sessionVb.split(/\s+/).map(Number);
+    const aspect     = vbParts[3] / vbParts[2];
+    const svgH       = Math.round(px * aspect);
 
     const glyphTransform = letterTransform(char);
 
     data.strokes.forEach((_, idx) => {
       const svg = svgEl('svg', {
-        viewBox: data.viewBox, width: px, height: svgH,
+        viewBox: sessionVb, width: px, height: svgH,
         style: 'display:block;flex-shrink:0'
       });
-      APP.addGuidelines(svg, data.viewBox);
+      APP.addGuidelines(svg, sessionVb, isUpper);
 
       // All letter content in a transformed group aligned to guidelines
       const ltr = svgEl('g', { transform: glyphTransform });
@@ -273,13 +281,38 @@ window.APP = window.APP || {};
     // Active practice tracer — kept here so switching views always cleans it up.
     let practiceTracer = null;
 
+    // Build the full character list for the current case mode.
+    // Always starts with A-Z / a-z, then appends any accented / special characters
+    // that appear in the current locale's animal names (deduplicated, sorted).
+    function getLocaleChars(mode) {
+      const base = mode === 'lower'
+        ? 'abcdefghijklmnopqrstuvwxyz'
+        : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const baseSet = new Set([...base]);
+      const list = (APP.animals && APP.animals.eligibleAll()) || (APP.ANIMALS || []);
+      const extras = new Set();
+      list.forEach(function (a) {
+        a.name.split('').forEach(function (ch) {
+          const c = mode === 'lower' ? ch.toLowerCase() : ch.toUpperCase();
+          if (!baseSet.has(c) && APP.getLetter(c)) extras.add(c);
+        });
+      });
+      // Also include the ligature / special characters that have authored strokes
+      // so they appear here as soon as their strokes are authored.
+      const specials = 'ÆæŒœßØø'.split('');
+      specials.forEach(function (ch) {
+        const c = mode === 'lower' ? ch.toLowerCase() : ch.toUpperCase();
+        const def = APP.getLetter(c);
+        if (def && def.strokes && def.strokes.length > 0 && !baseSet.has(c)) extras.add(c);
+      });
+      return [...base, ...[...extras].sort((a, b) => a.localeCompare(b))];
+    }
+
     function draw() {
       if (practiceTracer) { practiceTracer.destroy(); practiceTracer = null; }
       root.innerHTML = '';
 
-      const chars = (caseMode === 'lower'
-        ? 'abcdefghijklmnopqrstuvwxyz'
-        : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ').split('');
+      const chars = getLocaleChars(caseMode);
 
       const wrap = document.createElement('div');
       wrap.className = 'letters-screen';

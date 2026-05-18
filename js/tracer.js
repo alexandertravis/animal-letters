@@ -26,15 +26,20 @@ window.APP = window.APP || {};
 
     stageEl.innerHTML = '';
 
+    // Per-character stroke widths — read from APP.TRACER_CONFIG (js/utils.js).
+    const isUpper = APP.isUpperLetter(character);
+
+    // Use the session-level viewBox (same for every letter in this locale session)
+    // rather than data.viewBox, which varies per accented vs plain letter.
+    // Consistent canvas size means the letter display never jumps between chars.
+    const sessionVb = APP.getSessionViewBox(isUpper);
+
     // ---- SVG scaffold ----
     const svg = el('svg', {
       class: 'tracer-letter',
-      viewBox: data.viewBox,
+      viewBox: sessionVb,
       preserveAspectRatio: 'xMidYMid meet'
     });
-
-    // Per-character stroke widths — read from APP.TRACER_CONFIG (js/utils.js).
-    const isUpper = APP.isUpperLetter(character);
     const cfg = APP.TRACER_CONFIG;
     const SW  = isUpper ? cfg.SW_UP  : cfg.SW_LOW;
     const INK = isUpper ? cfg.INK_UP : cfg.INK_LOW;
@@ -67,8 +72,8 @@ window.APP = window.APP || {};
     const isDot = APP.isDot;
     function dotPos(d) { return APP.dotTransformPos(d, xScale, xOffset, tA, tB); }
 
-    // Parse viewBox once — used for the mask rect and guideline x-extents.
-    const vb = data.viewBox.split(/\s+/).map(Number);
+    // Parse the session viewBox once — used for the mask rect and guideline x-extents.
+    const vb = sessionVb.split(/\s+/).map(Number);
 
     // Mask: white letter shape on black bg → confines user ink to inside the letter.
     const defs = el('defs');
@@ -95,7 +100,7 @@ window.APP = window.APP || {};
     svg.appendChild(defs);
 
     // ── Writing guidelines (bottom of stack, behind all letter layers) ──
-    APP.addGuidelines(svg, data.viewBox);
+    APP.addGuidelines(svg, sessionVb, isUpper);
 
     // Outline layer — slightly wider dark stroke, rendered first so it peeks out
     // around the edges of the ghost on top, creating a thin dark border.
@@ -282,7 +287,14 @@ window.APP = window.APP || {};
       const s = data.strokes[strokeIdx];
       if (isDot(s.d)) {
         const pos = dotPos(s.d);
-        if (pos) doneDotLayer.appendChild(el('circle', { cx: pos.x, cy: pos.y, r: (SW + 8) / 2, fill: '#001858' }));
+        if (pos) {
+          const color = STROKE_COLORS[strokeIdx % STROKE_COLORS.length];
+          // Dark outline circle — same as doneGroup's SW+8 stroke on regular strokes.
+          doneDotLayer.appendChild(el('circle', { cx: pos.x, cy: pos.y, r: (SW + 8) / 2, fill: '#001858' }));
+          // Coloured ink circle — mirrors the INK-width coloured polyline that a drag
+          // would deposit on regular strokes. Gives the dot the same visual feedback.
+          doneDotLayer.appendChild(el('circle', { cx: pos.x, cy: pos.y, r: INK / 2, fill: color }));
+        }
       } else {
         doneGroup.appendChild(el('path', { d: s.d }));
       }
@@ -392,9 +404,13 @@ window.APP = window.APP || {};
       // Advance through any consecutive checkpoints within tolerance (handles fast drags).
       // The last checkpoint uses FINAL_TOLERANCE (tighter than CHECKPOINT_TOLERANCE) so
       // a stroke can't snap complete before the child's finger actually reaches the end.
+      // Exception: dot strokes (i/j dot) have all checkpoints at the same point, so the
+      // tighter FINAL_TOLERANCE is not applied — a single tap within TOLERANCE completes it.
+      const currentIsDot = isDot(data.strokes[currentStroke].d);
       let advanced = false;
       while (currentCheckpoint < cps.length) {
-        const tol = currentCheckpoint === cps.length - 1 ? FINAL_TOLERANCE : TOLERANCE;
+        const isLast = currentCheckpoint === cps.length - 1;
+        const tol = (isLast && !currentIsDot) ? FINAL_TOLERANCE : TOLERANCE;
         if (dist(p, cps[currentCheckpoint]) > tol) break;
         currentCheckpoint++;
         advanced = true;

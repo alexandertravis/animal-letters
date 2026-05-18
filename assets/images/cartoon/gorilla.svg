@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Ears -->
+  <circle cx="48" cy="88" r="18" fill="#444"/>
+  <circle cx="152" cy="88" r="18" fill="#444"/>
+  <!-- Head (large and wide) -->
+  <ellipse cx="100" cy="85" rx="60" ry="56" fill="#444"/>
+  <!-- Brow ridge -->
+  <ellipse cx="100" cy="60" rx="52" ry="18" fill="#333"/>
+  <!-- Face (lighter) -->
+  <ellipse cx="100" cy="96" rx="44" ry="46" fill="#5a5a5a"/>
+  <!-- Muzzle -->
+  <ellipse cx="100" cy="114" rx="30" ry="22" fill="#888"/>
+  <!-- Eyes -->
+  <circle cx="80" cy="80" r="9" fill="#fff"/>
+  <circle cx="120" cy="80" r="9" fill="#fff"/>
+  <circle cx="81" cy="80" r="6" fill="#222"/>
+  <circle cx="121" cy="80" r="6" fill="#222"/>
+  <circle cx="82" cy="78" r="2" fill="#fff"/>
+  <circle cx="122" cy="78" r="2" fill="#fff"/>
+  <!-- Nose (broad) -->
+  <ellipse cx="100" cy="106" rx="16" ry="10" fill="#333"/>
+  <circle cx="92" cy="106" r="5" fill="#222"/>
+  <circle cx="108" cy="106" r="5" fill="#222"/>
+  <!-- Mouth -->
+  <path d="M84 124 Q100 132 116 124" stroke="#444" stroke-width="3" fill="none" stroke-linecap="round"/>
+</svg>

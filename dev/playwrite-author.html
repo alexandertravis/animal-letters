@@ -156,6 +156,7 @@
       white-space: pre; max-height: 240px; overflow-y: auto;
     }
     .ed-hint { font-size: 11px; color: #888; font-style: italic; }
+    .btn.mode-active { background: #7c3aed; border-color: #7c3aed; }
   </style>
 </head>
 <body>
@@ -218,10 +219,57 @@
     <code>letterData.js</code> — no copy-pasting needed.
   </p>
 
-  <div class="sec-label">Pick a letter</div>
-  <div style="margin-bottom:10px;">
-    <div class="author-letter-row" id="edUpperRow"></div>
-    <div class="author-letter-row" id="edLowerRow"></div>
+  <!-- Mode toggle: Letter vs Accent -->
+  <div class="toolbar" style="margin-bottom:10px;gap:6px;">
+    <span style="font-size:11px;font-weight:700;color:#666;">Mode:</span>
+    <button class="btn active" id="btnModeLetters" onclick="edSetMode('letter')" title="Author complete letter strokes">🔤 Letters</button>
+    <button class="btn sec"    id="btnModeAccents" onclick="edSetMode('accent')" title="Author accent mark strokes (shared across all base letters)">◌́ Accents</button>
+  </div>
+
+  <!-- Letter picker (shown in letter mode) -->
+  <div id="edLetterPicker">
+    <div class="sec-label">Pick a letter</div>
+    <div style="margin-bottom:10px;">
+      <div class="author-letter-row" id="edUpperRow"></div>
+      <div class="author-letter-row" id="edLowerRow"></div>
+    </div>
+    <div class="sec-label">Special characters &amp; ligatures</div>
+    <div style="margin-bottom:10px;">
+      <div class="author-letter-row" id="edSpecialRow"></div>
+    </div>
+  </div>
+
+  <!-- Accent picker (shown in accent mode) -->
+  <div id="edAccentPicker" style="display:none;">
+    <div class="sec-label">Pick accent type &amp; case</div>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <label style="font-size:12px;font-weight:700;color:#555;">Accent:</label>
+        <select id="edAccentTypeSelect" onchange="edOnAccentChange()" style="font-size:13px;padding:5px 8px;border:1.5px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;min-width:160px;">
+          <option value="acute">Acute ´  (Á á É é Ó ó …)</option>
+          <option value="grave">Grave ` (À à È è Ù ù …)</option>
+          <option value="circumflex">Circumflex ^ (Â â Ê ê Ô ô …)</option>
+          <option value="tilde">Tilde ~ (Ã ã Ñ ñ Õ õ …)</option>
+          <option value="diaeresis">Diaeresis ¨ (Ä ä Ö ö Ü ü …)</option>
+          <option value="cedilla">Cedilla ¸ (Ç ç)</option>
+          <option value="ring">Ring ° (Å å)</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <label style="font-size:12px;font-weight:700;color:#555;">Case:</label>
+        <button class="btn active" id="btnAccentUpper" onclick="edSetAccentCase('upper')">Upper (A–Z)</button>
+        <button class="btn sec"    id="btnAccentLower" onclick="edSetAccentCase('lower')">Lower (a–z)</button>
+      </div>
+      <div style="font-size:12px;color:#888;font-style:italic;" id="edAccentExampleLabel">
+        Example: <strong id="edAccentExampleChar">Á</strong> — trace ONLY the accent mark (the base letter is already authored)
+      </div>
+    </div>
+    <div style="font-size:11px;padding:8px 12px;background:#fff8e1;border:1.5px solid #f0c060;border-radius:6px;margin-bottom:8px;line-height:1.6;">
+      ℹ️ <strong>Authoring tip:</strong> The background shows the full accented character for positioning reference.
+      Draw <em>only the accent mark strokes</em> (e.g. the tick above Á, the two dots above Ä).
+      These strokes will be appended to any base letter that uses this accent type.
+      The same accent strokes apply to all letters sharing this accent (Á, É, Í, Ó, Ú all use <em>acute upper</em>).
+    </div>
   </div>
 
   <div id="edEditArea" style="display:none">
@@ -336,13 +384,13 @@
         </div>
 
         <div>
-          <div class="sec-label">letterData.js output</div>
-          <pre id="edOutput" class="ed-output">// Pick a letter and commit strokes to see output</pre>
+          <div class="sec-label" id="edOutputLabel">letterData.js output</div>
+          <pre id="edOutput" class="ed-output">// Pick a letter (or accent type) and commit strokes to see output</pre>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
             <button class="btn sec" style="font-size:11px;" onclick="edCopyOutput()">Copy</button>
             <button class="btn sec" style="font-size:11px;" onclick="edDownloadSnippet()">⬇ Snippet</button>
             <label class="btn sec" style="font-size:11px;" for="edFileInput"
-                   title="Load letterData.js — auto-populates existing strokes for the active letter">
+                   title="Load letterData.js — auto-populates existing strokes for the active letter or accent">
               📂 Load letterData.js
             </label>
             <input type="file" id="edFileInput" accept=".js" style="display:none" onchange="edLoadFromFile(this)">
@@ -942,6 +990,150 @@ const edSvgEl = (tag, attrs) => {
   return el;
 };
 
+// ─── Accent mode state ────────────────────────────────────────────────────────
+let edAccentMode  = false;  // true = authoring accents, false = authoring letters
+let edAccentType  = 'acute';
+let edAccentCase  = 'upper';
+
+// Example characters used to show the accent's visual position on the canvas.
+// Picked to give the clearest accent glyph in the chosen font.
+const ACCENT_EXAMPLES = {
+  acute:      { upper: 'Á', lower: 'á' },
+  grave:      { upper: 'À', lower: 'à' },
+  circumflex: { upper: 'Â', lower: 'â' },
+  tilde:      { upper: 'Ã', lower: 'ã' },
+  diaeresis:  { upper: 'Ä', lower: 'ä' },
+  cedilla:    { upper: 'Ç', lower: 'ç' },
+  ring:       { upper: 'Å', lower: 'å' },
+};
+
+window.edSetMode = function (mode) {
+  edAccentMode = (mode === 'accent');
+  document.getElementById('btnModeLetters').className = 'btn ' + (edAccentMode ? 'sec' : 'active');
+  document.getElementById('btnModeAccents').className = 'btn ' + (edAccentMode ? 'active' : 'sec');
+  document.getElementById('edLetterPicker').style.display = edAccentMode ? 'none' : 'block';
+  document.getElementById('edAccentPicker').style.display = edAccentMode ? 'block' : 'none';
+  document.getElementById('edOutputLabel').textContent =
+    edAccentMode ? 'APP.ACCENTS output' : 'letterData.js output';
+
+  // Reset canvas when switching modes
+  edCmds = []; edSel = null; edStrokes = []; edActiveStroke = null;
+  if (edAccentMode) {
+    edChar = null;
+    edAccentType = document.getElementById('edAccentTypeSelect').value;
+    edAccentCase = 'upper';
+    edUpdateAccentExample();
+    edActivateAccent();
+  } else {
+    document.getElementById('edEditArea').style.display = 'none';
+    document.getElementById('edCharLabel').textContent = '—';
+  }
+  edRefresh(); edUpdateStrokeList(); edUpdateOutput();
+};
+
+window.edOnAccentChange = function () {
+  edAccentType = document.getElementById('edAccentTypeSelect').value;
+  edUpdateAccentExample();
+  edActivateAccent();
+};
+
+window.edSetAccentCase = function (c) {
+  edAccentCase = c;
+  document.getElementById('btnAccentUpper').className = 'btn ' + (c === 'upper' ? 'active' : 'sec');
+  document.getElementById('btnAccentLower').className = 'btn ' + (c === 'lower' ? 'active' : 'sec');
+  edUpdateAccentExample();
+  edActivateAccent();
+};
+
+function edUpdateAccentExample() {
+  const ex = ACCENT_EXAMPLES[edAccentType] || {};
+  const ch = edAccentCase === 'upper' ? (ex.upper || '?') : (ex.lower || '?');
+  document.getElementById('edAccentExampleChar').textContent = ch;
+  // Use the example char as the background glyph reference
+  edChar = ch;
+}
+
+function edActivateAccent() {
+  // Load existing strokes from file if one is loaded, then open the canvas.
+  edCmds = []; edSel = null; edStrokes = []; edActiveStroke = null;
+
+  const labelEl = document.getElementById('edCharLabel');
+  if (labelEl) labelEl.textContent = edAccentType + ' ' + edAccentCase;
+
+  document.getElementById('edEditArea').style.display = 'block';
+
+  // Expand the canvas viewport upward for above-letter accents so the author
+  // can see and edit strokes that live above the cap line (y < 30).
+  // Cedilla sits below baseline, so no upward expansion needed there.
+  const ABOVE_ACCENTS = ['acute','grave','circumflex','tilde','diaeresis','ring'];
+  const isAbove = ABOVE_ACCENTS.includes(edAccentType);
+  if (isAbove && edAccentCase === 'upper') {
+    // Show y from -60 to 270 (same as VB_UP_ACCENT in the game)
+    edVbX = 0; edVbY = -60; edVbW = VB_W; edVbH = 330;
+  } else if (isAbove && edAccentCase === 'lower') {
+    // Lowercase accents sit at y≈40-70; starting from y=-20 gives visual context
+    edVbX = 0; edVbY = -20; edVbW = VB_W; edVbH = 290;
+  } else {
+    // Cedilla / below-baseline: standard view but shift down slightly
+    edVbX = 0; edVbY = 0; edVbW = VB_W; edVbH = VB_H;
+  }
+  edApplyViewBox();
+
+  if (edFullFileText) {
+    edParseAccentFromFile(edAccentType, edAccentCase, edFullFileText, /*silent=*/true);
+    document.getElementById('btnEdDownloadFull').disabled = false;
+  } else {
+    document.getElementById('btnEdDownloadFull').disabled = true;
+    edRenderGlyph(); edRefresh(); edUpdateStrokeList(); edUpdateOutput();
+  }
+}
+
+function edParseAccentFromFile(type, caseKey, text, silent) {
+  // Match both formats:
+  //   APP.ACCENTS.acute.upper = [{ d: '...' }];      (assignment statement — tool output)
+  //   Within the APP.ACCENTS = { ... } block           (object literal — manual edits)
+  // Try assignment statement first (most reliable to replace).
+  const assignRe = new RegExp(
+    'APP\\.ACCENTS\\.' + type + '\\.' + caseKey + '\\s*=\\s*\\[([\\s\\S]*?)\\];', 'm'
+  );
+  const assignMatch = text.match(assignRe);
+
+  let strokesText = null;
+  if (assignMatch) {
+    strokesText = assignMatch[0];
+  } else {
+    // Try to locate strokes within the object literal block (APP.ACCENTS = { ... })
+    // This is harder to parse robustly, so just inform the user and start fresh.
+    if (!silent) {
+      alert("No APP.ACCENTS." + type + "." + caseKey + " assignment found in the file.\n\n" +
+            "Author the strokes below, then use '⬇ Full file' to save them back.\n" +
+            "The tool will insert an assignment statement after the ACCENTS block.");
+    }
+    edRenderGlyph(); edRefresh(); edUpdateStrokeList(); edUpdateOutput();
+    const hint = document.getElementById('edHint');
+    if (hint) hint.textContent = "No saved strokes for " + type + " " + caseKey + " — draw from scratch";
+    return;
+  }
+
+  const strokeRe = /d:\s*['"]([^'"]+)['"]/g;
+  const newStrokes = []; let sm;
+  while ((sm = strokeRe.exec(strokesText)) !== null) {
+    const color = STROKE_COLORS[newStrokes.length % STROKE_COLORS.length];
+    newStrokes.push({ d: sm[1], color });
+  }
+
+  if (!newStrokes.length) {
+    if (!silent) alert("Found APP.ACCENTS." + type + "." + caseKey + " but it has no strokes yet.");
+    edRenderGlyph(); edRefresh(); edUpdateStrokeList(); edUpdateOutput();
+    return;
+  }
+
+  edStrokes = newStrokes; edCmds = []; edSel = null; edActiveStroke = null;
+  edRefresh(); edUpdateText(); edUpdateCmdList(); edUpdateStrokeList(); edUpdateOutput();
+  const hint = document.getElementById('edHint');
+  if (hint) hint.textContent = 'Loaded ' + newStrokes.length + ' stroke(s) — click ✎ Edit to modify';
+}
+
 // ─── Panel toggle ─────────────────────────────────────────────────────────────
 window.toggleEditorPanel = function () {
   const sec = document.getElementById('editorSection');
@@ -951,14 +1143,21 @@ window.toggleEditorPanel = function () {
   btn.classList.toggle('active', opening);
   if (opening) {
     if (!document.getElementById('edUpperRow').children.length) edBuildLetterPicker();
+    // Ensure mode UI is consistent with current state
+    document.getElementById('btnModeLetters').className = 'btn ' + (edAccentMode ? 'sec' : 'active');
+    document.getElementById('btnModeAccents').className = 'btn ' + (edAccentMode ? 'active' : 'sec');
     sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 };
 
 // ─── Letter picker ────────────────────────────────────────────────────────────
 function edBuildLetterPicker() {
-  [['ABCDEFGHIJKLMNOPQRSTUVWXYZ','edUpperRow'],
-   ['abcdefghijklmnopqrstuvwxyz','edLowerRow']].forEach(([chars, id]) => {
+  [['ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'edUpperRow'],
+   ['abcdefghijklmnopqrstuvwxyz', 'edLowerRow'],
+   // Ligatures and special characters that need full authored strokes
+   // (cannot be expressed as base + accent composition)
+   ['ÆæŒœßØø', 'edSpecialRow'],
+  ].forEach(([chars, id]) => {
     const row = document.getElementById(id);
     row.innerHTML = '';
     [...chars].forEach(ch => {
@@ -989,6 +1188,7 @@ function edActivateLetter(ch) {
     edRenderGlyph(); edRefresh(); edUpdateStrokeList(); edUpdateOutput();
   }
 }
+
 
 // ─── viewBox / zoom ───────────────────────────────────────────────────────────
 function edApplyViewBox() {
@@ -1406,8 +1606,23 @@ function edUpdateStrokeList() {
 
 // ─── letterData.js output ─────────────────────────────────────────────────────
 function edGenerateOutput() {
-  if (!edChar||!edStrokes.length) return '// Pick a letter and commit strokes to see output';
   const NL = String.fromCharCode(10);
+
+  if (edAccentMode) {
+    // Accent mode: generate APP.ACCENTS.type.case = [...] assignment
+    if (!edStrokes.length) return '// Author accent strokes above, then commit to see output';
+    const parts = [
+      'APP.ACCENTS.' + edAccentType + '.' + edAccentCase + ' = ['
+    ];
+    edStrokes.forEach((s, i) =>
+      parts.push('  { d: \'' + s.d + '\' }' + (i < edStrokes.length - 1 ? ',' : ''))
+    );
+    parts.push('];');
+    return parts.join(NL);
+  }
+
+  // Letter mode: generate full LETTERS[char] entry
+  if (!edChar||!edStrokes.length) return '// Pick a letter and commit strokes to see output';
   const parts = [
     "APP.LETTERS['" + edChar + "'] = {",
     "  viewBox: '0 0 " + VB_W + " " + VB_H + "',",
@@ -1431,16 +1646,23 @@ window.edCopyOutput = ()=>{
 };
 window.edDownloadSnippet = ()=>{
   const blob=new Blob([edGenerateOutput()],{type:'text/javascript'});
+  const name = edAccentMode
+    ? 'accent_' + edAccentType + '_' + edAccentCase + '.js'
+    : 'letter_' + edChar + '.js';
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='letter_' + edChar + '.js'; a.click();
+  a.download=name; a.click();
 };
 window.edLoadFromFile = function(input) {
   if (!input.files[0]) return;
-  if (!edChar){ alert('Pick a letter first, then load letterData.js'); return; }
+  if (!edAccentMode && !edChar) { alert('Pick a letter first, then load letterData.js'); return; }
   const reader=new FileReader();
   reader.onload=e=>{
     edFullFileText=e.target.result;
-    edParseLetterFromFile(edChar,edFullFileText);
+    if (edAccentMode) {
+      edParseAccentFromFile(edAccentType, edAccentCase, edFullFileText);
+    } else {
+      edParseLetterFromFile(edChar, edFullFileText);
+    }
     document.getElementById('btnEdDownloadFull').disabled=false;
   };
   reader.readAsText(input.files[0]);
@@ -1481,15 +1703,33 @@ function edParseLetterFromFile(ch, text, silent) {
   if (hint) hint.textContent='Loaded ' + newStrokes.length + ' stroke(s) — click ✎ Edit to modify';
 }
 window.edDownloadFull = ()=>{
-  if (!edFullFileText||!edChar) return;
+  if (!edFullFileText) return;
   const snippet=edGenerateOutput();
-  // Match both bare LETTERS['x'] and APP.LETTERS['x'] when replacing existing entries
-  const re=new RegExp("(?:APP\\.)?LETTERS\\[[\'\"]" + edChar + "[\'\"]\\]\\s*=\\s*\\{[\\s\\S]*?\\};","m");
   const NL=String.fromCharCode(10);
-  const updated=re.test(edFullFileText)?edFullFileText.replace(re,snippet):edFullFileText+NL+NL+snippet;
+  let updated, filename;
+
+  if (edAccentMode) {
+    // Replace or append APP.ACCENTS.type.case = [...]; assignment
+    const re = new RegExp(
+      'APP\\.ACCENTS\\.' + edAccentType + '\\.' + edAccentCase + '\\s*=\\s*\\[[\\s\\S]*?\\];', 'm'
+    );
+    updated = re.test(edFullFileText)
+      ? edFullFileText.replace(re, snippet)
+      : edFullFileText + NL + NL + snippet;
+    filename = 'letterData.js';
+  } else {
+    if (!edChar) return;
+    // Match both bare LETTERS['x'] and APP.LETTERS['x'] when replacing existing entries
+    const re=new RegExp("(?:APP\\.)?LETTERS\\[[\'\"]" + edChar + "[\'\"]\\]\\s*=\\s*\\{[\\s\\S]*?\\};","m");
+    updated = re.test(edFullFileText)
+      ? edFullFileText.replace(re, snippet)
+      : edFullFileText + NL + NL + snippet;
+    filename = 'letterData.js';
+  }
+
   const blob=new Blob([updated],{type:'text/javascript'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='letterData.js'; a.click();
+  a.download=filename; a.click();
 };
 
 // ─── SVG interaction ──────────────────────────────────────────────────────────

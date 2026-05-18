@@ -53,7 +53,8 @@ window.APP = window.APP || {};
 
     const count = document.createElement('span');
     count.className = 'devanimals-count';
-    count.textContent = `${APP.ANIMALS.length} animals`;
+    const _allAnimals = APP.animals ? APP.animals.eligibleAll() : APP.ANIMALS;
+    count.textContent = `${_allAnimals.length} animals`;
 
     header.appendChild(backBtn);
     header.appendChild(title);
@@ -82,8 +83,9 @@ window.APP = window.APP || {};
       const list = document.createElement('div');
       list.className = 'devanimals-list';
 
+      const animalList = APP.animals ? APP.animals.eligibleAll() : APP.ANIMALS;
       const byLength = new Map();
-      APP.ANIMALS.forEach(a => {
+      animalList.forEach(a => {
         const len = a.name.length;
         if (!byLength.has(len)) byLength.set(len, []);
         byLength.get(len).push(a);
@@ -167,7 +169,8 @@ window.APP = window.APP || {};
 
       const picker = document.createElement('div');
       picker.className = 'devanimals-animal-picker';
-      APP.ANIMALS.slice().sort((a, b) => a.displayName.localeCompare(b.displayName))
+      const testAnimalList = APP.animals ? APP.animals.eligibleAll() : APP.ANIMALS;
+      testAnimalList.slice().sort((a, b) => a.displayName.localeCompare(b.displayName))
         .forEach(animal => {
           const btn = document.createElement('button');
           btn.className = 'devanimals-animal-btn';

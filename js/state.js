@@ -16,6 +16,14 @@ window.APP = window.APP || {};
     locale: "en",          // "en" | "pt" | … — overwritten by APP.loadLocale() on boot
   };
 
+  // ── Locale-independent animal ID (private copy) ──────────────────────────
+  // APP.animalId (utils.js) is not yet loaded when state.js executes, so we
+  // define the same logic privately for use during the migration below.
+  // At runtime (startGame, advanceLetter) APP.animalId is always available.
+  function _animalId(animal) {
+    return animal.images.cartoon.split('/').pop().replace('.svg', '');
+  }
+
   // ── Persisted progress ───────────────────────────────────────────────────
   // Load completedAnimals and animalCompletionCounts from localStorage so the
   // gallery survives page reloads. Wrapped in try/catch — private browsing
@@ -25,6 +33,37 @@ window.APP = window.APP || {};
     catch (_) { return {}; }
   })();
 
+  // Migrate old-format completedAnimals. Before this change, entries were stored
+  // as uppercase animal names (e.g. 'DOG'). Now they are locale-independent IDs
+  // derived from the image path (e.g. 'dog'). Convert any old entries on first load.
+  function _migrateCompletedAnimals(saved) {
+    if (!saved || saved.length === 0) return [];
+    // New format is always lowercase — if all entries are already lowercase, no migration needed.
+    if (saved.every(s => s === s.toLowerCase())) return saved;
+    const allAnimals = [...(APP.ANIMALS || []), ...(APP.ANIMALS_PT || [])];
+    const nameToId = {};
+    allAnimals.forEach(a => { nameToId[a.name] = _animalId(a); });
+    // deduplicate with Set in case two names mapped to the same creature
+    return [...new Set(saved.map(name => nameToId[name]).filter(Boolean))];
+  }
+
+  // Migrate animalCompletionCounts the same way: rekey from name → id.
+  function _migrateCompletionCounts(saved) {
+    if (!saved || typeof saved !== 'object') return {};
+    const keys = Object.keys(saved);
+    if (keys.length === 0) return {};
+    if (keys.every(k => k === k.toLowerCase())) return saved; // already new format
+    const allAnimals = [...(APP.ANIMALS || []), ...(APP.ANIMALS_PT || [])];
+    const nameToId = {};
+    allAnimals.forEach(a => { nameToId[a.name] = _animalId(a); });
+    const out = {};
+    keys.forEach(name => {
+      const id = nameToId[name];
+      if (id) out[id] = (out[id] || 0) + saved[name];
+    });
+    return out;
+  }
+
   APP.state = {
     screen: "landing",     // "landing" | "setup" | "game" | "complete" | "gallery"
     settings: { ...DEFAULT_SETTINGS },
@@ -32,13 +71,13 @@ window.APP = window.APP || {};
     letterIndex: 0,        // index into currentAnimal.name
     completedLetters: [],  // letters already finished this animal
     sessionExists: false,  // true once a game has been started this session
-    completedAnimals: new Set(_saved.completedAnimals || []),
+    completedAnimals: new Set(_migrateCompletedAnimals(_saved.completedAnimals || [])),
 
     // ── Completion tracking ───────────────────────────────────────────────────
     // Per-animal completion counts. Incremented each time the child traces every
-    // letter of an animal (skip does not count). Keyed by animal.name.
+    // letter of an animal (skip does not count). Keyed by animal ID (image stem).
     // Reserved for the upcoming challenges feature.
-    animalCompletionCounts: _saved.animalCompletionCounts || {},
+    animalCompletionCounts: _migrateCompletionCounts(_saved.animalCompletionCounts || {}),
 
     // Counts how many consecutively completed animals were already in the gallery
     // (i.e. previously found). Resets to 0 whenever an unfound animal is presented.
@@ -71,7 +110,7 @@ window.APP = window.APP || {};
   APP.startGame = function (animal) {
     // Reset the consecutive-found counter whenever the child is given an animal
     // they haven't completed before — presenting a fresh challenge breaks the streak.
-    if (!APP.state.completedAnimals.has(animal.name)) {
+    if (!APP.state.completedAnimals.has(APP.animalId(animal))) {
       APP.state.consecutiveFoundCount = 0;
     }
     APP.state.currentAnimal = animal;
@@ -87,13 +126,15 @@ window.APP = window.APP || {};
     APP.state.completedLetters.push(animal.name[APP.state.letterIndex]);
     APP.state.letterIndex += 1;
     if (APP.state.letterIndex >= animal.name.length) {
-      // Check before adding — was this animal already found before this completion?
-      const alreadyFound = APP.state.completedAnimals.has(animal.name);
+      const id = APP.animalId(animal);
 
-      // Increment per-animal completion count (keyed by name).
+      // Check before adding — was this animal already found before this completion?
+      const alreadyFound = APP.state.completedAnimals.has(id);
+
+      // Increment per-animal completion count (keyed by locale-independent id).
       // Used by the upcoming challenges feature; also drives consecutiveFoundCount.
-      APP.state.animalCompletionCounts[animal.name] =
-        (APP.state.animalCompletionCounts[animal.name] || 0) + 1;
+      APP.state.animalCompletionCounts[id] =
+        (APP.state.animalCompletionCounts[id] || 0) + 1;
 
       // Track consecutive already-found completions so pickNext() can bias toward
       // unfound animals once the streak reaches 2.
@@ -102,7 +143,7 @@ window.APP = window.APP || {};
       }
 
       // Only mark as completed when the child traced every letter themselves.
-      APP.state.completedAnimals.add(animal.name);
+      APP.state.completedAnimals.add(id);
       APP.saveProgress();
       APP.state.screen = "complete";
     }

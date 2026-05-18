@@ -4,9 +4,15 @@ window.APP = window.APP || {};
   function render(root, ctx) {
     root.innerHTML = '';
 
-    const animalList = APP.animals ? APP.animals.eligibleAll() : APP.ANIMALS;
-    const total      = animalList.length;
-    const doneCount  = APP.state.completedAnimals.size;
+    // Show the current locale's animals.
+    // Found-status is tracked by creature ID (image path), so completing "DOG" in
+    // English marks the same creature as found when you switch to Portuguese (CÃO).
+    const animalList = APP.animals ? APP.animals.eligibleAll() : (APP.ANIMALS || []);
+
+    const total     = animalList.length;
+    // Count only found creatures that are in this locale's list
+    const localIds  = new Set(animalList.map(a => APP.animalId(a)));
+    const doneCount = [...APP.state.completedAnimals].filter(id => localIds.has(id)).length;
 
     const wrap = document.createElement('div');
     wrap.className = 'gallery';
@@ -29,8 +35,8 @@ window.APP = window.APP || {};
     const grid = document.createElement('div');
     grid.className = 'gallery-grid';
 
-    animalList.forEach(animal => {
-      const done   = APP.state.completedAnimals.has(animal.name);
+    animalList.forEach(function (animal) {
+      const done   = APP.state.completedAnimals.has(APP.animalId(animal));
       const imgSrc = animal.images.cartoon;
 
       const tile = document.createElement('div');

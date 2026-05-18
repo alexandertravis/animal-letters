@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Body -->
+  <ellipse cx="100" cy="140" rx="70" ry="46" fill="#a0a0c8"/>
+  <!-- Head (very wide) -->
+  <ellipse cx="100" cy="88" rx="68" ry="52" fill="#a0a0c8"/>
+  <!-- Lighter muzzle area (lower face) -->
+  <ellipse cx="100" cy="108" rx="50" ry="36" fill="#bcb8d8"/>
+  <!-- Nostrils (on top of snout) -->
+  <ellipse cx="88" cy="84" rx="9" ry="7" fill="#888aaa"/>
+  <circle cx="88" cy="84" r="5" fill="#666888"/>
+  <ellipse cx="112" cy="84" rx="9" ry="7" fill="#888aaa"/>
+  <circle cx="112" cy="84" r="5" fill="#666888"/>
+  <!-- Eyes (high on head, with little bumps) -->
+  <ellipse cx="68" cy="62" rx="12" ry="10" fill="#b8b4cc"/>
+  <circle cx="68" cy="60" r="8" fill="#fff"/>
+  <circle cx="69" cy="60" r="5" fill="#222"/>
+  <circle cx="69" cy="59" r="2" fill="#fff"/>
+  <ellipse cx="132" cy="62" rx="12" ry="10" fill="#b8b4cc"/>
+  <circle cx="132" cy="60" r="8" fill="#fff"/>
+  <circle cx="133" cy="60" r="5" fill="#222"/>
+  <circle cx="133" cy="59" r="2" fill="#fff"/>
+  <!-- Ears (small, round) -->
+  <circle cx="42" cy="54" r="12" fill="#a0a0c8"/>
+  <circle cx="42" cy="54" r="7" fill="#c0b8d8"/>
+  <circle cx="158" cy="54" r="12" fill="#a0a0c8"/>
+  <circle cx="158" cy="54" r="7" fill="#c0b8d8"/>
+  <!-- Mouth line -->
+  <path d="M60 118 Q100 130 140 118" stroke="#888aaa" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Small tusks -->
+  <path d="M78 118 Q74 132 76 138" stroke="#f5f0e0" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M122 118 Q126 132 124 138" stroke="#f5f0e0" stroke-width="5" fill="none" stroke-linecap="round"/>
+</svg>

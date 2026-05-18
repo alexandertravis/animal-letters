@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Big ears -->
+  <ellipse cx="48" cy="100" rx="34" ry="48" fill="#a0a0b8"/>
+  <ellipse cx="48" cy="100" rx="22" ry="34" fill="#c0b8d0"/>
+  <ellipse cx="152" cy="100" rx="34" ry="48" fill="#a0a0b8"/>
+  <ellipse cx="152" cy="100" rx="22" ry="34" fill="#c0b8d0"/>
+  <!-- Head -->
+  <circle cx="100" cy="95" r="56" fill="#a0a0b8"/>
+  <!-- Trunk -->
+  <path d="M78 130 C65 140 58 155 66 170 C70 178 82 178 86 168 C88 158 80 150 80 140" fill="#a0a0b8" stroke="#888899" stroke-width="2"/>
+  <!-- Eyes -->
+  <circle cx="78" cy="78" r="8" fill="#fff"/>
+  <circle cx="122" cy="78" r="8" fill="#fff"/>
+  <circle cx="80" cy="78" r="5" fill="#222"/>
+  <circle cx="124" cy="78" r="5" fill="#222"/>
+  <circle cx="81" cy="76" r="2" fill="#fff"/>
+  <circle cx="125" cy="76" r="2" fill="#fff"/>
+  <!-- Tusks -->
+  <path d="M82 120 Q72 130 68 142" stroke="#f5f0e0" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M118 120 Q128 130 132 142" stroke="#f5f0e0" stroke-width="6" fill="none" stroke-linecap="round"/>
+</svg>

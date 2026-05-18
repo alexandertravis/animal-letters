@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Body -->
+  <ellipse cx="92" cy="110" rx="78" ry="52" fill="#5b9bd5"/>
+  <!-- White belly -->
+  <ellipse cx="88" cy="120" rx="55" ry="30" fill="#d0e8f8"/>
+  <!-- Tail flukes -->
+  <path d="M168 102 C182 82 192 88 188 108 C186 118 176 118 168 112" fill="#5b9bd5"/>
+  <path d="M168 112 C176 122 186 122 188 138 C192 158 182 164 168 144 Z" fill="#5b9bd5"/>
+  <!-- Dorsal fin -->
+  <path d="M120 62 L138 40 L148 62 Z" fill="#4a8bc4"/>
+  <!-- Eye -->
+  <circle cx="38" cy="96" r="10" fill="#fff"/>
+  <circle cx="39" cy="96" r="6" fill="#222"/>
+  <circle cx="40" cy="94" r="2" fill="#fff"/>
+  <!-- Mouth smile -->
+  <path d="M22 112 Q38 126 55 112" stroke="#4a8bc4" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Spout -->
+  <path d="M30 66 C28 50 32 40 36 30 M36 30 C30 20 22 15 26 8" stroke="#d0e8f8" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.8"/>
+  <!-- Flippers -->
+  <ellipse cx="80" cy="148" rx="24" ry="10" fill="#4a8bc4" transform="rotate(20 80 148)"/>
+</svg>
