@@ -96,6 +96,13 @@ window.APP = window.APP || {};
     svg.appendChild(g);
   };
 
+  // ── Unicode-safe case detection ────────────────────────────────────────────
+  // /[A-Z]/ misses accented uppercase letters (Á, Ã, É, Ç …).
+  // This helper works for any Unicode character without a hardcoded list.
+  APP.isUpperLetter = function (ch) {
+    return ch.length === 1 && ch.toUpperCase() === ch && ch.toLowerCase() !== ch;
+  };
+
   // ── Dot stroke helpers ─────────────────────────────────────────────────────
   // A "dot" stroke is M x,y L x,y where both coordinates are identical.
   // Used for i/j dots — zero-length paths need special rendering to avoid

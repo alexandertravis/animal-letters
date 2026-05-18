@@ -12,7 +12,8 @@ window.APP = window.APP || {};
     depiction: "cartoon",  // "cartoon" | "realistic"
     revealMode: "faint",   // "faint" | "hidden"
     volume: 0.7,           // 0–1
-    muted: false
+    muted: false,
+    locale: "en",          // "en" | "pt" | … — overwritten by APP.loadLocale() on boot
   };
 
   // ── Persisted progress ───────────────────────────────────────────────────

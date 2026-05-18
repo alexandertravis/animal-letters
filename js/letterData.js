@@ -347,6 +347,64 @@ window.APP = window.APP || {};
     ]
   };
 
+  // ── Accented character skeletons (Portuguese set) ────────────────────────────
+  // These entries are placeholders — strokes:[] means the tracer shows the
+  // fallback graphic and auto-completes, so the game still runs while stroke
+  // paths are being authored via dev/playwrite-author.html.
+  //
+  // To author a glyph: open playwrite-author.html, load PlaywriteGBSGuides-Regular.ttf,
+  // click the character, trace strokes, then paste the exported entry here to replace
+  // the skeleton. All accented chars use coords:'display' (guide-line coordinate space).
+  //
+  // ViewBox conventions:
+  //   Uppercase accented (Á Â Ã É Ê Ó Ô Ú Ç): VB_UP — accent fits in y=0..30 above cap line
+  //   Lowercase accented (á â ã é ê ó ô ú ç):  VB_LOW — accent fits in y=65..90 above x-height
+
+  // — Á / á ——————————————————————————————————————————————————————————————————
+  LETTERS['Á'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
+  LETTERS['á'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
+
+  // — Â / â ——————————————————————————————————————————————————————————————————
+  LETTERS['Â'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
+  LETTERS['â'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
+
+  // — Ã / ã ——————————————————————————————————————————————————————————————————
+  LETTERS['Ã'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
+  LETTERS['ã'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
+
+  // — É / é ——————————————————————————————————————————————————————————————————
+  LETTERS['É'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
+  LETTERS['é'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
+
+  // — Ê / ê ——————————————————————————————————————————————————————————————————
+  LETTERS['Ê'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
+  LETTERS['ê'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
+
+  // — Í / í ——————————————————————————————————————————————————————————————————
+  LETTERS['Í'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
+  LETTERS['í'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
+
+  // — Ó / ó ——————————————————————————————————————————————————————————————————
+  LETTERS['Ó'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
+  LETTERS['ó'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
+
+  // — Ô / ô ——————————————————————————————————————————————————————————————————
+  LETTERS['Ô'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
+  LETTERS['ô'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
+
+  // — Õ / õ ——————————————————————————————————————————————————————————————————
+  LETTERS['Õ'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
+  LETTERS['õ'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
+
+  // — Ú / ú ——————————————————————————————————————————————————————————————————
+  LETTERS['Ú'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
+  LETTERS['ú'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
+
+  // — Ç / ç ——————————————————————————————————————————————————————————————————
+  // ç has a cedilla below the baseline; use VB_LOW for lowercase to give room.
+  LETTERS['Ç'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
+  LETTERS['ç'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
+
   APP.LETTERS = LETTERS;
 
   APP.getLetter = function (char) {
@@ -385,7 +443,7 @@ window.APP = window.APP || {};
     const low = gc.lines.lower.y;
 
     let s1, s2, t1, t2;
-    if (/[A-Z]/.test(char)) {
+    if (APP.isUpperLetter(char)) {
       ({ s1, s2 } = DESIGN_COORDS.UP);   t1 = top; t2 = bot;
     } else if ('bdfhklt'.includes(char)) {
       ({ s1, s2 } = DESIGN_COORDS.ASC);  t1 = top; t2 = bot;

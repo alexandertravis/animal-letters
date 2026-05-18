@@ -27,9 +27,10 @@ window.APP = window.APP || {};
     root.innerHTML = '';
     const s = APP.state.settings;
 
-    // Derive min/max from the actual animal list so the slider always reflects
-    // what's really available — no magic numbers that drift out of sync.
-    const nameLengths = APP.ANIMALS.map(a => a.name.length);
+    // Derive min/max from the active locale's animal list so the slider always
+    // reflects what's really available — no magic numbers that drift out of sync.
+    const animalList  = APP.animals ? APP.animals.eligibleAll() : APP.ANIMALS;
+    const nameLengths = animalList.map(a => a.name.length);
     const minLen = Math.min(...nameLengths);
     const maxLen = Math.max(...nameLengths);
 
@@ -46,7 +47,7 @@ window.APP = window.APP || {};
     topbar.className = 'setup-topbar';
     topbar.innerHTML = `
       <button class="btn icon ghost" id="setup-home" aria-label="Home">${APP.ICONS.home}</button>
-      <h2>Settings</h2>
+      <h2>${APP.t('setup.title')}</h2>
     `;
     topbar.querySelector('#setup-home').addEventListener('click', () => ctx.go('landing'));
     inner.appendChild(topbar);
@@ -55,7 +56,7 @@ window.APP = window.APP || {};
     const f1 = document.createElement('div');
     f1.className = 'field';
     f1.innerHTML = `
-      <label>Longest animal name to use: <span class="lengthValue">${s.maxLength}</span> letters</label>
+      <label>${APP.t('setup.nameLength', { n: `<span class="lengthValue">${s.maxLength}</span>` })}</label>
       <input type="range" min="${minLen}" max="${maxLen}" step="1" value="${s.maxLength}"/>
     `;
     const range = f1.querySelector('input');
@@ -64,7 +65,8 @@ window.APP = window.APP || {};
     range.addEventListener('input', () => {
       const v = range.valueAsNumber;
       APP.settings.update({ maxLength: v });
-      lengthValue.textContent = v;
+      const lv = f1.querySelector('.lengthValue');
+      if (lv) lv.textContent = v;
       fillRange(range);
     });
     inner.appendChild(f1);
@@ -72,38 +74,38 @@ window.APP = window.APP || {};
     // Letter case
     const f2 = document.createElement('div');
     f2.className = 'field';
-    f2.innerHTML = `<label>Letter style</label>`;
+    f2.innerHTML = `<label>${APP.t('setup.letterStyle')}</label>`;
     f2.appendChild(seg('case', [
-      { value: 'upper',  label: 'ABC (uppercase)' },
-      { value: 'proper', label: 'Abc (proper case)' },
-      { value: 'lower',  label: 'abc (lowercase)' }
+      { value: 'upper',  label: APP.t('setup.case.upper') },
+      { value: 'proper', label: APP.t('setup.case.proper') },
+      { value: 'lower',  label: APP.t('setup.case.lower') }
     ], s.letterCase, v => { APP.settings.update({ letterCase: v }); render(root, ctx); }));
     inner.appendChild(f2);
 
     // Depiction
     const f3 = document.createElement('div');
     f3.className = 'field';
-    f3.innerHTML = `<label>Animal pictures</label>`;
+    f3.innerHTML = `<label>${APP.t('setup.pictures')}</label>`;
     f3.appendChild(seg('depict', [
-      { value: 'cartoon', label: 'Cartoon' },
-      { value: 'realistic', label: 'Realistic' }
+      { value: 'cartoon',  label: APP.t('setup.cartoon') },
+      { value: 'realistic', label: APP.t('setup.realistic') }
     ], s.depiction, v => { APP.settings.update({ depiction: v }); render(root, ctx); }));
     inner.appendChild(f3);
 
     // Reveal mode
     const f4 = document.createElement('div');
     f4.className = 'field';
-    f4.innerHTML = `<label>Show the word as you build it</label>`;
+    f4.innerHTML = `<label>${APP.t('setup.reveal')}</label>`;
     f4.appendChild(seg('reveal', [
-      { value: 'faint', label: 'Faint → bold' },
-      { value: 'hidden', label: 'Hidden → reveal' }
+      { value: 'faint',  label: APP.t('setup.faint') },
+      { value: 'hidden', label: APP.t('setup.hidden') }
     ], s.revealMode, v => { APP.settings.update({ revealMode: v }); render(root, ctx); }));
     inner.appendChild(f4);
 
     // Volume
     const f5 = document.createElement('div');
     f5.className = 'field';
-    f5.innerHTML = `<label>Volume</label>`;
+    f5.innerHTML = `<label>${APP.t('setup.volume')}</label>`;
 
     const volRow = document.createElement('div');
     volRow.className = 'volume-row';
@@ -151,23 +153,40 @@ window.APP = window.APP || {};
     f5.appendChild(volRow);
     inner.appendChild(f5);
 
+    // Language selector
+    const f6 = document.createElement('div');
+    f6.className = 'field';
+    f6.innerHTML = `<label>${APP.t('setup.language')}</label>`;
+    f6.appendChild(seg('locale', [
+      { value: 'en', label: 'English' },
+      { value: 'pt', label: 'Português' },
+    ], s.locale, v => {
+      APP.setLocale(v);
+      // Reset maxLength to match the new locale's animal list, then re-render.
+      const newList = APP.animals ? APP.animals.eligibleAll() : APP.ANIMALS;
+      const newMax  = Math.max(...newList.map(a => a.name.length));
+      APP.settings.update({ maxLength: newMax });
+      render(root, ctx);
+    }));
+    inner.appendChild(f6);
+
     // Actions
     const actions = document.createElement('div');
     actions.className = 'actions';
     const back = document.createElement('button');
     back.className = 'btn secondary';
-    back.textContent = 'Back';
+    back.textContent = APP.t('setup.back');
     back.addEventListener('click', () => {
       const prev = APP.state.previousScreen;
       ctx.go(prev && prev !== 'setup' ? prev : 'landing');
     });
     const start = document.createElement('button');
     start.className = 'btn';
-    start.textContent = 'New Game';
+    start.textContent = APP.t('setup.newGame');
     start.addEventListener('click', () => {
       const animal = APP.animals.pickRandom(APP.state.settings.maxLength, APP.state.currentAnimal);
       if (!animal) {
-        alert('No animals fit that length. Try a longer name length.');
+        alert(APP.t('setup.noAnimals'));
         return;
       }
       APP.startGame(animal);
@@ -180,13 +199,13 @@ window.APP = window.APP || {};
     // Progress reset
     const resetField = document.createElement('div');
     resetField.className = 'field';
-    resetField.innerHTML = `<label>Gallery progress</label>`;
+    resetField.innerHTML = `<label>${APP.t('setup.gallery')}</label>`;
     const resetBtn = document.createElement('button');
     resetBtn.type = 'button';
     resetBtn.className = 'btn secondary';
-    resetBtn.textContent = `Clear gallery (${APP.state.completedAnimals.size} found)`;
+    resetBtn.textContent = APP.t('setup.clearGallery', { n: APP.state.completedAnimals.size });
     resetBtn.addEventListener('click', () => {
-      if (!confirm('Clear all found animals and start the gallery fresh?')) return;
+      if (!confirm(APP.t('setup.clearConfirm'))) return;
       APP.clearProgress();
       render(root, ctx); // refresh count in button label
     });
@@ -196,16 +215,16 @@ window.APP = window.APP || {};
     // Dev / review tools
     const devTools = document.createElement('div');
     devTools.className = 'field setup-dev-tools';
-    devTools.innerHTML = `<label>Review tools</label>`;
+    devTools.innerHTML = `<label>${APP.t('setup.reviewTools')}</label>`;
     const devBtns = document.createElement('div');
     devBtns.className = 'seg';
     const lettersBtn = document.createElement('button');
     lettersBtn.type = 'button';
-    lettersBtn.textContent = 'Letter Patterns';
+    lettersBtn.textContent = APP.t('setup.letterPatterns');
     lettersBtn.addEventListener('click', () => ctx.go('letters'));
     const animalsBtn = document.createElement('button');
     animalsBtn.type = 'button';
-    animalsBtn.textContent = 'Animal Images';
+    animalsBtn.textContent = APP.t('setup.animalImages');
     animalsBtn.addEventListener('click', () => ctx.go('devanimals'));
     devBtns.appendChild(lettersBtn);
     devBtns.appendChild(animalsBtn);

@@ -26,13 +26,13 @@ window.APP = window.APP || {};
     const body = document.createElement('div');
     body.className = 'complete-body';
     body.innerHTML = `
-      <h1>Hooray!</h1>
+      <h1>${APP.t('complete.hooray')}</h1>
       <div class="animalName">${APP.caseOf(animal.displayName)}</div>
       <div class="animalImg" id="animalImg"></div>
       <div class="actions">
-        <button class="btn secondary" data-act="gallery">My Animals</button>
-        <button class="btn" data-act="next">Next Animal</button>
-        <button class="btn success" data-act="replay">Great Job! 🎉</button>
+        <button class="btn secondary" data-act="gallery">${APP.t('complete.myAnimals')}</button>
+        <button class="btn" data-act="next">${APP.t('complete.next')}</button>
+        <button class="btn success" data-act="replay">${APP.t('complete.greatJob')}</button>
       </div>
     `;
     wrap.appendChild(body);

@@ -22,5 +22,7 @@
   // the first screen renders. Without this, a slow/cold-cache load may render
   // UI text (buttons, name strip, headings) in the fallback font briefly.
   // fonts.ready resolves immediately on repeat loads when the font is cached.
+  // Load the persisted language before the first screen renders.
+  APP.loadLocale();
   document.fonts.ready.then(() => route());
 })(window.APP);
