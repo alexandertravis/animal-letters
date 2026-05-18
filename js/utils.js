@@ -46,8 +46,8 @@ window.APP = window.APP || {};
     // SW/2 places the dot edge exactly on the letter border (half inside, half outside).
     // Smaller = dot sits fully inside the letter; larger = dot overlaps the border more.
     // DOT_RING_PAD adds extra radius to the white halo behind the dot for legibility.
-    DOT_RADIUS_UP:        18,   // uppercase dot radius  (SW_UP  / 2 = 18)
-    DOT_RADIUS_LOW:       12,   // lowercase dot radius  (SW_LOW / 2 = 12)
+    DOT_RADIUS_UP:        14,   // uppercase dot radius  — reduce toward 0 to move fully inside letter
+    DOT_RADIUS_LOW:        8,   // lowercase dot radius  — reduce toward 0 to move fully inside letter
     DOT_RING_PAD:          4,   // white ring = dot radius + this value
   };
 
