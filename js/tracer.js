@@ -282,7 +282,14 @@ window.APP = window.APP || {};
       const s = data.strokes[strokeIdx];
       if (isDot(s.d)) {
         const pos = dotPos(s.d);
-        if (pos) doneDotLayer.appendChild(el('circle', { cx: pos.x, cy: pos.y, r: (SW + 8) / 2, fill: '#001858' }));
+        if (pos) {
+          const color = STROKE_COLORS[strokeIdx % STROKE_COLORS.length];
+          // Dark outline circle — same as doneGroup's SW+8 stroke on regular strokes.
+          doneDotLayer.appendChild(el('circle', { cx: pos.x, cy: pos.y, r: (SW + 8) / 2, fill: '#001858' }));
+          // Coloured ink circle — mirrors the INK-width coloured polyline that a drag
+          // would deposit on regular strokes. Gives the dot the same visual feedback.
+          doneDotLayer.appendChild(el('circle', { cx: pos.x, cy: pos.y, r: INK / 2, fill: color }));
+        }
       } else {
         doneGroup.appendChild(el('path', { d: s.d }));
       }
