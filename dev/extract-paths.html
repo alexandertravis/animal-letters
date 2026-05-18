@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Extract Dongle Paths — dev tool</title>
+  <!-- opentype.js: parses TTF and gives us glyph outlines as SVG paths -->
+  <script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #f0f0f4; margin: 0; padding: 16px; color: #1a1a2e; }
+    h1   { font-size: 20px; font-weight: 700; margin: 0 0 4px; }
+    .sub { font-size: 12px; color: #777; font-family: monospace; margin: 0 0 16px; }
+
+    .status {
+      padding: 10px 14px; border-radius: 8px; font-size: 13px;
+      margin-bottom: 16px; font-family: monospace;
+    }
+    .status.loading { background: #fff8e1; border: 1.5px solid #f0c060; }
+    .status.ok      { background: #e8f8f0; border: 1.5px solid #2ecc71; }
+    .status.err     { background: #fdf0ef; border: 1.5px solid #e74c3c; }
+
+    /* ── Controls ── */
+    .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+    .btn {
+      padding: 8px 16px; border: 1.5px solid #1a1a2e; border-radius: 7px;
+      background: #1a1a2e; color: #fff; cursor: pointer; font-size: 13px; font-weight: 700;
+    }
+    .btn:hover { background: #2d2d4e; }
+    .btn:disabled { opacity: 0.4; cursor: default; }
+    .btn.secondary { background: #fff; color: #1a1a2e; }
+    .btn.secondary:hover { background: #eee; }
+    .btn.copied { background: #2ecc71; border-color: #2ecc71; }
+
+    label { font-size: 13px; font-weight: 600; }
+    select, input[type=number] {
+      padding: 6px 8px; border: 1.5px solid #ccc; border-radius: 5px;
+      font-size: 12px; font-family: monospace;
+    }
+
+    /* ── Letter grid ── */
+    .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #999; margin: 12px 0 6px; }
+    .letter-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+    .letter-card {
+      background: #fff; border: 1.5px solid #ddd; border-radius: 8px;
+      padding: 6px; cursor: pointer; transition: border-color 0.1s;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .letter-card:hover  { border-color: #3da9fc; }
+    .letter-card.active { border-color: #ff8906; border-width: 2px; }
+    .letter-card.has-path { border-color: #2ecc71; }
+    .letter-card.active.has-path { border-color: #ff8906; }
+    .letter-card svg { display: block; }
+    .letter-card .lbl { font-size: 10px; color: #aaa; font-family: monospace; }
+
+    /* ── Detail panel ── */
+    .detail {
+      background: #fff; border: 1.5px solid #ddd; border-radius: 10px;
+      padding: 14px; margin-top: 16px;
+    }
+    .detail h3 { font-size: 14px; font-weight: 700; margin: 0 0 10px; }
+    .detail-svg-wrap {
+      border: 1px solid #eee; border-radius: 6px; display: inline-block;
+      background: #fafafa; margin-bottom: 10px;
+    }
+    .path-str {
+      font-size: 11px; font-family: monospace; background: #f8f8fb;
+      border: 1px solid #e8e8ef; border-radius: 5px; padding: 8px;
+      word-break: break-all; white-space: pre-wrap; max-height: 120px;
+      overflow-y: auto; user-select: all; cursor: text; margin-bottom: 8px;
+    }
+
+    /* ── Output panel ── */
+    .output-panel {
+      background: #1a1a2e; color: #e0e0f0; border-radius: 10px;
+      padding: 14px; margin-top: 16px;
+    }
+    .output-panel h3 { font-size: 13px; font-weight: 700; color: #aaa; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .output-code {
+      font-size: 11px; font-family: monospace; white-space: pre; overflow-x: auto;
+      max-height: 300px; overflow-y: auto; color: #e0e0f0;
+      border: 1px solid #333; border-radius: 5px; padding: 8px; background: #111;
+    }
+    .output-actions { display: flex; gap: 8px; margin-top: 8px; }
+  </style>
+</head>
+<body>
+
+<h1>Extract Dongle Paths</h1>
+<p class="sub">Loads Dongle-Regular.ttf · extracts 52 glyph outlines · outputs ready-to-paste letterData.js entries</p>
+
+<div id="status" class="status loading">⏳ Pick the font file or click Load to auto-load from assets/fonts/</div>
+
+<div class="controls">
+  <!-- File picker — works on file:// and http:// -->
+  <label class="btn secondary" style="cursor:pointer" title="Pick Dongle-Regular.ttf from your filesystem">
+    📂 Pick font file
+    <input type="file" id="fontFilePicker" accept=".ttf,.otf" style="display:none" onchange="loadFontFromFile(this)">
+  </label>
+  <button class="btn secondary" id="btnLoad" onclick="loadFont()" title="Auto-load from ../assets/fonts/Dongle-Regular.ttf (only works over HTTP)">↺ Auto-load</button>
+  <label>Round to <input type="number" id="inputDecimals" value="1" min="0" max="3" style="width:48px"> decimal places</label>
+  <label>ViewBox width <input type="number" id="inputVBW" value="200" min="100" max="400" style="width:60px"></label>
+  <button class="btn secondary" id="btnGenAll" onclick="generateAll()" disabled>Generate all 52</button>
+  <button class="btn" id="btnCopyAll" onclick="copyAll()" disabled>Copy letterData.js block</button>
+</div>
+
+<div class="section-label">Uppercase A–Z</div>
+<div class="letter-grid" id="upperGrid"></div>
+<div class="section-label">Lowercase a–z</div>
+<div class="letter-grid" id="lowerGrid"></div>
+
+<div class="detail" id="detail" style="display:none">
+  <h3 id="detailTitle">—</h3>
+  <div class="detail-svg-wrap">
+    <svg id="detailSvg" width="200" height="270" viewBox="0 0 200 270"></svg>
+  </div>
+  <div class="path-str" id="detailPath">—</div>
+  <button class="btn secondary" onclick="copyDetail()">Copy this path</button>
+</div>
+
+<div class="output-panel" id="outputPanel" style="display:none">
+  <h3>letterData.js — outlinePath entries</h3>
+  <div class="output-code" id="outputCode"></div>
+  <div class="output-actions">
+    <button class="btn" id="btnCopyOutput" onclick="copyOutput()">Copy all</button>
+    <span style="font-size:12px;color:#aaa;align-self:center">Paste into letterData.js — add outlinePath to each letter entry</span>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const SVG_NS   = 'http://www.w3.org/2000/svg';
+  const ALL_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  const VB_H     = 270;
+
+  // Guide line positions — must match GUIDE_CONFIG in letterData.js
+  const GUIDE = { top: 30, mid: 100, base: 170, low: 240 };
+
+  let font       = null;
+  let extractedPaths = {}; // char → d string
+  let activeChar = null;
+
+  // ── Status helper ──────────────────────────────────────────────────────────
+  function setStatus(msg, cls) {
+    const el = document.getElementById('status');
+    el.textContent = msg;
+    el.className = 'status ' + cls;
+  }
+
+  // ── Font loading ───────────────────────────────────────────────────────────
+
+  function onFontLoaded(f, name) {
+    font = f;
+    const os2 = font.tables.os2;
+    setStatus(
+      '✅ ' + name + ' loaded — UPM: ' + font.unitsPerEm +
+      '  sCapHeight: ' + os2.sCapHeight +
+      '  sxHeight: ' + os2.sxHeight +
+      '  sTypoAscender: ' + os2.sTypoAscender +
+      '  sTypoDescender: ' + os2.sTypoDescender,
+      'ok'
+    );
+    document.getElementById('btnGenAll').disabled = false;
+    buildGrid();
+  }
+
+  // File picker — reads TTF from local filesystem via FileReader.
+  // Works on file:// and http:// (avoids CORS that blocks fetch on file://).
+  window.loadFontFromFile = function (input) {
+    const file = input.files[0];
+    if (!file) return;
+    setStatus('⏳ Reading ' + file.name + ' …', 'loading');
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        const f = opentype.parse(e.target.result);
+        onFontLoaded(f, file.name);
+      } catch (err) {
+        setStatus('❌ Failed to parse font: ' + err, 'err');
+      }
+    };
+    reader.onerror = function () {
+      setStatus('❌ FileReader error reading ' + file.name, 'err');
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  // Auto-load via URL — only works when served over HTTP (not file://).
+  window.loadFont = function () {
+    const url = '../assets/fonts/Dongle-Regular.ttf';
+    setStatus('⏳ Loading ' + url + ' …', 'loading');
+    opentype.load(url, function (err, f) {
+      if (err) {
+        setStatus('❌ Auto-load failed (try "Pick font file" instead): ' + err, 'err');
+        return;
+      }
+      onFontLoaded(f, 'Dongle-Regular.ttf');
+    });
+  };
+
+  // ── Build the letter grid cards ─────────────────────────────────────────────
+  function buildGrid() {
+    const upper = document.getElementById('upperGrid');
+    const lower = document.getElementById('lowerGrid');
+    upper.innerHTML = '';
+    lower.innerHTML = '';
+    ALL_CHARS.split('').forEach(char => {
+      const card = makeCard(char);
+      if (/[A-Z]/.test(char)) upper.appendChild(card);
+      else lower.appendChild(card);
+    });
+  }
+
+  function makeCard(char) {
+    const card = document.createElement('div');
+    card.className = 'letter-card';
+    card.id = 'card-' + char;
+    // Mini preview SVG
+    const svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('width', '48');
+    svg.setAttribute('height', '64');  // 200×270 at 0.24×
+    svg.setAttribute('viewBox', '0 0 200 270');
+    addGuideLines(svg);
+    card.appendChild(svg);
+    card.appendChild(Object.assign(document.createElement('div'), { className: 'lbl', textContent: char }));
+    card.addEventListener('click', () => selectChar(char));
+    return card;
+  }
+
+  // ── Extract path for one character ──────────────────────────────────────────
+  function extractPath(char) {
+    if (!font) return null;
+    const decimals = parseInt(document.getElementById('inputDecimals').value, 10) || 1;
+    const vbW      = parseInt(document.getElementById('inputVBW').value, 10)      || 200;
+
+    const os2       = font.tables.os2;
+    const UPM       = font.unitsPerEm;
+    const ascender  = os2.sTypoAscender;  // font units above baseline
+
+    // Scale: map ascender height → display height from baseline(170) to top(30) = 140px
+    const scale     = (GUIDE.base - GUIDE.top) / ascender;  // 140 / ascender
+    const fontSize  = scale * UPM;                           // opentype fontSize param
+
+    const glyph     = font.charToGlyph(char);
+    if (!glyph) return null;
+
+    // Center horizontally in viewBox
+    const advW = glyph.advanceWidth * scale;
+    const x    = (vbW / 2) - (advW / 2);
+
+    // Baseline at GUIDE.base (170)
+    const path = glyph.getPath(x, GUIDE.base, fontSize);
+
+    return pathToString(path.commands, decimals);
+  }
+
+  function pathToString(cmds, dec) {
+    const r = n => Math.round(n * Math.pow(10, dec)) / Math.pow(10, dec);
+    return cmds.map(c => {
+      switch (c.type) {
+        case 'M': return `M ${r(c.x)},${r(c.y)}`;
+        case 'L': return `L ${r(c.x)},${r(c.y)}`;
+        case 'C': return `C ${r(c.x1)},${r(c.y1)} ${r(c.x2)},${r(c.y2)} ${r(c.x)},${r(c.y)}`;
+        case 'Q': return `Q ${r(c.x1)},${r(c.y1)} ${r(c.x)},${r(c.y)}`;
+        case 'Z': return 'Z';
+        default:  return '';
+      }
+    }).filter(Boolean).join(' ');
+  }
+
+  // ── Generate all 52 ──────────────────────────────────────────────────────────
+  window.generateAll = function () {
+    if (!font) return;
+    ALL_CHARS.split('').forEach(char => {
+      const d = extractPath(char);
+      if (d) {
+        extractedPaths[char] = d;
+        updateCard(char, d);
+      }
+    });
+    document.getElementById('btnCopyAll').disabled = false;
+    document.getElementById('outputPanel').style.display = '';
+    renderOutputCode();
+    if (activeChar) selectChar(activeChar); // refresh detail
+  };
+
+  function updateCard(char, d) {
+    const card = document.getElementById('card-' + char);
+    if (!card) return;
+    card.classList.add('has-path');
+    const svg = card.querySelector('svg');
+    // Remove old path if any
+    const old = svg.querySelector('path');
+    if (old) svg.removeChild(old);
+    const p = document.createElementNS(SVG_NS, 'path');
+    p.setAttribute('d', d);
+    p.setAttribute('fill', '#001858');
+    p.setAttribute('opacity', '0.85');
+    svg.appendChild(p);
+  }
+
+  // ── Select a character for detail view ──────────────────────────────────────
+  function selectChar(char) {
+    activeChar = char;
+    document.querySelectorAll('.letter-card').forEach(c => c.classList.remove('active'));
+    const card = document.getElementById('card-' + char);
+    if (card) card.classList.add('active');
+
+    const d = extractedPaths[char] || (font ? extractPath(char) : null);
+    if (!d) return;
+    if (!extractedPaths[char]) extractedPaths[char] = d;
+
+    // Detail SVG (larger)
+    const svg = document.getElementById('detailSvg');
+    svg.innerHTML = '';
+    addGuideLines(svg);
+    // Ghost glyph (filled outline)
+    const ghost = document.createElementNS(SVG_NS, 'path');
+    ghost.setAttribute('d', d);
+    ghost.setAttribute('fill', 'rgba(0,24,88,0.12)');
+    ghost.setAttribute('stroke', 'rgba(0,24,88,0.4)');
+    ghost.setAttribute('stroke-width', '1');
+    svg.appendChild(ghost);
+
+    document.getElementById('detailTitle').textContent = '"' + char + '"  —  ' + (/[A-Z]/.test(char) ? 'uppercase' : 'lowercase');
+    document.getElementById('detailPath').textContent = d;
+    document.getElementById('detail').style.display = '';
+    updateCard(char, d);
+  }
+
+  // ── Guide lines helper ───────────────────────────────────────────────────────
+  function addGuideLines(svg) {
+    const vb   = svg.viewBox.baseVal;
+    const x1   = vb.x;
+    const x2   = vb.x + vb.width;
+    const lines = [
+      { y: GUIDE.top,  color: '#b8a080', dash: '' },
+      { y: GUIDE.mid,  color: '#b8c0c8', dash: '4,3' },
+      { y: GUIDE.base, color: '#b8a080', dash: '' },
+      { y: GUIDE.low,  color: '#b8c0c8', dash: '4,3' },
+    ];
+    lines.forEach(l => {
+      const line = document.createElementNS(SVG_NS, 'line');
+      line.setAttribute('x1', x1); line.setAttribute('y1', l.y);
+      line.setAttribute('x2', x2); line.setAttribute('y2', l.y);
+      line.setAttribute('stroke', l.color);
+      line.setAttribute('stroke-width', '0.8');
+      if (l.dash) line.setAttribute('stroke-dasharray', l.dash);
+      svg.insertBefore(line, svg.firstChild);
+    });
+  }
+
+  // ── Copy helpers ─────────────────────────────────────────────────────────────
+  window.copyDetail = function () {
+    if (!activeChar || !extractedPaths[activeChar]) return;
+    navigator.clipboard.writeText(extractedPaths[activeChar]);
+  };
+
+  window.copyAll = function () {
+    renderOutputCode();
+    const text = document.getElementById('outputCode').textContent;
+    const btn  = document.getElementById('btnCopyAll');
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!'; btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy letterData.js block'; btn.classList.remove('copied'); }, 2000);
+    });
+  };
+
+  window.copyOutput = function () {
+    const text = document.getElementById('outputCode').textContent;
+    const btn  = document.getElementById('btnCopyOutput');
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!'; btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy all'; btn.classList.remove('copied'); }, 2000);
+    });
+  };
+
+  // ── Render the output code block ─────────────────────────────────────────────
+  function renderOutputCode() {
+    const lines = [];
+    lines.push('// ── Dongle outline paths ─────────────────────────────────────────────');
+    lines.push('// Generated by dev/extract-paths.html');
+    lines.push('// Add outlinePath to each letter entry in letterData.js');
+    lines.push('// Scale: sTypoAscender → guide y=30 (cap), baseline → guide y=170');
+    lines.push('');
+    ALL_CHARS.split('').forEach(char => {
+      const d = extractedPaths[char];
+      if (d) {
+        lines.push(`LETTERS['${char}'].outlinePath = '${d}';`);
+      } else {
+        lines.push(`// LETTERS['${char}'].outlinePath = '(not yet extracted)';`);
+      }
+    });
+    document.getElementById('outputCode').textContent = lines.join('\n');
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────────────
+  // Auto-load if font file is already in place
+  window.addEventListener('load', () => {
+    // Try auto-load; if it fails the user clicks the button manually
+    window.loadFont();
+  });
+
+}());
+</script>
+
+</body>
+</html>

@@ -9,7 +9,7 @@ window.APP = window.APP || {};
   const { X_SCALE_UP, X_SCALE_LOW, X_CENTER } = APP.LETTER_METRICS;
 
   // All tunable constants come from APP.TRACER_CONFIG (js/utils.js) — edit there.
-  const CHECKPOINTS_PER_STROKE = 36; // more points = smoother guide polyline approximating bezier curves
+  const CHECKPOINTS_PER_STROKE = 48; // more points = smoother guide polyline approximating bezier curves
 
   // One colour per stroke — shared with letters.js via APP.STROKE_COLORS (utils.js).
   // Edit there; the alias here keeps call sites readable.
@@ -41,6 +41,8 @@ window.APP = window.APP || {};
     const TOLERANCE       = cfg.CHECKPOINT_TOLERANCE;
     const FINAL_TOLERANCE = cfg.FINAL_TOLERANCE;
     const DRAW_RADIUS     = cfg.DRAW_RADIUS;
+    const DOT_R  = isUpper ? cfg.DOT_RADIUS_UP  : cfg.DOT_RADIUS_LOW;
+    const RING_R = DOT_R + cfg.DOT_RING_PAD;
 
     // Compute y-axis transform: maps design coordinates → current guide positions.
     // When a letter has coords:'display', its paths are already authored in guide-line
@@ -262,10 +264,10 @@ window.APP = window.APP || {};
       // Dot sits at the last completed position — the trailing edge of the ink.
       const lead = remaining[0];
       // White ring gives the dot a clear border against the ink.
-      guideGroup.appendChild(el('circle', { cx: lead.x, cy: lead.y, r: 17, fill: 'white' }));
+      guideGroup.appendChild(el('circle', { cx: lead.x, cy: lead.y, r: RING_R, fill: 'white' }));
       guideGroup.appendChild(el('circle', {
         class: 'startDot',
-        cx: lead.x, cy: lead.y, r: 13,
+        cx: lead.x, cy: lead.y, r: DOT_R,
         fill: color
       }));
       // Stroke number inside the dot so the child can follow the order.

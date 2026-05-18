@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stroke Author — dev tool</title>
+  <style>
+    @font-face {
+      font-family: 'Quicksand';
+      src: url('../assets/fonts/Quicksand-VariableFont_wght.ttf') format('truetype');
+      font-weight: 300 700;
+      font-display: block;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: 'Quicksand', system-ui, sans-serif;
+      background: #f0f0f4;
+      margin: 0;
+      padding: 16px;
+      color: #1a1a2e;
+    }
+
+    h1   { font-size: 20px; font-weight: 700; margin: 0 0 4px; }
+    h3   { font-size: 13px; font-weight: 700; margin: 0 0 8px; color: #555; text-transform: uppercase; letter-spacing: 0.06em; }
+    .subtitle { font-size: 12px; color: #777; margin: 0 0 16px; font-family: monospace; }
+
+    /* ── Character picker ──────────────────────────────────────────────────── */
+    .case-section { margin-bottom: 8px; }
+    .case-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #999; margin-bottom: 6px; }
+    .char-row { display: flex; flex-wrap: wrap; gap: 5px; }
+    .char-btn {
+      width: 34px; height: 34px;
+      border: 1.5px solid #ccc; border-radius: 7px;
+      background: #fff; cursor: pointer;
+      font-size: 17px; font-family: 'Quicksand', sans-serif; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.1s, border-color 0.1s; padding: 0;
+    }
+    .char-btn:hover  { border-color: #3da9fc; background: #eef8ff; }
+    .char-btn.active { background: #1a1a2e; color: #fff; border-color: #1a1a2e; }
+
+    /* ── Main layout ───────────────────────────────────────────────────────── */
+    .main { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; margin-top: 16px; }
+
+    /* ── SVG panel ─────────────────────────────────────────────────────────── */
+    .svg-panel { flex: 0 0 auto; width: min(320px, 100%); display: flex; flex-direction: column; gap: 10px; }
+
+    .svg-wrap {
+      width: 100%; aspect-ratio: 200 / 270;
+      border: 2px solid #ddd; border-radius: 10px;
+      background: #fff; overflow: hidden;
+      position: relative;
+    }
+    .svg-wrap svg { width: 100%; height: 100%; display: block; touch-action: none; }
+
+    /* drag cursor while active */
+    .svg-wrap.dragging svg { cursor: grabbing; }
+
+    .toggle-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .toggle-btn {
+      flex: 1; padding: 6px 10px;
+      border: 1.5px solid #ccc; border-radius: 7px;
+      background: #fff; cursor: pointer; font-size: 12px;
+      font-family: 'Quicksand', sans-serif; font-weight: 600; white-space: nowrap;
+    }
+    .toggle-btn.on { background: #1a1a2e; color: #fff; border-color: #1a1a2e; }
+
+    /* ── Position panel ────────────────────────────────────────────────────── */
+    .pos-panel {
+      background: #fff; border: 1.5px solid #e0e0e8; border-radius: 8px;
+      padding: 10px 14px;
+    }
+    .pos-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .pos-field { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+    .pos-field label { font-weight: 700; color: #555; font-family: monospace; white-space: nowrap; }
+    .pos-field input[type=number] {
+      width: 64px; padding: 4px 6px; border: 1.5px solid #ccc; border-radius: 5px;
+      font-size: 12px; font-family: monospace; text-align: right;
+    }
+    .pos-field input[type=range] { width: 90px; cursor: pointer; }
+    .btn-small {
+      padding: 4px 10px; border: 1.5px solid #ccc; border-radius: 5px;
+      background: #f5f5f5; cursor: pointer; font-size: 11px;
+      font-family: 'Quicksand', sans-serif; font-weight: 600;
+    }
+    .btn-small:hover { background: #e8e8ef; }
+    .pos-hint { font-size: 11px; color: #888; margin-top: 6px; font-family: monospace; }
+
+    /* ── Info panel ────────────────────────────────────────────────────────── */
+    .info-panel { flex: 1; min-width: 240px; }
+
+    .meta-box {
+      background: #fff; border: 1.5px solid #e0e0e8; border-radius: 8px;
+      padding: 10px 14px; font-size: 12px; font-family: monospace;
+      margin-bottom: 12px; line-height: 1.7;
+    }
+    .meta-box b { color: #001858; }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; font-size: 12px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .swatch { width: 28px; height: 5px; border-radius: 3px; }
+
+    /* ── Stroke list ───────────────────────────────────────────────────────── */
+    .stroke-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+    .stroke-item {
+      background: #fff; border: 1.5px solid #e0e0e8; border-left-width: 5px;
+      border-radius: 8px; padding: 8px 12px;
+    }
+    .stroke-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .stroke-label { font-size: 12px; font-weight: 700; }
+    .stroke-path {
+      font-size: 11px; font-family: monospace; color: #333;
+      word-break: break-all; white-space: pre-wrap;
+      background: #f8f8fb; padding: 5px 8px; border-radius: 5px;
+      cursor: text; user-select: all; border: 1px solid #e8e8ef;
+    }
+    .btn-copy-stroke {
+      margin-left: auto; padding: 3px 8px;
+      border: 1.5px solid #ccc; border-radius: 5px;
+      background: #f5f5f5; cursor: pointer; font-size: 10px;
+      font-family: 'Quicksand', sans-serif; font-weight: 700; white-space: nowrap;
+    }
+    .btn-copy-stroke:hover { background: #e8e8ef; }
+    .btn-copy-stroke.copied { background: #2ecc71; color: #fff; border-color: #2ecc71; }
+
+    .copy-all-row { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-copy-all {
+      padding: 8px 16px; border: 1.5px solid #1a1a2e; border-radius: 7px;
+      background: #1a1a2e; color: #fff; cursor: pointer; font-size: 12px;
+      font-family: 'Quicksand', sans-serif; font-weight: 700;
+    }
+    .btn-copy-all:hover { background: #2d2d4e; }
+    .btn-copy-all.copied { background: #2ecc71; border-color: #2ecc71; }
+    .btn-reset-strokes {
+      padding: 8px 14px; border: 1.5px solid #e74c3c; border-radius: 7px;
+      background: #fff; color: #e74c3c; cursor: pointer; font-size: 12px;
+      font-family: 'Quicksand', sans-serif; font-weight: 700;
+    }
+    .btn-reset-strokes:hover { background: #fdf0ef; }
+
+    .hint { font-size: 11px; color: #aaa; margin-top: 10px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+
+<h1>Stroke Author</h1>
+<p class="subtitle">dev tool — drag handles to edit paths · adjust font size/baseline live · copy to letterData.js</p>
+
+<div id="charPicker">
+  <div class="case-section">
+    <div class="case-label">Uppercase</div>
+    <div class="char-row" id="upperRow"></div>
+  </div>
+  <div class="case-section">
+    <div class="case-label">Lowercase</div>
+    <div class="char-row" id="lowerRow"></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="svg-panel">
+
+    <!-- Position overrides -->
+    <div class="pos-panel">
+      <h3>Glyph positioning</h3>
+      <div class="pos-row">
+        <div class="pos-field">
+          <label>fontSize</label>
+          <input type="number" id="inputFontSize" step="1" min="50" max="400">
+          <input type="range"  id="rangeFontSize" step="1" min="50" max="400">
+        </div>
+        <div class="pos-field">
+          <label>baseline</label>
+          <input type="number" id="inputBaseline" step="0.5" min="50" max="300">
+          <input type="range"  id="rangeBaseline" step="0.5" min="50" max="300">
+        </div>
+        <button class="btn-small" id="btnResetPos">Reset</button>
+      </div>
+      <div class="pos-hint" id="posHint"></div>
+    </div>
+
+    <div class="svg-wrap" id="svgWrap">
+      <!-- SVG inserted here -->
+    </div>
+
+    <div class="toggle-row">
+      <button class="toggle-btn on"  id="btnOverflow" onclick="toggleLayer('overflow')">Overflow</button>
+      <button class="toggle-btn on"  id="btnGuides"   onclick="toggleLayer('guides')">Guides</button>
+      <button class="toggle-btn on"  id="btnGhost"    onclick="toggleLayer('ghost')">Ghost</button>
+      <button class="toggle-btn on"  id="btnLabels"   onclick="toggleLayer('labels')">Labels</button>
+    </div>
+  </div>
+
+  <div class="info-panel">
+    <div class="meta-box" id="meta">Select a character to begin.</div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="swatch" style="background:#ff8906"></div>Stroke 1 (visible)</div>
+      <div class="legend-item"><div class="swatch" style="background:#3da9fc"></div>Stroke 2+ (visible)</div>
+      <div class="legend-item"><div class="swatch" style="background:rgba(231,76,60,0.55)"></div>Overflow (fix these)</div>
+      <div class="legend-item"><div class="swatch" style="background:rgba(0,24,88,0.12);border:1px solid #ccc"></div>Font glyph</div>
+    </div>
+
+    <ul class="stroke-list" id="strokeList"></ul>
+
+    <div class="copy-all-row">
+      <button class="btn-copy-all"    id="btnCopyAll">Copy all strokes</button>
+      <button class="btn-reset-strokes" id="btnResetStrokes">Reset changes</button>
+    </div>
+
+    <p class="hint">
+      <b>Drag</b> the white-ringed circles to move path points.<br>
+      <b>fontSize / baseline</b> sliders reposition the font glyph live — adjust until guides align, then copy the printed values into <code>fontConfig.js</code>.<br>
+      <b>Copy all strokes</b> puts the ready-to-paste <code>strokes:</code> block on the clipboard.<br>
+      <b>Keyboard:</b> type a letter to jump to it · ← → to step through all 52.
+    </p>
+  </div>
+</div>
+
+<script>window.APP = window.APP || {};</script>
+<script src="../js/letterData.js"></script>
+<script src="../js/fontConfig.js"></script>
+<script src="../js/utils.js"></script>
+
+<script>
+(function () {
+  'use strict';
+
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+
+  const STROKE_COLORS = [
+    '#ff8906','#3da9fc','#ef4565','#44cf6c',
+    '#f582ae','#7c3aed','#e87040','#2ecc71',
+  ];
+  const OVERFLOW_COLOR  = 'rgba(231,76,60,0.6)';
+  const OVERFLOW_STROKE = '#e74c3c';
+
+  // ── State ───────────────────────────────────────────────────────────────────
+  let currentChar   = 'A';
+  const layers      = { overflow: true, guides: true, ghost: true, labels: true };
+  // Per-char edited stroke data: { char → [ {segments:[{cmd, pts:[{x,y}]}]} ] }
+  const editCache   = {};
+  // Position overrides (null = use FONT_CONFIG)
+  let posOverride   = { fontSize: null, baseline: null };
+  // Active drag handle
+  let drag          = null; // { strokeIdx, segIdx, ptIdx, svg }
+
+  // ── Path helpers ────────────────────────────────────────────────────────────
+  function parsePath(d) {
+    // Returns [{cmd, pts:[{x,y}]}]
+    const tokens = d.trim().match(/[MmLlCcQqZzAaSsHhVvTt]|[-+]?[\d]*\.?[\d]+(?:[eE][-+]?[\d]+)?/g) || [];
+    const segments = [];
+    let i = 0;
+    while (i < tokens.length) {
+      if (/[A-Za-z]/.test(tokens[i])) {
+        const cmd = tokens[i++];
+        const pts = [];
+        while (i < tokens.length && !/[A-Za-z]/.test(tokens[i])) {
+          const x = parseFloat(tokens[i++]);
+          const y = (i < tokens.length && !/[A-Za-z]/.test(tokens[i])) ? parseFloat(tokens[i++]) : 0;
+          pts.push({ x, y });
+        }
+        segments.push({ cmd, pts });
+      } else { i++; }
+    }
+    return segments;
+  }
+
+  function serializePath(segments) {
+    return segments.map(s => {
+      if (s.pts.length === 0) return s.cmd; // Z
+      return s.cmd + ' ' + s.pts.map(p => `${Math.round(p.x)},${Math.round(p.y)}`).join(' ');
+    }).join(' ');
+  }
+
+  // ── Get/init edit data for a character ──────────────────────────────────────
+  function getEditStrokes(char) {
+    if (!editCache[char]) {
+      const data = APP.getLetter(char);
+      if (!data) return null;
+      editCache[char] = data.strokes.map(s => ({ segments: parsePath(s.d) }));
+    }
+    return editCache[char];
+  }
+
+  function resetEditStrokes(char) {
+    delete editCache[char];
+    return getEditStrokes(char);
+  }
+
+  // ── Coordinate transforms ────────────────────────────────────────────────────
+  function getTransformParams(char) {
+    const { a: tA, b: tB } = APP.getLetterYTransform(char);
+    const isUpper  = /[A-Z]/.test(char);
+    const LM       = APP.LETTER_METRICS;
+    const xScale   = isUpper ? LM.X_SCALE_UP  : LM.X_SCALE_LOW;
+    const xOffset  = isUpper ? LM.X_CENTER * (1 - LM.X_SCALE_UP)
+                             : LM.X_CENTER * (1 - LM.X_SCALE_LOW);
+    return { tA, tB, xScale, xOffset };
+  }
+
+  // SVG display space → design coordinate space (inverse of letterTransform)
+  function displayToDesign(dx, dy, char) {
+    const { tA, tB, xScale, xOffset } = getTransformParams(char);
+    return {
+      x: (dx - xOffset) / xScale,
+      y: (dy - tB) / tA,
+    };
+  }
+
+  // Design → display (for handle placement)
+  function designToDisplay(px, py, char) {
+    const { tA, tB, xScale, xOffset } = getTransformParams(char);
+    return { x: xScale * px + xOffset, y: tA * py + tB };
+  }
+
+  // Client pixel → SVG viewBox coords
+  function clientToSvg(svg, clientX, clientY) {
+    const pt = svg.createSVGPoint();
+    pt.x = clientX; pt.y = clientY;
+    return pt.matrixTransform(svg.getScreenCTM().inverse());
+  }
+
+  // ── SVG element factory ──────────────────────────────────────────────────────
+  function el(tag, attrs, text) {
+    const e = document.createElementNS(SVG_NS, tag);
+    if (attrs) for (const k in attrs) e.setAttribute(k, String(attrs[k]));
+    if (text !== undefined) e.textContent = String(text);
+    return e;
+  }
+
+  // ── Current positioning values ───────────────────────────────────────────────
+  function getPos(char) {
+    const fp = APP.getFontPos(char);
+    return {
+      fontSize: posOverride.fontSize !== null ? posOverride.fontSize : fp.fontSize,
+      baseline: posOverride.baseline !== null ? posOverride.baseline : fp.baseline,
+    };
+  }
+
+  // ── Full render ──────────────────────────────────────────────────────────────
+  function render(char, keepPos) {
+    currentChar = char;
+    if (!keepPos) posOverride = { fontSize: null, baseline: null };
+
+    document.querySelectorAll('.char-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.char === char)
+    );
+
+    const data = APP.getLetter(char);
+    if (!data) {
+      document.getElementById('svgWrap').innerHTML =
+        '<p style="padding:20px;color:#aaa;font-size:13px">No entry for "' + char + '"</p>';
+      return;
+    }
+
+    const vb    = data.viewBox || '0 0 200 270';
+    const vbPts = vb.split(/\s+/).map(Number);
+    const cx    = vbPts[0] + vbPts[2] / 2;
+    const fc    = APP.FONT_CONFIG;
+    const { fontSize, baseline } = getPos(char);
+    const { tA, tB, xScale, xOffset } = getTransformParams(char);
+    const strokeTransform = `translate(${xOffset},${tB.toFixed(4)}) scale(${xScale},${tA.toFixed(6)})`;
+    const strokes = getEditStrokes(char);
+
+    // ── Build SVG ──────────────────────────────────────────────────────────────
+    const svg = el('svg', { viewBox: vb, xmlns: SVG_NS, style: 'cursor:crosshair' });
+
+    // defs — clip path
+    const defs    = el('defs');
+    const clipId  = 'sa-clip';
+    const clipP   = el('clipPath', { id: clipId });
+    clipP.appendChild(el('text', {
+      id: 'clip-text',
+      x: cx, y: baseline,
+      'font-family': fc.family, 'font-size': fontSize,
+      'font-weight': fc.weight, 'text-anchor': 'middle', 'dominant-baseline': 'auto',
+    }, char));
+    defs.appendChild(clipP);
+    svg.appendChild(defs);
+
+    // guides
+    const guideG = el('g', { id: 'layer-guides' });
+    if (!layers.guides) guideG.style.display = 'none';
+    APP.addGuidelines(guideG, vb);
+    svg.appendChild(guideG);
+
+    // ghost
+    const ghostG = el('g', { id: 'layer-ghost' });
+    if (!layers.ghost) ghostG.style.display = 'none';
+    ghostG.appendChild(el('text', {
+      id: 'ghost-text',
+      x: cx, y: baseline,
+      'font-family': fc.family, 'font-size': fontSize, 'font-weight': fc.weight,
+      'text-anchor': 'middle', 'dominant-baseline': 'auto',
+      fill: 'rgba(0,24,88,0.07)', stroke: 'rgba(0,24,88,0.22)',
+      'stroke-width': 14, 'paint-order': 'stroke fill',
+    }, char));
+    svg.appendChild(ghostG);
+
+    // overflow (unclipped red)
+    const ovfG = el('g', { id: 'layer-overflow' });
+    if (!layers.overflow) ovfG.style.display = 'none';
+    strokes.forEach(stroke => {
+      const d = serializePath(stroke.segments);
+      if (APP.isDot(d)) {
+        const pos = APP.dotTransformPos(d, xScale, xOffset, tA, tB);
+        if (pos) ovfG.appendChild(el('circle', { cx: pos.x, cy: pos.y, r: 9, fill: OVERFLOW_COLOR, 'pointer-events': 'none' }));
+      } else {
+        const g = el('g', { transform: strokeTransform, 'pointer-events': 'none' });
+        g.appendChild(el('path', { d, stroke: OVERFLOW_STROKE, 'stroke-width': 14, fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', opacity: 0.55 }));
+        ovfG.appendChild(g);
+      }
+    });
+    svg.appendChild(ovfG);
+
+    // clipped strokes
+    const clipG = el('g', { 'clip-path': `url(#${clipId})` });
+    strokes.forEach((stroke, i) => {
+      const d = serializePath(stroke.segments);
+      const color = STROKE_COLORS[i % STROKE_COLORS.length];
+      if (APP.isDot(d)) {
+        const pos = APP.dotTransformPos(d, xScale, xOffset, tA, tB);
+        if (pos) clipG.appendChild(el('circle', { cx: pos.x, cy: pos.y, r: 9, fill: color }));
+      } else {
+        const g = el('g', { transform: strokeTransform });
+        g.appendChild(el('path', { d, stroke: color, 'stroke-width': 14, fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
+        clipG.appendChild(g);
+      }
+    });
+    svg.appendChild(clipG);
+
+    // labels (start dots + numbers) — static, no pointer events needed
+    const labelsG = el('g', { id: 'layer-labels', 'pointer-events': 'none' });
+    if (!layers.labels) labelsG.style.display = 'none';
+    strokes.forEach((stroke, i) => {
+      const d = serializePath(stroke.segments);
+      if (APP.isDot(d)) return;
+      const color = STROKE_COLORS[i % STROKE_COLORS.length];
+      const m = stroke.segments[0];
+      if (!m || !m.pts[0]) return;
+      const dp = designToDisplay(m.pts[0].x, m.pts[0].y, char);
+      labelsG.appendChild(el('circle', { cx: dp.x, cy: dp.y, r: 6, fill: color, stroke: '#fff', 'stroke-width': 2 }));
+      labelsG.appendChild(el('text', { x: dp.x + 9, y: dp.y - 4, 'font-size': 12, 'font-family': 'system-ui', 'font-weight': 'bold', fill: color, stroke: '#fff', 'stroke-width': 3, 'paint-order': 'stroke fill' }, i + 1));
+    });
+    svg.appendChild(labelsG);
+
+    // ── Drag handles layer (on top, fully interactive) ─────────────────────────
+    const handlesG = el('g', { id: 'layer-handles' });
+    strokes.forEach((stroke, strokeIdx) => {
+      const d = serializePath(stroke.segments);
+      if (APP.isDot(d)) return;
+      const color = STROKE_COLORS[strokeIdx % STROKE_COLORS.length];
+      stroke.segments.forEach((seg, segIdx) => {
+        if (seg.cmd === 'Z' || seg.cmd === 'z') return;
+        seg.pts.forEach((pt, ptIdx) => {
+          const dp = designToDisplay(pt.x, pt.y, char);
+          const isCp = (seg.cmd === 'C' || seg.cmd === 'Q') && ptIdx < seg.pts.length - 1;
+          const handle = el('circle', {
+            cx: dp.x, cy: dp.y,
+            r: isCp ? 5 : 8,
+            fill: isCp ? '#aaa' : color,
+            stroke: '#fff', 'stroke-width': 2.5,
+            style: 'cursor:grab',
+            'data-stroke': strokeIdx, 'data-seg': segIdx, 'data-pt': ptIdx,
+          });
+          handlesG.appendChild(handle);
+          // Control point line for beziers
+          if (isCp) {
+            const anchorSeg = stroke.segments[segIdx];
+            const anchor    = anchorSeg.pts[anchorSeg.pts.length - 1];
+            const adp       = designToDisplay(anchor.x, anchor.y, char);
+            const line = el('line', { x1: dp.x, y1: dp.y, x2: adp.x, y2: adp.y, stroke: '#bbb', 'stroke-width': 1, 'stroke-dasharray': '3,2', 'pointer-events': 'none' });
+            handlesG.insertBefore(line, handle);
+          }
+        });
+      });
+    });
+    svg.appendChild(handlesG);
+
+    // ── Pointer events ─────────────────────────────────────────────────────────
+    svg.addEventListener('pointerdown', e => {
+      const h = e.target.closest('[data-stroke]');
+      if (!h) return;
+      e.preventDefault();
+      svg.setPointerCapture(e.pointerId);
+      document.getElementById('svgWrap').classList.add('dragging');
+      drag = {
+        strokeIdx: +h.dataset.stroke,
+        segIdx:    +h.dataset.seg,
+        ptIdx:     +h.dataset.pt,
+        svg,
+        char: currentChar,
+      };
+    });
+
+    svg.addEventListener('pointermove', e => {
+      if (!drag) return;
+      e.preventDefault();
+      const svgPt  = clientToSvg(drag.svg, e.clientX, e.clientY);
+      const design = displayToDesign(svgPt.x, svgPt.y, drag.char);
+      // Clamp to viewBox with small margin
+      design.x = Math.max(-20, Math.min(220, design.x));
+      design.y = Math.max(-20, Math.min(280, design.y));
+
+      const strokes = getEditStrokes(drag.char);
+      strokes[drag.strokeIdx].segments[drag.segIdx].pts[drag.ptIdx] = { x: design.x, y: design.y };
+
+      updateDynamic();
+    });
+
+    svg.addEventListener('pointerup', () => {
+      if (!drag) return;
+      document.getElementById('svgWrap').classList.remove('dragging');
+      drag = null;
+    });
+
+    // Replace SVG
+    const wrap = document.getElementById('svgWrap');
+    wrap.innerHTML = '';
+    wrap.appendChild(svg);
+
+    syncPositionInputs(char);
+    updateMeta(char);
+    updateStrokeList(char);
+  }
+
+  // ── Partial dynamic update (called on every drag move) ────────────────────────
+  function updateDynamic() {
+    const char    = currentChar;
+    const strokes = getEditStrokes(char);
+    if (!strokes) return;
+    const svg     = document.getElementById('svgWrap').querySelector('svg');
+    if (!svg) return;
+
+    const { tA, tB, xScale, xOffset } = getTransformParams(char);
+    const strokeTransform = `translate(${xOffset},${tB.toFixed(4)}) scale(${xScale},${tA.toFixed(6)})`;
+    const clipId = 'sa-clip';
+
+    // Rebuild overflow layer
+    const ovfG = document.getElementById('layer-overflow');
+    if (ovfG) {
+      ovfG.innerHTML = '';
+      strokes.forEach(stroke => {
+        const d = serializePath(stroke.segments);
+        if (!APP.isDot(d)) {
+          const g = el('g', { transform: strokeTransform, 'pointer-events': 'none' });
+          g.appendChild(el('path', { d, stroke: OVERFLOW_STROKE, 'stroke-width': 14, fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', opacity: 0.55 }));
+          ovfG.appendChild(g);
+        }
+      });
+    }
+
+    // Rebuild clipped layer (it's the 5th child — find by clip-path attr)
+    const clipG = svg.querySelector('[clip-path]');
+    if (clipG) {
+      clipG.innerHTML = '';
+      strokes.forEach((stroke, i) => {
+        const d = serializePath(stroke.segments);
+        const color = STROKE_COLORS[i % STROKE_COLORS.length];
+        if (!APP.isDot(d)) {
+          const g = el('g', { transform: strokeTransform });
+          g.appendChild(el('path', { d, stroke: color, 'stroke-width': 14, fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
+          clipG.appendChild(g);
+        }
+      });
+    }
+
+    // Rebuild handles layer
+    const handlesG = document.getElementById('layer-handles');
+    if (handlesG) {
+      handlesG.innerHTML = '';
+      strokes.forEach((stroke, strokeIdx) => {
+        const d = serializePath(stroke.segments);
+        if (APP.isDot(d)) return;
+        const color = STROKE_COLORS[strokeIdx % STROKE_COLORS.length];
+        stroke.segments.forEach((seg, segIdx) => {
+          if (seg.cmd === 'Z' || seg.cmd === 'z') return;
+          seg.pts.forEach((pt, ptIdx) => {
+            const dp   = designToDisplay(pt.x, pt.y, char);
+            const isCp = (seg.cmd === 'C' || seg.cmd === 'Q') && ptIdx < seg.pts.length - 1;
+            const h    = el('circle', {
+              cx: dp.x, cy: dp.y, r: isCp ? 5 : 8,
+              fill: isCp ? '#aaa' : color, stroke: '#fff', 'stroke-width': 2.5,
+              style: 'cursor:grab',
+              'data-stroke': strokeIdx, 'data-seg': segIdx, 'data-pt': ptIdx,
+            });
+            handlesG.appendChild(h);
+          });
+        });
+      });
+    }
+
+    // Update labels layer
+    const labelsG = document.getElementById('layer-labels');
+    if (labelsG) {
+      labelsG.innerHTML = '';
+      strokes.forEach((stroke, i) => {
+        const d = serializePath(stroke.segments);
+        if (APP.isDot(d)) return;
+        const color = STROKE_COLORS[i % STROKE_COLORS.length];
+        const m = stroke.segments[0];
+        if (!m || !m.pts[0]) return;
+        const dp = designToDisplay(m.pts[0].x, m.pts[0].y, char);
+        labelsG.appendChild(el('circle', { cx: dp.x, cy: dp.y, r: 6, fill: color, stroke: '#fff', 'stroke-width': 2 }));
+        labelsG.appendChild(el('text', { x: dp.x + 9, y: dp.y - 4, 'font-size': 12, 'font-family': 'system-ui', 'font-weight': 'bold', fill: color, stroke: '#fff', 'stroke-width': 3, 'paint-order': 'stroke fill' }, i + 1));
+      });
+    }
+
+    updateStrokeList(char);
+  }
+
+  // ── Position inputs ───────────────────────────────────────────────────────────
+  function syncPositionInputs(char) {
+    const { fontSize, baseline } = getPos(char);
+    const fsEl = document.getElementById('inputFontSize');
+    const bEl  = document.getElementById('inputBaseline');
+    const frEl = document.getElementById('rangeFontSize');
+    const brEl = document.getElementById('rangeBaseline');
+    fsEl.value = fontSize; frEl.value = fontSize;
+    bEl.value  = baseline; brEl.value = baseline;
+    updatePosHint(char);
+  }
+
+  function updatePosHint(char) {
+    const { fontSize, baseline } = getPos(char);
+    const fc   = APP.FONT_CONFIG;
+    const fp   = APP.getFontPos(char);
+    const isUpper = /[A-Z]/.test(char);
+    const group   = isUpper ? 'fontSizeUC / baselineUC'
+      : 'gjpqy'.includes(char) ? 'fontSizeDescender / baselineDescender'
+      : 'bdfhklt'.includes(char) ? 'fontSizeAscender / baselineAscender'
+      : 'fontSizeLC / baselineLC';
+    const changed = fontSize !== fp.fontSize || baseline !== fp.baseline;
+    document.getElementById('posHint').innerHTML = changed
+      ? `→ In fontConfig.js set <b>${group}: ${fontSize}, …: ${baseline}</b>`
+      : `Using FONT_CONFIG defaults &nbsp;(${group})`;
+  }
+
+  function applyPosOverride(fsVal, blVal) {
+    posOverride.fontSize = fsVal !== null ? Math.round(fsVal) : null;
+    posOverride.baseline = blVal !== null ? blVal : null;
+    // Update clip text + ghost text without full re-render
+    const svg = document.getElementById('svgWrap').querySelector('svg');
+    if (!svg) return;
+    const { fontSize, baseline } = getPos(currentChar);
+    ['clip-text','ghost-text'].forEach(id => {
+      const t = document.getElementById(id);
+      if (t) { t.setAttribute('font-size', fontSize); t.setAttribute('y', baseline); }
+    });
+    updatePosHint(currentChar);
+    // Also need to re-place handles since display transform used baseline
+    updateDynamic();
+  }
+
+  // Sync number↔range inputs and apply
+  ['FontSize','Baseline'].forEach(name => {
+    const ni = document.getElementById('input' + name);
+    const ri = document.getElementById('range' + name);
+    ni.addEventListener('input', () => {
+      ri.value = ni.value;
+      applyFromInputs();
+    });
+    ri.addEventListener('input', () => {
+      ni.value = ri.value;
+      applyFromInputs();
+    });
+  });
+  function applyFromInputs() {
+    const fs = parseFloat(document.getElementById('inputFontSize').value);
+    const bl = parseFloat(document.getElementById('inputBaseline').value);
+    applyPosOverride(isNaN(fs) ? null : fs, isNaN(bl) ? null : bl);
+  }
+
+  document.getElementById('btnResetPos').addEventListener('click', () => {
+    posOverride = { fontSize: null, baseline: null };
+    syncPositionInputs(currentChar);
+    applyPosOverride(null, null);
+  });
+
+  // ── Meta box ──────────────────────────────────────────────────────────────────
+  function updateMeta(char) {
+    const { tA, tB, xScale, xOffset } = getTransformParams(char);
+    const { fontSize, baseline } = getPos(char);
+    const isUpper = /[A-Z]/.test(char);
+    const group   = isUpper ? 'uppercase'
+      : 'gjpqy'.includes(char) ? 'descender'
+      : 'bdfhklt'.includes(char) ? 'ascender' : 'standard-lc';
+    const strokes = getEditStrokes(char);
+    document.getElementById('meta').innerHTML = [
+      `<b>Character:</b> "${char}" &nbsp; <b>Group:</b> ${group}`,
+      `<b>fontSize:</b> ${fontSize} &nbsp; <b>baseline:</b> ${baseline}`,
+      `<b>Y-transform:</b> y → ${tA.toFixed(4)}·y + ${tB.toFixed(4)}`,
+      `<b>X-transform:</b> x → ${xScale}·x + ${xOffset} &nbsp; <b>Strokes:</b> ${strokes ? strokes.length : '?'}`,
+    ].join('<br>');
+  }
+
+  // ── Stroke list ────────────────────────────────────────────────────────────────
+  function updateStrokeList(char) {
+    const strokes = getEditStrokes(char);
+    const list    = document.getElementById('strokeList');
+    if (!strokes) { list.innerHTML = ''; return; }
+
+    strokes.forEach((stroke, i) => {
+      const color = STROKE_COLORS[i % STROKE_COLORS.length];
+      const d     = serializePath(stroke.segments);
+      let item    = list.children[i];
+
+      if (!item) {
+        item = document.createElement('li');
+        item.className = 'stroke-item';
+        item.style.borderLeftColor = color;
+        const header = document.createElement('div');
+        header.className = 'stroke-header';
+        const lbl = document.createElement('div');
+        lbl.className = 'stroke-label';
+        lbl.style.color = color;
+        lbl.textContent = `Stroke ${i + 1}${APP.isDot(d) ? '  (dot)' : ''}`;
+        const cpBtn = document.createElement('button');
+        cpBtn.className = 'btn-copy-stroke';
+        cpBtn.textContent = 'Copy';
+        cpBtn.addEventListener('click', () => copyStroke(i, cpBtn));
+        header.appendChild(lbl);
+        header.appendChild(cpBtn);
+        const pathDiv = document.createElement('div');
+        pathDiv.className = 'stroke-path';
+        item.appendChild(header);
+        item.appendChild(pathDiv);
+        list.appendChild(item);
+      }
+      item.querySelector('.stroke-path').textContent = d;
+    });
+    // Remove extras
+    while (list.children.length > strokes.length) list.removeChild(list.lastChild);
+  }
+
+  // ── Copy helpers ─────────────────────────────────────────────────────────────
+  function copyStroke(idx, btn) {
+    const strokes = getEditStrokes(currentChar);
+    const d = serializePath(strokes[idx].segments);
+    navigator.clipboard.writeText(`{ d: '${d}' }`).then(() => {
+      btn.textContent = 'Copied!'; btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+    });
+  }
+
+  document.getElementById('btnCopyAll').addEventListener('click', function () {
+    const strokes = getEditStrokes(currentChar);
+    const lines   = strokes.map(s => `    { d: '${serializePath(s.segments)}' }`).join(',\n');
+    const text    = `strokes: [\n${lines}\n  ]`;
+    navigator.clipboard.writeText(text).then(() => {
+      this.textContent = 'Copied!'; this.classList.add('copied');
+      setTimeout(() => { this.textContent = 'Copy all strokes'; this.classList.remove('copied'); }, 1800);
+    });
+  });
+
+  document.getElementById('btnResetStrokes').addEventListener('click', () => {
+    resetEditStrokes(currentChar);
+    render(currentChar, true);
+  });
+
+  // ── Layer toggles ─────────────────────────────────────────────────────────────
+  window.toggleLayer = function (name) {
+    layers[name] = !layers[name];
+    document.getElementById('btn' + name.charAt(0).toUpperCase() + name.slice(1))
+      .classList.toggle('on', layers[name]);
+    const el = document.getElementById('layer-' + name);
+    if (el) el.style.display = layers[name] ? '' : 'none';
+  };
+
+  // ── Character picker ──────────────────────────────────────────────────────────
+  function buildPicker() {
+    function makeBtn(char) {
+      const btn = document.createElement('button');
+      btn.className = 'char-btn';
+      btn.dataset.char = char;
+      btn.textContent  = char;
+      btn.title = char;
+      btn.addEventListener('click', () => render(char, false));
+      return btn;
+    }
+    const upperRow = document.getElementById('upperRow');
+    const lowerRow = document.getElementById('lowerRow');
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(c => upperRow.appendChild(makeBtn(c)));
+    'abcdefghijklmnopqrstuvwxyz'.split('').forEach(c => lowerRow.appendChild(makeBtn(c)));
+  }
+
+  // ── Keyboard ──────────────────────────────────────────────────────────────────
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    const ALL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    if (ALL.includes(e.key)) { render(e.key, false); return; }
+    const idx = ALL.indexOf(currentChar);
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') render(ALL[(idx + 1) % ALL.length], false);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   render(ALL[(idx - 1 + ALL.length) % ALL.length], false);
+  });
+
+  // ── Init ──────────────────────────────────────────────────────────────────────
+  document.fonts.ready.then(function () {
+    buildPicker();
+    render('A', false);
+  });
+
+}());
+</script>
+</body>
+</html>
