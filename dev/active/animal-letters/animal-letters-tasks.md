@@ -109,6 +109,32 @@
 ## Section 11 — Known Behaviour (intentional)
 - ℹ️ **Stacked confetti** — clicking "Great Job! 🎉" multiple times layers additional confetti canvas animations. Each canvas self-removes after its duration. This is intentional — it's a feature, not a bug.
 
+## Section 13 — i18n + Accented Characters (feature/accents branch)
+- [x] `data/i18n.js` — all UI strings EN + PT (27 keys each) with `{placeholder}` syntax
+- [x] `js/i18n.js` — `APP.t(key, vars)`, `APP.setLocale()`, `APP.loadLocale()` with localStorage persistence
+- [x] `js/state.js` — `locale: 'en'` added to DEFAULT_SETTINGS
+- [x] `js/main.js` — `APP.loadLocale()` called on boot before route
+- [x] `js/utils.js` — `APP.isUpperLetter(ch)` Unicode-safe uppercase detection
+- [x] `js/tracer.js` — `/[A-Z]/` replaced with `APP.isUpperLetter()`
+- [x] `js/screens/letters.js` — `/[A-Z]/` replaced with `APP.isUpperLetter()`
+- [x] `js/letterData.js` — `getLetterYTransform()` uses `APP.isUpperLetter()`
+- [x] `js/screens/landing.js` — all strings → `APP.t('landing.*')`
+- [x] `js/screens/game.js` — button labels → `APP.t('game.*')`
+- [x] `js/screens/complete.js` — all strings → `APP.t('complete.*')`
+- [x] `js/screens/setup.js` — all strings → `APP.t('setup.*')`; language dropdown with flags at top
+- [x] `js/screens/gallery.js` — locale-aware animal list via `APP.animals.eligibleAll()`; "My Animals" → `APP.t()`
+- [x] `js/animals.js` — `getAnimalList()` locale switch; `eligibleAll()` added to `APP.animals`
+- [x] `data/animals-pt.js` — 19 Portuguese animals using confirmed-existing SVG images
+- [x] `js/letterData.js` — `APP.ACCENTS` generic accent system (acute, circumflex, tilde, grave, cedilla)
+- [x] `js/letterData.js` — 22 accented char references (`{ base, accent }`) replacing 22 skeleton entries
+- [x] `APP.getLetter()` updated to compose base + accent strokes at runtime
+- [x] `styles.css` — `.locale-select` dropdown styled to match design (muted bg, custom caret, 48px min-height)
+- [ ] Accent strokes authored for `acute.upper/lower` (Á á É é Í í Ó ó Ú ú)
+- [ ] Accent strokes authored for `circumflex.upper/lower` (Â â Ê ê Ô ô)
+- [ ] Accent strokes authored for `tilde.upper/lower` (Ã ã Õ õ)
+- [ ] Accent strokes authored for `cedilla.upper/lower` (Ç ç)
+- [ ] Uncomment CÃO and LEÃO in `data/animals-pt.js` once tilde + cedilla strokes ready
+
 ## Section 11b — Future / Nice-to-Have
 - [ ] Real cartoon SVG artwork for all 25 animals
 - [ ] Real realistic photos for all 25 animals

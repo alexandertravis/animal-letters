@@ -52,6 +52,36 @@ window.APP = window.APP || {};
     topbar.querySelector('#setup-home').addEventListener('click', () => ctx.go('landing'));
     inner.appendChild(topbar);
 
+    // Language selector — dropdown at the top with flag emoji
+    const f0 = document.createElement('div');
+    f0.className = 'field';
+    f0.innerHTML = `<label for="locale-select">${APP.t('setup.language')}</label>`;
+    const locales = [
+      { value: 'en', label: '🇬🇧 English' },
+      { value: 'pt', label: '🇵🇹 Português' },
+    ];
+    const select = document.createElement('select');
+    select.id = 'locale-select';
+    select.className = 'locale-select';
+    locales.forEach(loc => {
+      const opt = document.createElement('option');
+      opt.value = loc.value;
+      opt.textContent = loc.label;
+      if (loc.value === s.locale) opt.selected = true;
+      select.appendChild(opt);
+    });
+    select.addEventListener('change', () => {
+      const v = select.value;
+      APP.setLocale(v);
+      // Reset maxLength to match the new locale's animal list, then re-render.
+      const newList = APP.animals ? APP.animals.eligibleAll() : APP.ANIMALS;
+      const newMax  = Math.max(...newList.map(a => a.name.length));
+      APP.settings.update({ maxLength: newMax });
+      render(root, ctx);
+    });
+    f0.appendChild(select);
+    inner.appendChild(f0);
+
     // Max name length
     const f1 = document.createElement('div');
     f1.className = 'field';
@@ -152,23 +182,6 @@ window.APP = window.APP || {};
     volRow.appendChild(volSlider);
     f5.appendChild(volRow);
     inner.appendChild(f5);
-
-    // Language selector
-    const f6 = document.createElement('div');
-    f6.className = 'field';
-    f6.innerHTML = `<label>${APP.t('setup.language')}</label>`;
-    f6.appendChild(seg('locale', [
-      { value: 'en', label: 'English' },
-      { value: 'pt', label: 'Português' },
-    ], s.locale, v => {
-      APP.setLocale(v);
-      // Reset maxLength to match the new locale's animal list, then re-render.
-      const newList = APP.animals ? APP.animals.eligibleAll() : APP.ANIMALS;
-      const newMax  = Math.max(...newList.map(a => a.name.length));
-      APP.settings.update({ maxLength: newMax });
-      render(root, ctx);
-    }));
-    inner.appendChild(f6);
 
     // Actions
     const actions = document.createElement('div');

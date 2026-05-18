@@ -4,8 +4,9 @@ window.APP = window.APP || {};
   function render(root, ctx) {
     root.innerHTML = '';
 
-    const total     = APP.ANIMALS.length;
-    const doneCount = APP.state.completedAnimals.size;
+    const animalList = APP.animals ? APP.animals.eligibleAll() : APP.ANIMALS;
+    const total      = animalList.length;
+    const doneCount  = APP.state.completedAnimals.size;
 
     const wrap = document.createElement('div');
     wrap.className = 'gallery';
@@ -15,7 +16,7 @@ window.APP = window.APP || {};
     header.className = 'gallery-header';
     header.innerHTML = `
       <button class="btn icon ghost" aria-label="Back">${APP.ICONS.back}</button>
-      <h2>My Animals</h2>
+      <h2>${APP.t('landing.myAnimals')}</h2>
       <span class="gallery-count">${doneCount}&thinsp;/&thinsp;${total}</span>
     `;
     header.querySelector('button').addEventListener('click', () => {
@@ -28,7 +29,7 @@ window.APP = window.APP || {};
     const grid = document.createElement('div');
     grid.className = 'gallery-grid';
 
-    APP.ANIMALS.forEach(animal => {
+    animalList.forEach(animal => {
       const done   = APP.state.completedAnimals.has(animal.name);
       const imgSrc = animal.images.cartoon;
 

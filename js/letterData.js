@@ -347,68 +347,86 @@ window.APP = window.APP || {};
     ]
   };
 
-  // ── Accented character skeletons (Portuguese set) ────────────────────────────
-  // These entries are placeholders — strokes:[] means the tracer shows the
-  // fallback graphic and auto-completes, so the game still runs while stroke
-  // paths are being authored via dev/playwrite-author.html.
+  // ── Generic accent system ─────────────────────────────────────────────────
   //
-  // To author a glyph: open playwrite-author.html, load PlaywriteGBSGuides-Regular.ttf,
-  // click the character, trace strokes, then paste the exported entry here to replace
-  // the skeleton. All accented chars use coords:'display' (guide-line coordinate space).
+  // Accent marks are defined once here. Each accent has two stroke-path arrays:
+  //   upper — paths authored in VB_UP space (y=0..30 above cap line, x centred at 100)
+  //   lower — paths authored in VB_LOW space (y=65..90 above x-height, x centred at 100)
   //
-  // ViewBox conventions:
-  //   Uppercase accented (Á Â Ã É Ê Ó Ô Ú Ç): VB_UP — accent fits in y=0..30 above cap line
-  //   Lowercase accented (á â ã é ê ó ô ú ç):  VB_LOW — accent fits in y=65..90 above x-height
+  // All paths use coords:'display' (guide-line coordinate space, no transform applied).
+  //
+  // To author accent strokes:
+  //   1. Open dev/playwrite-author.html, load PlaywriteGBSGuides-Regular.ttf
+  //   2. Pick the accented glyph (e.g. Á), trace only the accent portion
+  //   3. Paste the resulting stroke `d` strings into the appropriate upper/lower array
+  //
+  // Cedilla hangs below the C baseline, so its upper strokes occupy y=220..260 and
+  // its lower strokes occupy y=210..250 (below baseline in VB_UP / VB_LOW respectively).
+  //
+  // strokes:[] means the accent is not yet authored — the base letter is traced
+  // alone (graceful degradation) while paths are pending.
+  APP.ACCENTS = {
+    acute:      { upper: [], lower: [] },  // ´  Á á É é Í í Ó ó Ú ú
+    circumflex: { upper: [], lower: [] },  // ^  Â â Ê ê Ô ô
+    tilde:      { upper: [], lower: [] },  // ~  Ã ã Õ õ
+    grave:      { upper: [], lower: [] },  // `  (reserved — not in PT set but generic)
+    cedilla:    { upper: [], lower: [] },  // ¸  Ç ç  (mark sits below baseline)
+  };
 
-  // — Á / á ——————————————————————————————————————————————————————————————————
-  LETTERS['Á'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
-  LETTERS['á'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
-
-  // — Â / â ——————————————————————————————————————————————————————————————————
-  LETTERS['Â'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
-  LETTERS['â'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
-
-  // — Ã / ã ——————————————————————————————————————————————————————————————————
-  LETTERS['Ã'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
-  LETTERS['ã'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
-
-  // — É / é ——————————————————————————————————————————————————————————————————
-  LETTERS['É'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
-  LETTERS['é'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
-
-  // — Ê / ê ——————————————————————————————————————————————————————————————————
-  LETTERS['Ê'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
-  LETTERS['ê'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
-
-  // — Í / í ——————————————————————————————————————————————————————————————————
-  LETTERS['Í'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
-  LETTERS['í'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
-
-  // — Ó / ó ——————————————————————————————————————————————————————————————————
-  LETTERS['Ó'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
-  LETTERS['ó'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
-
-  // — Ô / ô ——————————————————————————————————————————————————————————————————
-  LETTERS['Ô'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
-  LETTERS['ô'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
-
-  // — Õ / õ ——————————————————————————————————————————————————————————————————
-  LETTERS['Õ'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
-  LETTERS['õ'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
-
-  // — Ú / ú ——————————————————————————————————————————————————————————————————
-  LETTERS['Ú'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
-  LETTERS['ú'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
-
-  // — Ç / ç ——————————————————————————————————————————————————————————————————
-  // ç has a cedilla below the baseline; use VB_LOW for lowercase to give room.
-  LETTERS['Ç'] = { viewBox: VB_UP,  coords: 'display', strokes: [] };
-  LETTERS['ç'] = { viewBox: VB_LOW, coords: 'display', strokes: [] };
+  // ── Accented character references ─────────────────────────────────────────
+  // Each entry points to a base letter and an accent type.
+  // APP.getLetter() composes them at runtime — no duplicate stroke data needed.
+  // To add a new accented character, append one line here.
+  LETTERS['Á'] = { base: 'A', accent: 'acute' };
+  LETTERS['á'] = { base: 'a', accent: 'acute' };
+  LETTERS['Â'] = { base: 'A', accent: 'circumflex' };
+  LETTERS['â'] = { base: 'a', accent: 'circumflex' };
+  LETTERS['Ã'] = { base: 'A', accent: 'tilde' };
+  LETTERS['ã'] = { base: 'a', accent: 'tilde' };
+  LETTERS['É'] = { base: 'E', accent: 'acute' };
+  LETTERS['é'] = { base: 'e', accent: 'acute' };
+  LETTERS['Ê'] = { base: 'E', accent: 'circumflex' };
+  LETTERS['ê'] = { base: 'e', accent: 'circumflex' };
+  LETTERS['Í'] = { base: 'I', accent: 'acute' };
+  LETTERS['í'] = { base: 'i', accent: 'acute' };
+  LETTERS['Ó'] = { base: 'O', accent: 'acute' };
+  LETTERS['ó'] = { base: 'o', accent: 'acute' };
+  LETTERS['Ô'] = { base: 'O', accent: 'circumflex' };
+  LETTERS['ô'] = { base: 'o', accent: 'circumflex' };
+  LETTERS['Õ'] = { base: 'O', accent: 'tilde' };
+  LETTERS['õ'] = { base: 'o', accent: 'tilde' };
+  LETTERS['Ú'] = { base: 'U', accent: 'acute' };
+  LETTERS['ú'] = { base: 'u', accent: 'acute' };
+  LETTERS['Ç'] = { base: 'C', accent: 'cedilla' };
+  LETTERS['ç'] = { base: 'c', accent: 'cedilla' };
 
   APP.LETTERS = LETTERS;
 
+  // Resolve a character to its letter definition, composing base + accent strokes
+  // for accented characters. Returns null if the character is unknown.
   APP.getLetter = function (char) {
-    return LETTERS[char] || null;
+    const entry = LETTERS[char];
+    if (!entry) return null;
+
+    // Accented character: compose base strokes + accent strokes at runtime.
+    if (entry.base !== undefined) {
+      const baseDef = LETTERS[entry.base];
+      if (!baseDef) return null;
+
+      const accentDef = APP.ACCENTS && APP.ACCENTS[entry.accent];
+      const isUpper   = APP.isUpperLetter(char);
+      const accentStrokes = accentDef
+        ? (isUpper ? (accentDef.upper || []) : (accentDef.lower || []))
+        : [];
+
+      return {
+        viewBox: baseDef.viewBox,
+        coords:  baseDef.coords,
+        strokes: [...baseDef.strokes, ...accentStrokes],
+      };
+    }
+
+    return entry;
   };
 
   // Returns {a, b} — the y-axis linear transform for a character.
