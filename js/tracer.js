@@ -392,9 +392,13 @@ window.APP = window.APP || {};
       // Advance through any consecutive checkpoints within tolerance (handles fast drags).
       // The last checkpoint uses FINAL_TOLERANCE (tighter than CHECKPOINT_TOLERANCE) so
       // a stroke can't snap complete before the child's finger actually reaches the end.
+      // Exception: dot strokes (i/j dot) have all checkpoints at the same point, so the
+      // tighter FINAL_TOLERANCE is not applied — a single tap within TOLERANCE completes it.
+      const currentIsDot = isDot(data.strokes[currentStroke].d);
       let advanced = false;
       while (currentCheckpoint < cps.length) {
-        const tol = currentCheckpoint === cps.length - 1 ? FINAL_TOLERANCE : TOLERANCE;
+        const isLast = currentCheckpoint === cps.length - 1;
+        const tol = (isLast && !currentIsDot) ? FINAL_TOLERANCE : TOLERANCE;
         if (dist(p, cps[currentCheckpoint]) > tol) break;
         currentCheckpoint++;
         advanced = true;
