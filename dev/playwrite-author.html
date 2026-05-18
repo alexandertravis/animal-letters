@@ -431,51 +431,44 @@ function setStatus(msg, cls) {
 }
 
 // ─── Smart file pickers ───────────────────────────────────────────────────────
-// Uses the File System Access API (showOpenFilePicker) when available so the
-// browser remembers the last-used folder and opens there next time.
-// Falls back to the hidden <input type="file"> on browsers that don't support it.
-let _lastFontFileHandle    = null; // remembered across picks this session
-let _lastLetterDataHandle  = null;
+// Prefers showOpenFilePicker (File System Access API) when available — the
+// browser then remembers which folder was last used and opens there next time.
+// Falls back to the hidden <input type="file"> elements unconditionally.
+//
+// Design note: avoid async/await here. showOpenFilePicker must be called
+// synchronously from within the user-gesture handler; async functions are fine
+// for that, but the .click() fallback inside a catch after an await can be
+// blocked by the browser's popup/activation guard. Using .then()/.catch()
+// keeps the fallback reachable from the original gesture context.
+//
+// MIME type note: 'font/ttf' is the IANA type but some browsers reject it in
+// the types[] filter — omitting types entirely shows all files and is more
+// reliable. Folder memory via startIn still works without a types constraint.
+let _lastFontFileHandle   = null; // FileSystemFileHandle — remembered this session
+let _lastLetterDataHandle = null;
 
-async function pickFontFile() {
-  if ('showOpenFilePicker' in window) {
-    try {
-      const opts = {
-        types: [{ description: 'Font files', accept: { 'font/ttf': ['.ttf'], 'font/otf': ['.otf'] } }],
-        multiple: false,
-      };
-      if (_lastFontFileHandle) opts.startIn = _lastFontFileHandle;
-      const [handle] = await window.showOpenFilePicker(opts);
-      _lastFontFileHandle = handle;
-      const file = await handle.getFile();
-      loadFontFromFile({ files: [file] });
-      return;
-    } catch (e) {
-      if (e.name === 'AbortError') return; // user cancelled — don't fall through
-    }
-  }
-  document.getElementById('fontPicker').click(); // fallback
+function pickFontFile() {
+  const fallback = () => document.getElementById('fontPicker').click();
+  if (!('showOpenFilePicker' in window)) { fallback(); return; }
+  const opts = { multiple: false };
+  if (_lastFontFileHandle) opts.startIn = _lastFontFileHandle;
+  window.showOpenFilePicker(opts)
+    .then(([handle]) => { _lastFontFileHandle = handle; return handle.getFile(); })
+    .then(file => loadFontFromFile({ files: [file] }))
+    .catch(e => { if (e.name !== 'AbortError') fallback(); });
 }
 
-async function pickLetterDataFile() {
-  if ('showOpenFilePicker' in window) {
-    try {
-      const opts = {
-        types: [{ description: 'JavaScript files', accept: { 'text/javascript': ['.js'] } }],
-        multiple: false,
-      };
-      if (_lastLetterDataHandle) opts.startIn = _lastLetterDataHandle;
-      else if (_lastFontFileHandle) opts.startIn = _lastFontFileHandle; // start near font file
-      const [handle] = await window.showOpenFilePicker(opts);
-      _lastLetterDataHandle = handle;
-      const file = await handle.getFile();
-      edLoadFromFile({ files: [file] });
-      return;
-    } catch (e) {
-      if (e.name === 'AbortError') return;
-    }
-  }
-  document.getElementById('edFileInput').click(); // fallback
+function pickLetterDataFile() {
+  const fallback = () => document.getElementById('edFileInput').click();
+  if (!('showOpenFilePicker' in window)) { fallback(); return; }
+  const opts = { multiple: false };
+  // Open near the letterData file if seen before, otherwise near the font file
+  if (_lastLetterDataHandle)     opts.startIn = _lastLetterDataHandle;
+  else if (_lastFontFileHandle)  opts.startIn = _lastFontFileHandle;
+  window.showOpenFilePicker(opts)
+    .then(([handle]) => { _lastLetterDataHandle = handle; return handle.getFile(); })
+    .then(file => edLoadFromFile({ files: [file] }))
+    .catch(e => { if (e.name !== 'AbortError') fallback(); });
 }
 
 window.loadFontFromFile = function (input) {
