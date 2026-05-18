@@ -430,13 +430,58 @@ function setStatus(msg, cls) {
   el.className = 'status ' + cls;
 }
 
-// ─── File pickers ─────────────────────────────────────────────────────────────
-// Trigger the hidden <input type="file"> elements directly from the button
-// click — this is synchronous and always within the user-gesture context so
-// browsers never block it. showOpenFilePicker was attempted but is unreliable
-// on file:// URLs (Chrome blocks .click() fallbacks from promise chains).
-function pickFontFile()       { document.getElementById('fontPicker').click(); }
-function pickLetterDataFile() { document.getElementById('edFileInput').click(); }
+// ─── Smart file pickers ───────────────────────────────────────────────────────
+// Uses the File System Access API (showOpenFilePicker) when available so the
+// browser remembers the last-used folder and opens there next time.
+// Falls back to the hidden <input type="file"> on browsers that don't support it.
+//
+// Must be an async function (not .then/.catch) — async keeps the user-activation
+// token alive through the first await so showOpenFilePicker stays in gesture
+// context. A .then/.catch chain runs the fallback .click() outside gesture
+// context which Chrome blocks.
+let _lastFontFileHandle    = null; // remembered across picks this session
+let _lastLetterDataHandle  = null;
+
+async function pickFontFile() {
+  if ('showOpenFilePicker' in window) {
+    try {
+      const opts = {
+        types: [{ description: 'Font files', accept: { 'font/ttf': ['.ttf'], 'font/otf': ['.otf'] } }],
+        multiple: false,
+      };
+      if (_lastFontFileHandle) opts.startIn = _lastFontFileHandle;
+      const [handle] = await window.showOpenFilePicker(opts);
+      _lastFontFileHandle = handle;
+      const file = await handle.getFile();
+      loadFontFromFile({ files: [file] });
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return; // user cancelled — don't fall through
+    }
+  }
+  document.getElementById('fontPicker').click(); // fallback
+}
+
+async function pickLetterDataFile() {
+  if ('showOpenFilePicker' in window) {
+    try {
+      const opts = {
+        types: [{ description: 'JavaScript files', accept: { 'text/javascript': ['.js'] } }],
+        multiple: false,
+      };
+      if (_lastLetterDataHandle) opts.startIn = _lastLetterDataHandle;
+      else if (_lastFontFileHandle) opts.startIn = _lastFontFileHandle;
+      const [handle] = await window.showOpenFilePicker(opts);
+      _lastLetterDataHandle = handle;
+      const file = await handle.getFile();
+      edLoadFromFile({ files: [file] });
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+    }
+  }
+  document.getElementById('edFileInput').click(); // fallback
+}
 
 window.loadFontFromFile = function (input) {
   const file = input.files[0];
