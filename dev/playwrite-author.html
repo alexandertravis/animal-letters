@@ -163,7 +163,7 @@
 <h1>Playwrite GB S Guides — Author Tool</h1>
 <p class="sub">Phase 1 + 2: glyph display · guide detection · coordinate mapping · ready for stroke authoring</p>
 
-<div id="status" class="status waiting">📂 Pick the font file to begin (works on file:// and http://)</div>
+<div id="status" class="status waiting">📂 Pick the font file to begin</div>
 
 <div class="toolbar">
   <label class="btn" for="fontPicker" title="Pick PlaywriteGBSGuides-Regular.ttf">
@@ -979,9 +979,15 @@ function edActivateLetter(ch) {
   document.getElementById('edCharLabel').textContent = "'" + ch + "'";
   document.getElementById('edEditArea').style.display = 'block';
   edCmds = []; edSel = null; edStrokes = []; edActiveStroke = null;
-  edFullFileText = null;
-  document.getElementById('btnEdDownloadFull').disabled = true;
-  edRenderGlyph(); edRefresh(); edUpdateStrokeList(); edUpdateOutput();
+  // Do NOT clear edFullFileText — keep the loaded file in memory so switching
+  // letters doesn't force a reload. Auto-populate from cache if available.
+  if (edFullFileText) {
+    edParseLetterFromFile(ch, edFullFileText, /*silent=*/true);
+    document.getElementById('btnEdDownloadFull').disabled = false;
+  } else {
+    document.getElementById('btnEdDownloadFull').disabled = true;
+    edRenderGlyph(); edRefresh(); edUpdateStrokeList(); edUpdateOutput();
+  }
 }
 
 // ─── viewBox / zoom ───────────────────────────────────────────────────────────
@@ -1440,20 +1446,35 @@ window.edLoadFromFile = function(input) {
   reader.readAsText(input.files[0]);
   input.value='';
 };
-function edParseLetterFromFile(ch,text) {
+function edParseLetterFromFile(ch, text, silent) {
   // ch is always a single letter — no regex escaping needed.
   // Matches both bare LETTERS['x'] (inside IIFE in letterData.js) and
   // APP.LETTERS['x'] (the format produced by the dev tool's output panel).
+  // silent=true suppresses alerts — used when auto-populating on letter switch.
   const re=new RegExp("(?:APP\\.)?LETTERS\\[[\'\"]" + ch + "[\'\"]\\]\\s*=\\s*\\{([\\s\\S]*?)\\};","m");
   const m=text.match(re);
-  if (!m){ alert("No entry for '" + ch + "' in letterData.js"); return; }
+  if (!m) {
+    if (!silent) alert("No entry for '" + ch + "' in letterData.js");
+    // No entry for this letter — clear canvas and show empty state
+    edStrokes=[]; edCmds=[]; edSel=null; edActiveStroke=null;
+    edRenderGlyph(); edRefresh(); edUpdateStrokeList(); edUpdateOutput();
+    const hint=document.getElementById('edHint');
+    if (hint) hint.textContent = silent
+      ? "No saved entry for '" + ch + "' — draw strokes from scratch"
+      : '';
+    return;
+  }
   const strokeRe=/d:\s*['""]([^'"]+)['"]/g;
   const newStrokes=[]; let sm;
   while ((sm=strokeRe.exec(m[0]))!==null) {
     const color=STROKE_COLORS[newStrokes.length%STROKE_COLORS.length];
     newStrokes.push({d:sm[1],color});
   }
-  if (!newStrokes.length){ alert("Entry for '" + ch + "' has no strokes"); return; }
+  if (!newStrokes.length) {
+    if (!silent) alert("Entry for '" + ch + "' has no strokes");
+    edRenderGlyph(); edRefresh(); edUpdateStrokeList(); edUpdateOutput();
+    return;
+  }
   edStrokes=newStrokes; edCmds=[]; edSel=null; edActiveStroke=null;
   edRefresh(); edUpdateText(); edUpdateCmdList(); edUpdateStrokeList(); edUpdateOutput();
   const hint=document.getElementById('edHint');
@@ -1747,9 +1768,40 @@ window.edAutoTrace = function () {
 
 // ── Auto-load attempt (http:// only) ─────────────────────────────────────────
 window.addEventListener('load', () => {
-  const url = '../assets/fonts/PlaywriteGBSGuides-Regular.ttf';
-  opentype.load(url, (err, f) => {
-    if (err) return; // silently fail — user uses file picker
+  // Derive project root from the page URL so we can show expected paths as hints.
+  // e.g. file:///C:/Users/alext/test_project/dev/playwrite-author.html
+  //      → root = file:///C:/Users/alext/test_project
+  //      → file:///C:/Users/alext/test_project/assets/fonts
+  //      → file:///C:/Users/alext/test_project/js
+  const pageUrl = window.location.href.replace(/[?#].*$/, '');
+  const rootUrl = pageUrl.replace(/\/dev\/[^/]+$/, '');
+
+  // Convert URL → human-readable path hint for tooltips
+  function urlToPath(u) {
+    try {
+      const p = decodeURIComponent(new URL(u).pathname);
+      // On Windows file:// URLs the path starts with /C:/... — strip leading slash
+      return p.replace(/^\/([A-Za-z]:)/, '$1').replace(/\//g, '\\');
+    } catch { return u; }
+  }
+
+  const fontPath = urlToPath(rootUrl + '/assets/fonts');
+  const jsPath   = urlToPath(rootUrl + '/js');
+
+  // Update label tooltips with expected paths
+  const fontLabel = document.querySelector('label[for="fontPicker"]');
+  if (fontLabel) fontLabel.title = 'Pick font file — navigate to: ' + fontPath;
+  const jsLabel = document.querySelector('label[for="edFileInput"]');
+  if (jsLabel) jsLabel.title = 'Load letterData.js — navigate to: ' + jsPath;
+
+  // Try to auto-load the font (works when served via http://)
+  const fontRelUrl = '../assets/fonts/PlaywriteGBSGuides-Regular.ttf';
+  opentype.load(fontRelUrl, (err, f) => {
+    if (err) {
+      // Show path hint in status so user knows where to look
+      setStatus('📂 Pick the font file to begin — navigate to: ' + fontPath, 'waiting');
+      return;
+    }
     font = f;
     onFontLoaded('PlaywriteGBSGuides-Regular.ttf');
   });
