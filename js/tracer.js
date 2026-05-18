@@ -9,7 +9,7 @@ window.APP = window.APP || {};
   const { X_SCALE_UP, X_SCALE_LOW, X_CENTER } = APP.LETTER_METRICS;
 
   // All tunable constants come from APP.TRACER_CONFIG (js/utils.js) — edit there.
-  const CHECKPOINTS_PER_STROKE = 36; // more points = smoother guide polyline approximating bezier curves
+  const CHECKPOINTS_PER_STROKE = 48; // more points = smoother guide polyline approximating bezier curves
 
   // One colour per stroke — shared with letters.js via APP.STROKE_COLORS (utils.js).
   // Edit there; the alias here keeps call sites readable.

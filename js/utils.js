@@ -41,13 +41,13 @@ window.APP = window.APP || {};
     // top/middle shift UP, bottom/lower shift DOWN (see expand: ±1 in GUIDE_CONFIG).
     // Set to 0 to restore exact centreline positions (matches raw font metric positions).
     // Good starting values: SW_LOW/2 = 12 (lowercase), SW_UP/2 = 18 (uppercase).
-    GUIDE_OFFSET:         12,
+    GUIDE_OFFSET:         3,
     // Start-dot radius for the coloured guide dot on each stroke.
     // SW/2 places the dot edge exactly on the letter border (half inside, half outside).
     // Smaller = dot sits fully inside the letter; larger = dot overlaps the border more.
     // DOT_RING_PAD adds extra radius to the white halo behind the dot for legibility.
-    DOT_RADIUS_UP:        14,   // uppercase dot radius  — reduce toward 0 to move fully inside letter
-    DOT_RADIUS_LOW:        8,   // lowercase dot radius  — reduce toward 0 to move fully inside letter
+    DOT_RADIUS_UP:        12,   // uppercase dot radius  — reduce toward 0 to move fully inside letter
+    DOT_RADIUS_LOW:       10,   // lowercase dot radius  — reduce toward 0 to move fully inside letter
     DOT_RING_PAD:          4,   // white ring = dot radius + this value
   };
 
