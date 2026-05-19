@@ -83,14 +83,14 @@ window.APP = window.APP || {};
       x: vb[0], y: vb[1], width: vb[2], height: vb[3], fill: 'black'
     }));
     const maskShapes = el('g', {
-      stroke: 'white', 'stroke-width': SW, fill: 'none',
+      stroke: 'white', 'stroke-width': SW + 8, fill: 'none',
       'stroke-linecap': 'round', 'stroke-linejoin': 'round',
       transform: letterTransform
     });
     data.strokes.forEach(s => {
       if (isDot(s.d)) {
         const pos = dotPos(s.d);
-        if (pos) mask.appendChild(el('circle', { cx: pos.x, cy: pos.y, r: SW / 2, fill: 'white' }));
+        if (pos) mask.appendChild(el('circle', { cx: pos.x, cy: pos.y, r: (SW + 8) / 2, fill: 'white' }));
       } else {
         maskShapes.appendChild(el('path', { d: s.d }));
       }
