@@ -32,7 +32,7 @@ window.APP = window.APP || {};
     // Use the session-level viewBox (same for every letter in this locale session)
     // rather than data.viewBox, which varies per accented vs plain letter.
     // Consistent canvas size means the letter display never jumps between chars.
-    const sessionVb = APP.getSessionViewBox(isUpper);
+    const sessionVb = APP.getSessionViewBox(isUpper, character);
 
     // ---- SVG scaffold ----
     const svg = el('svg', {

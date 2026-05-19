@@ -21,11 +21,13 @@ window.APP = window.APP || {};
   // If you increase ACCENT_OFFSET_ABOVE beyond ~25, also increase this pad accordingly.
   const VB_UP_ACCENT = '0 -60 200 330';
   // Tight canvas variants — used when TRACER_CONFIG.TIGHT_UPPER_CANVAS is true.
-  // Uppercase letter body renders from guide-top (y≈30) to guide-bottom (y≈170); deepest mark
-  // below baseline is the cedilla/Q-tail at ~y=188 (y=170 + SW_UP/2 = 18). Height 200 gives
-  // a small safety margin and makes the letter fill ~70% of canvas height (vs ~52% standard).
-  const VB_UP_TIGHT        = '0 0 200 200';
-  const VB_UP_ACCENT_TIGHT = '0 -60 200 260'; // same 60-unit accent pad above y=0, tight below
+  // Uppercase letter body renders from guide-top (y≈31) to guide-bottom (y≈169) in display coords.
+  // Q tail is the deepest mark at display y=193; with SW_UP/2=18 stroke cap → max y=211.
+  // Height 220 gives a comfortable margin and makes the letter fill ~63% of canvas height
+  // (vs ~52% with the standard 270-height canvas).
+  // VB_UP_ACCENT_TIGHT adds 60 units above y=0 (covers accent strokes shifted to y≈-54).
+  const VB_UP_TIGHT        = '0 0 200 220';
+  const VB_UP_ACCENT_TIGHT = '0 -60 200 280'; // y=-60..220 — accent pad above, tight below
 
   const LETTERS = {};
 
@@ -665,20 +667,36 @@ window.APP = window.APP || {};
   // standard viewBox so they always use VB_LOW.
   //
   // Called by tracer.js and letters.js instead of data.viewBox.
-  APP.getSessionViewBox = function (isUpper) {
+  // Returns the viewBox string for a letter render.
+  //   isUpper — pass APP.isUpperLetter(char)
+  //   char    — the character being rendered (optional but recommended).
+  //             When provided, above-accent chars (Ã, Î …) always get the accent-padded
+  //             canvas even when the locale's animal list has no such characters
+  //             (e.g. letters preview screen in English mode).
+  APP.getSessionViewBox = function (isUpper, char) {
     if (!isUpper) return VB_LOW;  // lowercase accents (y≈37-70) fit within 0..270
 
     const tight = APP.TRACER_CONFIG && APP.TRACER_CONFIG.TIGHT_UPPER_CANVAS;
 
-    // Scan the current locale's animal names for any above-accent uppercase character.
+    // 1. Check the specific character being rendered.
+    //    This catches accented letters shown outside a locale that contains them
+    //    (e.g. letters screen, dev tools) where the animal-list scan would miss them.
+    function hasAboveAccent(ch) {
+      const entry = LETTERS[ch];
+      if (!entry || entry.accent === undefined) return false;
+      const accentDef = APP.ACCENTS && APP.ACCENTS[entry.accent];
+      return !!(accentDef && accentDef.above === true);
+    }
+    if (char && hasAboveAccent(char)) {
+      return tight ? VB_UP_ACCENT_TIGHT : VB_UP_ACCENT;
+    }
+
+    // 2. Scan the current locale's animal names so all letters in a session share
+    //    the same canvas size (no layout jump between accented and plain letters).
     const list = (APP.animals && APP.animals.eligibleAll()) || APP.ANIMALS || [];
     const needsAccentPad = list.some(function (animal) {
       return animal.name.split('').some(function (ch) {
-        // Animal names are stored uppercase (per CLAUDE.md) — ch is already uppercase.
-        const entry = LETTERS[ch];
-        if (!entry || entry.accent === undefined) return false;
-        const accentDef = APP.ACCENTS && APP.ACCENTS[entry.accent];
-        return accentDef && accentDef.above === true;
+        return hasAboveAccent(ch);
       });
     });
 
