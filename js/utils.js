@@ -29,9 +29,9 @@ window.APP = window.APP || {};
   //     before the child has actually reached the end.
   //   DRAW_RADIUS — how close to the start-dot before ink begins depositing.
   APP.TRACER_CONFIG = {
-    SW_UP:                24,   // uppercase outline stroke width
-    SW_LOW:               20,   // lowercase outline stroke width
-    INK_UP:               24,   // uppercase user-ink width
+    SW_UP:                36,   // uppercase outline stroke width
+    SW_LOW:               24,   // lowercase outline stroke width
+    INK_UP:               32,   // uppercase user-ink width
     INK_LOW:              20,   // lowercase user-ink width
     CHECKPOINT_TOLERANCE: 28,   // mid-stroke checkpoint proximity (viewBox units)
     FINAL_TOLERANCE:      14,   // last-checkpoint proximity — tighter to prevent early completion
@@ -42,13 +42,13 @@ window.APP = window.APP || {};
     // Correct values are SW/2 per case — half the stroke width places the guide
     // exactly at the outer edge of the rendered stroke.
     // Set both to 0 to restore exact centreline positions.
-    GUIDE_OFFSET_UP:      12,   // uppercase: SW_UP/2  = 36/2 = 18
+    GUIDE_OFFSET_UP:      18,   // uppercase: SW_UP/2  = 36/2 = 18
     GUIDE_OFFSET_LOW:     12,   // lowercase: SW_LOW/2 = 24/2 = 12
     // Start-dot radius for the coloured guide dot on each stroke.
     // SW/2 places the dot edge exactly on the letter border (half inside, half outside).
     // Smaller = dot sits fully inside the letter; larger = dot overlaps the border more.
     // DOT_RING_PAD adds extra radius to the white halo behind the dot for legibility.
-    DOT_RADIUS_UP:        10,   // uppercase dot radius  — reduce toward 0 to move fully inside letter
+    DOT_RADIUS_UP:        12,   // uppercase dot radius  — reduce toward 0 to move fully inside letter
     DOT_RADIUS_LOW:       10,   // lowercase dot radius  — reduce toward 0 to move fully inside letter
     DOT_RING_PAD:          4,   // white ring = dot radius + this value
     // Extra upward shift (viewBox units) applied to accent marks that sit ABOVE the letter body:
@@ -56,7 +56,11 @@ window.APP = window.APP || {};
     // Increase to pull accents further from thick letter strokes. 0 = use as authored.
     // NOTE: VB_UP_ACCENT in letterData.js must provide (ACCENT_OFFSET_ABOVE + SW_UP/2 + ~20)
     // units of headroom above y=0 or the shifted accents will be clipped by the viewBox.
-    ACCENT_OFFSET_ABOVE:  15,
+    ACCENT_OFFSET_ABOVE:  24,
+    // When true, uppercase letters use a tighter canvas (sized to just accommodate
+    // Q's tail and cedilla below the baseline). This makes uppercase glyphs appear
+    // larger on screen. Set false to restore the wider canvas with more bottom padding.
+    TIGHT_UPPER_CANVAS:   true,
   };
 
   // ── Stroke colours ─────────────────────────────────────────────────────────

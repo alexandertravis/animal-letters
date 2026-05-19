@@ -20,6 +20,12 @@ window.APP = window.APP || {};
   // clipped. Total height 330 keeps the same physical canvas; letter body appears ~10% smaller.
   // If you increase ACCENT_OFFSET_ABOVE beyond ~25, also increase this pad accordingly.
   const VB_UP_ACCENT = '0 -60 200 330';
+  // Tight canvas variants — used when TRACER_CONFIG.TIGHT_UPPER_CANVAS is true.
+  // Uppercase letter body renders from guide-top (y≈30) to guide-bottom (y≈170); deepest mark
+  // below baseline is the cedilla/Q-tail at ~y=188 (y=170 + SW_UP/2 = 18). Height 200 gives
+  // a small safety margin and makes the letter fill ~70% of canvas height (vs ~52% standard).
+  const VB_UP_TIGHT        = '0 0 200 200';
+  const VB_UP_ACCENT_TIGHT = '0 -60 200 260'; // same 60-unit accent pad above y=0, tight below
 
   const LETTERS = {};
 
@@ -300,8 +306,8 @@ window.APP = window.APP || {};
     coords: 'display',
     strokes: [
       { d: 'M 79,33 L 79,168' },
-      { d: 'M 79,168 L 79,135 C 86,101 105,83 122,96 C 136,114 104,130 79,135' },
-      { d: 'M 86,134 L 106,158 C 117,172 134,174 141,156' }
+      { d: 'M 79,168 L 79,135 C 83,92 114,74 128,94 C 139,112 124,136 79,137' },
+      { d: 'M 87,136 L 107,160 C 119,172 134,174 141,156' }
     ]
   };
   LETTERS['l'] = {
@@ -662,6 +668,8 @@ window.APP = window.APP || {};
   APP.getSessionViewBox = function (isUpper) {
     if (!isUpper) return VB_LOW;  // lowercase accents (y≈37-70) fit within 0..270
 
+    const tight = APP.TRACER_CONFIG && APP.TRACER_CONFIG.TIGHT_UPPER_CANVAS;
+
     // Scan the current locale's animal names for any above-accent uppercase character.
     const list = (APP.animals && APP.animals.eligibleAll()) || APP.ANIMALS || [];
     const needsAccentPad = list.some(function (animal) {
@@ -674,7 +682,8 @@ window.APP = window.APP || {};
       });
     });
 
-    return needsAccentPad ? VB_UP_ACCENT : VB_UP;
+    if (needsAccentPad) return tight ? VB_UP_ACCENT_TIGHT : VB_UP_ACCENT;
+    return tight ? VB_UP_TIGHT : VB_UP;
   };
 
   // Returns {a, b} — the y-axis linear transform for a character.
