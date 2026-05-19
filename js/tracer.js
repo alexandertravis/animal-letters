@@ -32,7 +32,7 @@ window.APP = window.APP || {};
     // Use the session-level viewBox (same for every letter in this locale session)
     // rather than data.viewBox, which varies per accented vs plain letter.
     // Consistent canvas size means the letter display never jumps between chars.
-    const sessionVb = APP.getSessionViewBox(isUpper);
+    const sessionVb = APP.getSessionViewBox(isUpper, character);
 
     // ---- SVG scaffold ----
     const svg = el('svg', {
@@ -78,7 +78,14 @@ window.APP = window.APP || {};
     // Mask: white letter shape on black bg → confines user ink to inside the letter.
     const defs = el('defs');
     const maskId = `mask-${Math.random().toString(36).slice(2, 9)}`;
-    const mask = el('mask', { id: maskId, maskUnits: 'userSpaceOnUse' });
+    // Set the mask element's own x/y/width/height to cover the full viewBox.
+    // Without these, the mask's rendering region defaults to -10%/-10%/120%/120%
+    // in user space — which doesn't reach the negative-y area used by above-baseline
+    // accents (tilde, circumflex, etc.), causing a hard horizontal clip at the top.
+    const mask = el('mask', {
+      id: maskId, maskUnits: 'userSpaceOnUse',
+      x: vb[0], y: vb[1], width: vb[2], height: vb[3]
+    });
     mask.appendChild(el('rect', {
       x: vb[0], y: vb[1], width: vb[2], height: vb[3], fill: 'black'
     }));

@@ -64,7 +64,7 @@ window.APP = window.APP || {};
   function overviewSVG(data, char, px) {
     const { SW, SW_OUTLINE } = strokeWidths(char);
     const isUpper  = APP.isUpperLetter(char);
-    const sessionVb = APP.getSessionViewBox(isUpper);
+    const sessionVb = APP.getSessionViewBox(isUpper, char);
     // Height follows the viewBox aspect ratio so accented-language sessions
     // show the full canvas (including above-cap space) without letterboxing.
     const vbParts = sessionVb.split(/\s+/).map(Number);
@@ -159,7 +159,7 @@ window.APP = window.APP || {};
     wrap.className = 'letter-stages';
 
     const isUpper    = APP.isUpperLetter(char);
-    const sessionVb  = APP.getSessionViewBox(isUpper);
+    const sessionVb  = APP.getSessionViewBox(isUpper, char);
     const vbParts    = sessionVb.split(/\s+/).map(Number);
     const aspect     = vbParts[3] / vbParts[2];
     const svgH       = Math.round(px * aspect);
