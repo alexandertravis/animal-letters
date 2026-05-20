@@ -76,6 +76,7 @@ window.APP = window.APP || {};
         img.classList.remove('spinning');
         img.classList.add('revealed');
         imgBox.style.cursor = 'default';
+        APP.audio.speakLetter(animal.displayName, APP.state.settings.locale);
       }, { once: true });
     });
 
