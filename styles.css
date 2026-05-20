@@ -966,3 +966,45 @@ html, body {
   border-color: var(--primary);
   color: #fff;
 }
+
+/* ── Find the Letter (feature/find-the-letter) ─────────────────────────────── */
+.find-prompt {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 12px;
+  text-align: center;
+}
+.find-prompt strong { color: var(--primary); font-size: 2rem; }
+.find-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 16px;
+  width: 100%;
+  max-width: 380px;
+}
+.find-tile {
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  aspect-ratio: 1;
+  transition: transform 0.1s;
+  overflow: hidden;
+  padding: 8px;
+  -webkit-tap-highlight-color: transparent;
+}
+.find-tile:active { transform: scale(0.95); }
+.find-tile.correct { background: #2ecc71; box-shadow: 0 6px 0 rgba(0,0,0,0.15); }
+.find-tile.wrong   { background: #e74c3c; animation: findShake 0.35s; }
+@keyframes findShake {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-10px); }
+  40%     { transform: translateX(10px); }
+  60%     { transform: translateX(-6px); }
+  80%     { transform: translateX(4px); }
+}
