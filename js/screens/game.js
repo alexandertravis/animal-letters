@@ -42,29 +42,6 @@ window.APP = window.APP || {};
     return strip;
   }
 
-  function showScoreOverlay(stage, score, callback) {
-    const cfg = APP.TRACER_CONFIG || {};
-    const stars = score >= (cfg.SCORE_3STAR || 85) ? 3 : score >= (cfg.SCORE_2STAR || 60) ? 2 : 1;
-    const filled = '⭐'.repeat(stars);
-    const empty  = '☆'.repeat(3 - stars);
-
-    const overlay = document.createElement('div');
-    overlay.className = 'score-overlay';
-    overlay.innerHTML = `<div class="score-stars">${filled}${empty}</div>`;
-    stage.appendChild(overlay);
-
-    let done = false;
-    function dismiss() {
-      if (done) return;
-      done = true;
-      overlay.remove();
-      callback();
-    }
-
-    const timer = setTimeout(dismiss, 1500);
-    overlay.addEventListener('pointerdown', () => { clearTimeout(timer); dismiss(); }, { once: true });
-  }
-
   function render(root, ctx) {
     if (activeTracer) { activeTracer.destroy(); activeTracer = null; }
     root.innerHTML = '';
@@ -91,10 +68,15 @@ window.APP = window.APP || {};
     // Top bar
     const bar = document.createElement('div');
     bar.className = 'topbar';
+    const volPct = Math.round((APP.state.settings.volume || 0.7) * 100);
     bar.innerHTML = `
       <div class="group">
         <button class="btn icon ghost" data-act="home" aria-label="Home">${APP.ICONS.home}</button>
         <button class="btn icon ghost" data-act="settings" aria-label="Settings">${APP.ICONS.settings}</button>
+      </div>
+      <div class="group vol-ctrl">
+        <button class="btn icon ghost" data-act="mute" aria-label="Mute">${APP.state.settings.muted ? APP.ICONS.volumeOff : APP.ICONS.volumeOn}</button>
+        <input type="range" class="vol-slider" min="0" max="100" step="1" value="${volPct}" aria-label="Volume">
       </div>
       <div class="group">
         <button class="btn ghost" data-act="restart">${APP.t('game.restart')}</button>
@@ -130,6 +112,21 @@ window.APP = window.APP || {};
       ctx.go(APP.state.screen === 'landing' ? 'landing' : 'game');
     });
 
+    // Volume / mute controls
+    const muteBtn   = bar.querySelector('[data-act=mute]');
+    const volSlider = bar.querySelector('.vol-slider');
+    function refreshMute() {
+      muteBtn.innerHTML = APP.state.settings.muted ? APP.ICONS.volumeOff : APP.ICONS.volumeOn;
+    }
+    muteBtn.addEventListener('click', () => {
+      APP.audio.setMuted(!APP.state.settings.muted);
+      refreshMute();
+    });
+    volSlider.addEventListener('input', () => {
+      APP.audio.setVolume(volSlider.valueAsNumber / 100);
+      refreshMute();
+    });
+
     mountCurrentLetter(stage, ctx);
   }
 
@@ -159,23 +156,21 @@ window.APP = window.APP || {};
           masteryStars = attempts >= 5 ? 3 : attempts >= 3 ? 2 : 1;
         }
 
-        showScoreOverlay(stage, score != null ? score : 100, () => {
-          APP.recordLetterTrace(completedChar, masteryStars);
-          APP.advanceLetter();
-          // Speak the completed letter as confirmation, then pause so the speech
-          // finishes before the next letter (or complete screen) renders.
-          // Without the delay the new screen cancels the utterance mid-word.
-          APP.audio.speakLetter(completedChar, APP.state.settings.locale);
-          const delay = (APP.TRACER_CONFIG && APP.TRACER_CONFIG.PHONICS_ADVANCE_DELAY) || 700;
-          setTimeout(() => {
-            if (APP.state.screen === 'complete') {
-              ctx.go('complete');
-            } else {
-              // Re-render to update strip + load next letter
-              ctx.go('game');
-            }
-          }, delay);
-        });
+        APP.recordLetterTrace(completedChar, masteryStars);
+        APP.advanceLetter();
+        // Speak the completed letter as confirmation, then pause so the speech
+        // finishes before the next letter (or complete screen) renders.
+        // Without the delay the new screen cancels the utterance mid-word.
+        APP.audio.speakLetter(completedChar, APP.state.settings.locale);
+        const delay = (APP.TRACER_CONFIG && APP.TRACER_CONFIG.PHONICS_ADVANCE_DELAY) || 700;
+        setTimeout(() => {
+          if (APP.state.screen === 'complete') {
+            ctx.go('complete');
+          } else {
+            // Re-render to update strip + load next letter
+            ctx.go('game');
+          }
+        }, delay);
       }
     });
   }

@@ -55,6 +55,16 @@ window.APP = window.APP || {};
       navigate(() => ctx.go('setup')));
 
     const imgBox = wrap.querySelector('#animalImg');
+
+    // Stars badge — top-right corner of the image box
+    const stars = APP.animalStars ? APP.animalStars(animal) : 0;
+    if (stars > 0) {
+      const badge = document.createElement('div');
+      badge.className = 'animal-stars-badge';
+      badge.textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+      imgBox.appendChild(badge);
+    }
+
     const img = new Image();
     img.alt = animal.displayName;
     img.className = 'animal-reveal';

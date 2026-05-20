@@ -336,6 +336,7 @@ html, body {
 }
 .complete .animalName { font-size: clamp(2rem, 7vw, 3.5rem); font-weight: 800; letter-spacing: 0.08em; }
 .complete .animalImg {
+  position: relative;
   width: min(320px, 70vw);
   height: min(320px, 70vw);
   cursor: pointer;
@@ -456,6 +457,7 @@ html, body {
 }
 
 .gallery-tile {
+  position: relative;
   width: 140px;
   height: 140px;
   background: #fff;
@@ -1070,4 +1072,33 @@ html, body {
   40%     { transform: translateX(10px); }
   60%     { transform: translateX(-6px); }
   80%     { transform: translateX(4px); }
+}
+
+/* ── Animal completion stars badge ──────────────────────────────────────────
+   Overlays the top-right corner of the animal image box on the complete screen
+   and the gallery tile. Both parents are position:relative + overflow:hidden
+   so the badge is clipped cleanly to the tile/box boundary.               */
+.animal-stars-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 0.95rem;
+  line-height: 1;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4));
+  z-index: 2;
+}
+
+/* ── Game-screen volume control ─────────────────────────────────────────────
+   Always shows a mute button; the slider appears only when there is room.  */
+.vol-ctrl { gap: 4px; }
+.vol-slider {
+  display: none;
+  width: 72px;
+  accent-color: var(--primary);
+  cursor: pointer;
+  touch-action: none;
+}
+@media (min-width: 480px) {
+  .vol-slider { display: block; }
 }

@@ -121,6 +121,17 @@ window.APP = window.APP || {};
     svg.appendChild(g);
   };
 
+  // ── Animal completion star rating ────────────────────────────────────────
+  // Returns 0–3 stars based on how many times the animal has been completed.
+  // 0 = not yet found, 1 = 1-2 completions, 2 = 3-4, 3 = 5+
+  APP.animalStars = function (animal) {
+    const count = (APP.state.animalCompletionCounts || {})[APP.animalId(animal)] || 0;
+    if (count >= 5) return 3;
+    if (count >= 3) return 2;
+    if (count >= 1) return 1;
+    return 0;
+  };
+
   // ── Locale-independent animal ID ──────────────────────────────────────────
   // Derives a stable ID from the cartoon image path so found status is shared
   // across languages — the same creature has the same ID regardless of locale.

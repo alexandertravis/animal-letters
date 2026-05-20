@@ -78,6 +78,15 @@ window.APP = window.APP || {};
         imgWrap.appendChild(fallback);
         tile.appendChild(imgWrap);
 
+        // Stars badge — top-right corner of the tile
+        const stars = APP.animalStars ? APP.animalStars(animal) : 0;
+        if (stars > 0) {
+          const badge = document.createElement('div');
+          badge.className = 'animal-stars-badge';
+          badge.textContent = '⭐'.repeat(stars);
+          tile.appendChild(badge);
+        }
+
       } else {
         // Spacer pushes the peek strip to the bottom
         const spacer = document.createElement('div');
