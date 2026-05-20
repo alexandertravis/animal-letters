@@ -70,6 +70,11 @@ APP.I18N = {
     'game.restart':       'Restart Letter',
     'game.skip':          'Skip Animal',
 
+    // Find the Letter
+    'settings.gameMode':       'Game Mode',
+    'settings.gameMode.trace': 'Trace',
+    'settings.gameMode.find':  'Find',
+
     // Complete
     'complete.hooray':    'Hooray!',
     'complete.myAnimals': 'My Animals',
@@ -122,6 +127,11 @@ APP.I18N = {
     // Game
     'game.restart':       'Recomeçar Letra',
     'game.skip':          'Pular Animal',
+
+    // Find the Letter
+    'settings.gameMode':       'Modo de Jogo',
+    'settings.gameMode.trace': 'Traçar',
+    'settings.gameMode.find':  'Encontrar',
 
     // Complete
     'complete.hooray':    'Eba!',
@@ -176,6 +186,11 @@ APP.I18N = {
     'game.restart':       'Recommencer la lettre',
     'game.skip':          'Passer l\'animal',
 
+    // Find the Letter
+    'settings.gameMode':       'Mode de Jeu',
+    'settings.gameMode.trace': 'Tracer',
+    'settings.gameMode.find':  'Trouver',
+
     // Complete
     'complete.hooray':    'Bravo !',
     'complete.myAnimals': 'Mes Animaux',
@@ -228,6 +243,11 @@ APP.I18N = {
     // Game
     'game.restart':       'Reiniciar letra',
     'game.skip':          'Saltar animal',
+
+    // Find the Letter
+    'settings.gameMode':       'Modo de Juego',
+    'settings.gameMode.trace': 'Trazar',
+    'settings.gameMode.find':  'Encontrar',
 
     // Complete
     'complete.hooray':    '¡Hurra!',
@@ -282,6 +302,11 @@ APP.I18N = {
     'game.restart':       'Buchstabe wiederholen',
     'game.skip':          'Tier überspringen',
 
+    // Find the Letter
+    'settings.gameMode':       'Spielmodus',
+    'settings.gameMode.trace': 'Zeichnen',
+    'settings.gameMode.find':  'Finden',
+
     // Complete
     'complete.hooray':    'Hurra!',
     'complete.myAnimals': 'Meine Tiere',
@@ -334,6 +359,11 @@ APP.I18N = {
     // Game
     'game.restart':       'Ripeti la lettera',
     'game.skip':          'Salta animale',
+
+    // Find the Letter
+    'settings.gameMode':       'Modalità di Gioco',
+    'settings.gameMode.trace': 'Traccia',
+    'settings.gameMode.find':  'Trova',
 
     // Complete
     'complete.hooray':    'Evviva!',

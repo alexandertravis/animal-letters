@@ -11,6 +11,7 @@ window.APP = window.APP || {};
     letterCase: "upper",   // "upper" | "proper" | "lower"
     depiction: "cartoon",  // "cartoon" | "realistic"
     revealMode: "faint",   // "faint" | "hidden"
+    gameMode: "trace",     // "trace" | "find"
     volume: 0.7,           // 0–1
     muted: false,
     locale: "en",          // "en" | "pt" | … — overwritten by APP.loadLocale() on boot

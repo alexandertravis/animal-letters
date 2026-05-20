@@ -23,11 +23,15 @@ window.APP = window.APP || {};
       const animal = APP.animals.pickRandom(APP.state.settings.maxLength, APP.state.currentAnimal);
       if (!animal) { ctx.go('setup'); return; } // fallback: open settings if nothing fits
       APP.startGame(animal);
-      ctx.go('game');
+      const mode = APP.state.settings.gameMode || 'trace';
+      ctx.go(mode === 'find' ? 'findletter' : 'game');
     });
     const cont = wrap.querySelector('[data-act=continue]');
     if (cont && !cont.disabled) {
-      cont.addEventListener('click', () => ctx.go('game'));
+      cont.addEventListener('click', () => {
+        const mode = APP.state.settings.gameMode || 'trace';
+        ctx.go(mode === 'find' ? 'findletter' : 'game');
+      });
     }
     wrap.querySelector('[data-act=gallery]').addEventListener('click', () => ctx.go('gallery'));
     wrap.querySelector('[data-act=progress]').addEventListener('click', () => ctx.go('progress'));
