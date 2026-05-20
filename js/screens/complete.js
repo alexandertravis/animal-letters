@@ -56,14 +56,12 @@ window.APP = window.APP || {};
 
     const imgBox = wrap.querySelector('#animalImg');
 
-    // Stars badge — top-right corner of the image box
+    // Stars badge — top-right corner of the image box, always shown
     const stars = APP.animalStars ? APP.animalStars(animal) : 0;
-    if (stars > 0) {
-      const badge = document.createElement('div');
-      badge.className = 'animal-stars-badge';
-      badge.textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
-      imgBox.appendChild(badge);
-    }
+    const badge = document.createElement('div');
+    badge.className = 'animal-stars-badge animal-stars-badge--lg';
+    badge.innerHTML = APP.starsHtml ? APP.starsHtml(stars, 3) : '';
+    imgBox.appendChild(badge);
 
     const img = new Image();
     img.alt = animal.displayName;

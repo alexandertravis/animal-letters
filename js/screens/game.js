@@ -68,7 +68,7 @@ window.APP = window.APP || {};
     // Top bar
     const bar = document.createElement('div');
     bar.className = 'topbar';
-    const volPct = Math.round((APP.state.settings.volume || 0.7) * 100);
+    const volPct = Math.round((APP.state.settings.volume != null ? APP.state.settings.volume : 0.7) * 100);
     bar.innerHTML = `
       <div class="group">
         <button class="btn icon ghost" data-act="home" aria-label="Home">${APP.ICONS.home}</button>
@@ -117,6 +117,9 @@ window.APP = window.APP || {};
     const volSlider = bar.querySelector('.vol-slider');
     function refreshMute() {
       muteBtn.innerHTML = APP.state.settings.muted ? APP.ICONS.volumeOff : APP.ICONS.volumeOn;
+      // Keep the slider thumb in sync with the actual volume level (e.g. after
+      // un-muting restores lastVolume, or muting by dragging to 0).
+      volSlider.value = Math.round(APP.state.settings.volume * 100);
     }
     muteBtn.addEventListener('click', () => {
       APP.audio.setMuted(!APP.state.settings.muted);

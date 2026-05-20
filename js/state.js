@@ -13,6 +13,7 @@ window.APP = window.APP || {};
     revealMode: "faint",   // "faint" | "hidden"
     gameMode: "trace",     // "trace" | "find"
     volume: 0.7,           // 0–1
+    lastVolume: 0.7,       // last non-zero volume; restored when un-muting from 0
     muted: false,
     locale: "en",          // "en" | "pt" | … — overwritten by APP.loadLocale() on boot
     phonics: true,         // speak letter name aloud after each trace

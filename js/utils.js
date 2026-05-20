@@ -132,6 +132,19 @@ window.APP = window.APP || {};
     return 0;
   };
 
+  // ── Star rating HTML ──────────────────────────────────────────────────────
+  // Returns an HTML string of `total` ★ characters where the first `filled`
+  // are gold (.star-full) and the rest are grey (.star-empty).
+  // Uses the same ★ glyph throughout so filled and empty stars match visually.
+  APP.starsHtml = function (filled, total) {
+    total = total || 3;
+    let html = '';
+    for (let i = 0; i < total; i++) {
+      html += '<span class="' + (i < filled ? 'star-full' : 'star-empty') + '">★</span>';
+    }
+    return html;
+  };
+
   // ── Locale-independent animal ID ──────────────────────────────────────────
   // Derives a stable ID from the cartoon image path so found status is shared
   // across languages — the same creature has the same ID regardless of locale.
