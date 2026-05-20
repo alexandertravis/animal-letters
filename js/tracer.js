@@ -204,6 +204,8 @@ window.APP = window.APP || {};
     let activeInkPath = null;             // SVG path for current pointer drag
     let activeInkPoints = [];             // points in viewBox coords
     let pointerActive = false;
+    let totalDeviation = 0;              // sum of pointer distances from each checkpoint hit
+    let checkpointsHit = 0;             // total checkpoints advanced (for avg deviation)
 
     // Build per-stroke checkpoint lists using a hidden temp path for getPointAtLength.
     const checkpoints = data.strokes.map(s => {
@@ -419,6 +421,9 @@ window.APP = window.APP || {};
         const isLast = currentCheckpoint === cps.length - 1;
         const tol = (isLast && !currentIsDot) ? FINAL_TOLERANCE : TOLERANCE;
         if (dist(p, cps[currentCheckpoint]) > tol) break;
+        // Record deviation for scoring
+        totalDeviation += dist(p, cps[currentCheckpoint]);
+        checkpointsHit++;
         currentCheckpoint++;
         advanced = true;
       }
@@ -434,9 +439,12 @@ window.APP = window.APP || {};
         endActiveInk();
         updateGuide();
         if (currentStroke >= totalStrokes) {
-          // All strokes done — play letter-complete sound then fire callback.
+          // All strokes done — compute accuracy score, play letter-complete sound, then fire callback.
+          const cfg = APP.TRACER_CONFIG;
+          const avgDev = checkpointsHit > 0 ? totalDeviation / checkpointsHit : 0;
+          const score = Math.max(0, Math.min(100, Math.round(100 - avgDev)));
           if (APP.audio) APP.audio.letterDone();
-          setTimeout(() => opts && opts.onComplete && opts.onComplete(), 350);
+          setTimeout(() => opts && opts.onComplete && opts.onComplete(score), 350);
         } else {
           // Individual stroke done — short tick.
           if (APP.audio) APP.audio.strokeDone();

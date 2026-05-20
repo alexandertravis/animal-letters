@@ -131,6 +131,16 @@ window.APP = window.APP || {};
     ], s.revealMode, v => { APP.settings.update({ revealMode: v }); render(root, ctx); }));
     inner.appendChild(f4);
 
+    // Phonics
+    const f4b = document.createElement('div');
+    f4b.className = 'field';
+    f4b.innerHTML = `<label>${APP.t('settings.phonics')}</label>`;
+    f4b.appendChild(seg('phonics', [
+      { value: true,  label: APP.t('settings.on') },
+      { value: false, label: APP.t('settings.off') }
+    ], s.phonics, function (v) { APP.settings.update({ phonics: v }); render(root, ctx); }));
+    inner.appendChild(f4b);
+
     // Volume
     const f5 = document.createElement('div');
     f5.className = 'field';
@@ -219,6 +229,7 @@ window.APP = window.APP || {};
     resetBtn.addEventListener('click', () => {
       if (!confirm(APP.t('setup.clearConfirm'))) return;
       APP.clearProgress();
+      APP.clearMastery();
       render(root, ctx); // refresh count in button label
     });
     resetField.appendChild(resetBtn);

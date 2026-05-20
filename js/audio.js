@@ -124,4 +124,17 @@ window.APP = window.APP || {};
     // Wake / resume the AudioContext during a user gesture so later sounds fire instantly.
     _wake() { try { getMaster(); } catch (_) {} }
   };
+
+  APP.audio.speakLetter = function (char, locale) {
+    if (!window.speechSynthesis) return;
+    if (!APP.state.settings.phonics) return;
+    if (APP.state.settings.muted) return;
+    const utt = new SpeechSynthesisUtterance(char);
+    const langMap = { en: 'en-GB', pt: 'pt-PT', fr: 'fr-FR', es: 'es-ES', de: 'de-DE', it: 'it-IT' };
+    utt.lang = langMap[locale || 'en'] || 'en-GB';
+    utt.rate = 0.85;
+    utt.volume = (APP.state.settings.volume != null ? APP.state.settings.volume : 1);
+    speechSynthesis.cancel();
+    speechSynthesis.speak(utt);
+  };
 })(window.APP);

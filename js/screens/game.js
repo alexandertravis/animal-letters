@@ -42,6 +42,29 @@ window.APP = window.APP || {};
     return strip;
   }
 
+  function showScoreOverlay(stage, score, callback) {
+    const cfg = APP.TRACER_CONFIG || {};
+    const stars = score >= (cfg.SCORE_3STAR || 85) ? 3 : score >= (cfg.SCORE_2STAR || 60) ? 2 : 1;
+    const filled = '⭐'.repeat(stars);
+    const empty  = '☆'.repeat(3 - stars);
+
+    const overlay = document.createElement('div');
+    overlay.className = 'score-overlay';
+    overlay.innerHTML = `<div class="score-stars">${filled}${empty}</div>`;
+    stage.appendChild(overlay);
+
+    let done = false;
+    function dismiss() {
+      if (done) return;
+      done = true;
+      overlay.remove();
+      callback();
+    }
+
+    const timer = setTimeout(dismiss, 1500);
+    overlay.addEventListener('pointerdown', () => { clearTimeout(timer); dismiss(); }, { once: true });
+  }
+
   function render(root, ctx) {
     if (activeTracer) { activeTracer.destroy(); activeTracer = null; }
     root.innerHTML = '';
@@ -117,14 +140,32 @@ window.APP = window.APP || {};
     // the 'proper' first-letter rule) is defined in exactly one place.
     const ch = APP.caseOf(animal.name)[APP.state.letterIndex];
     activeTracer = APP.tracer.mount(stage, ch, {
-      onComplete: () => {
-        APP.advanceLetter();
-        if (APP.state.screen === 'complete') {
-          ctx.go('complete');
+      onComplete: (score) => {
+        const completedChar = APP.caseOf(animal.name)[APP.state.letterIndex]; // capture before advance
+
+        // Compute stars for mastery: use accuracy score if available (Feature 3),
+        // otherwise fall back to attempt-count heuristic.
+        let masteryStars;
+        if (score != null) {
+          const cfg = APP.TRACER_CONFIG || {};
+          masteryStars = score >= (cfg.SCORE_3STAR || 85) ? 3 : score >= (cfg.SCORE_2STAR || 60) ? 2 : 1;
         } else {
-          // Re-render to update strip + load next letter
-          ctx.go('game');
+          const existing = APP.state.letterMastery[completedChar];
+          const attempts = existing ? existing.attempts + 1 : 1;
+          masteryStars = attempts >= 5 ? 3 : attempts >= 3 ? 2 : 1;
         }
+
+        showScoreOverlay(stage, score != null ? score : 100, () => {
+          APP.recordLetterTrace(completedChar, masteryStars);
+          APP.advanceLetter();
+          APP.audio.speakLetter(completedChar, APP.state.settings.locale);
+          if (APP.state.screen === 'complete') {
+            ctx.go('complete');
+          } else {
+            // Re-render to update strip + load next letter
+            ctx.go('game');
+          }
+        });
       }
     });
   }

@@ -966,3 +966,66 @@ html, body {
   border-color: var(--primary);
   color: #fff;
 }
+
+/* ── Score overlay (feature/accuracy) ──────────────────────────────────────── */
+.score-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(254, 246, 228, 0.92);
+  z-index: 10;
+  animation: scoreOverlayIn 0.18s ease-out;
+  cursor: pointer;
+}
+.score-stars {
+  font-size: 3rem;
+  letter-spacing: 0.08em;
+  filter: drop-shadow(0 2px 4px rgba(0,24,88,0.18));
+}
+@keyframes scoreOverlayIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Progress screen (feature/progress) ────────────────────────────────────── */
+.progress-screen { display: flex; flex-direction: column; height: 100%; }
+.progress-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 80px);
+  gap: 8px;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+.progress-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 6px 4px 4px;
+  min-height: 80px;
+}
+.progress-letter {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.1;
+}
+.star-row { font-size: 0.75rem; margin-top: 2px; }
+.progress-badge {
+  position: absolute;
+  top: 4px;
+  right: 5px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-radius: 999px;
+  padding: 1px 5px;
+}

@@ -61,6 +61,10 @@ window.APP = window.APP || {};
     // Q's tail and cedilla below the baseline). This makes uppercase glyphs appear
     // larger on screen. Set false to restore the wider canvas with more bottom padding.
     TIGHT_UPPER_CANVAS:   true,
+    // Accuracy score thresholds — average deviation of pointer from checkpoint
+    // is subtracted from 100. Scores are clamped to [0, 100].
+    SCORE_3STAR: 85,   // score >= this → 3 stars
+    SCORE_2STAR: 60,   // score >= this → 2 stars (else 1 star)
   };
 
   // ── Stroke colours ─────────────────────────────────────────────────────────
@@ -124,7 +128,10 @@ window.APP = window.APP || {};
   // ── Unicode-safe case detection ────────────────────────────────────────────
   // /[A-Z]/ misses accented uppercase letters (Á, Ã, É, Ç …).
   // This helper works for any Unicode character without a hardcoded list.
+  // Digits 0-9 are treated as "upper" — they use the same canvas size, stroke
+  // widths, and guide offsets as uppercase letters.
   APP.isUpperLetter = function (ch) {
+    if (ch.length === 1 && ch >= '0' && ch <= '9') return true;
     return ch.length === 1 && ch.toUpperCase() === ch && ch.toLowerCase() !== ch;
   };
 

@@ -31,7 +31,12 @@ APP.I18N = {
     'landing.newGame':    'New Game',
     'landing.continue':   'Continue',
     'landing.myAnimals':  'My Animals',
+    'landing.progress':   'My Progress',
+    'landing.numbers':    'Numbers',
     'landing.settings':   'Settings',
+
+    // Progress screen
+    'screens.progress.title': 'My Progress',
 
     // Setup / Settings
     'setup.title':        'Settings',
@@ -48,6 +53,9 @@ APP.I18N = {
     'setup.hidden':       'Hidden → reveal',
     'setup.volume':       'Volume',
     'setup.language':     'Language',
+    'settings.phonics':   'Phonics',
+    'settings.on':        'On',
+    'settings.off':       'Off',
     'setup.back':         'Back',
     'setup.newGame':      'New Game',
     'setup.noAnimals':    'No animals fit that length. Try a longer name length.',
@@ -76,7 +84,12 @@ APP.I18N = {
     'landing.newGame':    'Novo Jogo',
     'landing.continue':   'Continuar',
     'landing.myAnimals':  'Meus Animais',
+    'landing.progress':   'Meu Progresso',
+    'landing.numbers':    'Números',
     'landing.settings':   'Configurações',
+
+    // Progress screen
+    'screens.progress.title': 'Meu Progresso',
 
     // Setup / Settings
     'setup.title':        'Configurações',
@@ -93,6 +106,9 @@ APP.I18N = {
     'setup.hidden':       'Oculto → revelar',
     'setup.volume':       'Volume',
     'setup.language':     'Idioma',
+    'settings.phonics':   'Fonética',
+    'settings.on':        'Ligado',
+    'settings.off':       'Desligado',
     'setup.back':         'Voltar',
     'setup.newGame':      'Novo Jogo',
     'setup.noAnimals':    'Nenhum animal tem esse tamanho. Tente um nome mais longo.',
@@ -121,7 +137,12 @@ APP.I18N = {
     'landing.newGame':    'Nouveau jeu',
     'landing.continue':   'Continuer',
     'landing.myAnimals':  'Mes Animaux',
+    'landing.progress':   'Ma Progression',
+    'landing.numbers':    'Chiffres',
     'landing.settings':   'Paramètres',
+
+    // Progress screen
+    'screens.progress.title': 'Ma Progression',
 
     // Setup / Settings
     'setup.title':        'Paramètres',
@@ -138,6 +159,9 @@ APP.I18N = {
     'setup.hidden':       'Caché → révéler',
     'setup.volume':       'Volume',
     'setup.language':     'Langue',
+    'settings.phonics':   'Phonétique',
+    'settings.on':        'Activé',
+    'settings.off':       'Désactivé',
     'setup.back':         'Retour',
     'setup.newGame':      'Nouveau jeu',
     'setup.noAnimals':    'Aucun animal ne correspond. Essayez un nom plus long.',
@@ -166,7 +190,12 @@ APP.I18N = {
     'landing.newGame':    'Nuevo juego',
     'landing.continue':   'Continuar',
     'landing.myAnimals':  'Mis Animales',
+    'landing.progress':   'Mi Progreso',
+    'landing.numbers':    'Números',
     'landing.settings':   'Ajustes',
+
+    // Progress screen
+    'screens.progress.title': 'Mi Progreso',
 
     // Setup / Settings
     'setup.title':        'Ajustes',
@@ -183,6 +212,9 @@ APP.I18N = {
     'setup.hidden':       'Oculto → revelar',
     'setup.volume':       'Volumen',
     'setup.language':     'Idioma',
+    'settings.phonics':   'Fonética',
+    'settings.on':        'Activado',
+    'settings.off':       'Desactivado',
     'setup.back':         'Volver',
     'setup.newGame':      'Nuevo juego',
     'setup.noAnimals':    'Ningún animal encaja. Intenta un nombre más largo.',
@@ -211,7 +243,12 @@ APP.I18N = {
     'landing.newGame':    'Neues Spiel',
     'landing.continue':   'Weiter',
     'landing.myAnimals':  'Meine Tiere',
+    'landing.progress':   'Mein Fortschritt',
+    'landing.numbers':    'Zahlen',
     'landing.settings':   'Einstellungen',
+
+    // Progress screen
+    'screens.progress.title': 'Mein Fortschritt',
 
     // Setup / Settings
     'setup.title':        'Einstellungen',
@@ -228,6 +265,9 @@ APP.I18N = {
     'setup.hidden':       'Versteckt → enthüllen',
     'setup.volume':       'Lautstärke',
     'setup.language':     'Sprache',
+    'settings.phonics':   'Phonetik',
+    'settings.on':        'An',
+    'settings.off':       'Aus',
     'setup.back':         'Zurück',
     'setup.newGame':      'Neues Spiel',
     'setup.noAnimals':    'Kein Tier passt. Versuche einen längeren Namen.',
@@ -256,7 +296,12 @@ APP.I18N = {
     'landing.newGame':    'Nuovo gioco',
     'landing.continue':   'Continua',
     'landing.myAnimals':  'I miei animali',
+    'landing.progress':   'I Miei Progressi',
+    'landing.numbers':    'Numeri',
     'landing.settings':   'Impostazioni',
+
+    // Progress screen
+    'screens.progress.title': 'I Miei Progressi',
 
     // Setup / Settings
     'setup.title':        'Impostazioni',
@@ -273,6 +318,9 @@ APP.I18N = {
     'setup.hidden':       'Nascosto → rivela',
     'setup.volume':       'Volume',
     'setup.language':     'Lingua',
+    'settings.phonics':   'Fonetica',
+    'settings.on':        'Attivo',
+    'settings.off':       'Disattivo',
     'setup.back':         'Indietro',
     'setup.newGame':      'Nuovo gioco',
     'setup.noAnimals':    'Nessun animale corrisponde. Prova un nome più lungo.',
