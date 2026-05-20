@@ -65,6 +65,11 @@ window.APP = window.APP || {};
     // is subtracted from 100. Scores are clamped to [0, 100].
     SCORE_3STAR: 85,   // score >= this → 3 stars
     SCORE_2STAR: 60,   // score >= this → 2 stars (else 1 star)
+    // Delay (ms) after the score overlay closes before the next letter renders.
+    // Gives the completion speech utterance time to finish before the screen
+    // switches. Increase if the letter name is still being spoken when the
+    // next letter appears; decrease for a snappier feel once timing feels right.
+    PHONICS_ADVANCE_DELAY: 1400,
   };
 
   // ── Stroke colours ─────────────────────────────────────────────────────────

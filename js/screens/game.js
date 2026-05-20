@@ -166,6 +166,7 @@ window.APP = window.APP || {};
           // finishes before the next letter (or complete screen) renders.
           // Without the delay the new screen cancels the utterance mid-word.
           APP.audio.speakLetter(completedChar, APP.state.settings.locale);
+          const delay = (APP.TRACER_CONFIG && APP.TRACER_CONFIG.PHONICS_ADVANCE_DELAY) || 700;
           setTimeout(() => {
             if (APP.state.screen === 'complete') {
               ctx.go('complete');
@@ -173,7 +174,7 @@ window.APP = window.APP || {};
               // Re-render to update strip + load next letter
               ctx.go('game');
             }
-          }, 700);
+          }, delay);
         });
       }
     });
