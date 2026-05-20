@@ -139,6 +139,10 @@ window.APP = window.APP || {};
     // APP.caseOf applied to the full name ensures the per-character case (including
     // the 'proper' first-letter rule) is defined in exactly one place.
     const ch = APP.caseOf(animal.name)[APP.state.letterIndex];
+
+    // Announce the letter as soon as it appears so the child knows what to trace.
+    APP.audio.speakLetter(ch, APP.state.settings.locale);
+
     activeTracer = APP.tracer.mount(stage, ch, {
       onComplete: (score) => {
         const completedChar = APP.caseOf(animal.name)[APP.state.letterIndex]; // capture before advance
@@ -158,13 +162,18 @@ window.APP = window.APP || {};
         showScoreOverlay(stage, score != null ? score : 100, () => {
           APP.recordLetterTrace(completedChar, masteryStars);
           APP.advanceLetter();
+          // Speak the completed letter as confirmation, then pause so the speech
+          // finishes before the next letter (or complete screen) renders.
+          // Without the delay the new screen cancels the utterance mid-word.
           APP.audio.speakLetter(completedChar, APP.state.settings.locale);
-          if (APP.state.screen === 'complete') {
-            ctx.go('complete');
-          } else {
-            // Re-render to update strip + load next letter
-            ctx.go('game');
-          }
+          setTimeout(() => {
+            if (APP.state.screen === 'complete') {
+              ctx.go('complete');
+            } else {
+              // Re-render to update strip + load next letter
+              ctx.go('game');
+            }
+          }, 700);
         });
       }
     });
