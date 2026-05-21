@@ -11,9 +11,12 @@ window.APP = window.APP || {};
     letterCase: "upper",   // "upper" | "proper" | "lower"
     depiction: "cartoon",  // "cartoon" | "realistic"
     revealMode: "faint",   // "faint" | "hidden"
+    gameMode: "trace",     // "trace" | "find"
     volume: 0.7,           // 0–1
+    lastVolume: 0.7,       // last non-zero volume; restored when un-muting from 0
     muted: false,
     locale: "en",          // "en" | "pt" | … — overwritten by APP.loadLocale() on boot
+    phonics: true,         // speak letter name aloud after each trace
   };
 
   // ── Locale-independent animal ID (private copy) ──────────────────────────
@@ -83,6 +86,19 @@ window.APP = window.APP || {};
     // (i.e. previously found). Resets to 0 whenever an unfound animal is presented.
     // When it reaches 2, pickNext() biases the next selection toward unfound animals.
     consecutiveFoundCount: 0,
+
+    // ── Letter mastery tracking ───────────────────────────────────────────────
+    // Per-character tracing history. Keyed by the cased character (e.g. 'A', 'a').
+    // Each entry: { attempts: number, bestStars: 0|1|2|3 }
+    letterMastery: {},
+
+    // ── Story library (transient — not persisted) ─────────────────────────────
+    // Stories that just became unlocked by the last animal completion.
+    // Read by complete.js to show the unlock banner; cleared after navigation.
+    newlyUnlockedStories: [],
+    // Story currently open in the reader. Set by library.js / complete.js.
+    currentStory: null,
+    currentPage:  0,
   };
 
   // Writes gallery progress to localStorage. Called after every animal completion.
@@ -101,6 +117,34 @@ window.APP = window.APP || {};
     APP.state.completedAnimals = new Set();
     APP.state.animalCompletionCounts = {};
     APP.state.consecutiveFoundCount = 0;
+  };
+
+  // ── Letter mastery persistence ────────────────────────────────────────────
+
+  APP.recordLetterTrace = function (char, stars) {
+    const m = APP.state.letterMastery;
+    if (!m[char]) m[char] = { attempts: 0, bestStars: 0 };
+    m[char].attempts++;
+    if (stars > m[char].bestStars) m[char].bestStars = stars;
+    APP.saveMastery();
+  };
+
+  APP.saveMastery = function () {
+    try {
+      localStorage.setItem('letterMastery', JSON.stringify(APP.state.letterMastery));
+    } catch (_) {}
+  };
+
+  APP.loadMastery = function () {
+    try {
+      const raw = localStorage.getItem('letterMastery');
+      if (raw) APP.state.letterMastery = JSON.parse(raw);
+    } catch (_) {}
+  };
+
+  APP.clearMastery = function () {
+    APP.state.letterMastery = {};
+    try { localStorage.removeItem('letterMastery'); } catch (_) {}
   };
 
   APP.resetSettings = function () {
@@ -131,8 +175,15 @@ window.APP = window.APP || {};
       // Check before adding — was this animal already found before this completion?
       const alreadyFound = APP.state.completedAnimals.has(id);
 
+      // Snapshot which stories are unlocked BEFORE changing counts, so we can
+      // detect stories that become newly unlocked by this completion.
+      // APP.getUnlockedStories is defined in utils.js (loaded after state.js)
+      // but is always available by the time advanceLetter() is called at runtime.
+      const _prevUnlocked = APP.getUnlockedStories
+        ? new Set(APP.getUnlockedStories().map(function (s) { return s.id; }))
+        : new Set();
+
       // Increment per-animal completion count (keyed by locale-independent id).
-      // Used by the upcoming challenges feature; also drives consecutiveFoundCount.
       APP.state.animalCompletionCounts[id] =
         (APP.state.animalCompletionCounts[id] || 0) + 1;
 
@@ -145,6 +196,14 @@ window.APP = window.APP || {};
       // Only mark as completed when the child traced every letter themselves.
       APP.state.completedAnimals.add(id);
       APP.saveProgress();
+
+      // Detect stories newly unlocked by this completion.
+      if (APP.getUnlockedStories) {
+        APP.state.newlyUnlockedStories = APP.getUnlockedStories().filter(function (s) {
+          return !_prevUnlocked.has(s.id);
+        });
+      }
+
       APP.state.screen = "complete";
     }
   };
@@ -168,4 +227,9 @@ window.APP = window.APP || {};
   APP.goHome = function () {
     APP.state.screen = "landing";
   };
+
+  // Load letter mastery from localStorage on startup (mirrors the inline _saved
+  // load for animal progress above, but uses a method since it runs after
+  // APP.loadMastery is defined).
+  APP.loadMastery();
 })(window.APP);

@@ -59,6 +59,12 @@ window.APP = window.APP || {};
       tile.appendChild(nameEl);
 
       if (done) {
+        // Stars row — sits in flex flow immediately below the name
+        const starsRow = document.createElement('div');
+        starsRow.className = 'gallery-stars-row';
+        starsRow.innerHTML = APP.starsHtml ? APP.starsHtml(APP.animalStars(animal), 3) : '';
+        tile.appendChild(starsRow);
+
         // Full image centred in remaining space
         const imgWrap = document.createElement('div');
         imgWrap.className = 'gallery-tile-full';

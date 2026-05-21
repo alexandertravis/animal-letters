@@ -96,17 +96,24 @@ window.APP = window.APP || {};
 
     // ── Volume control ───────────────────────────────────────────────────────
 
-    // Set master volume (0–1). Un-mutes automatically.
+    // Set master volume (0–1). Saves the last non-zero level so un-muting
+    // can restore it. Auto-mutes when dragged to 0.
     setVolume(v) {
       v = Math.max(0, Math.min(1, v));
+      if (v > 0) APP.state.settings.lastVolume = v; // remember last audible level
       APP.state.settings.volume = v;
       APP.state.settings.muted  = v === 0;
       this._applyGain();
     },
 
     // Toggle or explicitly set mute state.
+    // Un-muting from volume=0 restores the last non-zero level.
     setMuted(bool) {
       APP.state.settings.muted = bool;
+      if (!bool && APP.state.settings.volume === 0) {
+        // Slider was at 0 — restore to last audible position (or default 0.7).
+        APP.state.settings.volume = APP.state.settings.lastVolume || 0.7;
+      }
       this._applyGain();
       // Adjust any currently-playing file element.
       if (currentAudio) {
@@ -123,5 +130,18 @@ window.APP = window.APP || {};
 
     // Wake / resume the AudioContext during a user gesture so later sounds fire instantly.
     _wake() { try { getMaster(); } catch (_) {} }
+  };
+
+  APP.audio.speakLetter = function (char, locale) {
+    if (!window.speechSynthesis) return;
+    if (!APP.state.settings.phonics) return;
+    if (APP.state.settings.muted) return;
+    const utt = new SpeechSynthesisUtterance(char);
+    const langMap = { en: 'en-GB', pt: 'pt-PT', fr: 'fr-FR', es: 'es-ES', de: 'de-DE', it: 'it-IT' };
+    utt.lang = langMap[locale || 'en'] || 'en-GB';
+    utt.rate = 0.85;
+    utt.volume = (APP.state.settings.volume != null ? APP.state.settings.volume : 1);
+    speechSynthesis.cancel();
+    speechSynthesis.speak(utt);
   };
 })(window.APP);

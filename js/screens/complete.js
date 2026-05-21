@@ -36,6 +36,22 @@ window.APP = window.APP || {};
       </div>
     `;
     wrap.appendChild(body);
+
+    // ── Story unlock banner ─────────────────────────────────────────────────
+    // Shown when completing this animal triggered a new story unlock.
+    // Inserted above the action buttons so it's immediately visible.
+    if (APP.state.newlyUnlockedStories && APP.state.newlyUnlockedStories.length > 0) {
+      const newStory = APP.state.newlyUnlockedStories[0];
+      const banner = document.createElement('div');
+      banner.className = 'story-unlock-banner';
+      banner.innerHTML = `
+        <span>📚 <strong>${newStory.title}</strong> unlocked!</span>
+        <button class="btn" data-act="readnow">${APP.t('complete.readNow')}</button>
+      `;
+      const actions = body.querySelector('.actions');
+      body.insertBefore(banner, actions);
+    }
+
     root.appendChild(wrap);
 
     // Collect all confetti cleanup handles. Stacking multiple animations on
@@ -49,12 +65,33 @@ window.APP = window.APP || {};
       fn();
     }
 
+    // Wire the story unlock "Read now" button (banner may not exist)
+    const readNowBtn = wrap.querySelector('[data-act=readnow]');
+    if (readNowBtn) {
+      readNowBtn.addEventListener('click', () => {
+        const story = APP.state.newlyUnlockedStories && APP.state.newlyUnlockedStories[0];
+        if (!story) return;
+        APP.state.currentStory = story;
+        APP.state.currentPage  = 0;
+        APP.state.newlyUnlockedStories = [];
+        navigate(() => ctx.go('storyreader'));
+      });
+    }
+
     bar.querySelector('[data-act=home]').addEventListener('click', () =>
       navigate(() => ctx.go('landing')));
     bar.querySelector('[data-act=settings]').addEventListener('click', () =>
       navigate(() => ctx.go('setup')));
 
     const imgBox = wrap.querySelector('#animalImg');
+
+    // Stars badge — top-right corner of the image box, always shown
+    const stars = APP.animalStars ? APP.animalStars(animal) : 0;
+    const badge = document.createElement('div');
+    badge.className = 'animal-stars-badge animal-stars-badge--lg';
+    badge.innerHTML = APP.starsHtml ? APP.starsHtml(stars, 3) : '';
+    imgBox.appendChild(badge);
+
     const img = new Image();
     img.alt = animal.displayName;
     img.className = 'animal-reveal';
@@ -76,6 +113,7 @@ window.APP = window.APP || {};
         img.classList.remove('spinning');
         img.classList.add('revealed');
         imgBox.style.cursor = 'default';
+        APP.audio.speakLetter(animal.displayName, APP.state.settings.locale);
       }, { once: true });
     });
 

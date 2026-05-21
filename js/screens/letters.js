@@ -274,8 +274,8 @@ window.APP = window.APP || {};
   // ── Main render ───────────────────────────────────────────────────────────
   function render(root, ctx) {
     // Persist toggle state across redraws without re-entering render().
-    // This screen only supports two case modes (upper/lower); 'proper' from settings
-    // falls back to 'upper' intentionally — the toggle lets the user switch manually.
+    // This screen supports three case modes: 'upper', 'lower', and 'digits'.
+    // 'proper' from settings falls back to 'upper' intentionally.
     let caseMode = APP.state.settings.letterCase === 'lower' ? 'lower' : 'upper';
     let viewMode = 'overview';
     // Active practice tracer — kept here so switching views always cleans it up.
@@ -284,7 +284,11 @@ window.APP = window.APP || {};
     // Build the full character list for the current case mode.
     // Always starts with A-Z / a-z, then appends any accented / special characters
     // that appear in the current locale's animal names (deduplicated, sorted).
+    // For 'digits' mode, returns the fixed list 0-9.
     function getLocaleChars(mode) {
+      if (mode === 'digits') {
+        return ['0','1','2','3','4','5','6','7','8','9'];
+      }
       const base = mode === 'lower'
         ? 'abcdefghijklmnopqrstuvwxyz'
         : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -327,6 +331,7 @@ window.APP = window.APP || {};
           <div class="toggle-group">
             <button data-case="upper" class="${caseMode === 'upper' ? 'on' : ''}">ABC</button>
             <button data-case="lower" class="${caseMode === 'lower' ? 'on' : ''}">abc</button>
+            <button data-case="digits" class="${caseMode === 'digits' ? 'on' : ''}">123</button>
           </div>
           <div class="toggle-group">
             <button data-view="overview"  class="${viewMode === 'overview'  ? 'on' : ''}">Overview</button>

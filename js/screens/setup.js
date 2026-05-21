@@ -131,6 +131,26 @@ window.APP = window.APP || {};
     ], s.revealMode, v => { APP.settings.update({ revealMode: v }); render(root, ctx); }));
     inner.appendChild(f4);
 
+    // Phonics
+    const f4b = document.createElement('div');
+    f4b.className = 'field';
+    f4b.innerHTML = `<label>${APP.t('settings.phonics')}</label>`;
+    f4b.appendChild(seg('phonics', [
+      { value: true,  label: APP.t('settings.on') },
+      { value: false, label: APP.t('settings.off') }
+    ], s.phonics, function (v) { APP.settings.update({ phonics: v }); render(root, ctx); }));
+    inner.appendChild(f4b);
+
+    // Game Mode
+    const fMode = document.createElement('div');
+    fMode.className = 'field';
+    fMode.innerHTML = `<label>${APP.t('settings.gameMode')}</label>`;
+    fMode.appendChild(seg('gameMode', [
+      { value: 'trace', label: APP.t('settings.gameMode.trace') },
+      { value: 'find',  label: APP.t('settings.gameMode.find')  }
+    ], s.gameMode || 'trace', function (v) { APP.settings.update({ gameMode: v }); render(root, ctx); }));
+    inner.appendChild(fMode);
+
     // Volume
     const f5 = document.createElement('div');
     f5.className = 'field';
@@ -202,7 +222,8 @@ window.APP = window.APP || {};
         return;
       }
       APP.startGame(animal);
-      ctx.go('game');
+      const mode = APP.state.settings.gameMode || 'trace';
+      ctx.go(mode === 'find' ? 'findletter' : 'game');
     });
     actions.appendChild(back);
     actions.appendChild(start);
@@ -219,6 +240,7 @@ window.APP = window.APP || {};
     resetBtn.addEventListener('click', () => {
       if (!confirm(APP.t('setup.clearConfirm'))) return;
       APP.clearProgress();
+      APP.clearMastery();
       render(root, ctx); // refresh count in button label
     });
     resetField.appendChild(resetBtn);

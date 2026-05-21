@@ -61,6 +61,15 @@ window.APP = window.APP || {};
     // Q's tail and cedilla below the baseline). This makes uppercase glyphs appear
     // larger on screen. Set false to restore the wider canvas with more bottom padding.
     TIGHT_UPPER_CANVAS:   true,
+    // Accuracy score thresholds — average deviation of pointer from checkpoint
+    // is subtracted from 100. Scores are clamped to [0, 100].
+    SCORE_3STAR: 85,   // score >= this → 3 stars
+    SCORE_2STAR: 60,   // score >= this → 2 stars (else 1 star)
+    // Delay (ms) after the score overlay closes before the next letter renders.
+    // Gives the completion speech utterance time to finish before the screen
+    // switches. Increase if the letter name is still being spoken when the
+    // next letter appears; decrease for a snappier feel once timing feels right.
+    PHONICS_ADVANCE_DELAY: 1400,
   };
 
   // ── Stroke colours ─────────────────────────────────────────────────────────
@@ -112,6 +121,30 @@ window.APP = window.APP || {};
     svg.appendChild(g);
   };
 
+  // ── Animal completion star rating ────────────────────────────────────────
+  // Returns 0–3 stars based on how many times the animal has been completed.
+  // 0 = not yet found, 1 = 1-2 completions, 2 = 3-4, 3 = 5+
+  APP.animalStars = function (animal) {
+    const count = (APP.state.animalCompletionCounts || {})[APP.animalId(animal)] || 0;
+    if (count >= 5) return 3;
+    if (count >= 3) return 2;
+    if (count >= 1) return 1;
+    return 0;
+  };
+
+  // ── Star rating HTML ──────────────────────────────────────────────────────
+  // Returns an HTML string of `total` ★ characters where the first `filled`
+  // are gold (.star-full) and the rest are grey (.star-empty).
+  // Uses the same ★ glyph throughout so filled and empty stars match visually.
+  APP.starsHtml = function (filled, total) {
+    total = total || 3;
+    let html = '';
+    for (let i = 0; i < total; i++) {
+      html += '<span class="' + (i < filled ? 'star-full' : 'star-empty') + '">★</span>';
+    }
+    return html;
+  };
+
   // ── Locale-independent animal ID ──────────────────────────────────────────
   // Derives a stable ID from the cartoon image path so found status is shared
   // across languages — the same creature has the same ID regardless of locale.
@@ -124,8 +157,28 @@ window.APP = window.APP || {};
   // ── Unicode-safe case detection ────────────────────────────────────────────
   // /[A-Z]/ misses accented uppercase letters (Á, Ã, É, Ç …).
   // This helper works for any Unicode character without a hardcoded list.
+  // Digits 0-9 are treated as "upper" — they use the same canvas size, stroke
+  // widths, and guide offsets as uppercase letters.
   APP.isUpperLetter = function (ch) {
+    if (ch.length === 1 && ch >= '0' && ch <= '9') return true;
     return ch.length === 1 && ch.toUpperCase() === ch && ch.toLowerCase() !== ch;
+  };
+
+  // ── Story unlock helpers ──────────────────────────────────────────────────
+  // Returns true if every requirement for a story is met by the current state.
+  // Requirements are checked against animalCompletionCounts — "found once" = minCount:1.
+  APP.isStoryUnlocked = function (story) {
+    if (!story || !story.requirements) return false;
+    const counts = APP.state.animalCompletionCounts || {};
+    return story.requirements.every(function (req) {
+      return (counts[req.animalId] || 0) >= req.minCount;
+    });
+  };
+
+  // Returns the subset of APP.STORIES whose requirements are currently met.
+  APP.getUnlockedStories = function () {
+    if (!APP.STORIES) return [];
+    return APP.STORIES.filter(APP.isStoryUnlocked);
   };
 
   // ── Dot stroke helpers ─────────────────────────────────────────────────────

@@ -54,8 +54,8 @@
 - [x] `data/animals.js` — 3 seed animals (CAT, DOG, OWL)
 - [x] `data/animals.js` — expanded to 25 animals (3–6 letter names)
 - [x] `assets/images/cartoon/` — SVG placeholder for each of the 25 animals
-- [ ] `assets/images/realistic/` — real photos (user to supply)
-- [ ] `assets/audio/` — real animal sound MP3s (user to supply)
+- ~~`assets/images/realistic/` — real photos~~ (dropped 2026-05-21 — see Section 11b)
+- ~~`assets/audio/` — real animal sound MP3s~~ (dropped 2026-05-21 — see Section 11b)
 
 ## Section 8 — Gallery
 - [x] Gallery screen accessible from landing and complete screens
@@ -129,19 +129,71 @@
 - [x] `js/letterData.js` — 22 accented char references (`{ base, accent }`) replacing 22 skeleton entries
 - [x] `APP.getLetter()` updated to compose base + accent strokes at runtime
 - [x] `styles.css` — `.locale-select` dropdown styled to match design (muted bg, custom caret, 48px min-height)
-- [ ] Accent strokes authored for `acute.upper/lower` (Á á É é Í í Ó ó Ú ú)
-- [ ] Accent strokes authored for `circumflex.upper/lower` (Â â Ê ê Ô ô)
-- [ ] Accent strokes authored for `tilde.upper/lower` (Ã ã Õ õ)
-- [ ] Accent strokes authored for `cedilla.upper/lower` (Ç ç)
-- [ ] Uncomment CÃO and LEÃO in `data/animals-pt.js` once tilde + cedilla strokes ready
+- [x] Accent strokes authored for `acute.upper/lower` (Á á É é Í í Ó ó Ú ú)
+- [x] Accent strokes authored for `circumflex.upper/lower` (Â â Ê ê Ô ô)
+- [x] Accent strokes authored for `tilde.upper/lower` (Ã ã Õ õ)
+- [x] Accent strokes authored for `cedilla.upper/lower` (Ç ç)
+- [x] Uncomment CÃO and LEÃO in `data/animals-pt.js` once tilde + cedilla strokes ready
+
+## Section 14 — Story Library (2026-05-21 session)
+- [x] `data/stories.js` — 8 unlockable stories (Goldilocks, Three Pigs, Hare & Tortoise, Ugly Duckling, Three Billy Goats, Three Blind Mice, Hey Diddle Diddle, Owl & Pussy-Cat)
+- [x] Page format: `{ text, image }` (explicit SVG path, NOT `animal` id)
+- [x] `js/utils.js` — `APP.isStoryUnlocked(story)`, `APP.getUnlockedStories()`
+- [x] `js/utils.js` — `APP.animalStars(animal)` (0–3 stars), `APP.starsHtml(filled, total)`
+- [x] `js/state.js` — `newlyUnlockedStories[]`, `currentStory`, `currentPage` added to state
+- [x] `js/state.js` — `advanceLetter()` snapshots unlocked stories before incrementing count, detects newly unlocked after save
+- [x] `js/screens/library.js` — achievements section + books grid; unlocked/locked tiles; fade-out before ctx.go
+- [x] `js/screens/storyreader.js` — full open-book simulation (see Section 15)
+- [x] `js/screens/complete.js` — unlock banner + "Read now →" button when story newly unlocked
+- [x] `js/screens/landing.js` — "Story Library" button added
+- [x] `data/i18n.js` — all 6 locales: `landing.library`, `library.*`, `reader.finish`, `complete.readNow`
+- [x] `index.html` — `data/stories.js`, `js/screens/library.js`, `js/screens/storyreader.js` script tags
+- [x] `styles.css` — library, book-tile, achievement, unlock-banner, reader CSS
+
+## Section 15 — Book Simulation Reader (2026-05-21 session)
+- [x] Phase state machine: `'closed'` → `'opening'` → `'open'` → `'closing'`
+- [x] Closed cover: cover colour + title + animal art + "Tap to open"; swings open via `coverSwingOpen` keyframe (perspective rotateY, 420ms)
+- [x] Two-panel spread: left = text, right = SVG image; `.book-page.left` / `.book-page.right`
+- [x] Synthetic spreads: title (left=colour, right=title+art) and outro (left="The End", right=colour) generated at runtime
+- [x] Background layer `.spread-bg` pre-renders incoming spread for page-turn visibility
+- [x] Page turns via `clip-path: inset()` — direction-aware; right collapses then left grows (or mirror for prev)
+- [x] Corner triangle folds (bottom-left/right) as nav controls
+- [x] Outer nav arrows positioned left/right of book
+- [x] Page counter floats top-centre; hidden on title/outro spreads
+- [x] Scene overlay fades in/out; book zooms in via `bookIn` keyframe
+- [x] Library fades out (0.3s) before `ctx.go('storyreader')`
+
+## Section 16 — Dev Tools (2026-05-21 session)
+- [x] Animal Review → "Counts" tab: alphabetical list of all animals with +/− steppers to manually set `animalCompletionCounts`, for testing story unlock requirements
+- [x] "Reset all counts to 0" button; keeps `completedAnimals` Set in sync
+- [x] `styles.css` — `.devanimals-counts*` CSS
+
+## Section 17 — Audio & Phonics (2026-05-21 session)
+- [x] Speak letter on mount (child knows what to trace)
+- [x] Speak letter on completion (confirmation before advancing)
+- [x] `APP.TRACER_CONFIG.PHONICS_ADVANCE_DELAY` (currently 1400ms) — configurable delay before screen advance
+- [x] Animal name spoken after image spin on complete screen
+- [x] Volume slider in game topbar; hidden below 480px, visible at 480px+
+- [x] Mute button in game topbar
+- [x] `lastVolume` setting: saves last non-zero volume; restores on un-mute from 0
+- [x] `setVolume(0)` auto-mutes; `setMuted(false)` restores from `lastVolume`
+
+## Section 18 — Stars System (2026-05-21 session)
+- [x] `APP.animalStars(animal)` — 0-3 stars based on `animalCompletionCounts` (≥1=1★, ≥3=2★, ≥5=3★)
+- [x] `APP.starsHtml(filled, total)` — `★` U+2605 for both states, CSS colour classes
+- [x] Complete screen: large star badge (top-right of image box, `animal-stars-badge--lg`)
+- [x] Gallery screen: star row between name and image (in flex flow, not absolutely positioned)
+- [x] Removed per-letter score overlay (was broken; replaced by animal-level stars)
 
 ## Section 11b — Future / Nice-to-Have
-- [ ] Real cartoon SVG artwork for all 25 animals
-- [ ] Real realistic photos for all 25 animals
-- [ ] Real animal audio MP3s for all 25 animals
+- [ ] Real cartoon SVG artwork for all animals
+- [ ] Real realistic photos for all animals
+- [ ] Real animal audio MP3s for all animals
 - [ ] Additional animals (target: full A–Z coverage by first letter)
+- [ ] Replace story SVG illustrations with real hand-drawn page images (storyreader `page.image` already accepts any path)
+- [ ] Book simulation: test on mobile/tablet and tune book aspect ratio + font sizes
+- [ ] Book simulation: close animation (cover swings back shut before scene fades)
+- [ ] Story Library: "Read" label on locked tiles showing remaining requirements more visually
 - [ ] Difficulty levels (stroke tolerance, draw radius)
-- [ ] Celebration animations (confetti, bounce) on word complete
 - [ ] Accessibility audit (ARIA labels, keyboard fallback)
-- [ ] Cross-session save via localStorage (user opted out initially)
-- [ ] Progress bar or star rating on complete screen
+- [ ] Accent strokes for PT locale (acute, circumflex, tilde, cedilla) — see Section 13

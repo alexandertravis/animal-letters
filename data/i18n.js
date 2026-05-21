@@ -31,7 +31,12 @@ APP.I18N = {
     'landing.newGame':    'New Game',
     'landing.continue':   'Continue',
     'landing.myAnimals':  'My Animals',
+    'landing.progress':   'My Progress',
+    'landing.numbers':    'Numbers',
     'landing.settings':   'Settings',
+
+    // Progress screen
+    'screens.progress.title': 'My Progress',
 
     // Setup / Settings
     'setup.title':        'Settings',
@@ -48,6 +53,9 @@ APP.I18N = {
     'setup.hidden':       'Hidden → reveal',
     'setup.volume':       'Volume',
     'setup.language':     'Language',
+    'settings.phonics':   'Phonics',
+    'settings.on':        'On',
+    'settings.off':       'Off',
     'setup.back':         'Back',
     'setup.newGame':      'New Game',
     'setup.noAnimals':    'No animals fit that length. Try a longer name length.',
@@ -62,11 +70,27 @@ APP.I18N = {
     'game.restart':       'Restart Letter',
     'game.skip':          'Skip Animal',
 
+    // Find the Letter
+    'settings.gameMode':       'Game Mode',
+    'settings.gameMode.trace': 'Trace',
+    'settings.gameMode.find':  'Find',
+
     // Complete
     'complete.hooray':    'Hooray!',
     'complete.myAnimals': 'My Animals',
     'complete.next':      'Next Animal',
     'complete.greatJob':  'Great Job! 🎉',
+    'complete.readNow':   'Read now →',
+
+    // Story Library
+    'landing.library':          'Story Library',
+    'library.title':            'Story Library',
+    'library.achievements':     'Your Achievements',
+    'library.books':            'Stories',
+    'library.noAchievements':   'Complete animal combinations to unlock stories!',
+    'library.read':             'Read',
+    'library.locked':           'Locked',
+    'reader.finish':            'Finish',
   },
 
   pt: {
@@ -76,7 +100,12 @@ APP.I18N = {
     'landing.newGame':    'Novo Jogo',
     'landing.continue':   'Continuar',
     'landing.myAnimals':  'Meus Animais',
+    'landing.progress':   'Meu Progresso',
+    'landing.numbers':    'Números',
     'landing.settings':   'Configurações',
+
+    // Progress screen
+    'screens.progress.title': 'Meu Progresso',
 
     // Setup / Settings
     'setup.title':        'Configurações',
@@ -93,6 +122,9 @@ APP.I18N = {
     'setup.hidden':       'Oculto → revelar',
     'setup.volume':       'Volume',
     'setup.language':     'Idioma',
+    'settings.phonics':   'Fonética',
+    'settings.on':        'Ligado',
+    'settings.off':       'Desligado',
     'setup.back':         'Voltar',
     'setup.newGame':      'Novo Jogo',
     'setup.noAnimals':    'Nenhum animal tem esse tamanho. Tente um nome mais longo.',
@@ -107,11 +139,21 @@ APP.I18N = {
     'game.restart':       'Recomeçar Letra',
     'game.skip':          'Pular Animal',
 
+    // Find the Letter
+    'settings.gameMode':       'Modo de Jogo',
+    'settings.gameMode.trace': 'Traçar',
+    'settings.gameMode.find':  'Encontrar',
+
     // Complete
     'complete.hooray':    'Eba!',
     'complete.myAnimals': 'Meus Animais',
     'complete.next':      'Próximo Animal',
     'complete.greatJob':  'Muito bem! 🎉',
+    'complete.readNow':   'Read now →',
+    'landing.library': 'Story Library', 'library.title': 'Story Library',
+    'library.achievements': 'Your Achievements', 'library.books': 'Stories',
+    'library.noAchievements': 'Complete animal combinations to unlock stories!',
+    'library.read': 'Read', 'library.locked': 'Locked', 'reader.finish': 'Finish',
   },
 
   fr: {
@@ -121,7 +163,12 @@ APP.I18N = {
     'landing.newGame':    'Nouveau jeu',
     'landing.continue':   'Continuer',
     'landing.myAnimals':  'Mes Animaux',
+    'landing.progress':   'Ma Progression',
+    'landing.numbers':    'Chiffres',
     'landing.settings':   'Paramètres',
+
+    // Progress screen
+    'screens.progress.title': 'Ma Progression',
 
     // Setup / Settings
     'setup.title':        'Paramètres',
@@ -138,6 +185,9 @@ APP.I18N = {
     'setup.hidden':       'Caché → révéler',
     'setup.volume':       'Volume',
     'setup.language':     'Langue',
+    'settings.phonics':   'Phonétique',
+    'settings.on':        'Activé',
+    'settings.off':       'Désactivé',
     'setup.back':         'Retour',
     'setup.newGame':      'Nouveau jeu',
     'setup.noAnimals':    'Aucun animal ne correspond. Essayez un nom plus long.',
@@ -152,11 +202,21 @@ APP.I18N = {
     'game.restart':       'Recommencer la lettre',
     'game.skip':          'Passer l\'animal',
 
+    // Find the Letter
+    'settings.gameMode':       'Mode de Jeu',
+    'settings.gameMode.trace': 'Tracer',
+    'settings.gameMode.find':  'Trouver',
+
     // Complete
     'complete.hooray':    'Bravo !',
     'complete.myAnimals': 'Mes Animaux',
     'complete.next':      'Animal suivant',
     'complete.greatJob':  'Excellent travail ! 🎉',
+    'complete.readNow':   'Read now →',
+    'landing.library': 'Story Library', 'library.title': 'Story Library',
+    'library.achievements': 'Your Achievements', 'library.books': 'Stories',
+    'library.noAchievements': 'Complete animal combinations to unlock stories!',
+    'library.read': 'Read', 'library.locked': 'Locked', 'reader.finish': 'Finish',
   },
 
   es: {
@@ -166,7 +226,12 @@ APP.I18N = {
     'landing.newGame':    'Nuevo juego',
     'landing.continue':   'Continuar',
     'landing.myAnimals':  'Mis Animales',
+    'landing.progress':   'Mi Progreso',
+    'landing.numbers':    'Números',
     'landing.settings':   'Ajustes',
+
+    // Progress screen
+    'screens.progress.title': 'Mi Progreso',
 
     // Setup / Settings
     'setup.title':        'Ajustes',
@@ -183,6 +248,9 @@ APP.I18N = {
     'setup.hidden':       'Oculto → revelar',
     'setup.volume':       'Volumen',
     'setup.language':     'Idioma',
+    'settings.phonics':   'Fonética',
+    'settings.on':        'Activado',
+    'settings.off':       'Desactivado',
     'setup.back':         'Volver',
     'setup.newGame':      'Nuevo juego',
     'setup.noAnimals':    'Ningún animal encaja. Intenta un nombre más largo.',
@@ -197,11 +265,21 @@ APP.I18N = {
     'game.restart':       'Reiniciar letra',
     'game.skip':          'Saltar animal',
 
+    // Find the Letter
+    'settings.gameMode':       'Modo de Juego',
+    'settings.gameMode.trace': 'Trazar',
+    'settings.gameMode.find':  'Encontrar',
+
     // Complete
     'complete.hooray':    '¡Hurra!',
     'complete.myAnimals': 'Mis Animales',
     'complete.next':      'Siguiente animal',
     'complete.greatJob':  '¡Muy bien! 🎉',
+    'complete.readNow':   'Read now →',
+    'landing.library': 'Story Library', 'library.title': 'Story Library',
+    'library.achievements': 'Your Achievements', 'library.books': 'Stories',
+    'library.noAchievements': 'Complete animal combinations to unlock stories!',
+    'library.read': 'Read', 'library.locked': 'Locked', 'reader.finish': 'Finish',
   },
 
   de: {
@@ -211,7 +289,12 @@ APP.I18N = {
     'landing.newGame':    'Neues Spiel',
     'landing.continue':   'Weiter',
     'landing.myAnimals':  'Meine Tiere',
+    'landing.progress':   'Mein Fortschritt',
+    'landing.numbers':    'Zahlen',
     'landing.settings':   'Einstellungen',
+
+    // Progress screen
+    'screens.progress.title': 'Mein Fortschritt',
 
     // Setup / Settings
     'setup.title':        'Einstellungen',
@@ -228,6 +311,9 @@ APP.I18N = {
     'setup.hidden':       'Versteckt → enthüllen',
     'setup.volume':       'Lautstärke',
     'setup.language':     'Sprache',
+    'settings.phonics':   'Phonetik',
+    'settings.on':        'An',
+    'settings.off':       'Aus',
     'setup.back':         'Zurück',
     'setup.newGame':      'Neues Spiel',
     'setup.noAnimals':    'Kein Tier passt. Versuche einen längeren Namen.',
@@ -242,11 +328,21 @@ APP.I18N = {
     'game.restart':       'Buchstabe wiederholen',
     'game.skip':          'Tier überspringen',
 
+    // Find the Letter
+    'settings.gameMode':       'Spielmodus',
+    'settings.gameMode.trace': 'Zeichnen',
+    'settings.gameMode.find':  'Finden',
+
     // Complete
     'complete.hooray':    'Hurra!',
     'complete.myAnimals': 'Meine Tiere',
     'complete.next':      'Nächstes Tier',
     'complete.greatJob':  'Toll gemacht! 🎉',
+    'complete.readNow':   'Read now →',
+    'landing.library': 'Story Library', 'library.title': 'Story Library',
+    'library.achievements': 'Your Achievements', 'library.books': 'Stories',
+    'library.noAchievements': 'Complete animal combinations to unlock stories!',
+    'library.read': 'Read', 'library.locked': 'Locked', 'reader.finish': 'Finish',
   },
 
   it: {
@@ -256,7 +352,12 @@ APP.I18N = {
     'landing.newGame':    'Nuovo gioco',
     'landing.continue':   'Continua',
     'landing.myAnimals':  'I miei animali',
+    'landing.progress':   'I Miei Progressi',
+    'landing.numbers':    'Numeri',
     'landing.settings':   'Impostazioni',
+
+    // Progress screen
+    'screens.progress.title': 'I Miei Progressi',
 
     // Setup / Settings
     'setup.title':        'Impostazioni',
@@ -273,6 +374,9 @@ APP.I18N = {
     'setup.hidden':       'Nascosto → rivela',
     'setup.volume':       'Volume',
     'setup.language':     'Lingua',
+    'settings.phonics':   'Fonetica',
+    'settings.on':        'Attivo',
+    'settings.off':       'Disattivo',
     'setup.back':         'Indietro',
     'setup.newGame':      'Nuovo gioco',
     'setup.noAnimals':    'Nessun animale corrisponde. Prova un nome più lungo.',
@@ -287,10 +391,20 @@ APP.I18N = {
     'game.restart':       'Ripeti la lettera',
     'game.skip':          'Salta animale',
 
+    // Find the Letter
+    'settings.gameMode':       'Modalità di Gioco',
+    'settings.gameMode.trace': 'Traccia',
+    'settings.gameMode.find':  'Trova',
+
     // Complete
     'complete.hooray':    'Evviva!',
     'complete.myAnimals': 'I miei animali',
     'complete.next':      'Animale successivo',
     'complete.greatJob':  'Ottimo lavoro! 🎉',
+    'complete.readNow':   'Read now →',
+    'landing.library': 'Story Library', 'library.title': 'Story Library',
+    'library.achievements': 'Your Achievements', 'library.books': 'Stories',
+    'library.noAchievements': 'Complete animal combinations to unlock stories!',
+    'library.read': 'Read', 'library.locked': 'Locked', 'reader.finish': 'Finish',
   },
 };

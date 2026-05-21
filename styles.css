@@ -336,6 +336,7 @@ html, body {
 }
 .complete .animalName { font-size: clamp(2rem, 7vw, 3.5rem); font-weight: 800; letter-spacing: 0.08em; }
 .complete .animalImg {
+  position: relative;
   width: min(320px, 70vw);
   height: min(320px, 70vw);
   cursor: pointer;
@@ -456,6 +457,7 @@ html, body {
 }
 
 .gallery-tile {
+  position: relative;
   width: 140px;
   height: 140px;
   background: #fff;
@@ -965,4 +967,559 @@ html, body {
   background: var(--primary);
   border-color: var(--primary);
   color: #fff;
+}
+
+/* ── Score overlay (feature/accuracy) ──────────────────────────────────────── */
+.score-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(254, 246, 228, 0.92);
+  z-index: 10;
+  animation: scoreOverlayIn 0.18s ease-out;
+  cursor: pointer;
+}
+.score-stars {
+  font-size: 3rem;
+  letter-spacing: 0.08em;
+  filter: drop-shadow(0 2px 4px rgba(0,24,88,0.18));
+}
+@keyframes scoreOverlayIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Progress screen (feature/progress) ────────────────────────────────────── */
+.progress-screen { display: flex; flex-direction: column; height: 100%; }
+.progress-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 80px);
+  gap: 8px;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+.progress-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 6px 4px 4px;
+  min-height: 80px;
+}
+.progress-letter {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.1;
+}
+.star-row { font-size: 0.75rem; margin-top: 2px; }
+.progress-badge {
+  position: absolute;
+  top: 4px;
+  right: 5px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-radius: 999px;
+  padding: 1px 5px;
+}
+
+/* ── Find the Letter (feature/find-the-letter) ─────────────────────────────── */
+.find-prompt {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 12px;
+  text-align: center;
+}
+.find-prompt strong { color: var(--primary); font-size: 2rem; }
+.find-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 16px;
+  width: 100%;
+  max-width: 380px;
+}
+.find-tile {
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  aspect-ratio: 1;
+  transition: transform 0.1s;
+  overflow: hidden;
+  padding: 8px;
+  -webkit-tap-highlight-color: transparent;
+}
+.find-tile:active { transform: scale(0.95); }
+.find-tile.correct { background: #2ecc71; box-shadow: 0 6px 0 rgba(0,0,0,0.15); }
+.find-tile.wrong   { background: #e74c3c; animation: findShake 0.35s; }
+@keyframes findShake {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-10px); }
+  40%     { transform: translateX(10px); }
+  60%     { transform: translateX(-6px); }
+  80%     { transform: translateX(4px); }
+}
+
+/* ── Star rating colors (shared by all star displays) ───────────────────── */
+.star-full  { color: #ffb703; }
+.star-empty { color: #c8c8c8; }
+
+/* ── Gallery stars row — in flex flow, immediately below the animal name ── */
+.gallery-stars-row {
+  flex-shrink: 0;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+/* ── Complete screen stars badge — overlays top-right of image box ───────── */
+.animal-stars-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 2;
+  display: flex;
+  gap: 2px;
+}
+.animal-stars-badge--lg {
+  font-size: 2.4rem;
+  gap: 4px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
+}
+
+/* ── Game-screen volume control ─────────────────────────────────────────────
+   Always shows a mute button; the slider appears only when there is room.  */
+.vol-ctrl { gap: 4px; }
+.vol-slider {
+  display: none;
+  width: 72px;
+  accent-color: var(--primary);
+  cursor: pointer;
+  touch-action: none;
+}
+@media (min-width: 480px) {
+  .vol-slider { display: block; }
+}
+
+/* ── Library screen ──────────────────────────────────────────────────────── */
+.library { display: flex; flex-direction: column; height: 100%; }
+.library-body { flex: 1; overflow-y: auto; padding: 16px; }
+.library-section-title {
+  font-size: 1rem; font-weight: 700; color: var(--ink); opacity: 0.55;
+  text-transform: uppercase; letter-spacing: 0.1em; margin: 16px 0 10px;
+}
+.achievement-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.achievement-chip {
+  display: flex; align-items: center; gap: 6px;
+  border-radius: 999px; padding: 6px 14px;
+  font-weight: 700; font-size: 0.88rem;
+  box-shadow: var(--shadow);
+}
+.achievement-empty { color: var(--ink); opacity: 0.5; font-size: 0.95rem; margin-bottom: 20px; }
+.books-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, 160px);
+  gap: 16px; justify-content: center; padding-bottom: 24px;
+}
+.book-tile {
+  width: 160px; min-height: 200px; border-radius: var(--radius);
+  box-shadow: var(--shadow); display: flex; flex-direction: column;
+  align-items: center; padding: 16px 12px 12px;
+  cursor: pointer; transition: transform 0.12s;
+}
+.book-tile:not(.locked):active { transform: scale(0.96); }
+.book-tile.locked { background: #e0e0e0 !important; cursor: default; opacity: 0.72; }
+.book-tile-cover { width: 80px; height: 80px; object-fit: contain; margin-bottom: 10px; }
+.book-tile-icon { font-size: 2.4rem; margin-bottom: 10px; line-height: 1; }
+.book-tile-title {
+  font-size: 0.82rem; font-weight: 700; text-align: center;
+  color: var(--ink); line-height: 1.3; flex: 1;
+}
+.book-tile.locked .book-tile-title { color: #666; }
+.book-tile-hint { font-size: 0.68rem; color: #888; text-align: center; margin-top: 6px; line-height: 1.5; white-space: pre-line; }
+.book-tile-read { margin-top: 10px; font-size: 0.8rem; padding: 8px 18px; }
+.book-tile-read-label {
+  margin-top: 10px; font-size: 0.8rem; font-weight: 700;
+  color: rgba(0,0,0,0.55); text-transform: uppercase; letter-spacing: 0.06em;
+}
+
+/* Story unlock banner on complete screen */
+.story-unlock-banner {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  gap: 10px; background: #fff8e1; border: 2px solid #ffb703;
+  border-radius: var(--radius); padding: 12px 16px; margin: 12px 0;
+}
+.story-unlock-banner span { font-size: 0.95rem; color: var(--ink); }
+.story-unlock-banner .btn { font-size: 0.9rem; padding: 10px 18px; }
+
+/* ── Story reader — old single-column CSS removed; see book simulation below ── */
+
+/* ── Dev: Counts tab ──────────────────────────────────────────────────── */
+.devanimals-counts { padding: 16px; overflow-y: auto; }
+.devanimals-counts-intro { font-size: 0.88rem; color: var(--ink); opacity: 0.6; margin: 0 0 10px; }
+.devanimals-counts-reset { margin-bottom: 16px; font-size: 0.82rem; }
+.devanimals-counts-list { display: flex; flex-direction: column; gap: 4px; }
+.devanimals-counts-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 6px 10px; border-radius: 8px; background: var(--card);
+}
+.devanimals-counts-thumb { width: 36px; height: 36px; object-fit: contain; flex-shrink: 0; }
+.devanimals-counts-name { flex: 1; font-weight: 600; font-size: 0.92rem; }
+.devanimals-counts-stepper { display: flex; align-items: center; gap: 8px; }
+.devanimals-counts-value {
+  min-width: 28px; text-align: center; font-size: 1rem;
+  font-weight: 700; font-variant-numeric: tabular-nums;
+}
+
+/* ── Book tile hover lift (library grid) ──────────────────────────────── */
+.book-tile {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.book-tile:not(.locked):hover {
+  transform: translateY(-6px) scale(1.04);
+  box-shadow: 0 14px 36px rgba(0,0,0,0.22);
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   BOOK SIMULATION — full open-book reader
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Scene overlay ─────────────────────────────────────────────────────── */
+.reader-scene {
+  position: fixed; inset: 0; z-index: 20;
+  background: rgba(10, 8, 20, 0.9);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  animation: sceneIn 0.3s ease both;
+}
+@keyframes sceneIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.reader-scene.scene-fade-out { animation: sceneOut 0.32s ease forwards; }
+@keyframes sceneOut {
+  to { opacity: 0; }
+}
+
+/* ── Floating controls (close button + page counter) ───────────────────── */
+.reader-controls {
+  position: absolute; top: 16px; left: 16px; right: 16px; z-index: 25;
+  display: flex; justify-content: space-between; align-items: center;
+  pointer-events: none;
+}
+.reader-controls > * { pointer-events: all; }
+
+.reader-close-btn {
+  background: rgba(255,255,255,0.15); color: #fff;
+  border: none; border-radius: 50%;
+  width: 40px; height: 40px; font-size: 1.1rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.reader-close-btn:hover { background: rgba(255,255,255,0.28); }
+
+.reader-page-count {
+  font-size: 0.88rem; font-weight: 600; color: rgba(255,255,255,0.7);
+  background: rgba(0,0,0,0.35); border-radius: 999px; padding: 4px 14px;
+  transition: opacity 0.2s;
+}
+
+/* ── Book container ─────────────────────────────────────────────────────── */
+.book {
+  position: relative;
+  width: min(740px, 92vw);
+  aspect-ratio: 2 / 1.35;
+  animation: bookIn 0.38s ease-out both;
+  /* transform is reserved for the closed-state centring shift (see below) */
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* bookIn animates opacity only — never transform — so the closed-state
+   translateX shift is not clobbered by the entrance animation. */
+@keyframes bookIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+/* When closed, the book shows a single (right-half) cover page; shifting the
+   whole book left by a quarter of its width visually centres that one page.
+   Opening removes this class so the book slides to reveal the 2-page spread. */
+.book.book-closed-state { transform: translateX(-25%); }
+
+/* ── Closed cover (single right-half page; book is shifted to centre it) ─── */
+.book-closed {
+  position: absolute; top: 0; right: 0; width: 50%; height: 100%;
+  border-radius: 3px 6px 6px 3px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px;
+  cursor: pointer; color: #fff;
+  box-shadow: -6px 6px 24px rgba(0,0,0,0.55), 4px 4px 16px rgba(0,0,0,0.35);
+  user-select: none;
+  z-index: 7;
+}
+.book-closed-img   { width: 30%; max-height: 38%; object-fit: contain; opacity: 0.92; }
+.book-closed-title {
+  font-size: clamp(1rem, 3vw, 1.7rem); font-weight: 700;
+  text-align: center; padding: 0 20px; line-height: 1.25;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+/* Periodic idle shake to hint the book is tappable. The shake occupies ~12% of
+   the 5 s cycle (~0.6 s of motion, ~4.4 s of rest). A 2 s initial delay lets
+   the entrance animation finish before the first nudge. */
+.book-closed {
+  animation: bookIdleShake 5s ease-in-out 2s infinite;
+}
+@keyframes bookIdleShake {
+  0%, 13%, 100% { transform: rotate(0deg); }
+  2%  { transform: rotate(-3deg); }
+  5%  { transform: rotate(3deg); }
+  8%  { transform: rotate(-2deg); }
+  11% { transform: rotate(1deg); }
+}
+
+/* ── Open spread ────────────────────────────────────────────────────────── */
+.book-spread {
+  width: 100%; height: 100%;
+  display: flex;
+  position: relative;
+  border-radius: 3px 6px 6px 3px;
+  box-shadow: -6px 6px 24px rgba(0,0,0,0.55), 4px 4px 16px rgba(0,0,0,0.35);
+  overflow: hidden;
+  /* 3D viewing distance for the flipping leaf. Set here (a transform-free
+     element) NOT on .book — putting perspective on the transformed .book
+     creates a nested 3D context that squashes the leaf. */
+  perspective: 1700px;
+  animation: spreadReveal 0.38s ease-out both;
+}
+@keyframes spreadReveal {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Page panels ────────────────────────────────────────────────────────── */
+.book-page {
+  width: 50%; height: 100%;
+  background: #fffef9;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  z-index: 1;
+  /* Smooth clip-path transitions for page turns */
+  transition: clip-path 0.3s ease-in-out;
+}
+.book-page.left  { border-right: 1px solid rgba(0,0,0,0.07); }
+
+.book-page-inner {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 28px 24px; box-sizing: border-box;
+}
+
+/* ── Spine ──────────────────────────────────────────────────────────────── */
+.book-spine {
+  position: absolute; left: calc(50% - 3px); top: 0; z-index: 4;
+  width: 6px; height: 100%;
+  background: linear-gradient(to right,
+    rgba(0,0,0,0.22), rgba(0,0,0,0.06), rgba(0,0,0,0.22));
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+/* The spine sits UNDER the turning leaf, so the leaf hides it for the whole
+   turn and is then removed in one frame. To avoid a white→dark snap we keep
+   the spine fully hidden while flipping (is-flipping present) and let it fade
+   in only AFTER the leaf is removed — i.e. when is-flipping is dropped in the
+   turn's teardown, this rule stops applying and the transition above runs. */
+.book-spread.is-flipping .book-spine { opacity: 0; }
+/* Drop the spread's own box-shadow while a leaf is in flight — it would
+   otherwise frame the transparent blank area during cover open/close,
+   producing a shadow halo around empty space. It fades back in via the
+   transition on .book-spread when is-flipping is removed. */
+.book-spread.is-flipping { box-shadow: none; }
+
+/* ── Page turn: 3D leaf flip ────────────────────────────────────────────── */
+/* A transient .page-leaf is layered over one half of the spread and rotated
+   about the spine. It carries two faces (front = outgoing content, back =
+   incoming content). The static pages underneath are swapped while hidden.
+   The same leaf powers page turns AND the cover open/close. */
+.page-leaf {
+  position: absolute; top: 0; height: 100%; width: 50%;
+  transform-style: preserve-3d;
+  z-index: 6;
+  transition: transform 0.6s cubic-bezier(0.42, 0, 0.3, 1);
+}
+.page-leaf.right { left: 50%; transform-origin: left  center; transform: rotateY(0deg); }
+.page-leaf.left  { left: 0;   transform-origin: right center; transform: rotateY(0deg); }
+.page-leaf.right.flipping { transform: rotateY(-180deg); }
+.page-leaf.left.flipping  { transform: rotateY(180deg);  }
+
+.leaf-face {
+  position: absolute; inset: 0;
+  background: #fffef9;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 28px 24px; box-sizing: border-box;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.leaf-face.back { transform: rotateY(180deg); }
+
+/* Curl shading: a gradient darkest toward the spine (the bend) fading out to
+   the free edge, so the turning leaf reads as a curling page rather than a
+   flatly-dimmed panel. The opacity ramp peaks near edge-on (~90°). */
+.leaf-shade {
+  position: absolute; inset: 0; z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  animation: leafShade 0.6s ease both;
+}
+.page-leaf.right .leaf-shade {   /* spine = left edge */
+  background: linear-gradient(to right,
+    rgba(0,0,0,0.6), rgba(0,0,0,0.12) 55%, rgba(0,0,0,0) 100%);
+}
+.page-leaf.left .leaf-shade {    /* spine = right edge */
+  background: linear-gradient(to left,
+    rgba(0,0,0,0.6), rgba(0,0,0,0.12) 55%, rgba(0,0,0,0) 100%);
+}
+/* The cover is a solid board, not a thin page — skip the curl shade so it
+   doesn't smear a heavy shadow across the cover during open/close. */
+.page-leaf.cover-leaf .leaf-shade { display: none; }
+/* Flutter leaves use a shorter, sharper transition for a rapid-fan effect */
+.page-leaf.flutter-leaf {
+  transition: transform 0.25s ease-in;
+}
+@keyframes leafShade {
+  0%   { opacity: 0;   }
+  50%  { opacity: 0.9; }
+  100% { opacity: 0;   }
+}
+
+/* Cover face of the leaf (used by cover open/close). No box-shadow here — a
+   drop shadow on the rotating cover smears a big stray shadow across the
+   background and the page beneath during open/close. */
+.leaf-face.cover-face {
+  gap: 14px; color: #fff;
+  padding: 0;
+}
+
+/* On the outro spread the right panel is the back cover — tappable to close. */
+.book-page.is-back-cover { cursor: pointer; }
+
+/* ── Corner page folds (peeled-corner curl) ─────────────────────────────── */
+/* Built around a diagonal crease (the fold line between the current page and
+   the next page below it). Shading radiates from that diagonal both ways:
+   - toward the corner: the lifted triangle = the BACK of the current page,
+     lit, fading to a slightly darker rolled tip;
+   - toward the interior: a soft shadow the lifted flap casts on the next page.
+   The gradient runs perpendicular to the crease (135deg for the bottom-right
+   corner, 225deg mirrored for bottom-left). */
+.page-fold {
+  position: absolute; bottom: 0; z-index: 5;
+  width: 60px; height: 60px;
+  cursor: pointer;
+  outline: 1px solid rgba(0,0,0,0.14);  /* thin edge separates fold from page */
+  /* Explicit visible resting state (scale 1, opacity 1) so the grow-in
+     transition has a concrete target — transitioning to implicit `none` is
+     unreliable. Origin is the page corner so it unfurls out of the corner. */
+  transform: scale(1);
+  opacity: 1;
+  transition: transform 0.32s cubic-bezier(0.34, 1.2, 0.5, 1), opacity 0.28s ease;
+}
+.page-fold:hover  { transform: scale(1.08); }
+.page-fold:active { transform: scale(0.94); }
+.page-fold.next {
+  right: 0;
+  transform-origin: 100% 100%;          /* bottom-right corner */
+  border-radius: 0 0 7px 0;             /* rounded curl tip */
+  background: linear-gradient(135deg,
+    transparent 33%,
+    rgba(0,0,0,0.05) 41%,
+    rgba(0,0,0,0.22) 47%,               /* shadow cast on next page */
+    rgba(45,38,24,0.5) 50%,             /* the diagonal crease (darkest) */
+    #9e9080 52%,                        /* back of current page (flap) — clearly distinct */
+    #b5a995 70%,
+    #8a7d6c 100%);                      /* rolled tip — darkest for visual depth */
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.22));
+}
+.page-fold.prev {
+  left: 0;
+  transform-origin: 0% 100%;            /* bottom-left corner */
+  border-radius: 0 0 0 7px;
+  background: linear-gradient(225deg,
+    transparent 33%,
+    rgba(0,0,0,0.05) 41%,
+    rgba(0,0,0,0.22) 47%,
+    rgba(45,38,24,0.5) 50%,
+    #9e9080 52%,
+    #b5a995 70%,
+    #8a7d6c 100%);
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.22));
+}
+
+/* Pages show the dark scene background during cover open/close — clear the
+   page fill AND its centre border so nothing shades the bare background. */
+.book-page.is-blank { background: transparent; border-color: transparent; }
+
+/* While a leaf is flipping the folds collapse into their corner (scale 0).
+   When the flip ends (is-flipping removed) they grow back out of the corner
+   via the transform transition above — so they unfurl into place instead of
+   popping in. */
+.book-spread.is-flipping .page-fold { transform: scale(0); opacity: 0; }
+
+/* ── Outer nav arrows ───────────────────────────────────────────────────── */
+.book-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: rgba(255,255,255,0.9); border: none; border-radius: 50%;
+  width: 48px; height: 48px; font-size: 1.2rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.28);
+  transition: opacity 0.2s, transform 0.1s, background 0.12s;
+  color: #333;
+}
+.book-nav.prev { right: calc(100% + 12px); }
+.book-nav.next { left:  calc(100% + 12px); }
+.book-nav:hover  { background: #fff; transform: translateY(-50%) scale(1.08); }
+.book-nav:active { transform: translateY(-50%) scale(0.95); }
+.book-nav:disabled { opacity: 0; pointer-events: none; }
+
+/* ── Book page content ──────────────────────────────────────────────────── */
+.book-text {
+  font-size: clamp(0.78rem, 2.2vw, 1.1rem);
+  line-height: 1.7; text-align: center; color: #2d2d2d;
+  margin: 0;
+}
+.book-img {
+  width: 78%; max-height: 72%; object-fit: contain;
+}
+.book-cover-img {
+  width: 55%; max-height: 52%; object-fit: contain; margin-bottom: 14px;
+}
+.book-cover-title {
+  font-size: clamp(0.85rem, 2.6vw, 1.3rem);
+  font-weight: 700; text-align: center;
+  color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  margin: 0; padding: 0 12px;
+}
+.book-the-end {
+  font-size: clamp(1.3rem, 4.5vw, 2.2rem);
+  font-weight: 700; font-style: italic;
+  color: #666; text-align: center; margin: 0;
 }
