@@ -195,6 +195,12 @@
 - [x] Title text wrapping fix: removed `padding: 28px 24px` from `.leaf-face.cover-face` (was narrowing text container by 48px vs `.book-closed`); leaf face and bookClosed now have identical layout width (verified: both 330.68px at 1280px viewport)
 - [x] Naming convention established: **flap** = lifted triangle (back-of-page, darker); **shadow** = cast shadow above the crease
 
+## Section 20 — Book Close Polish (feature/library-theming, 2026-05-22)
+- [x] Mid-book close (✕ mid-read): left page content mirrored onto cover leaf front face; right page stays visible; cover sweeps across both pages naturally
+- [x] Cover open/close speed: `.page-leaf.cover-leaf` CSS override at 0.95s (page turns stay at 0.6s)
+- [x] `COVER_MS = 950` constant alongside `FLIP_MS = 600` — all cover timeouts use COVER_MS, page-turn timeouts unchanged
+- [x] `COVER_PAUSE = 550` — delay between cover landing and scene fade (user-tuned)
+
 ## Section 11b — Future / Nice-to-Have
 - [ ] Real cartoon SVG artwork for all animals
 - [ ] Real realistic photos for all animals

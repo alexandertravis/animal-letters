@@ -142,3 +142,17 @@ NEXT STEP: Start `feature/library-theming` — design and implement visual themi
 Blockers: none
 Half-finished: none
 Security flags added: none
+
+**2026-05-22** — Decision: `closeBook()` (✕ mid-read) uses `applyLeft(L.front, spreads[spreadIdx])` to mirror current left page content onto the leaf front face, then `blankPage` the page behind it in the same synchronous block. Right page stays untouched. Both pages visible as cover swings shut — physically natural.
+
+**2026-05-22** — Decision: Cover open/close speed separated from page turns. `.page-leaf.cover-leaf { transition: transform 0.95s }` overrides the base 0.6s. `COVER_MS = 950` JS constant mirrors CSS. `FLIP_MS = 600` untouched for page turns. `COVER_PAUSE = 550` delay between cover landing and fade (user-tuned).
+
+## Session End — 2026-05-22
+Git status: clean — committed to feature/library-theming, pushed.
+
+## Session Summary — 2026-05-22
+Completed: mid-book close animation (current pages visible as cover swings); cover speed slowed to 0.95s; COVER_MS/COVER_PAUSE constants; COVER_PAUSE user-tuned to 550ms.
+NEXT STEP: Begin `feature/library-theming` work — add per-story theme/skin data to `data/stories.js`, then apply visual theming to book tiles (spine colour, cover texture) and bookshelf background in `js/screens/library.js` + `styles.css`.
+Blockers: none
+Half-finished: none
+Security flags added: none
