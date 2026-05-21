@@ -114,9 +114,31 @@ Security flags added: none
 
 **2026-05-21** — Decision: Dev Counts tab added to Animal Review screen (Settings → Animal Review → Counts) for manual testing of story unlock thresholds. Provides +/- steppers per animal and a "Reset all" button that also syncs `completedAnimals` Set.
 
-## Session Summary — 2026-05-21
+## Session Summary — 2026-05-21 (session 1)
 Completed: Story Library (8 unlockable stories, library screen, storyreader, unlock detection, complete-screen banner, i18n keys); Dev Counts tab for unlock testing; 4 new stories (Three Billy Goats Gruff, Three Blind Mice, Hey Diddle Diddle, Owl & Pussy-Cat); first book animation attempt (3D perspective flip); full open-book simulation rewrite (cover swing open, two-panel spread, clip-path page turns, corner folds, outer nav arrows, synthetic title/outro spreads, library fade-out transition); stars system (0–3 stars on complete + gallery); phonics/audio (speak letter on mount + completion, volume in topbar); memory written to `~/.claude/memory/domain/childrens-app.md`.
 NEXT STEP: Open the app in browser and test the book simulation — specifically page turn timing, cover open feel, corner fold hit targets on mobile, and the "The End" outro spread. Adjust CSS/timing in `styles.css` and `js/screens/storyreader.js` as needed.
+Blockers: none
+Half-finished: none
+Security flags added: none
+
+**2026-05-21** — Decision: CSS 3D leaf-flip replaces clip-path page turns. `perspective` set on `.book-spread` (NOT `.book` which carries `translateX`). Each leaf uses `transform-style: preserve-3d` + `backface-visibility: hidden` on both faces. `buildLeaf(side)` returns `{ leaf, front, back }`. Left leaf pivots at right edge (+180°), right leaf pivots at left edge (-180°).
+
+**2026-05-21** — Decision: `blankPage(pageEl, innerEl)` adds `.is-blank` class (transparent bg) + clears inner content. Must be called synchronously with `appendChild(leaf)` in the same JS task so browser paints them together in one frame — prevents any exposed background gap.
+
+**2026-05-21** — Decision: `is-flipping` class on `.book-spread` hides corner folds (scale→0), fades spine (opacity→0), and removes spread box-shadow while a leaf is in flight.
+
+**2026-05-21** — Decision: `bookClosed` hidden via `opacity: 0` + `pointerEvents: none` (not `display: none`) when book opens, to preserve flex layout dimensions. Idle shake animation paused (`animationPlayState: paused`) while hidden, and reset (`animation: none` → `void offsetWidth` → `animation: ''`) on restore so cover always reappears at `rotate(0deg)` not mid-tilt.
+
+**2026-05-21** — Decision: `.leaf-face.cover-face` has `padding: 0` to match `.book-closed`'s zero container padding. The `.leaf-face` base rule has `padding: 28px 24px` needed for content pages, but the cover face must have identical available width to the static closed cover — both at 50% book width minus the title's own `padding: 0 20px`.
+
+**2026-05-21** — Decision: Naming convention — "flap" = the lifted triangle (back of page, darker gradient), "shadow" = the cast shadow above the fold crease. Consistent across all future references.
+
+## Session End — 2026-05-21 (session 2)
+Git status: clean — all changes committed, amended, and pushed. Merged to main as v1.1.0. Branch `feature/library-theming` created for next feature.
+
+## Session Summary — 2026-05-21 (session 2)
+Completed: Full CSS 3D leaf-flip animation system replacing clip-path turns; Round 2 polish (spine fade, curl shading, corner folds); Round 3 polish (realistic curl gradient, fold hide during flip, background fix on pages); Round 4 polish (darker flap + outline, collapseToClosedCover, ✕ on closed, flutter close, idle shake replaces hint, cover image stability fix, title wrapping fix); all merged branches deleted; v1.1.0 tagged on main; feature/library-theming branch created.
+NEXT STEP: Start `feature/library-theming` — design and implement visual theming for book tiles and bookshelf in the story library screen (`js/screens/library.js`, `styles.css` library section, `data/stories.js` for per-story theme data).
 Blockers: none
 Half-finished: none
 Security flags added: none

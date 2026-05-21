@@ -185,6 +185,16 @@
 - [x] Gallery screen: star row between name and image (in flex flow, not absolutely positioned)
 - [x] Removed per-letter score overlay (was broken; replaced by animal-level stars)
 
+## Section 19 — Book Animation Round 4 Polish (2026-05-21 session)
+- [x] Corner fold flap: darken gradient stops (#9e9080 / #b5a995 / #8a7d6c) + `outline: 1px solid rgba(0,0,0,0.14)` for clear physical separation from page
+- [x] `collapseToClosedCover()` — click inside front cover (left page, spread 0) reverses open animation back to closed state without navigating
+- [x] Close button (✕) navigates to library immediately when `phase === 'closed'` or `'closing-to-cover'`
+- [x] `flutterAndClose()` — tapping back cover fans 4 rapid flutter leaves (250ms each, 90ms stagger) before cover swing; `.page-leaf.flutter-leaf` CSS rule
+- [x] Removed "Tap to open" hint text from closed cover; replaced with `bookIdleShake` periodic CSS animation (5s cycle, 2s initial delay, ~12% motion)
+- [x] Cover image size stability: hide bookClosed via `opacity/pointerEvents` (not `display:none`) to preserve flex layout; pause `animationPlayState` when hidden; reset animation on restore so cover reappears at `rotate(0deg)`
+- [x] Title text wrapping fix: removed `padding: 28px 24px` from `.leaf-face.cover-face` (was narrowing text container by 48px vs `.book-closed`); leaf face and bookClosed now have identical layout width (verified: both 330.68px at 1280px viewport)
+- [x] Naming convention established: **flap** = lifted triangle (back-of-page, darker); **shadow** = cast shadow above the crease
+
 ## Section 11b — Future / Nice-to-Have
 - [ ] Real cartoon SVG artwork for all animals
 - [ ] Real realistic photos for all animals
@@ -192,7 +202,6 @@
 - [ ] Additional animals (target: full A–Z coverage by first letter)
 - [ ] Replace story SVG illustrations with real hand-drawn page images (storyreader `page.image` already accepts any path)
 - [ ] Book simulation: test on mobile/tablet and tune book aspect ratio + font sizes
-- [ ] Book simulation: close animation (cover swings back shut before scene fades)
 - [ ] Story Library: "Read" label on locked tiles showing remaining requirements more visually
 - [ ] Difficulty levels (stroke tolerance, draw radius)
 - [ ] Accessibility audit (ARIA labels, keyboard fallback)
