@@ -184,7 +184,9 @@ window.APP = window.APP || {};
     }
 
     // ── Leaf builder (shared by page turns + cover open/close) ───────────────
-    var FLIP_MS = 600;   // keep in sync with .page-leaf transition / leafShade
+    var FLIP_MS      = 600;    // page turn speed — keep in sync with .page-leaf transition
+    var COVER_MS     = 950;    // cover open/close speed — keep in sync with .cover-leaf transition
+    var COVER_PAUSE  = 550;   // ms to show closed cover before fading to library
 
     // side: 'right' (leaf over right half, pivots left) or 'left' (mirror).
     // Returns { leaf, front, back } — front/back are containers ready for
@@ -378,7 +380,7 @@ window.APP = window.APP || {};
         navPrev.style.display = '';
         navNext.style.display = '';
         updateNav();
-      }, FLIP_MS);
+      }, COVER_MS);
     });
 
     // ── Book close sequence (reverse cover swing) ────────────────────────────
@@ -389,26 +391,23 @@ window.APP = window.APP || {};
       bookSpread.style.pointerEvents = 'none';
       bookSpread.classList.add('is-flipping');    // hide folds + fade spine
 
-      // Clear the spread to the dark scene background so no stale page content
-      // shows behind the closing cover.
-      blankPage(leftPage, leftInner);
-      blankPage(rightPage, rightInner);
-
-      // Cover leaf over the left half: front = the inside-front cover (plain
-      // story colour, NOT the last page), back = the outer cover. Rotates
-      // 0 → +180deg, landing the closed cover on the right.
+      // Mirror the current left page content onto the leaf's front face, then
+      // blank the page behind it in the same synchronous block — the swap is
+      // invisible (one frame). The leaf rotates carrying that content away;
+      // once it passes 90° the cover art (back face) sweeps into view.
       var L = buildLeaf('left');
       L.leaf.classList.add('cover-leaf');         // solid cover: no curl shade
-      L.front.style.background = story.color;
+      applyLeft(L.front, spreads[spreadIdx]);
       renderCover(L.back);
+      blankPage(leftPage, leftInner);
       bookSpread.appendChild(L.leaf);
 
       void L.leaf.offsetWidth;
       L.leaf.classList.add('flipping');
       bookEl.classList.add('book-closed-state');  // slide back to single page
 
-      setTimeout(function () { scene.classList.add('scene-fade-out'); }, FLIP_MS - 120);
-      setTimeout(function () { ctx.go('library'); }, FLIP_MS + 220);
+      setTimeout(function () { scene.classList.add('scene-fade-out'); }, COVER_MS + COVER_PAUSE);
+      setTimeout(function () { ctx.go('library'); }, COVER_MS + COVER_PAUSE + 350);
     }
 
     // ── Collapse back to closed cover (left page click on title spread) ────────
@@ -460,7 +459,7 @@ window.APP = window.APP || {};
         navNext.style.display = 'none';
         phase = 'closed';
         bookEl.dataset.phase = 'closed';
-      }, FLIP_MS);
+      }, COVER_MS);
     }
 
     // ── Flutter close (back cover click) ─────────────────────────────────────
@@ -522,8 +521,8 @@ window.APP = window.APP || {};
         L.leaf.classList.add('flipping');
         bookEl.classList.add('book-closed-state');
 
-        setTimeout(function () { scene.classList.add('scene-fade-out'); }, FLIP_MS - 120);
-        setTimeout(function () { ctx.go('library'); }, FLIP_MS + 220);
+        setTimeout(function () { scene.classList.add('scene-fade-out'); }, COVER_MS + COVER_PAUSE);
+        setTimeout(function () { ctx.go('library'); }, COVER_MS + COVER_PAUSE + 350);
       }, flutterTotal);
     }
 

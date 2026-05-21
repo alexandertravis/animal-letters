@@ -1402,6 +1402,10 @@ html, body {
 /* The cover is a solid board, not a thin page — skip the curl shade so it
    doesn't smear a heavy shadow across the cover during open/close. */
 .page-leaf.cover-leaf .leaf-shade { display: none; }
+/* Cover open/close is slower than a page turn — feels weighty like a board cover. */
+.page-leaf.cover-leaf {
+  transition: transform 0.95s cubic-bezier(0.42, 0, 0.3, 1);
+}
 /* Flutter leaves use a shorter, sharper transition for a rapid-fan effect */
 .page-leaf.flutter-leaf {
   transition: transform 0.25s ease-in;
