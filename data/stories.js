@@ -80,4 +80,71 @@ APP.STORIES = [
       { animal: 'swan', text: 'He looked at his reflection — and saw a beautiful white swan! He had become the most graceful bird of all, and was never lonely again.' },
     ]
   },
+
+  {
+    id: 'three-billy-goats',
+    title: 'Three Billy Goats Gruff',
+    color: '#2dc653',
+    requirements: [
+      { animalId: 'goat', minCount: 3, label: 'Complete Goat 3×' }
+    ],
+    pages: [
+      { animal: 'goat', text: 'Once upon a time, three Billy Goats Gruff wanted to cross a bridge to eat the sweet green grass on the other side.' },
+      { animal: 'goat', text: 'Under the bridge lived a terrible troll with huge eyes and a very loud voice. "Who\'s that trip-trapping over my bridge?" he roared.' },
+      { animal: 'goat', text: 'Little Billy Goat crossed first. "Don\'t eat me — wait for my bigger brother!" The troll agreed. Middle Billy Goat said the same thing.' },
+      { animal: 'goat', text: 'Then Great Big Billy Goat Gruff came thundering across. The troll leaped up to stop him — but the great big goat tossed him into the river with a mighty crash!' },
+      { animal: 'goat', text: 'The troll was never seen again. All three billy goats crossed safely and ate the sweet green grass. Snip, snap, snout — this tale is told out!' },
+    ]
+  },
+
+  {
+    id: 'three-blind-mice',
+    title: 'Three Blind Mice',
+    color: '#7b2d8b',
+    requirements: [
+      { animalId: 'mouse', minCount: 3, label: 'Complete Mouse 3×' }
+    ],
+    pages: [
+      { animal: 'mouse', text: 'Three blind mice, three blind mice — see how they run! Three little mice set off on an adventure, bumping into each other and tumbling merrily along.' },
+      { animal: 'mouse', text: 'They scurried across a field and smelled something wonderful — a great round cheese sitting on the farmer\'s table! In they crept, sniff sniff sniff.' },
+      { animal: 'mouse', text: 'They all ran after the farmer\'s wife, who chased them right out of the kitchen and away across the yard. Did you ever see such a sight in your life?' },
+      { animal: 'mouse', text: 'The three mice were brave. They found a cosy barn full of crumbs and made it their home, dancing in a circle and singing their famous song.' },
+      { animal: 'mouse', text: 'Three blind mice, three blind mice — they lived happily ever after, dancing and singing and sniffing out cheese wherever they went!' },
+    ]
+  },
+
+  {
+    id: 'hey-diddle-diddle',
+    title: 'Hey Diddle Diddle',
+    color: '#1b4332',
+    requirements: [
+      { animalId: 'cat', minCount: 1, label: 'Find the Cat' },
+      { animalId: 'dog', minCount: 1, label: 'Find the Dog' },
+      { animalId: 'cow', minCount: 1, label: 'Find the Cow' }
+    ],
+    pages: [
+      { animal: 'cat', text: 'Hey diddle diddle, the cat and the fiddle! One magical night, a very musical cat picked up her violin and began to play the most enchanting tune under the bright full moon.' },
+      { animal: 'cow', text: 'The cow heard the music and felt so joyful that she jumped right over the moon! Up she soared through the sparkling stars, mooing with delight, and landed gently on the other side.' },
+      { animal: 'dog', text: 'The little dog laughed to see such sport — he wagged his tail and yipped with joy, rolling on his back and kicking his paws in the air with glee.' },
+      { animal: 'cat', text: 'The dish and the spoon looked at each other, then took each other\'s hand and ran away together into the night, dancing all the way to the edge of the world.' },
+      { animal: 'cow', text: 'The cow floated back down from the moon, mooing contentedly. The cat played one last tune, and all the animals fell fast asleep under the stars. The end!' },
+    ]
+  },
+
+  {
+    id: 'owl-pussy-cat',
+    title: 'The Owl and the Pussy-Cat',
+    color: '#0077b6',
+    requirements: [
+      { animalId: 'owl', minCount: 1, label: 'Find the Owl' },
+      { animalId: 'cat', minCount: 1, label: 'Find the Cat' }
+    ],
+    pages: [
+      { animal: 'owl', text: 'The Owl and the Pussy-Cat went to sea in a beautiful pea-green boat. They packed honey and plenty of money wrapped up in a five-pound note.' },
+      { animal: 'cat', text: 'The Pussy-Cat looked up at the stars and sang to the Owl with a beautiful voice. "O lovely Owl! You sing so wonderfully. Will you marry me?" The Owl agreed at once.' },
+      { animal: 'owl', text: 'They sailed for a year and a day to the land where the Bong-tree grows. There they found a Piggy-wig with a ring at the end of his nose, his nose — a ring at the end of his nose!' },
+      { animal: 'cat', text: 'They bought the ring for a shilling and a turkey who lived on the hill married them that very afternoon. The stars twinkled and the sea shimmered all around.' },
+      { animal: 'owl', text: 'They dined on mince and slices of quince, which they ate with a runcible spoon. And hand in hand by the edge of the sand they danced by the light of the moon, the moon — they danced by the light of the moon!' },
+    ]
+  },
 ];
