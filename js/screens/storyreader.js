@@ -61,12 +61,11 @@ window.APP = window.APP || {};
 
     root.appendChild(wrap);
 
-    // ── Render current page ─────────────────────────────────────────────────
-    function showPage() {
-      const idx  = APP.state.currentPage;
-      const page = pages[idx];
-      const total = pages.length;
+    // ── Page rendering ──────────────────────────────────────────────────────
 
+    // Applies content to the DOM immediately — used both on initial render
+    // and at the midpoint of a flip (when the page is edge-on and invisible).
+    function _applyPage(idx, page, total) {
       pageCount.textContent = 'Page ' + (idx + 1) + ' of ' + total;
       textEl.textContent = page.text;
 
@@ -88,23 +87,56 @@ window.APP = window.APP || {};
       }
     }
 
+    // Orchestrates the 3D flip animation, then swaps content at the midpoint
+    // when the page is edge-on and invisible. direction: 'next' | 'prev' | null.
+    // Passing no direction (initial render) skips animation entirely.
+    function showPage(direction) {
+      const idx   = APP.state.currentPage;
+      const page  = pages[idx];
+      const total = pages.length;
+
+      if (!direction) {
+        _applyPage(idx, page, total);
+        return;
+      }
+
+      const outClass = direction === 'next' ? 'flip-out-next' : 'flip-out-prev';
+      const inClass  = direction === 'next' ? 'flip-in-next'  : 'flip-in-prev';
+
+      // Block nav clicks for the full ~440 ms flip so rapid taps don't stack.
+      nav.style.pointerEvents = 'none';
+
+      pageArea.classList.add(outClass);
+
+      setTimeout(() => {
+        // Page is now edge-on (invisible) — safe to swap content.
+        pageArea.classList.remove(outClass);
+        _applyPage(idx, page, total);
+        pageArea.classList.add(inClass);
+        pageArea.addEventListener('animationend', () => {
+          pageArea.classList.remove(inClass);
+          nav.style.pointerEvents = '';   // restore interaction
+        }, { once: true });
+      }, 220);   // matches pageFlipOut* animation duration
+    }
+
     prevBtn.addEventListener('click', () => {
       if (APP.state.currentPage > 0) {
         APP.state.currentPage--;
-        showPage();
+        showPage('prev');
       }
     });
 
     nextBtn.addEventListener('click', () => {
       if (APP.state.currentPage < pages.length - 1) {
         APP.state.currentPage++;
-        showPage();
+        showPage('next');
       } else {
         ctx.go('library');
       }
     });
 
-    showPage();
+    showPage(); // initial render — no direction, no animation
   }
 
   APP.screens = APP.screens || {};

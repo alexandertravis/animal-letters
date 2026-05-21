@@ -1206,3 +1206,49 @@ html, body {
   min-width: 28px; text-align: center; font-size: 1rem;
   font-weight: 700; font-variant-numeric: tabular-nums;
 }
+
+/* ── Book: open animation ──────────────────────────────────────────────── */
+/* .reader unfolds from the left spine when the screen first renders.       */
+/* transform-origin: left center pivots the flip on the book's spine edge.  */
+.reader {
+  transform-origin: left center;
+  animation: bookCoverOpen 0.5s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+@keyframes bookCoverOpen {
+  from { opacity: 0; transform: perspective(900px) rotateY(-70deg) scaleX(0.3); }
+  to   { opacity: 1; transform: perspective(900px) rotateY(0deg)   scaleX(1);   }
+}
+
+/* ── Book: 3D page-flip ────────────────────────────────────────────────── */
+/* perspective() is embedded per keyframe — avoids nested 3D context issues */
+/* that would arise from setting perspective as a property on the parent.   */
+.reader-page.flip-out-next { animation: pageFlipOutNext 0.22s ease-in  forwards; }
+.reader-page.flip-out-prev { animation: pageFlipOutPrev 0.22s ease-in  forwards; }
+.reader-page.flip-in-next  { animation: pageFlipInNext  0.22s ease-out;          }
+.reader-page.flip-in-prev  { animation: pageFlipInPrev  0.22s ease-out;          }
+
+@keyframes pageFlipOutNext {
+  from { opacity: 1; transform: perspective(900px) rotateY(0deg);   }
+  to   { opacity: 0; transform: perspective(900px) rotateY(-90deg); }
+}
+@keyframes pageFlipOutPrev {
+  from { opacity: 1; transform: perspective(900px) rotateY(0deg);  }
+  to   { opacity: 0; transform: perspective(900px) rotateY(90deg); }
+}
+@keyframes pageFlipInNext {
+  from { opacity: 0; transform: perspective(900px) rotateY(90deg); }
+  to   { opacity: 1; transform: perspective(900px) rotateY(0deg);  }
+}
+@keyframes pageFlipInPrev {
+  from { opacity: 0; transform: perspective(900px) rotateY(-90deg); }
+  to   { opacity: 1; transform: perspective(900px) rotateY(0deg);   }
+}
+
+/* ── Book tile hover lift (library grid) ──────────────────────────────── */
+.book-tile {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.book-tile:not(.locked):hover {
+  transform: translateY(-6px) scale(1.04);
+  box-shadow: 0 14px 36px rgba(0,0,0,0.22);
+}
