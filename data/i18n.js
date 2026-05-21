@@ -80,6 +80,17 @@ APP.I18N = {
     'complete.myAnimals': 'My Animals',
     'complete.next':      'Next Animal',
     'complete.greatJob':  'Great Job! 🎉',
+    'complete.readNow':   'Read now →',
+
+    // Story Library
+    'landing.library':          'Story Library',
+    'library.title':            'Story Library',
+    'library.achievements':     'Your Achievements',
+    'library.books':            'Stories',
+    'library.noAchievements':   'Complete animal combinations to unlock stories!',
+    'library.read':             'Read',
+    'library.locked':           'Locked',
+    'reader.finish':            'Finish',
   },
 
   pt: {
@@ -138,6 +149,11 @@ APP.I18N = {
     'complete.myAnimals': 'Meus Animais',
     'complete.next':      'Próximo Animal',
     'complete.greatJob':  'Muito bem! 🎉',
+    'complete.readNow':   'Read now →',
+    'landing.library': 'Story Library', 'library.title': 'Story Library',
+    'library.achievements': 'Your Achievements', 'library.books': 'Stories',
+    'library.noAchievements': 'Complete animal combinations to unlock stories!',
+    'library.read': 'Read', 'library.locked': 'Locked', 'reader.finish': 'Finish',
   },
 
   fr: {
@@ -196,6 +212,11 @@ APP.I18N = {
     'complete.myAnimals': 'Mes Animaux',
     'complete.next':      'Animal suivant',
     'complete.greatJob':  'Excellent travail ! 🎉',
+    'complete.readNow':   'Read now →',
+    'landing.library': 'Story Library', 'library.title': 'Story Library',
+    'library.achievements': 'Your Achievements', 'library.books': 'Stories',
+    'library.noAchievements': 'Complete animal combinations to unlock stories!',
+    'library.read': 'Read', 'library.locked': 'Locked', 'reader.finish': 'Finish',
   },
 
   es: {
@@ -254,6 +275,11 @@ APP.I18N = {
     'complete.myAnimals': 'Mis Animales',
     'complete.next':      'Siguiente animal',
     'complete.greatJob':  '¡Muy bien! 🎉',
+    'complete.readNow':   'Read now →',
+    'landing.library': 'Story Library', 'library.title': 'Story Library',
+    'library.achievements': 'Your Achievements', 'library.books': 'Stories',
+    'library.noAchievements': 'Complete animal combinations to unlock stories!',
+    'library.read': 'Read', 'library.locked': 'Locked', 'reader.finish': 'Finish',
   },
 
   de: {
@@ -312,6 +338,11 @@ APP.I18N = {
     'complete.myAnimals': 'Meine Tiere',
     'complete.next':      'Nächstes Tier',
     'complete.greatJob':  'Toll gemacht! 🎉',
+    'complete.readNow':   'Read now →',
+    'landing.library': 'Story Library', 'library.title': 'Story Library',
+    'library.achievements': 'Your Achievements', 'library.books': 'Stories',
+    'library.noAchievements': 'Complete animal combinations to unlock stories!',
+    'library.read': 'Read', 'library.locked': 'Locked', 'reader.finish': 'Finish',
   },
 
   it: {
@@ -370,5 +401,10 @@ APP.I18N = {
     'complete.myAnimals': 'I miei animali',
     'complete.next':      'Animale successivo',
     'complete.greatJob':  'Ottimo lavoro! 🎉',
+    'complete.readNow':   'Read now →',
+    'landing.library': 'Story Library', 'library.title': 'Story Library',
+    'library.achievements': 'Your Achievements', 'library.books': 'Stories',
+    'library.noAchievements': 'Complete animal combinations to unlock stories!',
+    'library.read': 'Read', 'library.locked': 'Locked', 'reader.finish': 'Finish',
   },
 };

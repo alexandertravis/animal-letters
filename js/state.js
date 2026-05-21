@@ -91,6 +91,14 @@ window.APP = window.APP || {};
     // Per-character tracing history. Keyed by the cased character (e.g. 'A', 'a').
     // Each entry: { attempts: number, bestStars: 0|1|2|3 }
     letterMastery: {},
+
+    // ── Story library (transient — not persisted) ─────────────────────────────
+    // Stories that just became unlocked by the last animal completion.
+    // Read by complete.js to show the unlock banner; cleared after navigation.
+    newlyUnlockedStories: [],
+    // Story currently open in the reader. Set by library.js / complete.js.
+    currentStory: null,
+    currentPage:  0,
   };
 
   // Writes gallery progress to localStorage. Called after every animal completion.
@@ -167,8 +175,15 @@ window.APP = window.APP || {};
       // Check before adding — was this animal already found before this completion?
       const alreadyFound = APP.state.completedAnimals.has(id);
 
+      // Snapshot which stories are unlocked BEFORE changing counts, so we can
+      // detect stories that become newly unlocked by this completion.
+      // APP.getUnlockedStories is defined in utils.js (loaded after state.js)
+      // but is always available by the time advanceLetter() is called at runtime.
+      const _prevUnlocked = APP.getUnlockedStories
+        ? new Set(APP.getUnlockedStories().map(function (s) { return s.id; }))
+        : new Set();
+
       // Increment per-animal completion count (keyed by locale-independent id).
-      // Used by the upcoming challenges feature; also drives consecutiveFoundCount.
       APP.state.animalCompletionCounts[id] =
         (APP.state.animalCompletionCounts[id] || 0) + 1;
 
@@ -181,6 +196,14 @@ window.APP = window.APP || {};
       // Only mark as completed when the child traced every letter themselves.
       APP.state.completedAnimals.add(id);
       APP.saveProgress();
+
+      // Detect stories newly unlocked by this completion.
+      if (APP.getUnlockedStories) {
+        APP.state.newlyUnlockedStories = APP.getUnlockedStories().filter(function (s) {
+          return !_prevUnlocked.has(s.id);
+        });
+      }
+
       APP.state.screen = "complete";
     }
   };

@@ -36,6 +36,22 @@ window.APP = window.APP || {};
       </div>
     `;
     wrap.appendChild(body);
+
+    // ── Story unlock banner ─────────────────────────────────────────────────
+    // Shown when completing this animal triggered a new story unlock.
+    // Inserted above the action buttons so it's immediately visible.
+    if (APP.state.newlyUnlockedStories && APP.state.newlyUnlockedStories.length > 0) {
+      const newStory = APP.state.newlyUnlockedStories[0];
+      const banner = document.createElement('div');
+      banner.className = 'story-unlock-banner';
+      banner.innerHTML = `
+        <span>📚 <strong>${newStory.title}</strong> unlocked!</span>
+        <button class="btn" data-act="readnow">${APP.t('complete.readNow')}</button>
+      `;
+      const actions = body.querySelector('.actions');
+      body.insertBefore(banner, actions);
+    }
+
     root.appendChild(wrap);
 
     // Collect all confetti cleanup handles. Stacking multiple animations on
@@ -47,6 +63,19 @@ window.APP = window.APP || {};
       confettiHandles.forEach(h => h());
       APP.audio.stopFile();
       fn();
+    }
+
+    // Wire the story unlock "Read now" button (banner may not exist)
+    const readNowBtn = wrap.querySelector('[data-act=readnow]');
+    if (readNowBtn) {
+      readNowBtn.addEventListener('click', () => {
+        const story = APP.state.newlyUnlockedStories && APP.state.newlyUnlockedStories[0];
+        if (!story) return;
+        APP.state.currentStory = story;
+        APP.state.currentPage  = 0;
+        APP.state.newlyUnlockedStories = [];
+        navigate(() => ctx.go('storyreader'));
+      });
     }
 
     bar.querySelector('[data-act=home]').addEventListener('click', () =>

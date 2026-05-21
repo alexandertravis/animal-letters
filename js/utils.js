@@ -164,6 +164,23 @@ window.APP = window.APP || {};
     return ch.length === 1 && ch.toUpperCase() === ch && ch.toLowerCase() !== ch;
   };
 
+  // ── Story unlock helpers ──────────────────────────────────────────────────
+  // Returns true if every requirement for a story is met by the current state.
+  // Requirements are checked against animalCompletionCounts — "found once" = minCount:1.
+  APP.isStoryUnlocked = function (story) {
+    if (!story || !story.requirements) return false;
+    const counts = APP.state.animalCompletionCounts || {};
+    return story.requirements.every(function (req) {
+      return (counts[req.animalId] || 0) >= req.minCount;
+    });
+  };
+
+  // Returns the subset of APP.STORIES whose requirements are currently met.
+  APP.getUnlockedStories = function () {
+    if (!APP.STORIES) return [];
+    return APP.STORIES.filter(APP.isStoryUnlocked);
+  };
+
   // ── Dot stroke helpers ─────────────────────────────────────────────────────
   // A "dot" stroke is M x,y L x,y where both coordinates are identical.
   // Used for i/j dots — zero-length paths need special rendering to avoid
