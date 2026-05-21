@@ -91,22 +91,19 @@ window.APP = window.APP || {};
       tile.appendChild(titleEl);
 
       if (isUnlocked) {
-        const readBtn = document.createElement('button');
-        readBtn.className = 'btn book-tile-read';
-        readBtn.textContent = APP.t('library.read');
-        readBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          APP.state.currentStory = story;
-          APP.state.currentPage  = 0;
-          ctx.go('storyreader');
-        });
-        tile.appendChild(readBtn);
+        // "Read" label — visual only, the whole tile is the click target
+        const readLabel = document.createElement('span');
+        readLabel.className = 'book-tile-read-label';
+        readLabel.textContent = APP.t('library.read');
+        tile.appendChild(readLabel);
 
-        // Whole tile is also clickable
+        // Fade library out, then navigate so the reader appears smoothly
         tile.addEventListener('click', () => {
           APP.state.currentStory = story;
           APP.state.currentPage  = 0;
-          ctx.go('storyreader');
+          wrap.style.transition = 'opacity 0.3s ease';
+          wrap.style.opacity    = '0';
+          setTimeout(() => ctx.go('storyreader'), 320);
         });
       } else {
         // Show requirement hints so child knows what to do

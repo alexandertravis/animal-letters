@@ -1157,6 +1157,10 @@ html, body {
 .book-tile.locked .book-tile-title { color: #666; }
 .book-tile-hint { font-size: 0.68rem; color: #888; text-align: center; margin-top: 6px; line-height: 1.5; white-space: pre-line; }
 .book-tile-read { margin-top: 10px; font-size: 0.8rem; padding: 8px 18px; }
+.book-tile-read-label {
+  margin-top: 10px; font-size: 0.8rem; font-weight: 700;
+  color: rgba(0,0,0,0.55); text-transform: uppercase; letter-spacing: 0.06em;
+}
 
 /* Story unlock banner on complete screen */
 .story-unlock-banner {
@@ -1167,28 +1171,7 @@ html, body {
 .story-unlock-banner span { font-size: 0.95rem; color: var(--ink); }
 .story-unlock-banner .btn { font-size: 0.9rem; padding: 10px 18px; }
 
-/* ── Story reader ────────────────────────────────────────────────────────── */
-.reader { display: flex; flex-direction: column; height: 100%; background: var(--bg); }
-.reader-topbar {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 16px; gap: 12px; flex-shrink: 0;
-}
-.reader-page-count { font-size: 0.9rem; font-weight: 600; color: var(--ink); opacity: 0.55; }
-.reader-page {
-  flex: 1; display: flex; flex-direction: column; align-items: center;
-  justify-content: center; padding: 20px 28px; gap: 24px; overflow: hidden;
-}
-.reader-illustration {
-  width: min(200px, 45vw); height: min(200px, 45vw); object-fit: contain; flex-shrink: 0;
-}
-.reader-text {
-  font-size: clamp(1.1rem, 3.5vw, 1.55rem); line-height: 1.65;
-  text-align: center; color: var(--ink); max-width: 500px;
-}
-.reader-nav {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 12px 20px 24px; gap: 12px; flex-shrink: 0;
-}
+/* ── Story reader — old single-column CSS removed; see book simulation below ── */
 
 /* ── Dev: Counts tab ──────────────────────────────────────────────────── */
 .devanimals-counts { padding: 16px; overflow-y: auto; }
@@ -1207,43 +1190,6 @@ html, body {
   font-weight: 700; font-variant-numeric: tabular-nums;
 }
 
-/* ── Book: open animation ──────────────────────────────────────────────── */
-/* .reader unfolds from the left spine when the screen first renders.       */
-/* transform-origin: left center pivots the flip on the book's spine edge.  */
-.reader {
-  transform-origin: left center;
-  animation: bookCoverOpen 0.5s cubic-bezier(0.2, 0.8, 0.3, 1) both;
-}
-@keyframes bookCoverOpen {
-  from { opacity: 0; transform: perspective(900px) rotateY(-70deg) scaleX(0.3); }
-  to   { opacity: 1; transform: perspective(900px) rotateY(0deg)   scaleX(1);   }
-}
-
-/* ── Book: 3D page-flip ────────────────────────────────────────────────── */
-/* perspective() is embedded per keyframe — avoids nested 3D context issues */
-/* that would arise from setting perspective as a property on the parent.   */
-.reader-page.flip-out-next { animation: pageFlipOutNext 0.22s ease-in  forwards; }
-.reader-page.flip-out-prev { animation: pageFlipOutPrev 0.22s ease-in  forwards; }
-.reader-page.flip-in-next  { animation: pageFlipInNext  0.22s ease-out;          }
-.reader-page.flip-in-prev  { animation: pageFlipInPrev  0.22s ease-out;          }
-
-@keyframes pageFlipOutNext {
-  from { opacity: 1; transform: perspective(900px) rotateY(0deg);   }
-  to   { opacity: 0; transform: perspective(900px) rotateY(-90deg); }
-}
-@keyframes pageFlipOutPrev {
-  from { opacity: 1; transform: perspective(900px) rotateY(0deg);  }
-  to   { opacity: 0; transform: perspective(900px) rotateY(90deg); }
-}
-@keyframes pageFlipInNext {
-  from { opacity: 0; transform: perspective(900px) rotateY(90deg); }
-  to   { opacity: 1; transform: perspective(900px) rotateY(0deg);  }
-}
-@keyframes pageFlipInPrev {
-  from { opacity: 0; transform: perspective(900px) rotateY(-90deg); }
-  to   { opacity: 1; transform: perspective(900px) rotateY(0deg);   }
-}
-
 /* ── Book tile hover lift (library grid) ──────────────────────────────── */
 .book-tile {
   transition: transform 0.18s ease, box-shadow 0.18s ease;
@@ -1251,4 +1197,234 @@ html, body {
 .book-tile:not(.locked):hover {
   transform: translateY(-6px) scale(1.04);
   box-shadow: 0 14px 36px rgba(0,0,0,0.22);
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   BOOK SIMULATION — full open-book reader
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Scene overlay ─────────────────────────────────────────────────────── */
+.reader-scene {
+  position: fixed; inset: 0; z-index: 20;
+  background: rgba(10, 8, 20, 0.9);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  animation: sceneIn 0.3s ease both;
+}
+@keyframes sceneIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.reader-scene.scene-fade-out { animation: sceneOut 0.32s ease forwards; }
+@keyframes sceneOut {
+  to { opacity: 0; }
+}
+
+/* ── Floating controls (close button + page counter) ───────────────────── */
+.reader-controls {
+  position: absolute; top: 16px; left: 16px; right: 16px; z-index: 25;
+  display: flex; justify-content: space-between; align-items: center;
+  pointer-events: none;
+}
+.reader-controls > * { pointer-events: all; }
+
+.reader-close-btn {
+  background: rgba(255,255,255,0.15); color: #fff;
+  border: none; border-radius: 50%;
+  width: 40px; height: 40px; font-size: 1.1rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.reader-close-btn:hover { background: rgba(255,255,255,0.28); }
+
+.reader-page-count {
+  font-size: 0.88rem; font-weight: 600; color: rgba(255,255,255,0.7);
+  background: rgba(0,0,0,0.35); border-radius: 999px; padding: 4px 14px;
+  transition: opacity 0.2s;
+}
+
+/* ── Book container ─────────────────────────────────────────────────────── */
+.book {
+  position: relative;
+  width: min(740px, 92vw);
+  aspect-ratio: 2 / 1.35;
+  animation: bookIn 0.38s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+@keyframes bookIn {
+  from { opacity: 0; transform: scale(0.72); }
+  to   { opacity: 1; transform: scale(1);    }
+}
+
+/* ── Closed cover ───────────────────────────────────────────────────────── */
+.book-closed {
+  position: absolute; inset: 0;
+  border-radius: 3px 6px 6px 3px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px;
+  cursor: pointer; color: #fff;
+  box-shadow: -6px 6px 24px rgba(0,0,0,0.55), 4px 4px 16px rgba(0,0,0,0.35);
+  transition: transform 0.12s;
+  user-select: none;
+}
+.book-closed:active { transform: scale(0.98); }
+.book-closed-img   { width: 30%; max-height: 38%; object-fit: contain; opacity: 0.92; }
+.book-closed-title {
+  font-size: clamp(1rem, 3vw, 1.7rem); font-weight: 700;
+  text-align: center; padding: 0 20px; line-height: 1.25;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+.book-closed-hint  { font-size: 0.82rem; opacity: 0.68; }
+
+/* Cover swings open (rotates away to the left from its left edge) */
+.book-closed.cover-open {
+  animation: coverSwingOpen 0.42s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+  transform-origin: left center;
+}
+@keyframes coverSwingOpen {
+  0%   { opacity: 1; transform: perspective(700px) rotateY(0deg); }
+  100% { opacity: 0; transform: perspective(700px) rotateY(-110deg); }
+}
+
+/* ── Open spread ────────────────────────────────────────────────────────── */
+.book-spread {
+  width: 100%; height: 100%;
+  display: flex;
+  position: relative;
+  border-radius: 3px 6px 6px 3px;
+  box-shadow: -6px 6px 24px rgba(0,0,0,0.55), 4px 4px 16px rgba(0,0,0,0.35);
+  overflow: hidden;
+  animation: spreadReveal 0.38s ease-out both;
+}
+@keyframes spreadReveal {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Background layer (incoming spread during page turns) ───────────────── */
+.spread-bg {
+  position: absolute; inset: 0; z-index: 0;
+  display: flex;
+}
+.bg-left, .bg-right {
+  width: 50%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 28px 24px; box-sizing: border-box;
+  background: #fffef9;
+}
+
+/* ── Page panels ────────────────────────────────────────────────────────── */
+.book-page {
+  width: 50%; height: 100%;
+  background: #fffef9;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  z-index: 1;
+  /* Smooth clip-path transitions for page turns */
+  transition: clip-path 0.3s ease-in-out;
+}
+.book-page.left  { border-right: 1px solid rgba(0,0,0,0.07); }
+
+.book-page-inner {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 28px 24px; box-sizing: border-box;
+}
+
+/* ── Spine ──────────────────────────────────────────────────────────────── */
+.book-spine {
+  position: absolute; left: calc(50% - 3px); top: 0; z-index: 4;
+  width: 6px; height: 100%;
+  background: linear-gradient(to right,
+    rgba(0,0,0,0.22), rgba(0,0,0,0.06), rgba(0,0,0,0.22));
+  pointer-events: none;
+}
+
+/* ── Page turn: clip-path animations ───────────────────────────────────── */
+/* Going NEXT: right page collapses toward spine, new left grows from spine */
+.book-page.right.collapsing-next {
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 0.3s ease-in;
+}
+.book-page.left.expanding-next {
+  animation: expandLeftFromSpine 0.32s ease-out forwards;
+}
+@keyframes expandLeftFromSpine {
+  from { clip-path: inset(0 0 0 100%); }
+  to   { clip-path: inset(0 0 0 0);    }
+}
+
+/* Going PREV: left page collapses toward spine, new right grows from spine */
+.book-page.left.collapsing-prev {
+  clip-path: inset(0 0 0 100%);
+  transition: clip-path 0.3s ease-in;
+}
+.book-page.right.expanding-prev {
+  animation: expandRightFromSpine 0.32s ease-out forwards;
+}
+@keyframes expandRightFromSpine {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0 0 0);    }
+}
+
+/* ── Corner page folds ──────────────────────────────────────────────────── */
+.page-fold {
+  position: absolute; bottom: 0; z-index: 5;
+  width: 56px; height: 56px;
+  cursor: pointer;
+  transition: transform 0.1s, filter 0.1s;
+}
+.page-fold:hover  { transform: scale(1.12); }
+.page-fold:active { transform: scale(0.9);  }
+.page-fold.next {
+  right: 0;
+  background: linear-gradient(225deg, #ddd8cc 50%, transparent 50%);
+  filter: drop-shadow(-2px -2px 4px rgba(0,0,0,0.18));
+}
+.page-fold.prev {
+  left: 0;
+  background: linear-gradient(315deg, #ddd8cc 50%, transparent 50%);
+  filter: drop-shadow(2px -2px 4px rgba(0,0,0,0.18));
+}
+
+/* ── Outer nav arrows ───────────────────────────────────────────────────── */
+.book-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: rgba(255,255,255,0.9); border: none; border-radius: 50%;
+  width: 48px; height: 48px; font-size: 1.2rem;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.28);
+  transition: opacity 0.2s, transform 0.1s, background 0.12s;
+  color: #333;
+}
+.book-nav.prev { right: calc(100% + 12px); }
+.book-nav.next { left:  calc(100% + 12px); }
+.book-nav:hover  { background: #fff; transform: translateY(-50%) scale(1.08); }
+.book-nav:active { transform: translateY(-50%) scale(0.95); }
+.book-nav:disabled { opacity: 0; pointer-events: none; }
+
+/* ── Book page content ──────────────────────────────────────────────────── */
+.book-text {
+  font-size: clamp(0.78rem, 2.2vw, 1.1rem);
+  line-height: 1.7; text-align: center; color: #2d2d2d;
+  margin: 0;
+}
+.book-img {
+  width: 78%; max-height: 72%; object-fit: contain;
+}
+.book-cover-img {
+  width: 55%; max-height: 52%; object-fit: contain; margin-bottom: 14px;
+}
+.book-cover-title {
+  font-size: clamp(0.85rem, 2.6vw, 1.3rem);
+  font-weight: 700; text-align: center;
+  color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  margin: 0; padding: 0 12px;
+}
+.book-the-end {
+  font-size: clamp(1.3rem, 4.5vw, 2.2rem);
+  font-weight: 700; font-style: italic;
+  color: #666; text-align: center; margin: 0;
 }
