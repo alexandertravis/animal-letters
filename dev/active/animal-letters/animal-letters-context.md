@@ -101,3 +101,22 @@ NEXT STEP: No outstanding letter-shape or infrastructure tasks. Next work is lik
 Blockers: none
 Half-finished: none
 Security flags added: none
+
+**2026-05-21** — Decision: Story page format changed from `{ animal, text }` to `{ text, image }` (explicit SVG path) — storyreader uses `page.image` directly, no lookup needed, and future non-SVG images are trivially supported.
+
+**2026-05-21** — Decision: Synthetic title and outro spreads generated at runtime by storyreader — not stored in `stories.js` pages array. Keeps data clean; storyreader always wraps any story with a cover spread and "The End" spread.
+
+**2026-05-21** — Decision: `clip-path: inset()` for page turns (not `scaleX` or `rotateY`) — non-distorting, text stays readable, direction-aware collapse/expand via CSS class application.
+
+**2026-05-21** — Decision: `.spread-bg` background layer pre-renders the incoming spread behind current front panels. Becomes visible as the outgoing panel's clip-path collapses — no visual gap during the turn.
+
+**2026-05-21** — Decision: `perspective()` function inside keyframe `transform` values, not `perspective` CSS property on parent, to avoid nested 3D rendering context distortion (which squashes the element).
+
+**2026-05-21** — Decision: Dev Counts tab added to Animal Review screen (Settings → Animal Review → Counts) for manual testing of story unlock thresholds. Provides +/- steppers per animal and a "Reset all" button that also syncs `completedAnimals` Set.
+
+## Session Summary — 2026-05-21
+Completed: Story Library (8 unlockable stories, library screen, storyreader, unlock detection, complete-screen banner, i18n keys); Dev Counts tab for unlock testing; 4 new stories (Three Billy Goats Gruff, Three Blind Mice, Hey Diddle Diddle, Owl & Pussy-Cat); first book animation attempt (3D perspective flip); full open-book simulation rewrite (cover swing open, two-panel spread, clip-path page turns, corner folds, outer nav arrows, synthetic title/outro spreads, library fade-out transition); stars system (0–3 stars on complete + gallery); phonics/audio (speak letter on mount + completion, volume in topbar); memory written to `~/.claude/memory/domain/childrens-app.md`.
+NEXT STEP: Open the app in browser and test the book simulation — specifically page turn timing, cover open feel, corner fold hit targets on mobile, and the "The End" outro spread. Adjust CSS/timing in `styles.css` and `js/screens/storyreader.js` as needed.
+Blockers: none
+Half-finished: none
+Security flags added: none

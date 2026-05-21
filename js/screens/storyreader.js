@@ -47,10 +47,13 @@ window.APP = window.APP || {};
     closeBtn.setAttribute('aria-label', 'Close book');
     closeBtn.textContent = '✕';
     closeBtn.addEventListener('click', function () {
-      if (phase !== 'open') return;
-      phase = 'closing';
-      scene.classList.add('scene-fade-out');
-      setTimeout(function () { ctx.go('library'); }, 320);
+      // If the book hasn't been opened yet (or has been collapsed back to cover),
+      // skip the animation and return to library immediately.
+      if (phase === 'closed' || phase === 'closing-to-cover') {
+        ctx.go('library');
+        return;
+      }
+      closeBook();
     });
 
     const pageCounter = document.createElement('span');
@@ -63,7 +66,7 @@ window.APP = window.APP || {};
 
     // ── Book container ───────────────────────────────────────────────────────
     const bookEl = document.createElement('div');
-    bookEl.className = 'book';
+    bookEl.className = 'book book-closed-state';
     bookEl.dataset.phase = 'closed';
 
     // ── Closed cover ─────────────────────────────────────────────────────────
@@ -80,32 +83,14 @@ window.APP = window.APP || {};
     closedTitle.className = 'book-closed-title';
     closedTitle.textContent = story.title;
 
-    const closedHint = document.createElement('div');
-    closedHint.className = 'book-closed-hint';
-    closedHint.textContent = 'Tap to open';
-
     bookClosed.appendChild(closedImg);
     bookClosed.appendChild(closedTitle);
-    bookClosed.appendChild(closedHint);
     bookEl.appendChild(bookClosed);
 
     // ── Open spread ──────────────────────────────────────────────────────────
     const bookSpread = document.createElement('div');
     bookSpread.className = 'book-spread';
     bookSpread.style.display = 'none';
-
-    // Background layer (incoming page during turns)
-    const spreadBg = document.createElement('div');
-    spreadBg.className = 'spread-bg';
-    spreadBg.style.display = 'none';
-
-    const bgLeft  = document.createElement('div');
-    bgLeft.className  = 'bg-left  book-page-inner';
-    const bgRight = document.createElement('div');
-    bgRight.className = 'bg-right book-page-inner';
-    spreadBg.appendChild(bgLeft);
-    spreadBg.appendChild(bgRight);
-    bookSpread.appendChild(spreadBg);
 
     // Left page
     const leftPage  = document.createElement('div');
@@ -198,6 +183,54 @@ window.APP = window.APP || {};
       }
     }
 
+    // ── Leaf builder (shared by page turns + cover open/close) ───────────────
+    var FLIP_MS = 600;   // keep in sync with .page-leaf transition / leafShade
+
+    // side: 'right' (leaf over right half, pivots left) or 'left' (mirror).
+    // Returns { leaf, front, back } — front/back are containers ready for
+    // applyLeft / applyRight / renderCover.
+    function buildLeaf(side) {
+      var leaf = document.createElement('div');
+      leaf.className = 'page-leaf ' + side;
+      var front = document.createElement('div');
+      front.className = 'leaf-face front';
+      var back = document.createElement('div');
+      back.className = 'leaf-face back';
+      var shade = document.createElement('div');
+      shade.className = 'leaf-shade';
+      leaf.appendChild(front);
+      leaf.appendChild(back);
+      leaf.appendChild(shade);
+      return { leaf: leaf, front: front, back: back };
+    }
+
+    // Paint the front cover (colour + art + title) into a leaf face.
+    function renderCover(face) {
+      face.innerHTML = '';
+      face.classList.add('cover-face');
+      face.style.background = story.color;
+      var img = document.createElement('img');
+      img.className = 'book-closed-img';
+      img.src = coverImg; img.alt = '';
+      var ttl = document.createElement('div');
+      ttl.className = 'book-closed-title';
+      ttl.textContent = story.title;
+      face.appendChild(img);
+      face.appendChild(ttl);
+    }
+
+    // (Spine fade during a flip is handled in CSS via .book-spread.is-flipping
+    //  .book-spine → @keyframes spineFlip, tied to the flip duration.)
+
+    // Show the dark scene background through a page (used during cover open/close
+    // so no cream page or stale content shows behind the moving cover).
+    function blankPage(pageEl, innerEl) {
+      innerEl.innerHTML = '';
+      innerEl.style.background = '';
+      pageEl.classList.add('is-blank');
+    }
+    function unblankPage(pageEl) { pageEl.classList.remove('is-blank'); }
+
     // ── Counter + nav state ──────────────────────────────────────────────────
     function updateNav() {
       var isTitle  = spreadIdx === 0;
@@ -220,6 +253,9 @@ window.APP = window.APP || {};
       // Corner folds
       foldPrev.style.visibility = isTitle  ? 'hidden' : 'visible';
       foldNext.style.visibility = isOutro  ? 'hidden' : 'visible';
+
+      // On the outro spread the right panel is the back cover → tap to close.
+      rightPage.classList.toggle('is-back-cover', isOutro);
     }
 
     // ── Apply a spread (no animation) ────────────────────────────────────────
@@ -230,73 +266,62 @@ window.APP = window.APP || {};
       updateNav();
     }
 
-    // ── Page turn ────────────────────────────────────────────────────────────
+    // ── Page turn (3D leaf flip) ─────────────────────────────────────────────
     function turnPage(direction) {
-      if (turning) return;
+      if (turning || phase !== 'open') return;
       var nextIdx = direction === 'next' ? spreadIdx + 1 : spreadIdx - 1;
       if (nextIdx < 0 || nextIdx >= spreads.length) return;
 
       turning = true;
-      var blockEl = bookSpread;   // use spread as hit-block
-      blockEl.style.pointerEvents = 'none';
+      bookSpread.style.pointerEvents = 'none';
+      bookSpread.classList.add('is-flipping');    // hide folds + fade spine
 
+      var current  = spreads[spreadIdx];
       var incoming = spreads[nextIdx];
 
       if (direction === 'next') {
-        // Pre-render incoming into bg layer
-        applyLeft(bgLeft,   incoming);
-        applyRight(bgRight,  incoming);
-        spreadBg.style.display = 'flex';
+        // Leaf over the right half: front = current right, back = incoming left.
+        var L = buildLeaf('right');
+        applyRight(L.front, current);
+        applyLeft(L.back,  incoming);
+        bookSpread.appendChild(L.leaf);
 
-        // Phase A: right panel collapses toward spine
-        rightPage.classList.add('collapsing-next');
+        // Reveal incoming right under the leaf (hidden behind the front face).
+        applyRight(rightInner, incoming);
 
+        void L.leaf.offsetWidth;                  // commit start state
+        L.leaf.classList.add('flipping');         // rotateY 0 → -180deg
+
+        setTimeout(function () { spreadIdx = nextIdx; updateNav(); }, FLIP_MS / 2);
         setTimeout(function () {
-          // Swap left content at midpoint (right is now hidden behind clip)
-          applyLeft(leftInner, incoming);
-          spreadIdx = nextIdx;
-          updateNav();
-
-          // Phase B: left panel grows from spine outward
-          leftPage.classList.add('expanding-next');
-        }, 300);
-
-        setTimeout(function () {
-          // Finalise right panel with incoming content, reset clips
-          applyRight(rightInner, incoming);
-          rightPage.classList.remove('collapsing-next');
-          leftPage.classList.remove('expanding-next');
-          spreadBg.style.display = 'none';
-          blockEl.style.pointerEvents = '';
+          applyLeft(leftInner, incoming);         // static left = incoming left
+          if (L.leaf.parentNode) L.leaf.parentNode.removeChild(L.leaf);
+          bookSpread.classList.remove('is-flipping');
+          bookSpread.style.pointerEvents = '';
           turning = false;
-        }, 630);
+        }, FLIP_MS);
 
       } else {
-        // PREV: mirror
-        applyLeft(bgLeft,   incoming);
-        applyRight(bgRight,  incoming);
-        spreadBg.style.display = 'flex';
+        // PREV — mirror: leaf over the left half, front = current left,
+        // back = incoming right, rotateY 0 → +180deg.
+        var Lp = buildLeaf('left');
+        applyLeft(Lp.front, current);
+        applyRight(Lp.back, incoming);
+        bookSpread.appendChild(Lp.leaf);
 
-        // Phase A: left panel collapses toward spine
-        leftPage.classList.add('collapsing-prev');
+        applyLeft(leftInner, incoming);           // reveal incoming left under leaf
 
+        void Lp.leaf.offsetWidth;
+        Lp.leaf.classList.add('flipping');
+
+        setTimeout(function () { spreadIdx = nextIdx; updateNav(); }, FLIP_MS / 2);
         setTimeout(function () {
-          applyRight(rightInner, incoming);
-          spreadIdx = nextIdx;
-          updateNav();
-
-          // Phase B: right panel grows from spine outward
-          rightPage.classList.add('expanding-prev');
-        }, 300);
-
-        setTimeout(function () {
-          applyLeft(leftInner, incoming);
-          leftPage.classList.remove('collapsing-prev');
-          rightPage.classList.remove('expanding-prev');
-          spreadBg.style.display = 'none';
-          blockEl.style.pointerEvents = '';
+          applyRight(rightInner, incoming);       // static right = incoming right
+          if (Lp.leaf.parentNode) Lp.leaf.parentNode.removeChild(Lp.leaf);
+          bookSpread.classList.remove('is-flipping');
+          bookSpread.style.pointerEvents = '';
           turning = false;
-        }, 630);
+        }, FLIP_MS);
       }
     }
 
@@ -306,27 +331,216 @@ window.APP = window.APP || {};
     navNext.addEventListener('click',  function () { turnPage('next'); });
     navPrev.addEventListener('click',  function () { turnPage('prev'); });
 
-    // ── Book open sequence ───────────────────────────────────────────────────
+    // ── Book open sequence (cover = first leaf) ──────────────────────────────
     bookClosed.addEventListener('click', function () {
       if (phase !== 'closed') return;
       phase = 'opening';
       bookEl.dataset.phase = 'opening';
 
-      // Show spread behind the cover immediately
-      showSpread(0);
+      // Prepare the spread underneath. Mirror a NEXT turn: reveal only the
+      // right page (title) now; leave the left page BLANK so the inside cover
+      // isn't shown before the cover swings over it. The left is filled at the
+      // end, under the landing leaf.
+      spreadIdx = 0;
+      applyRight(rightInner, spreads[0]);
+      blankPage(leftPage, leftInner);             // left = dark scene until cover lands
       bookSpread.style.display = 'flex';
+      bookSpread.classList.add('is-flipping');    // hide folds + fade spine
 
-      // Swing cover open
-      bookClosed.classList.add('cover-open');
+      // Cover leaf over the right half: front = cover, back = inside-front
+      // cover (spread 0 left = story colour). Hide the static closed cover.
+      var L = buildLeaf('right');
+      L.leaf.classList.add('cover-leaf');         // solid cover: no curl shade
+      renderCover(L.front);
+      applyLeft(L.back, spreads[0]);
+      bookSpread.appendChild(L.leaf);
+      // Hide via opacity + pointer-events (not display:none) so the element stays
+      // in layout, avoiding a flex reflow on restoration. Also pause the idle-shake
+      // animation so it doesn't advance while hidden — we'll reset it on show so the
+      // cover always reappears at rotate(0) rather than mid-tilt.
+      bookClosed.style.opacity = '0';
+      bookClosed.style.pointerEvents = 'none';
+      bookClosed.style.animationPlayState = 'paused';
+
+      // Slide the book to its centred 2-page position while the cover flips.
+      bookEl.classList.remove('book-closed-state');
+
+      void L.leaf.offsetWidth;
+      L.leaf.classList.add('flipping');           // rotateY 0 → -180deg
 
       setTimeout(function () {
-        bookClosed.style.display = 'none';
+        unblankPage(leftPage);
+        applyLeft(leftInner, spreads[0]);          // inside cover, under the leaf
+        if (L.leaf.parentNode) L.leaf.parentNode.removeChild(L.leaf);
+        bookSpread.classList.remove('is-flipping');
         phase = 'open';
         bookEl.dataset.phase = 'open';
         navPrev.style.display = '';
         navNext.style.display = '';
         updateNav();
-      }, 420);
+      }, FLIP_MS);
+    });
+
+    // ── Book close sequence (reverse cover swing) ────────────────────────────
+    function closeBook() {
+      if (phase !== 'open' || turning) return;
+      phase = 'closing';
+      bookEl.dataset.phase = 'closing';
+      bookSpread.style.pointerEvents = 'none';
+      bookSpread.classList.add('is-flipping');    // hide folds + fade spine
+
+      // Clear the spread to the dark scene background so no stale page content
+      // shows behind the closing cover.
+      blankPage(leftPage, leftInner);
+      blankPage(rightPage, rightInner);
+
+      // Cover leaf over the left half: front = the inside-front cover (plain
+      // story colour, NOT the last page), back = the outer cover. Rotates
+      // 0 → +180deg, landing the closed cover on the right.
+      var L = buildLeaf('left');
+      L.leaf.classList.add('cover-leaf');         // solid cover: no curl shade
+      L.front.style.background = story.color;
+      renderCover(L.back);
+      bookSpread.appendChild(L.leaf);
+
+      void L.leaf.offsetWidth;
+      L.leaf.classList.add('flipping');
+      bookEl.classList.add('book-closed-state');  // slide back to single page
+
+      setTimeout(function () { scene.classList.add('scene-fade-out'); }, FLIP_MS - 120);
+      setTimeout(function () { ctx.go('library'); }, FLIP_MS + 220);
+    }
+
+    // ── Collapse back to closed cover (left page click on title spread) ────────
+    // Reverses the open animation: cover swings back over the spread, book
+    // returns to single-page closed state. No navigation — user can reopen.
+    function collapseToClosedCover() {
+      if (phase !== 'open' || turning) return;
+      phase = 'closing-to-cover';
+      bookEl.dataset.phase = 'closing-to-cover';
+      bookSpread.style.pointerEvents = 'none';
+      bookSpread.classList.add('is-flipping');
+
+      // Blank the left page and append the cover leaf in the same synchronous block
+      // so the browser paints them together in one frame — the leaf (front =
+      // story.color) immediately covers the blank left, preventing a dark flash.
+      // The right page (title content) stays visible and is covered as the leaf sweeps.
+      // Cover leaf over the left half: front = inside cover colour, back = outer cover.
+      var L = buildLeaf('left');
+      L.leaf.classList.add('cover-leaf');
+      L.front.style.background = story.color;
+      renderCover(L.back);
+      blankPage(leftPage, leftInner);
+      bookSpread.appendChild(L.leaf);
+
+      void L.leaf.offsetWidth;
+      L.leaf.classList.add('flipping');
+      bookEl.classList.add('book-closed-state');   // slide back to single page
+
+      setTimeout(function () {
+        if (L.leaf.parentNode) L.leaf.parentNode.removeChild(L.leaf);
+        bookSpread.classList.remove('is-flipping');
+        // Restore page backgrounds so they show cream on the next open, not the
+        // dark scene background left by blankPage().
+        unblankPage(leftPage);
+        unblankPage(rightPage);
+        bookSpread.style.display = 'none';
+        bookSpread.style.pointerEvents = '';
+        // Reset the idle-shake animation so the cover reappears at rotate(0) rather
+        // than wherever the animation was when it was paused. Setting animation:none
+        // then forcing a style flush then removing it causes the browser to restart
+        // the animation from the beginning (with its 2 s initial delay).
+        bookClosed.style.animation = 'none';
+        void bookClosed.offsetWidth;               // flush: force style recalculation
+        bookClosed.style.animation = '';           // re-attach from CSS — fresh start
+        bookClosed.style.animationPlayState = '';
+        bookClosed.style.opacity = '';             // restore closed cover face
+        bookClosed.style.pointerEvents = '';
+        navPrev.style.display = 'none';
+        navNext.style.display = 'none';
+        phase = 'closed';
+        bookEl.dataset.phase = 'closed';
+      }, FLIP_MS);
+    }
+
+    // ── Flutter close (back cover click) ─────────────────────────────────────
+    // Fans 4 rapid decorative leaves backwards, then swings the cover shut and
+    // navigates to the library. Only wired to the back-cover (outro) click.
+    function flutterAndClose() {
+      if (phase !== 'open' || turning) return;
+      phase = 'closing';
+      bookEl.dataset.phase = 'closing';
+      bookSpread.style.pointerEvents = 'none';
+      // is-flipping hides corner folds, fades spine, drops spread shadow.
+      // Replace "The End" on the left with the inside-cover colour (story.color)
+      // so it disappears without leaving a dark hole. The left half stays story.color
+      // throughout the flutter — the cream flutter leaves contrast against it cleanly.
+      // The right page (back cover colour) is kept visible throughout the flutter.
+      bookSpread.classList.add('is-flipping');
+      applyLeft(leftInner, spreads[0]);  // inside-cover colour, clears "The End" text
+
+      var FLUTTER_MS    = 250;   // duration of each rapid leaf
+      var STAGGER_MS    = 90;    // gap between leaf launches
+      var FLUTTER_COUNT = 4;
+
+      // Launch staggered flutter leaves over the left half (backwards direction)
+      for (var i = 0; i < FLUTTER_COUNT; i++) {
+        (function (idx) {
+          setTimeout(function () {
+            var Lf = buildLeaf('left');
+            Lf.leaf.classList.add('flutter-leaf');
+            Lf.front.style.background = '#f5f0e8';   // page cream
+            Lf.back.style.background  = '#e8dfd0';   // slightly warmer back
+            bookSpread.appendChild(Lf.leaf);
+            void Lf.leaf.offsetWidth;
+            Lf.leaf.classList.add('flipping');
+            setTimeout(function () {
+              if (Lf.leaf.parentNode) Lf.leaf.parentNode.removeChild(Lf.leaf);
+            }, FLUTTER_MS + 50);
+          }, idx * STAGGER_MS);
+        })(i);
+      }
+
+      // After all flutter leaves finish, run the cover swing + navigate
+      var flutterTotal = STAGGER_MS * (FLUTTER_COUNT - 1) + FLUTTER_MS + 30;
+      setTimeout(function () {
+        // Snap right page to the title spread so the cover swings over it.
+        unblankPage(rightPage);
+        applyRight(rightInner, spreads[0]);
+
+        // Blank the left page and build the cover leaf in the same synchronous
+        // block. The browser paints them together in one frame — the leaf is already
+        // covering the blank left when it first renders, so no dark gap flashes.
+        blankPage(leftPage, leftInner);
+        var L = buildLeaf('left');
+        L.leaf.classList.add('cover-leaf');
+        L.front.style.background = story.color;
+        renderCover(L.back);
+        bookSpread.appendChild(L.leaf);
+
+        void L.leaf.offsetWidth;
+        L.leaf.classList.add('flipping');
+        bookEl.classList.add('book-closed-state');
+
+        setTimeout(function () { scene.classList.add('scene-fade-out'); }, FLIP_MS - 120);
+        setTimeout(function () { ctx.go('library'); }, FLIP_MS + 220);
+      }, flutterTotal);
+    }
+
+    // Tapping the inside front cover (left page, title spread) collapses the
+    // book back to its closed cover without navigating away.
+    leftPage.addEventListener('click', function () {
+      if (phase === 'open' && !turning && spreadIdx === 0) {
+        collapseToClosedCover();
+      }
+    });
+
+    // Tapping the back cover (right panel of the outro spread) triggers the
+    // flutter-fan animation then closes to library.
+    rightPage.addEventListener('click', function () {
+      if (phase === 'open' && !turning && spreadIdx === spreads.length - 1) {
+        flutterAndClose();
+      }
     });
   }
 

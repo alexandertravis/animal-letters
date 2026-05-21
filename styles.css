@@ -1248,41 +1248,50 @@ html, body {
   position: relative;
   width: min(740px, 92vw);
   aspect-ratio: 2 / 1.35;
-  animation: bookIn 0.38s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  animation: bookIn 0.38s ease-out both;
+  /* transform is reserved for the closed-state centring shift (see below) */
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
 }
+/* bookIn animates opacity only — never transform — so the closed-state
+   translateX shift is not clobbered by the entrance animation. */
 @keyframes bookIn {
-  from { opacity: 0; transform: scale(0.72); }
-  to   { opacity: 1; transform: scale(1);    }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
+/* When closed, the book shows a single (right-half) cover page; shifting the
+   whole book left by a quarter of its width visually centres that one page.
+   Opening removes this class so the book slides to reveal the 2-page spread. */
+.book.book-closed-state { transform: translateX(-25%); }
 
-/* ── Closed cover ───────────────────────────────────────────────────────── */
+/* ── Closed cover (single right-half page; book is shifted to centre it) ─── */
 .book-closed {
-  position: absolute; inset: 0;
+  position: absolute; top: 0; right: 0; width: 50%; height: 100%;
   border-radius: 3px 6px 6px 3px;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 14px;
   cursor: pointer; color: #fff;
   box-shadow: -6px 6px 24px rgba(0,0,0,0.55), 4px 4px 16px rgba(0,0,0,0.35);
-  transition: transform 0.12s;
   user-select: none;
+  z-index: 7;
 }
-.book-closed:active { transform: scale(0.98); }
 .book-closed-img   { width: 30%; max-height: 38%; object-fit: contain; opacity: 0.92; }
 .book-closed-title {
   font-size: clamp(1rem, 3vw, 1.7rem); font-weight: 700;
   text-align: center; padding: 0 20px; line-height: 1.25;
   text-shadow: 0 1px 4px rgba(0,0,0,0.4);
 }
-.book-closed-hint  { font-size: 0.82rem; opacity: 0.68; }
-
-/* Cover swings open (rotates away to the left from its left edge) */
-.book-closed.cover-open {
-  animation: coverSwingOpen 0.42s cubic-bezier(0.4, 0, 0.6, 1) forwards;
-  transform-origin: left center;
+/* Periodic idle shake to hint the book is tappable. The shake occupies ~12% of
+   the 5 s cycle (~0.6 s of motion, ~4.4 s of rest). A 2 s initial delay lets
+   the entrance animation finish before the first nudge. */
+.book-closed {
+  animation: bookIdleShake 5s ease-in-out 2s infinite;
 }
-@keyframes coverSwingOpen {
-  0%   { opacity: 1; transform: perspective(700px) rotateY(0deg); }
-  100% { opacity: 0; transform: perspective(700px) rotateY(-110deg); }
+@keyframes bookIdleShake {
+  0%, 13%, 100% { transform: rotate(0deg); }
+  2%  { transform: rotate(-3deg); }
+  5%  { transform: rotate(3deg); }
+  8%  { transform: rotate(-2deg); }
+  11% { transform: rotate(1deg); }
 }
 
 /* ── Open spread ────────────────────────────────────────────────────────── */
@@ -1293,24 +1302,15 @@ html, body {
   border-radius: 3px 6px 6px 3px;
   box-shadow: -6px 6px 24px rgba(0,0,0,0.55), 4px 4px 16px rgba(0,0,0,0.35);
   overflow: hidden;
+  /* 3D viewing distance for the flipping leaf. Set here (a transform-free
+     element) NOT on .book — putting perspective on the transformed .book
+     creates a nested 3D context that squashes the leaf. */
+  perspective: 1700px;
   animation: spreadReveal 0.38s ease-out both;
 }
 @keyframes spreadReveal {
   from { opacity: 0; }
   to   { opacity: 1; }
-}
-
-/* ── Background layer (incoming spread during page turns) ───────────────── */
-.spread-bg {
-  position: absolute; inset: 0; z-index: 0;
-  display: flex;
-}
-.bg-left, .bg-right {
-  width: 50%; height: 100%;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 28px 24px; box-sizing: border-box;
-  background: #fffef9;
 }
 
 /* ── Page panels ────────────────────────────────────────────────────────── */
@@ -1340,54 +1340,149 @@ html, body {
   background: linear-gradient(to right,
     rgba(0,0,0,0.22), rgba(0,0,0,0.06), rgba(0,0,0,0.22));
   pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+/* The spine sits UNDER the turning leaf, so the leaf hides it for the whole
+   turn and is then removed in one frame. To avoid a white→dark snap we keep
+   the spine fully hidden while flipping (is-flipping present) and let it fade
+   in only AFTER the leaf is removed — i.e. when is-flipping is dropped in the
+   turn's teardown, this rule stops applying and the transition above runs. */
+.book-spread.is-flipping .book-spine { opacity: 0; }
+/* Drop the spread's own box-shadow while a leaf is in flight — it would
+   otherwise frame the transparent blank area during cover open/close,
+   producing a shadow halo around empty space. It fades back in via the
+   transition on .book-spread when is-flipping is removed. */
+.book-spread.is-flipping { box-shadow: none; }
+
+/* ── Page turn: 3D leaf flip ────────────────────────────────────────────── */
+/* A transient .page-leaf is layered over one half of the spread and rotated
+   about the spine. It carries two faces (front = outgoing content, back =
+   incoming content). The static pages underneath are swapped while hidden.
+   The same leaf powers page turns AND the cover open/close. */
+.page-leaf {
+  position: absolute; top: 0; height: 100%; width: 50%;
+  transform-style: preserve-3d;
+  z-index: 6;
+  transition: transform 0.6s cubic-bezier(0.42, 0, 0.3, 1);
+}
+.page-leaf.right { left: 50%; transform-origin: left  center; transform: rotateY(0deg); }
+.page-leaf.left  { left: 0;   transform-origin: right center; transform: rotateY(0deg); }
+.page-leaf.right.flipping { transform: rotateY(-180deg); }
+.page-leaf.left.flipping  { transform: rotateY(180deg);  }
+
+.leaf-face {
+  position: absolute; inset: 0;
+  background: #fffef9;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 28px 24px; box-sizing: border-box;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.leaf-face.back { transform: rotateY(180deg); }
+
+/* Curl shading: a gradient darkest toward the spine (the bend) fading out to
+   the free edge, so the turning leaf reads as a curling page rather than a
+   flatly-dimmed panel. The opacity ramp peaks near edge-on (~90°). */
+.leaf-shade {
+  position: absolute; inset: 0; z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  animation: leafShade 0.6s ease both;
+}
+.page-leaf.right .leaf-shade {   /* spine = left edge */
+  background: linear-gradient(to right,
+    rgba(0,0,0,0.6), rgba(0,0,0,0.12) 55%, rgba(0,0,0,0) 100%);
+}
+.page-leaf.left .leaf-shade {    /* spine = right edge */
+  background: linear-gradient(to left,
+    rgba(0,0,0,0.6), rgba(0,0,0,0.12) 55%, rgba(0,0,0,0) 100%);
+}
+/* The cover is a solid board, not a thin page — skip the curl shade so it
+   doesn't smear a heavy shadow across the cover during open/close. */
+.page-leaf.cover-leaf .leaf-shade { display: none; }
+/* Flutter leaves use a shorter, sharper transition for a rapid-fan effect */
+.page-leaf.flutter-leaf {
+  transition: transform 0.25s ease-in;
+}
+@keyframes leafShade {
+  0%   { opacity: 0;   }
+  50%  { opacity: 0.9; }
+  100% { opacity: 0;   }
 }
 
-/* ── Page turn: clip-path animations ───────────────────────────────────── */
-/* Going NEXT: right page collapses toward spine, new left grows from spine */
-.book-page.right.collapsing-next {
-  clip-path: inset(0 100% 0 0);
-  transition: clip-path 0.3s ease-in;
-}
-.book-page.left.expanding-next {
-  animation: expandLeftFromSpine 0.32s ease-out forwards;
-}
-@keyframes expandLeftFromSpine {
-  from { clip-path: inset(0 0 0 100%); }
-  to   { clip-path: inset(0 0 0 0);    }
+/* Cover face of the leaf (used by cover open/close). No box-shadow here — a
+   drop shadow on the rotating cover smears a big stray shadow across the
+   background and the page beneath during open/close. */
+.leaf-face.cover-face {
+  gap: 14px; color: #fff;
+  padding: 0;
 }
 
-/* Going PREV: left page collapses toward spine, new right grows from spine */
-.book-page.left.collapsing-prev {
-  clip-path: inset(0 0 0 100%);
-  transition: clip-path 0.3s ease-in;
-}
-.book-page.right.expanding-prev {
-  animation: expandRightFromSpine 0.32s ease-out forwards;
-}
-@keyframes expandRightFromSpine {
-  from { clip-path: inset(0 100% 0 0); }
-  to   { clip-path: inset(0 0 0 0);    }
-}
+/* On the outro spread the right panel is the back cover — tappable to close. */
+.book-page.is-back-cover { cursor: pointer; }
 
-/* ── Corner page folds ──────────────────────────────────────────────────── */
+/* ── Corner page folds (peeled-corner curl) ─────────────────────────────── */
+/* Built around a diagonal crease (the fold line between the current page and
+   the next page below it). Shading radiates from that diagonal both ways:
+   - toward the corner: the lifted triangle = the BACK of the current page,
+     lit, fading to a slightly darker rolled tip;
+   - toward the interior: a soft shadow the lifted flap casts on the next page.
+   The gradient runs perpendicular to the crease (135deg for the bottom-right
+   corner, 225deg mirrored for bottom-left). */
 .page-fold {
   position: absolute; bottom: 0; z-index: 5;
-  width: 56px; height: 56px;
+  width: 60px; height: 60px;
   cursor: pointer;
-  transition: transform 0.1s, filter 0.1s;
+  outline: 1px solid rgba(0,0,0,0.14);  /* thin edge separates fold from page */
+  /* Explicit visible resting state (scale 1, opacity 1) so the grow-in
+     transition has a concrete target — transitioning to implicit `none` is
+     unreliable. Origin is the page corner so it unfurls out of the corner. */
+  transform: scale(1);
+  opacity: 1;
+  transition: transform 0.32s cubic-bezier(0.34, 1.2, 0.5, 1), opacity 0.28s ease;
 }
-.page-fold:hover  { transform: scale(1.12); }
-.page-fold:active { transform: scale(0.9);  }
+.page-fold:hover  { transform: scale(1.08); }
+.page-fold:active { transform: scale(0.94); }
 .page-fold.next {
   right: 0;
-  background: linear-gradient(225deg, #ddd8cc 50%, transparent 50%);
-  filter: drop-shadow(-2px -2px 4px rgba(0,0,0,0.18));
+  transform-origin: 100% 100%;          /* bottom-right corner */
+  border-radius: 0 0 7px 0;             /* rounded curl tip */
+  background: linear-gradient(135deg,
+    transparent 33%,
+    rgba(0,0,0,0.05) 41%,
+    rgba(0,0,0,0.22) 47%,               /* shadow cast on next page */
+    rgba(45,38,24,0.5) 50%,             /* the diagonal crease (darkest) */
+    #9e9080 52%,                        /* back of current page (flap) — clearly distinct */
+    #b5a995 70%,
+    #8a7d6c 100%);                      /* rolled tip — darkest for visual depth */
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.22));
 }
 .page-fold.prev {
   left: 0;
-  background: linear-gradient(315deg, #ddd8cc 50%, transparent 50%);
-  filter: drop-shadow(2px -2px 4px rgba(0,0,0,0.18));
+  transform-origin: 0% 100%;            /* bottom-left corner */
+  border-radius: 0 0 0 7px;
+  background: linear-gradient(225deg,
+    transparent 33%,
+    rgba(0,0,0,0.05) 41%,
+    rgba(0,0,0,0.22) 47%,
+    rgba(45,38,24,0.5) 50%,
+    #9e9080 52%,
+    #b5a995 70%,
+    #8a7d6c 100%);
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.22));
 }
+
+/* Pages show the dark scene background during cover open/close — clear the
+   page fill AND its centre border so nothing shades the bare background. */
+.book-page.is-blank { background: transparent; border-color: transparent; }
+
+/* While a leaf is flipping the folds collapse into their corner (scale 0).
+   When the flip ends (is-flipping removed) they grow back out of the corner
+   via the transform transition above — so they unfurl into place instead of
+   popping in. */
+.book-spread.is-flipping .page-fold { transform: scale(0); opacity: 0; }
 
 /* ── Outer nav arrows ───────────────────────────────────────────────────── */
 .book-nav {
