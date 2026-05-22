@@ -113,6 +113,8 @@ window.APP = window.APP || {};
   APP.LIBRARY_THEMES = {
     storybook: { label: "Storybook", shelf: "skin-storybook", book: "watercolour" },
     walnut:    { label: "Walnut",    shelf: "skin-walnut",    book: "classic"     },
+    // Plain, unskinned baseline (flat covers + cream pages + plain text) for testing.
+    basic:     { label: "Basic",     shelf: "skin-basic",     book: "basic"       },
   };
   APP.DEFAULT_LIBRARY_THEME = "storybook";
 

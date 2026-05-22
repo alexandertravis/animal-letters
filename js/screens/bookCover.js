@@ -41,6 +41,22 @@ window.APP = window.APP || {};
     const palette = skin === 'classic' ? `l-${leather}` : `b-${board}`;
     const animal  = (story.requirements && story.requirements[0] && story.requirements[0].animalId) || 'cat';
 
+    // Basic (testing) skin — plain flat cover: solid colour + animal + title.
+    if (skin === 'basic') {
+      const basic = div('story-cover skin-basic' + (locked ? ' is-locked' : ''));
+      basic.style.background = locked ? '#cfcfcf' : (story.color || '#888');
+      if (!locked) {
+        const im = document.createElement('img');
+        im.src = `assets/images/cartoon/${animal}.svg`;
+        im.alt = '';
+        basic.appendChild(im);
+      }
+      const t = div('basic-title');
+      t.textContent = locked ? (APP.t ? APP.t('library.locked') : 'Locked') : story.title;
+      basic.appendChild(t);
+      return basic;
+    }
+
     const cover = div(`story-cover skin-${skin} ${palette}${locked ? ' is-locked' : ''}`);
 
     cover.appendChild(div('cover-inner'));

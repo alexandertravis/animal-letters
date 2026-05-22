@@ -15,12 +15,13 @@ window.APP = window.APP || {};
     const coverImg = 'assets/images/cartoon/' + story.requirements[0].animalId + '.svg';
 
     // ── Skin (driven by the shared theme dial; same as the library shelf) ─────
-    const bookSkin = (APP.activeBookSkin && APP.activeBookSkin() === 'watercolour')
-      ? 'watercolour' : 'classic';
-    const skin     = bookSkin === 'watercolour' ? 'book-watercolour' : 'book-classic';
-    const palette  = bookSkin === 'classic'
-      ? 'l-' + (story.leather || 'burgundy')
-      : 'b-' + (story.board   || 'sage');
+    const bookSkin = (APP.activeBookSkin && APP.activeBookSkin()) || 'classic';
+    const skin     = bookSkin === 'watercolour' ? 'book-watercolour'
+                   : bookSkin === 'basic'       ? 'book-basic'
+                   :                              'book-classic';
+    const palette  = bookSkin === 'classic'     ? 'l-' + (story.leather || 'burgundy')
+                   : bookSkin === 'watercolour' ? 'b-' + (story.board   || 'sage')
+                   :                              '';
     const defaultFrame = bookSkin === 'watercolour' ? 'wash' : 'rect';
 
     const spreads = [
@@ -187,6 +188,16 @@ window.APP = window.APP || {};
     function applyLeft(container, spread) {
       container.style.background = '';
       container.innerHTML = '';
+      if (bookSkin === 'basic') {
+        // Plain testing baseline — flat colour / plain text, no frames.
+        if (spread.leftType === 'color') { container.style.background = spread.leftContent; return; }
+        if (spread.leftType === 'theend') {
+          var pe = document.createElement('p'); pe.className = 'book-the-end'; pe.textContent = 'The End';
+          container.appendChild(pe); return;
+        }
+        var pt = document.createElement('p'); pt.className = 'book-text'; pt.textContent = spread.leftContent;
+        container.appendChild(pt); return;
+      }
       if (spread.leftType === 'color') {
         // Inside front cover — fill the full leaf side.
         container.appendChild(insideCover());
@@ -215,6 +226,18 @@ window.APP = window.APP || {};
     function applyRight(container, spread) {
       container.style.background = '';
       container.innerHTML = '';
+      if (bookSkin === 'basic') {
+        // Plain testing baseline.
+        if (spread.rightType === 'color') { container.style.background = spread.rightContent; return; }
+        if (spread.rightType === 'title') {
+          var d = spread.rightContent;
+          var bi = document.createElement('img'); bi.className = 'book-cover-img'; bi.src = d.image; bi.alt = '';
+          var bt = document.createElement('p'); bt.className = 'book-cover-title'; bt.textContent = d.title;
+          container.appendChild(bi); container.appendChild(bt); return;
+        }
+        var im = document.createElement('img'); im.className = 'book-img'; im.src = spread.rightContent; im.alt = '';
+        container.appendChild(im); return;
+      }
       if (spread.rightType === 'color') {
         // Inside back cover — fill the full leaf side.
         container.appendChild(insideCover());

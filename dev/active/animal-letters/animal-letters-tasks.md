@@ -222,7 +222,8 @@
   - [x] Page numbers obscured by corner folds → centred at bottom of each panel (`left:50%`+translateX)
   - [x] Page numbers identical (1,1) → now consecutive per panel (left `2n-1`, right `2n` → 1,2 / 3,4)
   - [x] Book briefly disappeared on open — `.book-spread` had `animation:spreadReveal` (opacity 0→1) that replayed on display:none→flex, fading the cover leaf up from transparent (obvious with the darker covers). Removed the fade; cover leaf now visible from frame one
-- [ ] **BLOCKED:** bundle reader font files into `assets/fonts/` — `@font-face` wired (Cinzel / EB Garamond / Fraunces) but binaries not present; reader falls back to Georgia/serif until added
+- [x] Reader fonts bundled — user added font folders; fixed `@font-face` `src` to the subfolder paths (`assets/fonts/Cinzel/…`, `EB_Garamond/…`, `Fraunces/…`). All three load (verified `document.fonts.check`); classic drop cap now renders in real Cinzel
+- [x] **Basic theme** (3rd dial option, for testing) — plain unskinned baseline: `APP.LIBRARY_THEMES.basic` (shelf `skin-basic`, book `basic`); `bookCover.js` basic branch (flat colour + animal + title); `storyreader.js` basic branches in applyLeft/applyRight (plain `.book-text`/`.book-img`/colour fills, no frames/page-nums); CSS `.bookshelf.skin-basic` + `.story-cover.skin-basic`. Verified plain in shelf + reader; classic/watercolour unaffected
 
 ### Phase 3 — Per-page image frames (DEFERRED)
 - [ ] Optional `frame` field per page (`vignette`/`rect`/`oval`/`circle`/`arch`/`wash`); default rect (classic) / wash (watercolour)

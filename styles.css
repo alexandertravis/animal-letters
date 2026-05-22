@@ -1623,6 +1623,14 @@ html, body {
   background:radial-gradient(ellipse 60% 100% at 50% 50%, transparent 60%, rgba(70,40,20,.18) 100%);
 }
 
+/* Basic (testing) shelf — plain neutral background + neutral planks. */
+.bookshelf.skin-basic{
+  --plank-1:#d8d8d8; --plank-2:#bcbcbc; --plank-3:#9a9a9a;
+  --plank-hi:rgba(255,255,255,.6); --plank-lo:rgba(0,0,0,.15);
+  --plank-rule:rgba(0,0,0,.12);
+  background:#eef0f3;
+}
+
 /* ══════════════════════════════════════════════════════════════════════
    Book — face-out on shelf  (scoped under .bookshelf to protect the reader)
    ══════════════════════════════════════════════════════════════════════ */
@@ -1751,6 +1759,16 @@ html, body {
 /* Locked watercolour face — desaturate so it reads as locked (mirrors classic) */
 .story-cover.is-locked.skin-watercolour{filter:saturate(.42) brightness(.9)}
 
+/* ── Skin: Basic (plain testing cover) ─── */
+.story-cover.skin-basic{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  color:#fff;text-align:center;padding:14px;box-sizing:border-box;
+}
+.story-cover.skin-basic::before{display:none}
+.story-cover.skin-basic img{width:55%;max-height:42%;object-fit:contain}
+.story-cover.skin-basic .basic-title{font-weight:700;font-size:13px;line-height:1.2;padding:0 6px;text-shadow:0 1px 3px rgba(0,0,0,.45)}
+.story-cover.skin-basic.is-locked{color:#5a5a5a}
+
 /* ══════════════════════════════════════════════════════════════════════
    Decorative shelf props
    ══════════════════════════════════════════════════════════════════════ */
@@ -1788,20 +1806,20 @@ html, body {
 /* Local reader fonts — bundle the files into assets/fonts/ to enable. Until
    present, the var() fallbacks (Georgia/serif) apply, so the reader still works. */
 @font-face{
-  font-family:"Cinzel"; font-style:normal; font-weight:400 700; font-display:swap;
-  src:url("assets/fonts/Cinzel-VariableFont_wght.ttf") format("truetype");
+  font-family:"Cinzel"; font-style:normal; font-weight:400 900; font-display:swap;
+  src:url("assets/fonts/Cinzel/Cinzel-VariableFont_wght.ttf") format("truetype");
 }
 @font-face{
   font-family:"EB Garamond"; font-style:normal; font-weight:400 800; font-display:swap;
-  src:url("assets/fonts/EBGaramond-VariableFont_wght.ttf") format("truetype");
+  src:url("assets/fonts/EB_Garamond/EBGaramond-VariableFont_wght.ttf") format("truetype");
 }
 @font-face{
   font-family:"EB Garamond"; font-style:italic; font-weight:400 800; font-display:swap;
-  src:url("assets/fonts/EBGaramond-Italic-VariableFont_wght.ttf") format("truetype");
+  src:url("assets/fonts/EB_Garamond/EBGaramond-Italic-VariableFont_wght.ttf") format("truetype");
 }
 @font-face{
-  font-family:"Fraunces"; font-style:normal; font-weight:400 700; font-display:swap;
-  src:url("assets/fonts/Fraunces-VariableFont_SOFT,WONK,opsz,wght.ttf") format("truetype");
+  font-family:"Fraunces"; font-style:normal; font-weight:400 900; font-display:swap;
+  src:url("assets/fonts/Fraunces/Fraunces-VariableFont_SOFT,WONK,opsz,wght.ttf") format("truetype");
 }
 
 /* ── Container reconciliation ─────────────────────────────────────────────
