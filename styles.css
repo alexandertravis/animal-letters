@@ -1527,3 +1527,249 @@ html, body {
   font-weight: 700; font-style: italic;
   color: #666; text-align: center; margin: 0;
 }
+
+/* ╭──────────────────────────────────────────────────────────────────────╮
+   │  Story Library skin system — Phase 1 (bookshelf + face-out books).    │
+   │  Reader-spread / page-frame / image-framing sections are intentionally│
+   │  NOT included this round (Phase 2/3).                                  │
+   │                                                                       │
+   │  IMPORTANT: every shelf-card selector is scoped under `.bookshelf` so │
+   │  the bare `.book` reader container (the open-book) is never affected.  │
+   ╰──────────────────────────────────────────────────────────────────────╯ */
+
+/* ── Design tokens ────────────────────────────────────────────────────── */
+:root{
+  --gold-1:#f8e29a; --gold-2:#d8b04a; --gold-3:#8a5e10;
+
+  --leather-burgundy:#3d0d10; --leather-burgundy-hi:#6b1a1f; --leather-burgundy-lo:#1f0608;
+  --leather-forest  :#1a2a16; --leather-forest-hi  :#2e4828; --leather-forest-lo  :#0a1408;
+  --leather-navy    :#101a35; --leather-navy-hi    :#1f2e58; --leather-navy-lo    :#06091a;
+  --leather-tan     :#4a3018; --leather-tan-hi     :#7a5028; --leather-tan-lo     :#28180a;
+  --leather-plum    :#2e122e; --leather-plum-hi    :#4e224e; --leather-plum-lo    :#180818;
+  --leather-dust    :#3a342c; --leather-dust-hi    :#5a5248; --leather-dust-lo    :#1a1612;
+
+  --board-rose:#d4828a;  --board-rose-hi:#e9b0b4;
+  --board-sage:#8aaa86;  --board-sage-hi:#b5cfb1;
+  --board-sky :#86a8c8;  --board-sky-hi :#b6d2e8;
+  --board-sun :#e9c46a;  --board-sun-hi :#f5dfa0;
+
+  --parch-1:#f5e8c8; --parch-2:#ecdcb0; --parch-3:#d8c490;
+  --paper-1:#fbf6ea; --paper-2:#f3ebd6; --paper-3:#e6d8b6;
+
+  --wood-1:#3d1f0c; --wood-2:#2a1408; --wood-3:#1a0c04;
+
+  --reader-display:"Cinzel", serif;
+  --reader-serif:"EB Garamond", Georgia, serif;
+  --reader-serif-soft:"Fraunces","EB Garamond", Georgia, serif;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Bookshelf
+   ══════════════════════════════════════════════════════════════════════ */
+.bookshelf{
+  position:relative;
+  padding:34px 36px 16px;
+  border-radius:8px;
+  overflow:hidden;
+  box-shadow:0 30px 60px rgba(0,0,0,.55);
+}
+.bookshelf-row{
+  display:flex;align-items:flex-end;gap:8px;
+  min-height:230px;padding:0 14px;position:relative;z-index:1;
+}
+.bookshelf-row + .bookshelf-row{margin-top:22px}
+.bookshelf-plank{
+  height:18px;margin-top:-2px;border-radius:2px;
+  background:linear-gradient(180deg, var(--plank-1) 0%, var(--plank-2) 50%, var(--plank-3) 100%);
+  box-shadow:
+    inset 0 1px 0 var(--plank-hi),
+    inset 0 -1px 0 rgba(0,0,0,.55),
+    0 2px 0 var(--plank-lo),
+    0 8px 14px rgba(0,0,0,.45);
+}
+.bookshelf-plank::after{
+  content:"";display:block;height:1px;margin-top:7px;
+  background:linear-gradient(90deg, transparent, var(--plank-rule) 15%, var(--plank-rule) 85%, transparent);
+}
+
+.bookshelf.skin-walnut{
+  --plank-1:#4a2a12; --plank-2:#2c1608; --plank-3:#0e0602;
+  --plank-hi:rgba(255,180,90,.18); --plank-lo:rgba(180,130,60,.22);
+  --plank-rule:rgba(216,176,74,.4);
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,180,80,.14), transparent 60%),
+    linear-gradient(180deg, var(--wood-1), var(--wood-3));
+}
+.bookshelf.skin-walnut::before{
+  content:"";position:absolute;inset:0;border-radius:8px;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 100% at 50% 50%, transparent 50%, rgba(0,0,0,.55) 100%),
+    repeating-linear-gradient(92deg,
+      rgba(0,0,0,.0) 0 8px,
+      rgba(0,0,0,.10) 8px 9px,
+      rgba(255,200,120,.04) 9px 11px,
+      rgba(0,0,0,.0) 11px 22px);
+}
+
+.bookshelf.skin-storybook{
+  --plank-1:#d2b288; --plank-2:#a88454; --plank-3:#624421;
+  --plank-hi:rgba(255,235,200,.7); --plank-lo:rgba(70,40,20,.4);
+  --plank-rule:rgba(140,90,40,.45);
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,230,180,.4), transparent 70%),
+    linear-gradient(180deg, #f0d8b0 0%, #cdb084 100%);
+}
+.bookshelf.skin-storybook::before{
+  content:"";position:absolute;inset:0;border-radius:8px;pointer-events:none;
+  background:radial-gradient(ellipse 60% 100% at 50% 50%, transparent 60%, rgba(70,40,20,.18) 100%);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Book — face-out on shelf  (scoped under .bookshelf to protect the reader)
+   ══════════════════════════════════════════════════════════════════════ */
+.bookshelf .book{
+  position:relative;
+  flex-shrink:0;
+  width:148px;
+  aspect-ratio:13/20;
+  cursor:pointer;
+  transform-origin:bottom center;
+  transition:transform .25s ease, filter .25s ease;
+  filter:drop-shadow(6px 10px 14px rgba(0,0,0,.55));
+  /* reset reader-book defaults that would otherwise inherit */
+  animation:none;
+}
+.bookshelf .book:hover{transform:translateY(-10px) scale(1.06)}
+.bookshelf .book.is-locked{cursor:not-allowed}
+.bookshelf .book.is-locked:hover{transform:translateY(-4px) scale(1.02)}
+
+.bookshelf .book .cover{position:absolute;inset:0;border-radius:3px 6px 6px 3px;overflow:hidden}
+.bookshelf .book .cover::before{
+  content:"";position:absolute;top:0;bottom:0;left:0;width:8px;z-index:3;
+  background:linear-gradient(90deg, var(--cover-shadow,rgba(0,0,0,.5)), transparent);
+  border-right:1px solid rgba(0,0,0,.35);
+}
+.bookshelf .book .cover-inner{position:absolute;inset:12px 12px 12px 22px;border-radius:2px;z-index:1}
+.bookshelf .book .cover-portrait{
+  position:absolute;left:22px;right:14px;top:14px;height:55%;
+  display:flex;align-items:center;justify-content:center;z-index:2;
+}
+.bookshelf .book .cover-portrait img{width:88%;height:88%;object-fit:contain}
+.bookshelf .book .cover-title{
+  position:absolute;left:22px;right:14px;bottom:22px;
+  text-align:center;z-index:2;
+  font-family:var(--reader-display);font-weight:600;font-size:13px;
+  letter-spacing:.06em;line-height:1.15;color:var(--gold-1);
+  text-shadow:0 1px 0 rgba(0,0,0,.5);
+  padding:8px 6px;
+  border-top:1px solid rgba(216,176,74,.4);
+  border-bottom:1px solid rgba(216,176,74,.4);
+}
+.bookshelf .book .cover-title::before,.bookshelf .book .cover-title::after{
+  content:"❦";display:block;color:var(--gold-2);font-size:9px;line-height:1;margin:2px 0
+}
+.bookshelf .book .corner{position:absolute;width:42px;height:42px;color:var(--gold-1);z-index:2;pointer-events:none}
+.bookshelf .book .corner svg{width:100%;height:100%;display:block}
+.bookshelf .book .corner.tl{top:2px;left:14px}
+.bookshelf .book .corner.tr{top:2px;right:2px;transform:scaleX(-1)}
+.bookshelf .book .corner.bl{bottom:2px;left:14px;transform:scaleY(-1)}
+.bookshelf .book .corner.br{bottom:2px;right:2px;transform:scale(-1,-1)}
+
+/* ── Skin: Classic Gilded ─── */
+.bookshelf .book.skin-classic{--cover-shadow:rgba(0,0,0,.55)}
+.bookshelf .book.skin-classic .cover{
+  background:radial-gradient(ellipse 100% 100% at 50% 50%, var(--leather-hi), var(--leather) 60%, var(--leather-lo) 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,200,120,.10),
+    inset 0 1px 0 rgba(255,200,120,.20),
+    inset 4px 0 8px rgba(0,0,0,.35),
+    inset -2px 0 6px rgba(0,0,0,.35),
+    inset 0 -4px 8px rgba(0,0,0,.4);
+}
+.bookshelf .book.skin-classic .cover-inner{
+  border:1px solid rgba(216,176,74,.5);
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,.18), inset 0 0 0 3px rgba(216,176,74,.18);
+}
+.bookshelf .book.skin-classic .cover-portrait{
+  background:radial-gradient(ellipse 80% 80% at 50% 50%, rgba(248,226,154,.18), transparent 65%);
+  border-radius:4px;
+}
+.bookshelf .book.skin-classic.l-burgundy{--leather:var(--leather-burgundy);--leather-hi:var(--leather-burgundy-hi);--leather-lo:var(--leather-burgundy-lo)}
+.bookshelf .book.skin-classic.l-forest  {--leather:var(--leather-forest);  --leather-hi:var(--leather-forest-hi);  --leather-lo:var(--leather-forest-lo)}
+.bookshelf .book.skin-classic.l-navy    {--leather:var(--leather-navy);    --leather-hi:var(--leather-navy-hi);    --leather-lo:var(--leather-navy-lo)}
+.bookshelf .book.skin-classic.l-tan     {--leather:var(--leather-tan);     --leather-hi:var(--leather-tan-hi);     --leather-lo:var(--leather-tan-lo)}
+.bookshelf .book.skin-classic.l-plum    {--leather:var(--leather-plum);    --leather-hi:var(--leather-plum-hi);    --leather-lo:var(--leather-plum-lo)}
+
+/* Locked face */
+.bookshelf .book.is-locked.skin-classic{
+  --leather:var(--leather-dust);--leather-hi:var(--leather-dust-hi);--leather-lo:var(--leather-dust-lo);
+  filter:saturate(.4) brightness(.78) drop-shadow(6px 10px 14px rgba(0,0,0,.5));
+}
+.bookshelf .book.is-locked .cover-portrait img{display:none}
+.bookshelf .book.is-locked .cover-portrait::after{
+  content:"";display:block;width:60%;height:80%;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 70'><g fill='%236a6258'><path d='M16 30 L16 22 Q16 8 30 8 Q44 8 44 22 L44 30 L40 30 L40 22 Q40 12 30 12 Q20 12 20 22 L20 30 Z'/><rect x='10' y='30' width='40' height='32' rx='3'/><circle cx='30' cy='44' r='3' fill='%231a1612'/><rect x='29' y='44' width='2' height='10' fill='%231a1612'/></g></svg>") no-repeat center/contain;
+}
+.bookshelf .book.is-locked .cover-title{color:#9a948a;letter-spacing:.22em}
+
+/* ── Skin: Watercolour ─── */
+.bookshelf .book.skin-watercolour{--cover-shadow:rgba(0,0,0,.35)}
+.bookshelf .book.skin-watercolour .cover{
+  background:radial-gradient(ellipse 100% 100% at 50% 50%, var(--board-hi), var(--board) 70%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.18),
+    inset 4px 0 8px rgba(0,0,0,.18),
+    inset 0 -4px 8px rgba(0,0,0,.2);
+}
+.bookshelf .book.skin-watercolour .cover-inner{
+  border:1px solid rgba(255,255,255,.45);
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.15);
+}
+.bookshelf .book.skin-watercolour .cover-title{
+  font-family:var(--reader-serif-soft);font-weight:600;color:#fff;
+  text-shadow:0 1px 0 rgba(0,0,0,.3);letter-spacing:.03em;
+  border-color:rgba(255,255,255,.4);
+}
+.bookshelf .book.skin-watercolour .corner{color:#fff;opacity:.85}
+.bookshelf .book.skin-watercolour .cover-portrait{
+  background:rgba(255,255,255,.4);border-radius:50%;
+  width:74%;height:46%;left:50%;top:14px;right:auto;transform:translateX(-50%);
+  box-shadow:inset 0 0 0 3px rgba(255,255,255,.6), 0 4px 10px rgba(0,0,0,.18);
+  overflow:hidden;
+}
+.bookshelf .book.skin-watercolour .cover-portrait img{width:100%;height:100%;object-fit:cover}
+.bookshelf .book.skin-watercolour.b-rose{--board:var(--board-rose);--board-hi:var(--board-rose-hi)}
+.bookshelf .book.skin-watercolour.b-sage{--board:var(--board-sage);--board-hi:var(--board-sage-hi)}
+.bookshelf .book.skin-watercolour.b-sky {--board:var(--board-sky); --board-hi:var(--board-sky-hi)}
+.bookshelf .book.skin-watercolour.b-sun {--board:var(--board-sun); --board-hi:var(--board-sun-hi)}
+
+/* Locked watercolour face — desaturate so it reads as locked (mirrors classic) */
+.bookshelf .book.is-locked.skin-watercolour{
+  filter:saturate(.42) brightness(.9) drop-shadow(6px 10px 14px rgba(0,0,0,.4));
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Decorative shelf props
+   ══════════════════════════════════════════════════════════════════════ */
+.shelf-prop{
+  flex-shrink:0;position:relative;align-self:flex-end;cursor:pointer;
+  transition:transform .25s ease, filter .25s ease;
+  filter:drop-shadow(4px 6px 8px rgba(0,0,0,.5));
+}
+.shelf-prop:hover{transform:translateY(-4px) scale(1.06)}
+.shelf-prop.prop-candle{width:36px;height:96px}
+.shelf-prop.prop-hourglass{width:46px;height:80px}
+.shelf-prop.prop-hourglass:hover svg{animation:hg-tip .6s ease}
+@keyframes hg-tip{50%{transform:rotate(180deg)}100%{transform:rotate(0)}}
+.shelf-prop.prop-quill{width:42px;height:78px}
+.shelf-prop.prop-key{width:62px;height:24px;align-self:center;margin-bottom:8px}
+.shelf-prop.prop-key:hover{transform:translateY(-3px) rotate(-8deg)}
+.shelf-prop.prop-teapot{width:84px;height:62px}
+.shelf-prop.prop-lamp{width:64px;height:96px}
+.shelf-prop svg{width:100%;height:100%;display:block}
+.bookshelf.skin-storybook .shelf-prop{filter:drop-shadow(3px 5px 6px rgba(70,40,20,.35))}
+
+/* Library screen: header + shelves only — bookshelf fills the area below the
+   topbar edge-to-edge (no section titles, no body padding, no rounded gap). */
+.library-body{padding:0}
+.library .bookshelf{border-radius:0;min-height:100%;box-shadow:none}

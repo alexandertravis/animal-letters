@@ -201,6 +201,25 @@
 - [x] `COVER_MS = 950` constant alongside `FLIP_MS = 600` — all cover timeouts use COVER_MS, page-turn timeouts unchanged
 - [x] `COVER_PAUSE = 550` — delay between cover landing and scene fade (user-tuned)
 
+## Section 21 — Library Theming / Skin System (feature/library-theming, 2026-05-22)
+### Phase 1 — Bookshelf + face-out book tiles ✅
+- [x] `index.html` — injected SVG defs (gold gradients, corner-flourish, crest, pendant, padlock, shelf props candle/hourglass/quill/key/teapot/lamp, page-illustration frames) after `<body>`, before `<main>`
+- [x] `styles.css` — appended Phase-1 skin CSS (design tokens, `.bookshelf` walnut/storybook, face-out `.book` classic/watercolour skins, locked padlock cameo, `.shelf-prop`). **All `.book…` selectors scoped under `.bookshelf`** to protect the reader's `.book` container; `animation:none` reset added so shelf books don't inherit the reader's `bookIn`
+- [x] `js/screens/library.js` — replaced with skinnable bookshelf renderer; `SHELF_SKIN = 'skin-storybook'`; topbar/achievements/fade-out/i18n preserved; locked label uses `APP.t('library.locked')`
+- [x] `data/stories.js` — added `skin` + `leather`/`board` to all 8 stories (legacy `color` kept as fallback)
+- [x] Verified: storybook shelf renders 8 books (2 unlocked / 6 locked), props present, no console errors; **reader regression check passed** — open-book `.book` retains width 740px / aspect 2:1.35 / transition 0.55s, animations untouched (storyreader.js not edited)
+
+### Phase 2 — Reader skin (DEFERRED — next session)
+- [ ] Adapt `storyreader-changes.md` to the ACTUAL spread shape (handoff diff assumes `leftType:'inside-cover'`, `escapeText`, `storyIdxFor`, `spread.caption/id/frame` — none exist here; our spreads use `leftType:'color'|'text'|'theend'`, `rightType:'color'|'title'|'image'`)
+- [ ] Append the reader-spread / page-frame / image-framing CSS sections (NOT yet added — they collide with live `.page-fold` / `.page-leaf` / `.book-page` selectors and need reconciling)
+- [ ] Wrap `.book-spread` in `book-classic`/`book-watercolour` from `story.skin`; inside-cover fills full leaf; drop caps; page-frame ornaments — all WITHOUT touching the flip choreography
+
+### Phase 3 — Per-page image frames (DEFERRED)
+- [ ] Optional `frame` field per page (`vignette`/`rect`/`oval`/`circle`/`arch`/`wash`); default rect (classic) / wash (watercolour)
+
+### Cleanup (follow-up)
+- [ ] Remove now-dead `.book-tile` / `.books-grid` CSS (`styles.css` ~1125-1205) and the old `.book-tile-*` rules once Phase 1 is accepted
+
 ## Section 11b — Future / Nice-to-Have
 - [ ] Real cartoon SVG artwork for all animals
 - [ ] Real realistic photos for all animals
