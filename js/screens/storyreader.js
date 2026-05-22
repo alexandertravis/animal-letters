@@ -13,15 +13,26 @@ window.APP = window.APP || {};
     // Spreads 1..N: story pages  (left = text, right = image)
     // Spread N+1: outro  (left = "The End", right = cover colour)
     const coverImg = 'assets/images/cartoon/' + story.requirements[0].animalId + '.svg';
+
+    // ── Skin (driven by the shared theme dial; same as the library shelf) ─────
+    const bookSkin = (APP.activeBookSkin && APP.activeBookSkin() === 'watercolour')
+      ? 'watercolour' : 'classic';
+    const skin     = bookSkin === 'watercolour' ? 'book-watercolour' : 'book-classic';
+    const palette  = bookSkin === 'classic'
+      ? 'l-' + (story.leather || 'burgundy')
+      : 'b-' + (story.board   || 'sage');
+    const defaultFrame = bookSkin === 'watercolour' ? 'wash' : 'rect';
+
     const spreads = [
       {
         leftType: 'color',  leftContent: story.color,
         rightType: 'title', rightContent: { title: story.title, image: coverImg }
       },
-      ...story.pages.map(function (p) {
+      ...story.pages.map(function (p, i) {
         return {
           leftType:  'text',  leftContent: p.text,
-          rightType: 'image', rightContent: p.image
+          rightType: 'image', rightContent: p.image,
+          frame: p.frame, pageNum: i + 1
         };
       }),
       {
@@ -66,25 +77,14 @@ window.APP = window.APP || {};
 
     // ── Book container ───────────────────────────────────────────────────────
     const bookEl = document.createElement('div');
-    bookEl.className = 'book book-closed-state';
+    bookEl.className = 'book book-closed-state ' + skin + ' ' + palette;
     bookEl.dataset.phase = 'closed';
 
-    // ── Closed cover ─────────────────────────────────────────────────────────
+    // ── Closed cover (the shared skinned cover; box-shadow/idle-shake live on
+    //    .book-closed, the painted face is the .story-cover inside it) ─────────
     const bookClosed = document.createElement('div');
     bookClosed.className = 'book-closed';
-    bookClosed.style.background = story.color;
-
-    const closedImg = document.createElement('img');
-    closedImg.className = 'book-closed-img';
-    closedImg.src = coverImg;
-    closedImg.alt = '';
-
-    const closedTitle = document.createElement('div');
-    closedTitle.className = 'book-closed-title';
-    closedTitle.textContent = story.title;
-
-    bookClosed.appendChild(closedImg);
-    bookClosed.appendChild(closedTitle);
+    bookClosed.appendChild(APP.bookCover(story, { skin: bookSkin }));
     bookEl.appendChild(bookClosed);
 
     // ── Open spread ──────────────────────────────────────────────────────────
@@ -143,44 +143,109 @@ window.APP = window.APP || {};
     root.appendChild(scene);
 
     // ── Panel rendering helpers ──────────────────────────────────────────────
+    // These paint into BOTH the static pages (.book-page-inner) and the flipping
+    // leaf faces (.leaf-face), so the skin markup rides the leaf during a turn.
+
+    // Inside-cover panel that fills the whole leaf side (no parchment gutter).
+    function insideCover() {
+      var inside = document.createElement('div');
+      inside.className = 'inside-cover-' + (skin === 'book-watercolour' ? 'watercolour' : 'classic');
+      return inside;
+    }
+
+    // Gilded page frame (corners + pendant) for classic; looser/empty for watercolour.
+    function buildPageFrame() {
+      var f = document.createElement('div');
+      f.className = 'page-frame';
+      if (skin === 'book-classic') {
+        ['tl','tr','bl','br'].forEach(function (p) {
+          var c = document.createElement('div');
+          c.className = 'corner ' + p;
+          c.innerHTML = '<svg viewBox="0 0 120 120"><use href="#corner-flourish"/></svg>';
+          f.appendChild(c);
+        });
+        var pendant = document.createElement('div');
+        pendant.className = 'pendant';
+        pendant.innerHTML = '<svg viewBox="0 0 60 80"><use href="#pendant"/></svg>';
+        f.appendChild(pendant);
+      }
+      return f;
+    }
+
+    // Page number, centred at the bottom of each panel (clear of the corner
+    // folds). Left/right panels of one story spread read as consecutive pages
+    // (e.g. story page 1 → left "1", right "2").
+    function appendPageNum(container, spread, side) {
+      if (!spread.pageNum) return;
+      var num = side === 'left' ? (spread.pageNum * 2 - 1) : (spread.pageNum * 2);
+      var n = document.createElement('div');
+      n.className = 'page-num';
+      n.textContent = '· ' + num + ' ·';
+      container.appendChild(n);
+    }
+
     function applyLeft(container, spread) {
       container.style.background = '';
+      container.innerHTML = '';
       if (spread.leftType === 'color') {
-        container.innerHTML = '';
-        container.style.background = spread.leftContent;
-      } else if (spread.leftType === 'theend') {
-        container.innerHTML = '<p class="book-the-end">The End</p>';
-      } else {
-        container.innerHTML = '<p class="book-text"></p>';
-        container.querySelector('.book-text').textContent = spread.leftContent;
+        // Inside front cover — fill the full leaf side.
+        container.appendChild(insideCover());
+        return;
       }
+      if (spread.leftType === 'theend') {
+        container.appendChild(buildPageFrame());
+        var end = document.createElement('div');
+        end.className = 'theend';
+        end.innerHTML = '<div class="big">The End</div>'
+          + '<div class="vine"><svg viewBox="0 0 100 14"><use href="#vine"/></svg></div>';
+        container.appendChild(end);
+        return;
+      }
+      // Text page — frame + drop-capped content + page number.
+      container.appendChild(buildPageFrame());
+      var content = document.createElement('div');
+      content.className = 'page-content';
+      var p = document.createElement('p');
+      p.textContent = spread.leftContent;
+      content.appendChild(p);
+      container.appendChild(content);
+      appendPageNum(container, spread, 'left');
     }
 
     function applyRight(container, spread) {
       container.style.background = '';
+      container.innerHTML = '';
       if (spread.rightType === 'color') {
-        container.innerHTML = '';
-        container.style.background = spread.rightContent;
-      } else if (spread.rightType === 'title') {
+        // Inside back cover — fill the full leaf side.
+        container.appendChild(insideCover());
+        return;
+      }
+      if (spread.rightType === 'title') {
         var d = spread.rightContent;
-        container.innerHTML = '';
+        var tp = document.createElement('div');
+        tp.className = 'title-page';
+        var h = document.createElement('div');
+        h.className = 'title-h';
+        h.textContent = d.title;
         var img = document.createElement('img');
-        img.className = 'book-cover-img';
+        img.className = 'title-img';
         img.src = d.image;
         img.alt = '';
-        var ttl = document.createElement('p');
-        ttl.className = 'book-cover-title';
-        ttl.textContent = d.title;
-        container.appendChild(img);
-        container.appendChild(ttl);
-      } else {
-        container.innerHTML = '';
-        var img2 = document.createElement('img');
-        img2.className = 'book-img';
-        img2.src = spread.rightContent;
-        img2.alt = '';
-        container.appendChild(img2);
+        tp.appendChild(h);
+        tp.appendChild(img);
+        container.appendChild(tp);
+        return;
       }
+      // Image page — frame + framed illustration + page number.
+      container.appendChild(buildPageFrame());
+      var wrap = document.createElement('div');
+      wrap.className = 'page-img frame-' + (spread.frame || defaultFrame);
+      var img2 = document.createElement('img');
+      img2.src = spread.rightContent;
+      img2.alt = '';
+      wrap.appendChild(img2);
+      container.appendChild(wrap);
+      appendPageNum(container, spread, 'right');
     }
 
     // ── Leaf builder (shared by page turns + cover open/close) ───────────────
@@ -206,19 +271,12 @@ window.APP = window.APP || {};
       return { leaf: leaf, front: front, back: back };
     }
 
-    // Paint the front cover (colour + art + title) into a leaf face.
+    // Paint the front cover (the shared skinned cover) into a leaf face.
     function renderCover(face) {
       face.innerHTML = '';
       face.classList.add('cover-face');
-      face.style.background = story.color;
-      var img = document.createElement('img');
-      img.className = 'book-closed-img';
-      img.src = coverImg; img.alt = '';
-      var ttl = document.createElement('div');
-      ttl.className = 'book-closed-title';
-      ttl.textContent = story.title;
-      face.appendChild(img);
-      face.appendChild(ttl);
+      face.style.background = '';
+      face.appendChild(APP.bookCover(story, { skin: bookSkin }));
     }
 
     // (Spine fade during a flip is handled in CSS via .book-spread.is-flipping
@@ -422,12 +480,12 @@ window.APP = window.APP || {};
 
       // Blank the left page and append the cover leaf in the same synchronous block
       // so the browser paints them together in one frame — the leaf (front =
-      // story.color) immediately covers the blank left, preventing a dark flash.
+      // skinned inside cover) immediately covers the blank left, preventing a flash.
       // The right page (title content) stays visible and is covered as the leaf sweeps.
-      // Cover leaf over the left half: front = inside cover colour, back = outer cover.
+      // Cover leaf over the left half: front = inside (skinned) cover, back = outer cover.
       var L = buildLeaf('left');
       L.leaf.classList.add('cover-leaf');
-      L.front.style.background = story.color;
+      applyLeft(L.front, spreads[0]);   // skinned inside front cover (not flat colour)
       renderCover(L.back);
       blankPage(leftPage, leftInner);
       bookSpread.appendChild(L.leaf);
@@ -513,7 +571,7 @@ window.APP = window.APP || {};
         blankPage(leftPage, leftInner);
         var L = buildLeaf('left');
         L.leaf.classList.add('cover-leaf');
-        L.front.style.background = story.color;
+        applyLeft(L.front, spreads[0]);   // skinned inside front cover (not flat colour)
         renderCover(L.back);
         bookSpread.appendChild(L.leaf);
 

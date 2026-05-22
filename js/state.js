@@ -99,7 +99,31 @@ window.APP = window.APP || {};
     // Story currently open in the reader. Set by library.js / complete.js.
     currentStory: null,
     currentPage:  0,
+    // Active library/reader theme (transient, session-only). Switchable from the
+    // header dropdown on the library screen. Drives BOTH the shelf room AND every
+    // book cover/spread skin together (see APP.LIBRARY_THEMES below).
+    libraryTheme: "storybook",   // key into APP.LIBRARY_THEMES
   };
+
+  // ── Library / reader theme ─────────────────────────────────────────────────
+  // One dial drives the shelf room AND the book skin together. Each story carries
+  // both a `leather` (classic) and a `board` (watercolour) colour so it renders in
+  // whichever theme is active. Shared by js/screens/library.js (shelf + cover) and
+  // js/screens/storyreader.js (open spread + cover).
+  APP.LIBRARY_THEMES = {
+    storybook: { label: "Storybook", shelf: "skin-storybook", book: "watercolour" },
+    walnut:    { label: "Walnut",    shelf: "skin-walnut",    book: "classic"     },
+  };
+  APP.DEFAULT_LIBRARY_THEME = "storybook";
+
+  // Resolve the active theme object (falls back to default if unset/invalid).
+  APP.activeTheme = function () {
+    const key = APP.LIBRARY_THEMES[APP.state.libraryTheme]
+      ? APP.state.libraryTheme : APP.DEFAULT_LIBRARY_THEME;
+    return APP.LIBRARY_THEMES[key];
+  };
+  // Convenience: the book skin ('classic' | 'watercolour') for the active theme.
+  APP.activeBookSkin = function () { return APP.activeTheme().book; };
 
   // Writes gallery progress to localStorage. Called after every animal completion.
   // Settings and in-progress game state are intentionally not persisted.

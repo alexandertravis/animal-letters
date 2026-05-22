@@ -11,19 +11,10 @@ window.APP = window.APP || {};
 
 (function (APP) {
 
-  /* Single theme dial. Each theme flips BOTH the shelf/room AND every book
-     cover together. Each story carries both a `leather` (classic) and a
-     `board` (watercolour) colour, so it renders correctly whichever theme is
-     active. The active theme lives on APP.state.libraryTheme (session-only)
-     and is switchable from the dropdown in the header.                      */
-  const THEMES = {
-    storybook: { label:'Storybook', shelf:'skin-storybook', book:'watercolour' },
-    walnut:    { label:'Walnut',    shelf:'skin-walnut',    book:'classic'     },
-  };
-  const DEFAULT_THEME = 'storybook';
-
-  /* Per-colour fallbacks if a story is missing the field for the active skin. */
-  const FALLBACK = { leather:'burgundy', board:'sage' };
+  /* The theme dial (shelf room + book skin together) lives on APP.state and is
+     defined once in js/state.js (APP.LIBRARY_THEMES / APP.activeTheme), shared
+     with the reader so switching the dropdown re-skins both. */
+  const THEMES = APP.LIBRARY_THEMES;
 
   function el(tag, props) {
     const n = document.createElement(tag);
@@ -43,43 +34,21 @@ window.APP = window.APP || {};
   const useSym = (id, w, h) =>
     `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg"><use href="#${id}"/></svg>`;
 
-  /* Build a face-out book card for a single story. */
+  /* Build a face-out book card for a single story. The painted cover is the
+     shared APP.bookCover component (also used by the reader); the `.book` card
+     only provides on-shelf geometry (size + hover lift). */
   function buildBook(story, isUnlocked, bookSkin) {
-    const skin    = bookSkin;   // driven by active theme, not per-story
-    const leather = story.leather || FALLBACK.leather;
-    const board   = story.board   || FALLBACK.board;
-    const palette = skin === 'classic' ? `l-${leather}` : `b-${board}`;
-    const animal  = (story.requirements && story.requirements[0] && story.requirements[0].animalId) || 'cat';
-    const locked  = !isUnlocked;
+    const locked = !isUnlocked;
 
     const root = el('div', {
-      class: `book skin-${skin} ${palette}${locked ? ' is-locked' : ''}`,
+      class: `book${locked ? ' is-locked' : ''}`,
       'data-story-id': story.id,
       'aria-label': story.title,
       role: 'button',
       tabindex: locked ? '-1' : '0',
     });
 
-    const cover = el('div', { class:'cover' });
-    cover.appendChild(el('div', { class:'cover-inner' }));
-
-    if (skin === 'classic') {
-      ['tl','tr','bl','br'].forEach(p =>
-        cover.appendChild(el('div', { class:`corner ${p}`, html: useSym('corner-flourish', 120, 120) }))
-      );
-    }
-
-    const portrait = el('div', { class:'cover-portrait' });
-    if (!locked) {
-      portrait.appendChild(el('img', { src:`assets/images/cartoon/${animal}.svg`, alt:'' }));
-    }
-    cover.appendChild(portrait);
-
-    const title = el('div', { class:'cover-title' });
-    title.appendChild(el('span', { class:'cover-title-text' }, locked ? APP.t('library.locked') : story.title));
-    cover.appendChild(title);
-
-    root.appendChild(cover);
+    root.appendChild(APP.bookCover(story, { skin: bookSkin, locked }));
 
     if (!locked) {
       root.addEventListener('click', () => {
@@ -127,9 +96,9 @@ window.APP = window.APP || {};
     APP._libCtx = ctx;  // stashed for the click handlers above
     root.innerHTML = '';
 
-    // Active theme (session-only). Falls back to the default if unset/invalid.
-    const themeKey  = THEMES[APP.state.libraryTheme] ? APP.state.libraryTheme : DEFAULT_THEME;
-    const theme     = THEMES[themeKey];
+    // Active theme (session-only), resolved by the shared helper in state.js.
+    const theme      = APP.activeTheme();
+    const themeKey   = THEMES[APP.state.libraryTheme] ? APP.state.libraryTheme : APP.DEFAULT_LIBRARY_THEME;
     const SHELF_SKIN = theme.shelf;
     const BOOK_SKIN  = theme.book;
 

@@ -209,10 +209,20 @@
 - [x] `data/stories.js` — added `skin` + `leather`/`board` to all 8 stories (legacy `color` kept as fallback)
 - [x] Verified: storybook shelf renders 8 books (2 unlocked / 6 locked), props present, no console errors; **reader regression check passed** — open-book `.book` retains width 740px / aspect 2:1.35 / transition 0.55s, animations untouched (storyreader.js not edited)
 
-### Phase 2 — Reader skin (DEFERRED — next session)
-- [ ] Adapt `storyreader-changes.md` to the ACTUAL spread shape (handoff diff assumes `leftType:'inside-cover'`, `escapeText`, `storyIdxFor`, `spread.caption/id/frame` — none exist here; our spreads use `leftType:'color'|'text'|'theend'`, `rightType:'color'|'title'|'image'`)
-- [ ] Append the reader-spread / page-frame / image-framing CSS sections (NOT yet added — they collide with live `.page-fold` / `.page-leaf` / `.book-page` selectors and need reconciling)
-- [ ] Wrap `.book-spread` in `book-classic`/`book-watercolour` from `story.skin`; inside-cover fills full leaf; drop caps; page-frame ornaments — all WITHOUT touching the flip choreography
+### Phase 2 — Reader skin ✅ (links to the same theme dial)
+- [x] Shared theme helper in `js/state.js` — `APP.LIBRARY_THEMES` + `APP.activeTheme()`/`APP.activeBookSkin()`; `state.libraryTheme` (session-only). `library.js` consumes it
+- [x] Shared cover component `js/screens/bookCover.js` → `APP.bookCover(story,{skin,locked})` building `.story-cover`; new `<script>` in `index.html` before library.js. Used by shelf card AND reader (closed cover + swing leaf)
+- [x] Migrated cover visual CSS from `.bookshelf .book .cover…` → unscoped `.story-cover.skin-*`; shelf geometry stays on `.bookshelf .book`
+- [x] `storyreader.js`: derive `skin` + `palette` from `APP.activeBookSkin()`; `buildPageFrame()`; rewrote `applyLeft`/`applyRight` for our real spread types (`color`→inside-cover fill, `text`→frame+page-content+page-num, `image`→frame+page-img+page-num, `title`→title-page, `theend`→theend); `renderCover` + static `.book-closed` use `APP.bookCover`. **Flip choreography / timing / state machine untouched**
+- [x] Appended reader CSS (paper, foxing, page-frame, page-content+drop-cap, page-img, page-num, inside-cover-*, title-page, theend, frame-* variants). Reconciliations: skipped handoff `.page-fold`; scoped gilt shimmer to `:not(.cover-leaf):not(.flutter-leaf)`; `.book-page-inner`/`.leaf-face` padding/position reset; leaf-face paper tone
+- [x] Verified both skins in-browser + full animation regression (open swing, turn next/prev with skin riding the leaf, collapse-to-cover, close→library); transition 0.55s intact; no console errors
+- [x] Animation fix round (post-review):
+  - [x] Blank page showing during open/close swing — the skin paper rules (spec 0,3,0) outranked `.book-page.is-blank` (0,2,0); added matching-specificity `.is-blank` overrides (transparent bg + no shadow + hide foxing)
+  - [x] Collapse/flutter cover flashing flat `story.color` — replaced `L.front.style.background = story.color` with `applyLeft(L.front, spreads[0])` so the inside cover stays skinned through the swing
+  - [x] Page numbers obscured by corner folds → centred at bottom of each panel (`left:50%`+translateX)
+  - [x] Page numbers identical (1,1) → now consecutive per panel (left `2n-1`, right `2n` → 1,2 / 3,4)
+  - [x] Book briefly disappeared on open — `.book-spread` had `animation:spreadReveal` (opacity 0→1) that replayed on display:none→flex, fading the cover leaf up from transparent (obvious with the darker covers). Removed the fade; cover leaf now visible from frame one
+- [ ] **BLOCKED:** bundle reader font files into `assets/fonts/` — `@font-face` wired (Cinzel / EB Garamond / Fraunces) but binaries not present; reader falls back to Georgia/serif until added
 
 ### Phase 3 — Per-page image frames (DEFERRED)
 - [ ] Optional `frame` field per page (`vignette`/`rect`/`oval`/`circle`/`arch`/`wash`); default rect (classic) / wash (watercolour)

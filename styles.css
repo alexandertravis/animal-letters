@@ -1306,11 +1306,10 @@ html, body {
      element) NOT on .book — putting perspective on the transformed .book
      creates a nested 3D context that squashes the leaf. */
   perspective: 1700px;
-  animation: spreadReveal 0.38s ease-out both;
-}
-@keyframes spreadReveal {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  /* No opacity fade-in: the spread becomes visible (display:none→flex) at the
+     moment the book opens, with the cover leaf already on top providing visual
+     continuity. A fade here made the whole book (cover leaf included) blink from
+     transparent — most visible with the darker leather/board covers. */
 }
 
 /* ── Page panels ────────────────────────────────────────────────────────── */
@@ -1643,19 +1642,25 @@ html, body {
 .bookshelf .book.is-locked{cursor:not-allowed}
 .bookshelf .book.is-locked:hover{transform:translateY(-4px) scale(1.02)}
 
-.bookshelf .book .cover{position:absolute;inset:0;border-radius:3px 6px 6px 3px;overflow:hidden}
-.bookshelf .book .cover::before{
+/* ══════════════════════════════════════════════════════════════════════
+   Shared book cover — `.story-cover` (built by js/screens/bookCover.js).
+   Used by the shelf card (`.bookshelf .book`) AND the reader's closed/swing
+   cover (`.book-closed`, `.leaf-face.cover-face`). Skin/visuals only — the
+   caller sizes it; `.story-cover` fills its positioned parent.
+   ══════════════════════════════════════════════════════════════════════ */
+.story-cover{position:absolute;inset:0;border-radius:3px 6px 6px 3px;overflow:hidden}
+.story-cover::before{
   content:"";position:absolute;top:0;bottom:0;left:0;width:8px;z-index:3;
   background:linear-gradient(90deg, var(--cover-shadow,rgba(0,0,0,.5)), transparent);
   border-right:1px solid rgba(0,0,0,.35);
 }
-.bookshelf .book .cover-inner{position:absolute;inset:12px 12px 12px 22px;border-radius:2px;z-index:1}
-.bookshelf .book .cover-portrait{
+.story-cover .cover-inner{position:absolute;inset:12px 12px 12px 22px;border-radius:2px;z-index:1}
+.story-cover .cover-portrait{
   position:absolute;left:22px;right:14px;top:14px;height:55%;
   display:flex;align-items:center;justify-content:center;z-index:2;
 }
-.bookshelf .book .cover-portrait img{width:88%;height:88%;object-fit:contain}
-.bookshelf .book .cover-title{
+.story-cover .cover-portrait img{width:88%;height:88%;object-fit:contain}
+.story-cover .cover-title{
   position:absolute;left:22px;right:14px;bottom:22px;
   text-align:center;z-index:2;
   font-family:var(--reader-display);font-weight:600;font-size:13px;
@@ -1665,19 +1670,19 @@ html, body {
   border-top:1px solid rgba(216,176,74,.4);
   border-bottom:1px solid rgba(216,176,74,.4);
 }
-.bookshelf .book .cover-title::before,.bookshelf .book .cover-title::after{
+.story-cover .cover-title::before,.story-cover .cover-title::after{
   content:"❦";display:block;color:var(--gold-2);font-size:9px;line-height:1;margin:2px 0
 }
-.bookshelf .book .corner{position:absolute;width:42px;height:42px;color:var(--gold-1);z-index:2;pointer-events:none}
-.bookshelf .book .corner svg{width:100%;height:100%;display:block}
-.bookshelf .book .corner.tl{top:2px;left:14px}
-.bookshelf .book .corner.tr{top:2px;right:2px;transform:scaleX(-1)}
-.bookshelf .book .corner.bl{bottom:2px;left:14px;transform:scaleY(-1)}
-.bookshelf .book .corner.br{bottom:2px;right:2px;transform:scale(-1,-1)}
+.story-cover .corner{position:absolute;width:42px;height:42px;color:var(--gold-1);z-index:2;pointer-events:none}
+.story-cover .corner svg{width:100%;height:100%;display:block}
+.story-cover .corner.tl{top:2px;left:14px}
+.story-cover .corner.tr{top:2px;right:2px;transform:scaleX(-1)}
+.story-cover .corner.bl{bottom:2px;left:14px;transform:scaleY(-1)}
+.story-cover .corner.br{bottom:2px;right:2px;transform:scale(-1,-1)}
 
 /* ── Skin: Classic Gilded ─── */
-.bookshelf .book.skin-classic{--cover-shadow:rgba(0,0,0,.55)}
-.bookshelf .book.skin-classic .cover{
+.story-cover.skin-classic{
+  --cover-shadow:rgba(0,0,0,.55);
   background:radial-gradient(ellipse 100% 100% at 50% 50%, var(--leather-hi), var(--leather) 60%, var(--leather-lo) 100%);
   box-shadow:
     inset 0 0 0 1px rgba(255,200,120,.10),
@@ -1686,67 +1691,65 @@ html, body {
     inset -2px 0 6px rgba(0,0,0,.35),
     inset 0 -4px 8px rgba(0,0,0,.4);
 }
-.bookshelf .book.skin-classic .cover-inner{
+.story-cover.skin-classic .cover-inner{
   border:1px solid rgba(216,176,74,.5);
   box-shadow:inset 0 0 0 2px rgba(0,0,0,.18), inset 0 0 0 3px rgba(216,176,74,.18);
 }
-.bookshelf .book.skin-classic .cover-portrait{
+.story-cover.skin-classic .cover-portrait{
   background:radial-gradient(ellipse 80% 80% at 50% 50%, rgba(248,226,154,.18), transparent 65%);
   border-radius:4px;
 }
-.bookshelf .book.skin-classic.l-burgundy{--leather:var(--leather-burgundy);--leather-hi:var(--leather-burgundy-hi);--leather-lo:var(--leather-burgundy-lo)}
-.bookshelf .book.skin-classic.l-forest  {--leather:var(--leather-forest);  --leather-hi:var(--leather-forest-hi);  --leather-lo:var(--leather-forest-lo)}
-.bookshelf .book.skin-classic.l-navy    {--leather:var(--leather-navy);    --leather-hi:var(--leather-navy-hi);    --leather-lo:var(--leather-navy-lo)}
-.bookshelf .book.skin-classic.l-tan     {--leather:var(--leather-tan);     --leather-hi:var(--leather-tan-hi);     --leather-lo:var(--leather-tan-lo)}
-.bookshelf .book.skin-classic.l-plum    {--leather:var(--leather-plum);    --leather-hi:var(--leather-plum-hi);    --leather-lo:var(--leather-plum-lo)}
+.story-cover.skin-classic.l-burgundy{--leather:var(--leather-burgundy);--leather-hi:var(--leather-burgundy-hi);--leather-lo:var(--leather-burgundy-lo)}
+.story-cover.skin-classic.l-forest  {--leather:var(--leather-forest);  --leather-hi:var(--leather-forest-hi);  --leather-lo:var(--leather-forest-lo)}
+.story-cover.skin-classic.l-navy    {--leather:var(--leather-navy);    --leather-hi:var(--leather-navy-hi);    --leather-lo:var(--leather-navy-lo)}
+.story-cover.skin-classic.l-tan     {--leather:var(--leather-tan);     --leather-hi:var(--leather-tan-hi);     --leather-lo:var(--leather-tan-lo)}
+.story-cover.skin-classic.l-plum    {--leather:var(--leather-plum);    --leather-hi:var(--leather-plum-hi);    --leather-lo:var(--leather-plum-lo)}
 
-/* Locked face */
-.bookshelf .book.is-locked.skin-classic{
+/* Locked face (desaturate; card drop-shadow stays on the shelf `.book`) */
+.story-cover.is-locked.skin-classic{
   --leather:var(--leather-dust);--leather-hi:var(--leather-dust-hi);--leather-lo:var(--leather-dust-lo);
-  filter:saturate(.4) brightness(.78) drop-shadow(6px 10px 14px rgba(0,0,0,.5));
+  filter:saturate(.4) brightness(.78);
 }
-.bookshelf .book.is-locked .cover-portrait img{display:none}
-.bookshelf .book.is-locked .cover-portrait::after{
+.story-cover.is-locked .cover-portrait img{display:none}
+.story-cover.is-locked .cover-portrait::after{
   content:"";display:block;width:60%;height:80%;
   background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 70'><g fill='%236a6258'><path d='M16 30 L16 22 Q16 8 30 8 Q44 8 44 22 L44 30 L40 30 L40 22 Q40 12 30 12 Q20 12 20 22 L20 30 Z'/><rect x='10' y='30' width='40' height='32' rx='3'/><circle cx='30' cy='44' r='3' fill='%231a1612'/><rect x='29' y='44' width='2' height='10' fill='%231a1612'/></g></svg>") no-repeat center/contain;
 }
-.bookshelf .book.is-locked .cover-title{color:#9a948a;letter-spacing:.22em}
+.story-cover.is-locked .cover-title{color:#9a948a;letter-spacing:.22em}
 
 /* ── Skin: Watercolour ─── */
-.bookshelf .book.skin-watercolour{--cover-shadow:rgba(0,0,0,.35)}
-.bookshelf .book.skin-watercolour .cover{
+.story-cover.skin-watercolour{
+  --cover-shadow:rgba(0,0,0,.35);
   background:radial-gradient(ellipse 100% 100% at 50% 50%, var(--board-hi), var(--board) 70%);
   box-shadow:
     inset 0 0 0 1px rgba(255,255,255,.18),
     inset 4px 0 8px rgba(0,0,0,.18),
     inset 0 -4px 8px rgba(0,0,0,.2);
 }
-.bookshelf .book.skin-watercolour .cover-inner{
+.story-cover.skin-watercolour .cover-inner{
   border:1px solid rgba(255,255,255,.45);
   box-shadow:inset 0 0 0 2px rgba(255,255,255,.15);
 }
-.bookshelf .book.skin-watercolour .cover-title{
+.story-cover.skin-watercolour .cover-title{
   font-family:var(--reader-serif-soft);font-weight:600;color:#fff;
   text-shadow:0 1px 0 rgba(0,0,0,.3);letter-spacing:.03em;
   border-color:rgba(255,255,255,.4);
 }
-.bookshelf .book.skin-watercolour .corner{color:#fff;opacity:.85}
-.bookshelf .book.skin-watercolour .cover-portrait{
+.story-cover.skin-watercolour .corner{color:#fff;opacity:.85}
+.story-cover.skin-watercolour .cover-portrait{
   background:rgba(255,255,255,.4);border-radius:50%;
   width:74%;height:46%;left:50%;top:14px;right:auto;transform:translateX(-50%);
   box-shadow:inset 0 0 0 3px rgba(255,255,255,.6), 0 4px 10px rgba(0,0,0,.18);
   overflow:hidden;
 }
-.bookshelf .book.skin-watercolour .cover-portrait img{width:100%;height:100%;object-fit:cover}
-.bookshelf .book.skin-watercolour.b-rose{--board:var(--board-rose);--board-hi:var(--board-rose-hi)}
-.bookshelf .book.skin-watercolour.b-sage{--board:var(--board-sage);--board-hi:var(--board-sage-hi)}
-.bookshelf .book.skin-watercolour.b-sky {--board:var(--board-sky); --board-hi:var(--board-sky-hi)}
-.bookshelf .book.skin-watercolour.b-sun {--board:var(--board-sun); --board-hi:var(--board-sun-hi)}
+.story-cover.skin-watercolour .cover-portrait img{width:100%;height:100%;object-fit:cover}
+.story-cover.skin-watercolour.b-rose{--board:var(--board-rose);--board-hi:var(--board-rose-hi)}
+.story-cover.skin-watercolour.b-sage{--board:var(--board-sage);--board-hi:var(--board-sage-hi)}
+.story-cover.skin-watercolour.b-sky {--board:var(--board-sky); --board-hi:var(--board-sky-hi)}
+.story-cover.skin-watercolour.b-sun {--board:var(--board-sun); --board-hi:var(--board-sun-hi)}
 
 /* Locked watercolour face — desaturate so it reads as locked (mirrors classic) */
-.bookshelf .book.is-locked.skin-watercolour{
-  filter:saturate(.42) brightness(.9) drop-shadow(6px 10px 14px rgba(0,0,0,.4));
-}
+.story-cover.is-locked.skin-watercolour{filter:saturate(.42) brightness(.9)}
 
 /* ══════════════════════════════════════════════════════════════════════
    Decorative shelf props
@@ -1773,3 +1776,233 @@ html, body {
    topbar edge-to-edge (no section titles, no body padding, no rounded gap). */
 .library-body{padding:0}
 .library .bookshelf{border-radius:0;min-height:100%;box-shadow:none}
+
+/* ╭──────────────────────────────────────────────────────────────────────╮
+   │  PHASE 2 — Reader skin (the open book spread).                        │
+   │  Applies when `.book` carries `.book-classic` or `.book-watercolour`  │
+   │  (set by storyreader.js from the shared theme). Skin/visuals only —    │
+   │  the flip choreography (page-leaf / cover-leaf / page-fold) is         │
+   │  untouched.                                                           │
+   ╰──────────────────────────────────────────────────────────────────────╯ */
+
+/* Local reader fonts — bundle the files into assets/fonts/ to enable. Until
+   present, the var() fallbacks (Georgia/serif) apply, so the reader still works. */
+@font-face{
+  font-family:"Cinzel"; font-style:normal; font-weight:400 700; font-display:swap;
+  src:url("assets/fonts/Cinzel-VariableFont_wght.ttf") format("truetype");
+}
+@font-face{
+  font-family:"EB Garamond"; font-style:normal; font-weight:400 800; font-display:swap;
+  src:url("assets/fonts/EBGaramond-VariableFont_wght.ttf") format("truetype");
+}
+@font-face{
+  font-family:"EB Garamond"; font-style:italic; font-weight:400 800; font-display:swap;
+  src:url("assets/fonts/EBGaramond-Italic-VariableFont_wght.ttf") format("truetype");
+}
+@font-face{
+  font-family:"Fraunces"; font-style:normal; font-weight:400 700; font-display:swap;
+  src:url("assets/fonts/Fraunces-VariableFont_SOFT,WONK,opsz,wght.ttf") format("truetype");
+}
+
+/* ── Container reconciliation ─────────────────────────────────────────────
+   The skin layers (.page-frame/.page-content/.page-img/.inside-cover-*/.title-
+   page/.theend) are absolutely positioned with edge insets. Our content boxes
+   (.book-page-inner static; .leaf-face on the flipping leaf) carry padding +
+   flex centering from the base reader. Neutralise padding and guarantee a
+   positioned containing block so the skin layers reach the page edges. NOTE:
+   .leaf-face is already position:absolute — only its padding is reset. */
+.book.book-classic .book-page-inner,
+.book.book-watercolour .book-page-inner{position:relative;padding:0}
+.book.book-classic .leaf-face,
+.book.book-watercolour .leaf-face{padding:0}
+/* Turning leaf shows a paper-toned face matching the skin (the gradient lives
+   on the static .book-page; a flat tone is enough for the ~0.6s flip). The
+   cover-face has a .story-cover filling it, and flutter leaves set inline bg. */
+.book.book-classic .leaf-face{background:var(--parch-2)}
+.book.book-watercolour .leaf-face{background:var(--paper-1)}
+
+/* ── Paper, by skin ─── */
+.book.book-classic .book-page.left{
+  background:linear-gradient(105deg,rgba(0,0,0,.18),transparent 14%),
+             radial-gradient(ellipse 90% 60% at 30% 50%, var(--parch-1), var(--parch-2) 70%, var(--parch-3) 100%);
+  box-shadow:inset -6px 0 18px rgba(70,40,10,.35);
+}
+.book.book-classic .book-page.right{
+  background:linear-gradient(255deg,rgba(0,0,0,.18),transparent 14%),
+             radial-gradient(ellipse 90% 60% at 70% 50%, var(--parch-1), var(--parch-2) 70%, var(--parch-3) 100%);
+  box-shadow:inset 6px 0 18px rgba(70,40,10,.35);
+}
+.book.book-watercolour .book-page.left{
+  background:linear-gradient(105deg,rgba(120,80,40,.12),transparent 14%),
+             radial-gradient(ellipse 90% 60% at 30% 50%, var(--paper-1), var(--paper-2) 75%, var(--paper-3) 100%);
+  box-shadow:inset -6px 0 14px rgba(120,90,40,.22);
+}
+.book.book-watercolour .book-page.right{
+  background:linear-gradient(255deg,rgba(120,80,40,.12),transparent 14%),
+             radial-gradient(ellipse 90% 60% at 70% 50%, var(--paper-1), var(--paper-2) 75%, var(--paper-3) 100%);
+  box-shadow:inset 6px 0 14px rgba(120,90,40,.22);
+}
+
+/* Paper foxing — classic only (subtle warm blotches) */
+.book.book-classic .book-page::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(circle 22px at 8% 12%, rgba(140,90,30,.16), transparent 65%),
+    radial-gradient(circle 14px at 4% 84%, rgba(140,90,30,.10), transparent 70%),
+    radial-gradient(circle 18px at 92% 92%, rgba(140,90,30,.12), transparent 70%);
+}
+
+/* Blanked page during the cover swing must show the dark scene through — the
+   skin paper rules above (`.book.book-classic .book-page.left`, specificity
+   0,3,0) outrank the base `.book-page.is-blank` (0,2,0), so clear them here at
+   matching specificity (placed later → wins) and hide the foxing layer. */
+.book.book-classic .book-page.is-blank,
+.book.book-watercolour .book-page.is-blank{background:transparent;box-shadow:none}
+.book.book-classic .book-page.is-blank::after{display:none}
+
+/* ── Gilded frame — classic ─── */
+.book.book-classic .page-frame{position:absolute;inset:24px;z-index:2;pointer-events:none}
+.book.book-classic .page-frame::before,
+.book.book-classic .page-frame::after{content:"";position:absolute;inset:0;border:1px solid rgba(216,176,74,.6);border-radius:2px}
+.book.book-classic .page-frame::after{inset:4px;border-color:rgba(216,176,74,.3)}
+.book.book-classic .page-frame .corner{position:absolute;width:56px;height:56px;color:var(--gold-1)}
+.book.book-classic .page-frame .corner svg{width:100%;height:100%}
+.book.book-classic .page-frame .corner.tl{top:-6px;left:-6px}
+.book.book-classic .page-frame .corner.tr{top:-6px;right:-6px;transform:scaleX(-1)}
+.book.book-classic .page-frame .corner.bl{bottom:-6px;left:-6px;transform:scaleY(-1)}
+.book.book-classic .page-frame .corner.br{bottom:-6px;right:-6px;transform:scale(-1,-1)}
+.book.book-classic .page-frame .pendant{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:32px;height:42px;color:var(--gold-1);opacity:.92}
+.book.book-classic .page-frame .pendant svg{width:100%;height:100%}
+
+/* Looser frame — watercolour */
+.book.book-watercolour .page-frame{position:absolute;inset:18px;z-index:2;pointer-events:none}
+.book.book-watercolour .page-frame::before{content:"";position:absolute;inset:0;border-radius:2px;box-shadow:inset 0 0 0 1px rgba(140,100,60,.25)}
+
+/* ── Page content + drop cap ─── */
+.book.book-classic .page-content{
+  position:absolute;inset:60px 50px 50px 50px;
+  font-family:var(--reader-serif);font-size:19px;line-height:1.55;
+  color:var(--reader-ink-1);z-index:3;
+}
+.book.book-classic .page-content p{margin:0 0 14px;text-wrap:pretty;text-align:justify}
+.book.book-classic .page-content p:first-of-type::first-letter{
+  font-family:var(--reader-display);font-weight:700;font-size:62px;float:left;line-height:.85;padding:6px 10px 0 0;color:var(--gold-3);text-shadow:0 1px 0 rgba(255,255,255,.5);
+}
+.book.book-watercolour .page-content{
+  position:absolute;inset:50px 46px 50px 46px;
+  font-family:var(--reader-serif-soft);font-size:18px;line-height:1.6;
+  color:#3a2614;z-index:3;
+}
+.book.book-watercolour .page-content p{margin:0 0 14px;text-wrap:pretty}
+.book.book-watercolour .page-content p:first-of-type::first-letter{
+  font-family:var(--reader-serif-soft);font-weight:600;font-size:46px;float:left;line-height:.9;padding:4px 8px 0 0;color:#8a4f3a;
+}
+
+/* ── Image on the right page ─── */
+.page-img{position:absolute;inset:50px 46px 70px 46px;z-index:3;display:flex;align-items:center;justify-content:center}
+.book.book-classic .page-img img{width:78%;height:78%;object-fit:contain;filter:drop-shadow(0 6px 12px rgba(70,40,10,.4))}
+.book.book-watercolour .page-img{inset:30px 30px 50px 30px}
+.book.book-watercolour .page-img img{
+  width:100%;height:100%;object-fit:cover;
+  -webkit-mask-image:radial-gradient(ellipse 80% 88% at 50% 50%, #000 65%, transparent 100%);
+          mask-image:radial-gradient(ellipse 80% 88% at 50% 50%, #000 65%, transparent 100%);
+}
+
+/* ── Page number — centred at the bottom of each panel, clear of corner folds ── */
+.page-num{
+  position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
+  font-family:var(--reader-display);font-size:11px;letter-spacing:.12em;color:var(--reader-ink-3);z-index:3;
+}
+.book.book-watercolour .page-num{color:#7a5234}
+
+/* ── Inside covers — fill the whole leaf side, no parchment gutter ─── */
+.inside-cover-classic{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 90% 80% at 50% 50%, var(--leather-hi), var(--leather) 60%, var(--leather-lo) 100%);
+  box-shadow:inset 0 0 0 1px rgba(216,176,74,.3),inset 0 0 60px rgba(0,0,0,.4);
+  z-index:3;
+}
+.book.book-classic.l-burgundy .inside-cover-classic{--leather:var(--leather-burgundy);--leather-hi:var(--leather-burgundy-hi);--leather-lo:var(--leather-burgundy-lo)}
+.book.book-classic.l-forest   .inside-cover-classic{--leather:var(--leather-forest);  --leather-hi:var(--leather-forest-hi);  --leather-lo:var(--leather-forest-lo)}
+.book.book-classic.l-navy     .inside-cover-classic{--leather:var(--leather-navy);    --leather-hi:var(--leather-navy-hi);    --leather-lo:var(--leather-navy-lo)}
+.book.book-classic.l-tan      .inside-cover-classic{--leather:var(--leather-tan);     --leather-hi:var(--leather-tan-hi);     --leather-lo:var(--leather-tan-lo)}
+.book.book-classic.l-plum     .inside-cover-classic{--leather:var(--leather-plum);    --leather-hi:var(--leather-plum-hi);    --leather-lo:var(--leather-plum-lo)}
+
+.inside-cover-watercolour{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 100% 100% at 50% 50%, var(--board-hi), var(--board) 70%);
+  z-index:3;
+}
+.book.book-watercolour.b-rose .inside-cover-watercolour{--board:var(--board-rose);--board-hi:var(--board-rose-hi)}
+.book.book-watercolour.b-sage .inside-cover-watercolour{--board:var(--board-sage);--board-hi:var(--board-sage-hi)}
+.book.book-watercolour.b-sky  .inside-cover-watercolour{--board:var(--board-sky); --board-hi:var(--board-sky-hi)}
+.book.book-watercolour.b-sun  .inside-cover-watercolour{--board:var(--board-sun); --board-hi:var(--board-sun-hi)}
+
+/* ── Title page + outro panels ─── */
+.title-page{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;
+  z-index:3;padding:50px 40px;text-align:center;
+}
+.book.book-classic .title-page .title-h{font-family:var(--reader-display);font-weight:600;font-size:30px;color:var(--reader-ink-1);letter-spacing:.04em;line-height:1.15}
+.book.book-watercolour .title-page .title-h{font-family:var(--reader-serif-soft);font-weight:600;font-size:32px;color:#3a2614;line-height:1.1}
+.title-page .title-img{width:160px;height:160px;margin-top:8px;filter:drop-shadow(0 6px 12px rgba(70,40,10,.3))}
+.book.book-watercolour .title-page .title-img{
+  width:200px;height:200px;border-radius:50%;object-fit:cover;
+  box-shadow:0 0 0 4px var(--paper-1), 0 0 0 5px rgba(140,80,40,.35), 0 12px 24px rgba(70,40,10,.3);
+}
+
+.theend{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:3}
+.theend .big{font-family:var(--reader-display);font-size:38px;color:var(--gold-3);letter-spacing:.14em}
+.book.book-watercolour .theend .big{font-family:var(--reader-serif-soft);color:#8a4f3a}
+.theend .vine{width:80px;height:20px;color:var(--gold-3)}
+.book.book-watercolour .theend .vine{display:none}
+
+/* ── Image-framing variants (per-page `frame:`) ─── */
+.page-img.frame-vignette img{
+  width:100%;height:100%;object-fit:cover;
+  -webkit-mask-image:radial-gradient(ellipse 70% 75% at 50% 45%, #000 50%, transparent 95%);
+          mask-image:radial-gradient(ellipse 70% 75% at 50% 45%, #000 50%, transparent 95%);
+  filter:none;
+}
+.page-img.frame-rect img{
+  width:100%;height:100%;object-fit:cover;
+  box-shadow:inset 0 0 0 3px rgba(216,176,74,.95), inset 0 0 0 4px rgba(0,0,0,.25), inset 0 0 0 6px rgba(216,176,74,.6);
+  filter:drop-shadow(0 6px 14px rgba(70,40,10,.35));
+}
+.page-img.frame-oval img{
+  width:100%;height:100%;object-fit:cover;
+  -webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%, #000 96%, transparent 100%);
+          mask-image:radial-gradient(ellipse 50% 50% at 50% 50%, #000 96%, transparent 100%);
+}
+.page-img.frame-circle img{
+  width:78%;aspect-ratio:1;height:auto;border-radius:50%;object-fit:cover;
+  box-shadow:0 0 0 4px var(--parch-1), 0 0 0 6px rgba(216,176,74,.95), 0 0 0 9px var(--parch-1), 0 0 0 10px rgba(216,176,74,.5), 0 12px 30px rgba(70,40,10,.4);
+}
+.page-img.frame-arch img{
+  width:100%;height:100%;object-fit:cover;
+  -webkit-mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 280' preserveAspectRatio='none'><path d='M10 270 L10 100 Q10 10 100 10 Q190 10 190 100 L190 270 Z' fill='black'/></svg>");
+          mask-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 280' preserveAspectRatio='none'><path d='M10 270 L10 100 Q10 10 100 10 Q190 10 190 100 L190 270 Z' fill='black'/></svg>");
+  -webkit-mask-size:100% 100%;mask-size:100% 100%;
+  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+}
+.page-img.frame-wash img{
+  width:100%;height:100%;object-fit:cover;
+  -webkit-mask-image:radial-gradient(ellipse 85% 90% at 50% 50%, #000 70%, rgba(0,0,0,.4) 86%, transparent 100%);
+          mask-image:radial-gradient(ellipse 85% 90% at 50% 50%, #000 70%, rgba(0,0,0,.4) 86%, transparent 100%);
+  filter:saturate(1.08) contrast(1.04);
+}
+
+/* Gilt-edge shimmer on the flipping leaf — exclude the cover & flutter leaves so
+   the open/close swing and the flutter-fan aren't given a stray gold strip. */
+.book-classic .page-leaf:not(.cover-leaf):not(.flutter-leaf)::after{
+  content:"";position:absolute;top:0;bottom:0;width:2px;
+  background:linear-gradient(180deg, transparent, var(--gold-1) 50%, transparent);
+  opacity:.5;pointer-events:none;
+}
+.page-leaf.right:not(.cover-leaf):not(.flutter-leaf)::after{right:0}
+.page-leaf.left:not(.cover-leaf):not(.flutter-leaf)::after {left:0}
+
+/* Reader ink tokens (used by the rules above) */
+:root{
+  --reader-ink-1:#28180a; --reader-ink-2:#4a3018; --reader-ink-3:#8a7050;
+}
