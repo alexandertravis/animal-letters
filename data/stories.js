@@ -18,6 +18,7 @@ APP.STORIES = [
     id: 'goldilocks',
     title: 'Goldilocks and the Three Bears',
     color: '#ff8906',
+    leather: 'burgundy', board: 'sun',
     requirements: [
       { animalId: 'bear', minCount: 3, label: 'Complete Bear 3×' }
     ],
@@ -34,6 +35,7 @@ APP.STORIES = [
     id: 'three-pigs',
     title: 'The Three Little Pigs',
     color: '#f582ae',
+    leather: 'plum', board: 'rose',
     requirements: [
       { animalId: 'pig',  minCount: 3, label: 'Complete Pig 3×' },
       { animalId: 'wolf', minCount: 1, label: 'Find the Wolf' }
@@ -51,6 +53,7 @@ APP.STORIES = [
     id: 'hare-tortoise',
     title: 'The Hare and the Tortoise',
     color: '#8bd3dd',
+    leather: 'forest', board: 'sky',
     requirements: [
       { animalId: 'rabbit', minCount: 1, label: 'Find the Rabbit' },
       { animalId: 'turtle', minCount: 1, label: 'Find the Turtle' }
@@ -68,6 +71,7 @@ APP.STORIES = [
     id: 'ugly-duckling',
     title: 'The Ugly Duckling',
     color: '#5390d9',
+    leather: 'navy', board: 'sky',
     requirements: [
       { animalId: 'duck', minCount: 3, label: 'Complete Duck 3×' },
       { animalId: 'swan', minCount: 1, label: 'Find the Swan' }
@@ -85,6 +89,7 @@ APP.STORIES = [
     id: 'three-billy-goats',
     title: 'Three Billy Goats Gruff',
     color: '#2dc653',
+    leather: 'tan', board: 'sage',
     requirements: [
       { animalId: 'goat', minCount: 3, label: 'Complete Goat 3×' }
     ],
@@ -101,6 +106,7 @@ APP.STORIES = [
     id: 'three-blind-mice',
     title: 'Three Blind Mice',
     color: '#7b2d8b',
+    leather: 'plum', board: 'rose',
     requirements: [
       { animalId: 'mouse', minCount: 3, label: 'Complete Mouse 3×' }
     ],
@@ -117,6 +123,7 @@ APP.STORIES = [
     id: 'hey-diddle-diddle',
     title: 'Hey Diddle Diddle',
     color: '#1b4332',
+    leather: 'forest', board: 'sage',
     requirements: [
       { animalId: 'cat', minCount: 1, label: 'Find the Cat' },
       { animalId: 'dog', minCount: 1, label: 'Find the Dog' },
@@ -135,6 +142,7 @@ APP.STORIES = [
     id: 'owl-pussy-cat',
     title: 'The Owl and the Pussy-Cat',
     color: '#0077b6',
+    leather: 'navy', board: 'sky',
     requirements: [
       { animalId: 'owl', minCount: 1, label: 'Find the Owl' },
       { animalId: 'cat', minCount: 1, label: 'Find the Cat' }
