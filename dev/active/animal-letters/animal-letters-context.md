@@ -156,3 +156,46 @@ NEXT STEP: Begin `feature/library-theming` work — add per-story theme/skin dat
 Blockers: none
 Half-finished: none
 Security flags added: none
+
+---
+
+## Library Theming feature (feature/library-theming → merged to main, 2026-05-23)
+
+### Key files added/changed
+| File | Role |
+|---|---|
+| `js/screens/bookCover.js` | **NEW.** `APP.bookCover(story, {skin, locked})` → builds the painted `.story-cover` element. Single source for the cover, used by the shelf card AND the reader's closed/swing cover. Loaded in index.html **before** library.js. |
+| `js/state.js` | Added `APP.LIBRARY_THEMES` (storybook/walnut/basic), `APP.activeTheme()`, `APP.activeBookSkin()`, and `state.libraryTheme` (session-only). The single theme dial. |
+| `js/screens/library.js` | Renders `.bookshelf` (skinned) of face-out `.book` cards (geometry only) wrapping `.story-cover`. Header has a **theme dropdown** (`.library-theme-select`). No achievements row / "Stories" title; shelf is full-bleed. |
+| `js/screens/storyreader.js` | Derives `skin`+`palette` from `APP.activeBookSkin()`. `applyLeft`/`applyRight` emit skin markup (inside-cover fill, `.page-content`+drop-cap, `.page-img`+frame, `.title-page`, `.theend`, centred consecutive page-nums) OR plain markup when skin is `basic`. `renderCover`/`bookClosed` use `APP.bookCover`. **Flip choreography untouched.** |
+| `styles.css` | `.bookshelf.skin-*`, `.story-cover.skin-*` (shared cover visuals), full reader skin block, `@font-face` (Cinzel/EB Garamond/Fraunces in `assets/fonts/<Family>/`). |
+| `data/stories.js` | Each story now carries BOTH `leather` (classic) and `board` (watercolour); legacy `color` kept (used by basic skin). |
+| `assets/fonts/{Cinzel,EB_Garamond,Fraunces}/` | Bundled reader fonts (variable + static weights). |
+
+### Decisions Log
+**2026-05-23** — One theme dial drives everything. `state.libraryTheme` ∈ {storybook, walnut, basic}; each maps to a shelf skin + a book skin (`APP.LIBRARY_THEMES`). storybook→watercolour, walnut→classic, basic→plain. Switching the dropdown re-skins shelf AND reader together. Per-story `skin` field was removed — the theme owns that choice; stories only carry colour options (`leather`+`board`).
+
+**2026-05-23** — CSS collision fix: the design drop-in used a bare `.book{width:148px;…}` rule that would clobber the reader's open-book `.book` (`width:min(740px,92vw)`). All shelf-card visual rules are scoped under `.bookshelf .book`; the painted cover lives on unscoped `.story-cover.skin-*` so both shelf and reader reuse it. `.bookshelf .book` also resets `animation:none` (it matches the reader's bare `.book{animation:bookIn}`).
+
+**2026-05-23** — Reader skin is content-only; flip choreography/timing/state-machine in storyreader.js is byte-for-byte unchanged. Skin markup is emitted by `applyLeft`/`applyRight` into BOTH static `.book-page-inner` and the flipping `.leaf-face`, so it rides the leaf. Added reconciliation CSS: `.book-page-inner`/`.leaf-face` get `padding:0;position:relative` under skin so absolute skin layers reach the edges.
+
+**2026-05-23** — "Basic" theme = plain testing baseline. Reuses the original reader classes (`.book-text`/`.book-img`/`.book-cover-img`/`.book-cover-title`/`.book-the-end`) and flat covers; no frames/drop-caps/page-numbers. These classes are therefore NOT dead code.
+
+**2026-05-23** — Review-round animation fixes: (a) blanked page kept showing parchment during the cover swing — skin paper rules (spec 0,3,0) outranked `.book-page.is-blank` (0,2,0); added matching-specificity `.is-blank` overrides. (b) collapse/flutter flashed flat `story.color` on the inside-cover face → use `applyLeft(L.front, spreads[0])` (skinned). (c) page numbers moved to bottom-centre of each panel (were under corner folds) and made consecutive (left `2n-1`, right `2n`). (d) **removed `spreadReveal` opacity fade on `.book-spread`** — it replayed on display:none→flex at open, fading the cover leaf up from transparent (the book "disappeared then reappeared"); obvious only once covers got darker.
+
+### Constraints & Gotchas (theming)
+- **`.story-cover` is the shared cover** — change cover look in ONE place: `bookCover.js` (markup) + `.story-cover.skin-*` CSS. Shelf geometry (size/hover) stays on `.bookshelf .book`.
+- **Theme is session-only** (`state.libraryTheme`, not persisted). Resets to `storybook` on reload.
+- **`@font-face` paths** point at subfolders: `assets/fonts/Cinzel/Cinzel-VariableFont_wght.ttf`, `assets/fonts/EB_Garamond/EBGaramond-VariableFont_wght.ttf` (+Italic), `assets/fonts/Fraunces/Fraunces-VariableFont_SOFT,WONK,opsz,wght.ttf`. Fonts lazy-load (font-display:swap) — only when a skinned reader uses them.
+- **Preview screenshots time out** on the library/reader (continuous SVG animations: candle flame, lamp glow, quill, hourglass). Verify via `preview_eval` DOM/computed-style checks, not screenshots.
+- **No `develop` branch** in this repo — features integrate into `main` directly.
+
+## Session End — 2026-05-23
+Git status: clean — feature/library-theming committed + pushed; merged into main (merge commit 6347da6) and pushed to origin/main. Working tree back on feature/library-theming.
+
+## Session Summary — 2026-05-23
+Completed: Full library-theming feature in 2 phases + fixes. Phase 1: skinnable bookshelf (storybook/walnut) with face-out covers, shelf props, locked padlock cameo, full-bleed shelf, header theme dropdown. Phase 2: reader skin (parchment/painted paper, gilt frames + drop caps, inside-cover fill, framed images, centred consecutive page numbers) sharing the theme dial via `APP.bookCover` + `state.js` helpers — animations preserved. Added "Basic" plain testing theme. Bundled + wired Cinzel/EB Garamond/Fraunces fonts. Fixed 6 review issues (blank-page specificity, skinned collapse/flutter cover, page-number placement+numbering, open-disappear fade). Merged to main.
+NEXT STEP: Feature complete on main. Optional follow-ups only: Phase 3 per-page `frame:` variants in stories.js; dead-CSS cleanup (`.book-tile`/`.books-grid`, `.book-closed-img`/`.book-closed-title` now unused — but NOT the basic-reused classes); decide theme dropdown placement (keep/settings/hide) and whether to drop the floating "Page X of Y" counter; `assets/fonts/Playwrite_GB_S_Guides/` left untracked (unrelated, near-dup) — delete or keep locally.
+Blockers: none
+Half-finished: none
+Security flags added: none
