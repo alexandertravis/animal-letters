@@ -231,6 +231,16 @@
 ### Cleanup (follow-up)
 - [ ] Remove now-dead `.book-tile` / `.books-grid` CSS (`styles.css` ~1125-1205) and the old `.book-tile-*` rules once Phase 1 is accepted
 
+## Section 22 — Animation & Phonics Bug Fixes (feature/animation-fixes, 2026-05-23)
+- [x] **Issue 1 — White flash on cover open/close**: `renderCover()` now pre-sets `face.style.background = story.color` before appending the cover component, so no parchment shows during DOM construction
+- [x] **Issue 2 — Flutter leaves hardcoded cream**: Flutter leaf background colours now derived from `bookSkin` (walnut→`var(--parch-2/3)`, watercolour→`var(--paper-1/2)`, basic→original hex)
+- [x] **Issue 3 — Corner folds too large on mobile**: `.page-fold` width/height → `clamp(36px, 7.5vw, 60px)`
+- [x] **Issue 4 — Pendant doesn't scale**: `.book.book-classic .page-frame .pendant` width/height → `clamp(16px,3vw,32px)` / `clamp(20px,4vw,42px)`
+- [x] **Issue 5 — Page number position**: `.page-num` bottom → `clamp(4px,1.2vw,14px)`, font-size → `clamp(8px,1vw,11px)`
+- [x] **Issue 6 — iOS/Chrome page flip backface bug**: Added `-webkit-transform-style: preserve-3d` and `will-change: transform` to `.page-leaf`
+- [x] **Issue 7 — Watercolour portrait miscentred**: `.story-cover.skin-watercolour .cover-portrait` changed `left:50%` → `left:calc(50% + 4px)` to account for 8px spine shadow
+- [x] **Issue 8 — iOS TTS says "Capital A"**: `speakLetter()` now passes `char.toLowerCase()` to `SpeechSynthesisUtterance`
+
 ## Section 11b — Future / Nice-to-Have
 - [ ] Real cartoon SVG artwork for all animals
 - [ ] Real realistic photos for all animals

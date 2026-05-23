@@ -136,7 +136,10 @@ window.APP = window.APP || {};
     if (!window.speechSynthesis) return;
     if (!APP.state.settings.phonics) return;
     if (APP.state.settings.muted) return;
-    const utt = new SpeechSynthesisUtterance(char);
+    // Pass the character as lowercase so iOS TTS does not prepend "Capital" before
+    // uppercase letter names (e.g. "A" → "Capital A"). Lowercase reads the letter
+    // sound directly on all tested voices.
+    const utt = new SpeechSynthesisUtterance(char.toLowerCase());
     const langMap = { en: 'en-GB', pt: 'pt-PT', fr: 'fr-FR', es: 'es-ES', de: 'de-DE', it: 'it-IT' };
     utt.lang = langMap[locale || 'en'] || 'en-GB';
     utt.rate = 0.85;

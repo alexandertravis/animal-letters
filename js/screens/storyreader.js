@@ -295,10 +295,12 @@ window.APP = window.APP || {};
     }
 
     // Paint the front cover (the shared skinned cover) into a leaf face.
+    // Pre-set a background matching the cover colour so there is no parchment
+    // flash between innerHTML clearing and the cover component rendering.
     function renderCover(face) {
       face.innerHTML = '';
       face.classList.add('cover-face');
-      face.style.background = '';
+      face.style.background = story.color || '#888';
       face.appendChild(APP.bookCover(story, { skin: bookSkin }));
     }
 
@@ -563,14 +565,24 @@ window.APP = window.APP || {};
       var STAGGER_MS    = 90;    // gap between leaf launches
       var FLUTTER_COUNT = 4;
 
+      // Flutter leaf colours matched to the active book skin. Literal hex values
+      // are used (not CSS var() references) because the inline style is set before
+      // the element is in the DOM, so custom properties cannot be resolved yet.
+      var flutterFront = bookSkin === 'watercolour' ? '#fbf6ea'   // --paper-1
+                       : bookSkin === 'basic'       ? '#f5f0e8'
+                       :                              '#ecdcb0';  // --parch-2
+      var flutterBack  = bookSkin === 'watercolour' ? '#f3ebd6'   // --paper-2
+                       : bookSkin === 'basic'       ? '#e8dfd0'
+                       :                              '#d8c490';  // --parch-3
+
       // Launch staggered flutter leaves over the left half (backwards direction)
       for (var i = 0; i < FLUTTER_COUNT; i++) {
         (function (idx) {
           setTimeout(function () {
             var Lf = buildLeaf('left');
             Lf.leaf.classList.add('flutter-leaf');
-            Lf.front.style.background = '#f5f0e8';   // page cream
-            Lf.back.style.background  = '#e8dfd0';   // slightly warmer back
+            Lf.front.style.background = flutterFront;
+            Lf.back.style.background  = flutterBack;
             bookSpread.appendChild(Lf.leaf);
             void Lf.leaf.offsetWidth;
             Lf.leaf.classList.add('flipping');
