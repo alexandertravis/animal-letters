@@ -1301,7 +1301,7 @@ html, body {
   position: relative;
   border-radius: 3px 6px 6px 3px;
   box-shadow: -6px 6px 24px rgba(0,0,0,0.55), 4px 4px 16px rgba(0,0,0,0.35);
-  overflow: hidden;
+  overflow: clip;
   /* 3D viewing distance for the flipping leaf. Set here (a transform-free
      element) NOT on .book — putting perspective on the transformed .book
      creates a nested 3D context that squashes the leaf. */
@@ -1362,7 +1362,6 @@ html, body {
   position: absolute; top: 0; height: 100%; width: 50%;
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d;
-  will-change: transform;
   z-index: 6;
   transition: transform 0.6s cubic-bezier(0.42, 0, 0.3, 1);
 }
