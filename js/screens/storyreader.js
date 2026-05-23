@@ -14,6 +14,15 @@ window.APP = window.APP || {};
     // Spread N+1: outro  (left = "The End", right = cover colour)
     const coverImg = 'assets/images/cartoon/' + story.requirements[0].animalId + '.svg';
 
+    // Preload all page images into the browser cache as soon as the reader opens
+    // so they are decoded and ready before the first page turn. Without this,
+    // an image appearing on the static page beneath a turning leaf may not be
+    // rendered yet when the leaf front-face fades, causing a brief blank frame.
+    (function () {
+      var srcs = [coverImg].concat(story.pages.map(function (p) { return p.image; }).filter(Boolean));
+      srcs.forEach(function (src) { var img = new Image(); img.src = src; });
+    })();
+
     // ── Skin (driven by the shared theme dial; same as the library shelf) ─────
     const bookSkin = (APP.activeBookSkin && APP.activeBookSkin()) || 'classic';
     const skin     = bookSkin === 'watercolour' ? 'book-watercolour'

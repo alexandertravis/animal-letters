@@ -1423,8 +1423,12 @@ html, body {
    opacity:0 is compositor-native (immediate GPU effect); visibility:hidden
    backs it up for layout purposes. Duration is set inline on each leaf. */
 @keyframes leaf-front-hide {
-  0%, 49.9%  { opacity: 1; visibility: visible; }
-  50%, 100%  { opacity: 0; visibility: hidden;  }
+  /* Fade opacity from 44→50% (leaf is already foreshortened near edge-on at
+     that point, so the fade is imperceptible). The gradual change eliminates
+     the 1-frame window where a hard switch at exactly 50% would briefly show
+     the front face reversed if the compositor is one frame late. */
+  0%, 44%   { opacity: 1; visibility: visible; }
+  50%, 100% { opacity: 0; visibility: hidden;  }
 }
 
 /* Cover face of the leaf (used by cover open/close). No box-shadow here — a
@@ -1872,6 +1876,30 @@ html, body {
 .book.book-watercolour .page-leaf.left .leaf-face.back{
   background:linear-gradient(255deg,rgba(120,80,40,.12),transparent 14%),
              radial-gradient(ellipse 90% 60% at 70% 50%,var(--paper-1),var(--paper-2) 75%,var(--paper-3) 100%);
+}
+/* The leaf FRONT face (visible during the first half of the flip) must also
+   match the static page it's covering so there is no colour pop when it fades
+   out. Right leaf front ≡ right static page; left leaf front ≡ left static page.
+   Cover faces (.cover-face) are excluded — they're filled entirely by .story-cover. */
+.book.book-classic .page-leaf.right .leaf-face.front:not(.cover-face){
+  background:linear-gradient(255deg,rgba(0,0,0,.18),transparent 14%),
+             radial-gradient(ellipse 90% 60% at 70% 50%,var(--parch-1),var(--parch-2) 70%,var(--parch-3) 100%);
+  box-shadow:inset 6px 0 18px rgba(70,40,10,.35);
+}
+.book.book-classic .page-leaf.left .leaf-face.front:not(.cover-face){
+  background:linear-gradient(105deg,rgba(0,0,0,.18),transparent 14%),
+             radial-gradient(ellipse 90% 60% at 30% 50%,var(--parch-1),var(--parch-2) 70%,var(--parch-3) 100%);
+  box-shadow:inset -6px 0 18px rgba(70,40,10,.35);
+}
+.book.book-watercolour .page-leaf.right .leaf-face.front:not(.cover-face){
+  background:linear-gradient(255deg,rgba(120,80,40,.12),transparent 14%),
+             radial-gradient(ellipse 90% 60% at 70% 50%,var(--paper-1),var(--paper-2) 75%,var(--paper-3) 100%);
+  box-shadow:inset 6px 0 14px rgba(120,90,40,.22);
+}
+.book.book-watercolour .page-leaf.left .leaf-face.front:not(.cover-face){
+  background:linear-gradient(105deg,rgba(120,80,40,.12),transparent 14%),
+             radial-gradient(ellipse 90% 60% at 30% 50%,var(--paper-1),var(--paper-2) 75%,var(--paper-3) 100%);
+  box-shadow:inset -6px 0 14px rgba(120,90,40,.22);
 }
 
 /* ── Paper, by skin ─── */
