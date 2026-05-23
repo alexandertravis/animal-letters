@@ -1502,6 +1502,8 @@ html, body {
 .book-nav:hover  { background: #fff; transform: translateY(-50%) scale(1.08); }
 .book-nav:active { transform: translateY(-50%) scale(0.95); }
 .book-nav:disabled { opacity: 0; pointer-events: none; }
+/* Corner folds remain usable — arrows go off-screen below ~560px */
+@media (max-width: 560px) { .book-nav { display: none; } }
 
 /* ── Book page content ──────────────────────────────────────────────────── */
 .book-text {
@@ -1879,11 +1881,11 @@ html, body {
 .book.book-classic .book-page.is-blank::after{display:none}
 
 /* ── Gilded frame — classic ─── */
-.book.book-classic .page-frame{position:absolute;inset:24px;z-index:2;pointer-events:none}
+.book.book-classic .page-frame{position:absolute;inset:clamp(10px,2.2vw,24px);z-index:2;pointer-events:none}
 .book.book-classic .page-frame::before,
 .book.book-classic .page-frame::after{content:"";position:absolute;inset:0;border:1px solid rgba(216,176,74,.6);border-radius:2px}
 .book.book-classic .page-frame::after{inset:4px;border-color:rgba(216,176,74,.3)}
-.book.book-classic .page-frame .corner{position:absolute;width:56px;height:56px;color:var(--gold-1)}
+.book.book-classic .page-frame .corner{position:absolute;width:clamp(26px,5vw,56px);height:clamp(26px,5vw,56px);color:var(--gold-1)}
 .book.book-classic .page-frame .corner svg{width:100%;height:100%}
 .book.book-classic .page-frame .corner.tl{top:-6px;left:-6px}
 .book.book-classic .page-frame .corner.tr{top:-6px;right:-6px;transform:scaleX(-1)}
@@ -1898,28 +1900,28 @@ html, body {
 
 /* ── Page content + drop cap ─── */
 .book.book-classic .page-content{
-  position:absolute;inset:60px 50px 50px 50px;
-  font-family:var(--reader-serif);font-size:19px;line-height:1.55;
-  color:var(--reader-ink-1);z-index:3;
+  position:absolute;inset:clamp(28px,5.5vw,60px) clamp(18px,3.8vw,50px) clamp(24px,4.5vw,50px);
+  font-family:var(--reader-serif);font-size:clamp(14px,2.4vw,19px);line-height:1.55;
+  color:var(--reader-ink-1);z-index:3;overflow-y:auto;overflow-x:hidden;
 }
 .book.book-classic .page-content p{margin:0 0 14px;text-wrap:pretty;text-align:justify}
 .book.book-classic .page-content p:first-of-type::first-letter{
-  font-family:var(--reader-display);font-weight:700;font-size:62px;float:left;line-height:.85;padding:6px 10px 0 0;color:var(--gold-3);text-shadow:0 1px 0 rgba(255,255,255,.5);
+  font-family:var(--reader-display);font-weight:700;font-size:clamp(28px,8vw,62px);float:left;line-height:.85;padding:clamp(2px,0.6vw,6px) clamp(4px,1vw,10px) 0 0;color:var(--gold-3);text-shadow:0 1px 0 rgba(255,255,255,.5);
 }
 .book.book-watercolour .page-content{
-  position:absolute;inset:50px 46px 50px 46px;
-  font-family:var(--reader-serif-soft);font-size:18px;line-height:1.6;
-  color:#3a2614;z-index:3;
+  position:absolute;inset:clamp(24px,4.8vw,50px) clamp(16px,3.8vw,46px);
+  font-family:var(--reader-serif-soft);font-size:clamp(13px,2.2vw,18px);line-height:1.6;
+  color:#3a2614;z-index:3;overflow-y:auto;overflow-x:hidden;
 }
 .book.book-watercolour .page-content p{margin:0 0 14px;text-wrap:pretty}
 .book.book-watercolour .page-content p:first-of-type::first-letter{
-  font-family:var(--reader-serif-soft);font-weight:600;font-size:46px;float:left;line-height:.9;padding:4px 8px 0 0;color:#8a4f3a;
+  font-family:var(--reader-serif-soft);font-weight:600;font-size:clamp(20px,6vw,46px);float:left;line-height:.9;padding:clamp(2px,0.4vw,4px) clamp(3px,0.8vw,8px) 0 0;color:#8a4f3a;
 }
 
 /* ── Image on the right page ─── */
-.page-img{position:absolute;inset:50px 46px 70px 46px;z-index:3;display:flex;align-items:center;justify-content:center}
+.page-img{position:absolute;inset:clamp(22px,4.5vw,50px) clamp(18px,3.8vw,46px) clamp(30px,5.5vw,70px);z-index:3;display:flex;align-items:center;justify-content:center}
 .book.book-classic .page-img img{width:78%;height:78%;object-fit:contain;filter:drop-shadow(0 6px 12px rgba(70,40,10,.4))}
-.book.book-watercolour .page-img{inset:30px 30px 50px 30px}
+.book.book-watercolour .page-img{inset:clamp(12px,2.5vw,30px) clamp(12px,2.5vw,30px) clamp(20px,4vw,50px)}
 .book.book-watercolour .page-img img{
   width:100%;height:100%;object-fit:cover;
   -webkit-mask-image:radial-gradient(ellipse 80% 88% at 50% 50%, #000 65%, transparent 100%);
@@ -1959,18 +1961,18 @@ html, body {
 /* ── Title page + outro panels ─── */
 .title-page{
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;
-  z-index:3;padding:50px 40px;text-align:center;
+  z-index:3;padding:clamp(20px,4.5vw,50px) clamp(14px,3.5vw,40px);text-align:center;
 }
-.book.book-classic .title-page .title-h{font-family:var(--reader-display);font-weight:600;font-size:30px;color:var(--reader-ink-1);letter-spacing:.04em;line-height:1.15}
-.book.book-watercolour .title-page .title-h{font-family:var(--reader-serif-soft);font-weight:600;font-size:32px;color:#3a2614;line-height:1.1}
-.title-page .title-img{width:160px;height:160px;margin-top:8px;filter:drop-shadow(0 6px 12px rgba(70,40,10,.3))}
+.book.book-classic .title-page .title-h{font-family:var(--reader-display);font-weight:600;font-size:clamp(14px,3.5vw,30px);color:var(--reader-ink-1);letter-spacing:.04em;line-height:1.15}
+.book.book-watercolour .title-page .title-h{font-family:var(--reader-serif-soft);font-weight:600;font-size:clamp(14px,3.5vw,32px);color:#3a2614;line-height:1.1}
+.title-page .title-img{width:clamp(70px,18vw,160px);height:clamp(70px,18vw,160px);margin-top:8px;filter:drop-shadow(0 6px 12px rgba(70,40,10,.3))}
 .book.book-watercolour .title-page .title-img{
-  width:200px;height:200px;border-radius:50%;object-fit:cover;
+  width:clamp(80px,22vw,200px);height:clamp(80px,22vw,200px);border-radius:50%;object-fit:cover;
   box-shadow:0 0 0 4px var(--paper-1), 0 0 0 5px rgba(140,80,40,.35), 0 12px 24px rgba(70,40,10,.3);
 }
 
 .theend{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:3}
-.theend .big{font-family:var(--reader-display);font-size:38px;color:var(--gold-3);letter-spacing:.14em}
+.theend .big{font-family:var(--reader-display);font-size:clamp(18px,4.5vw,38px);color:var(--gold-3);letter-spacing:.14em}
 .book.book-watercolour .theend .big{font-family:var(--reader-serif-soft);color:#8a4f3a}
 .theend .vine{width:80px;height:20px;color:var(--gold-3)}
 .book.book-watercolour .theend .vine{display:none}
@@ -2023,4 +2025,43 @@ html, body {
 /* Reader ink tokens (used by the rules above) */
 :root{
   --reader-ink-1:#28180a; --reader-ink-2:#4a3018; --reader-ink-3:#8a7050;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   RESPONSIVE — mobile / tablet breakpoints
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── A6: Book reader — basic-skin page padding on mobile ─────────────────── */
+@media (max-width: 480px) {
+  .book-page-inner,
+  .leaf-face { padding: 16px 14px; }
+}
+
+/* ── B2: Library shelf — narrower tiles and fewer books per row ──────────── */
+@media (max-width: 479px) {
+  .bookshelf .book  { width: 100px; }
+  .bookshelf-row    { min-height: 158px; padding: 0 8px; }
+  .bookshelf        { padding: 20px 16px 12px; }
+  .shelf-prop       { display: none; }
+}
+@media (min-width: 480px) and (max-width: 767px) {
+  .bookshelf .book  { width: 120px; }
+  .bookshelf-row    { min-height: 188px; }
+  .bookshelf        { padding: 24px 24px 12px; }
+  .shelf-prop       { display: none; }
+}
+
+/* ── C: Gallery tiles — prevent clipping on very narrow screens ──────────── */
+@media (max-width: 380px) {
+  .gallery-grid      { grid-template-columns: repeat(auto-fill, 110px);
+                       gap: 8px; padding: 8px 12px 24px; }
+  .gallery-tile      { width: 110px; height: 110px; }
+  .gallery-tile-name { font-size: 1rem; height: 28px; }
+  .gallery-tile-peek { height: 30px; }
+  .gallery-fallback  { font-size: 1.8rem; }
+}
+
+/* ── D: Complete screen — buttons fit at very narrow widths ──────────────── */
+@media (max-width: 380px) {
+  .complete .actions .btn { min-width: 0; font-size: 1.1rem; padding: 14px 16px; }
 }
