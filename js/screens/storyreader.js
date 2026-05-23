@@ -377,7 +377,11 @@ window.APP = window.APP || {};
         void L.leaf.offsetWidth;                  // commit start state
         L.leaf.classList.add('flipping');         // rotateY 0 → -180deg
 
-        setTimeout(function () { spreadIdx = nextIdx; updateNav(); }, FLIP_MS / 2);
+        // At the 90° midpoint the leaf is edge-on (zero visible surface). Hide the
+        // front face in JS so it cannot show as a mirrored ghost on iOS Safari, where
+        // backface-visibility:hidden is unreliable when leaf-face children have CSS
+        // stacking contexts (position+z-index / transform on positioned elements).
+        setTimeout(function () { L.front.style.visibility = 'hidden'; spreadIdx = nextIdx; updateNav(); }, FLIP_MS / 2);
         setTimeout(function () {
           applyLeft(leftInner, incoming);         // static left = incoming left
           if (L.leaf.parentNode) L.leaf.parentNode.removeChild(L.leaf);
@@ -399,7 +403,7 @@ window.APP = window.APP || {};
         void Lp.leaf.offsetWidth;
         Lp.leaf.classList.add('flipping');
 
-        setTimeout(function () { spreadIdx = nextIdx; updateNav(); }, FLIP_MS / 2);
+        setTimeout(function () { Lp.front.style.visibility = 'hidden'; spreadIdx = nextIdx; updateNav(); }, FLIP_MS / 2);
         setTimeout(function () {
           applyRight(rightInner, incoming);       // static right = incoming right
           if (Lp.leaf.parentNode) Lp.leaf.parentNode.removeChild(Lp.leaf);
@@ -453,6 +457,7 @@ window.APP = window.APP || {};
       void L.leaf.offsetWidth;
       L.leaf.classList.add('flipping');           // rotateY 0 → -180deg
 
+      setTimeout(function () { L.front.style.visibility = 'hidden'; }, COVER_MS / 2);
       setTimeout(function () {
         unblankPage(leftPage);
         applyLeft(leftInner, spreads[0]);          // inside cover, under the leaf
@@ -489,6 +494,7 @@ window.APP = window.APP || {};
       L.leaf.classList.add('flipping');
       bookEl.classList.add('book-closed-state');  // slide back to single page
 
+      setTimeout(function () { L.front.style.visibility = 'hidden'; }, COVER_MS / 2);
       setTimeout(function () { scene.classList.add('scene-fade-out'); }, COVER_MS + COVER_PAUSE);
       setTimeout(function () { ctx.go('library'); }, COVER_MS + COVER_PAUSE + 350);
     }
@@ -519,6 +525,7 @@ window.APP = window.APP || {};
       L.leaf.classList.add('flipping');
       bookEl.classList.add('book-closed-state');   // slide back to single page
 
+      setTimeout(function () { L.front.style.visibility = 'hidden'; }, COVER_MS / 2);
       setTimeout(function () {
         if (L.leaf.parentNode) L.leaf.parentNode.removeChild(L.leaf);
         bookSpread.classList.remove('is-flipping');
@@ -586,6 +593,7 @@ window.APP = window.APP || {};
             bookSpread.appendChild(Lf.leaf);
             void Lf.leaf.offsetWidth;
             Lf.leaf.classList.add('flipping');
+            setTimeout(function () { if (Lf.leaf.parentNode) Lf.front.style.visibility = 'hidden'; }, FLUTTER_MS / 2);
             setTimeout(function () {
               if (Lf.leaf.parentNode) Lf.leaf.parentNode.removeChild(Lf.leaf);
             }, FLUTTER_MS + 50);
@@ -614,6 +622,7 @@ window.APP = window.APP || {};
         L.leaf.classList.add('flipping');
         bookEl.classList.add('book-closed-state');
 
+        setTimeout(function () { L.front.style.visibility = 'hidden'; }, COVER_MS / 2);
         setTimeout(function () { scene.classList.add('scene-fade-out'); }, COVER_MS + COVER_PAUSE);
         setTimeout(function () { ctx.go('library'); }, COVER_MS + COVER_PAUSE + 350);
       }, flutterTotal);
