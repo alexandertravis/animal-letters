@@ -76,10 +76,21 @@ window.APP = window.APP || {};
     return el('div', { class:`shelf-prop prop-${kind}`, title: label || kind, html: useSym(kind, dim[0], dim[1]) });
   }
 
+  /* Compute how many books fit per shelf row at the current viewport width.
+     Uses the same padding values as the CSS media queries in styles.css. */
+  function booksPerRow() {
+    const W = window.innerWidth;
+    const SHELF_PAD = W < 480 ? 16 : W < 768 ? 24 : 36;
+    const ROW_PAD   = W < 480 ?  8 : 14;
+    const BOOK_W    = W < 480 ? 100 : W < 768 ? 120 : 148;
+    const available = W - 2 * SHELF_PAD - 2 * ROW_PAD;
+    return Math.max(1, Math.floor((available + 8) / (BOOK_W + 8)));
+  }
+
   /* Lay books across shelf rows; mix in shelf props every few books for visual rhythm. */
   function layOutShelves(stories) {
     const PROPS = ['candle','hourglass','quill','key','teapot','lamp'];
-    const PER_ROW = 6;
+    const PER_ROW = booksPerRow();
     const rows = [];
     let propIdx = 0;
     for (let i = 0; i < stories.length; i += PER_ROW) {
