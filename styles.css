@@ -1416,6 +1416,17 @@ html, body {
   100% { opacity: 0;   }
 }
 
+/* Hide the front face at the exact midpoint of the flip. Using a CSS
+   keyframe (not setTimeout) keeps the hide frame-accurate on the
+   compositor thread, eliminating the 10-20ms JS event-loop jitter that
+   lets the front face show reversed after the leaf passes 90°.
+   opacity:0 is compositor-native (immediate GPU effect); visibility:hidden
+   backs it up for layout purposes. Duration is set inline on each leaf. */
+@keyframes leaf-front-hide {
+  0%, 49.9%  { opacity: 1; visibility: visible; }
+  50%, 100%  { opacity: 0; visibility: hidden;  }
+}
+
 /* Cover face of the leaf (used by cover open/close). No box-shadow here — a
    drop shadow on the rotating cover smears a big stray shadow across the
    background and the page beneath during open/close. */
