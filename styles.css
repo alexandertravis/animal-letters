@@ -1430,6 +1430,13 @@ html, body {
   0%, 44%   { opacity: 1; visibility: visible; }
   50%, 100% { opacity: 0; visibility: hidden;  }
 }
+/* Cover open/close uses a longer 950ms swing — the 44→50% fade window that
+   is imperceptible on thin pages (36ms) becomes visible on the slower cover
+   arc (57ms). Use a hard switch instead: a solid board should flip cleanly. */
+@keyframes cover-front-hide {
+  0%, 49.9% { opacity: 1; visibility: visible; }
+  50%, 100% { opacity: 0; visibility: hidden;  }
+}
 
 /* Cover face of the leaf (used by cover open/close). No box-shadow here — a
    drop shadow on the rotating cover smears a big stray shadow across the
@@ -1674,7 +1681,7 @@ html, body {
    cover (`.book-closed`, `.leaf-face.cover-face`). Skin/visuals only — the
    caller sizes it; `.story-cover` fills its positioned parent.
    ══════════════════════════════════════════════════════════════════════ */
-.story-cover{position:absolute;inset:0;border-radius:3px 6px 6px 3px;overflow:hidden}
+.story-cover{position:absolute;inset:0;border-radius:3px 6px 6px 3px;overflow:clip}
 .story-cover::before{
   content:"";position:absolute;top:0;bottom:0;left:0;width:8px;z-index:3;
   background:linear-gradient(90deg, var(--cover-shadow,rgba(0,0,0,.5)), transparent);
@@ -1766,7 +1773,7 @@ html, body {
   background:rgba(255,255,255,.4);border-radius:50%;
   width:74%;height:46%;left:calc(50% + 4px);top:14px;right:auto;transform:translateX(-50%);
   box-shadow:inset 0 0 0 3px rgba(255,255,255,.6), 0 4px 10px rgba(0,0,0,.18);
-  overflow:hidden;
+  overflow:clip;
 }
 .story-cover.skin-watercolour .cover-portrait img{width:100%;height:100%;object-fit:cover}
 .story-cover.skin-watercolour.b-rose{--board:var(--board-rose);--board-hi:var(--board-rose-hi)}

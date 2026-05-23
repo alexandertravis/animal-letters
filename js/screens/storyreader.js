@@ -468,7 +468,7 @@ window.APP = window.APP || {};
 
       void L.leaf.offsetWidth;
       L.leaf.classList.add('flipping');           // rotateY 0 → -180deg
-      L.front.style.animation = 'leaf-front-hide ' + COVER_MS + 'ms linear forwards';
+      L.front.style.animation = 'cover-front-hide ' + COVER_MS + 'ms linear forwards';
 
       setTimeout(function () {
         unblankPage(leftPage);
@@ -505,7 +505,7 @@ window.APP = window.APP || {};
       void L.leaf.offsetWidth;
       L.leaf.classList.add('flipping');
       bookEl.classList.add('book-closed-state');  // slide back to single page
-      L.front.style.animation = 'leaf-front-hide ' + COVER_MS + 'ms linear forwards';
+      L.front.style.animation = 'cover-front-hide ' + COVER_MS + 'ms linear forwards';
 
       setTimeout(function () { scene.classList.add('scene-fade-out'); }, COVER_MS + COVER_PAUSE);
       setTimeout(function () { ctx.go('library'); }, COVER_MS + COVER_PAUSE + 350);
@@ -536,7 +536,7 @@ window.APP = window.APP || {};
       void L.leaf.offsetWidth;
       L.leaf.classList.add('flipping');
       bookEl.classList.add('book-closed-state');   // slide back to single page
-      L.front.style.animation = 'leaf-front-hide ' + COVER_MS + 'ms linear forwards';
+      L.front.style.animation = 'cover-front-hide ' + COVER_MS + 'ms linear forwards';
 
       setTimeout(function () {
         if (L.leaf.parentNode) L.leaf.parentNode.removeChild(L.leaf);
@@ -633,7 +633,7 @@ window.APP = window.APP || {};
         void L.leaf.offsetWidth;
         L.leaf.classList.add('flipping');
         bookEl.classList.add('book-closed-state');
-        L.front.style.animation = 'leaf-front-hide ' + COVER_MS + 'ms linear forwards';
+        L.front.style.animation = 'cover-front-hide ' + COVER_MS + 'ms linear forwards';
 
         setTimeout(function () { scene.classList.add('scene-fade-out'); }, COVER_MS + COVER_PAUSE);
         setTimeout(function () { ctx.go('library'); }, COVER_MS + COVER_PAUSE + 350);
