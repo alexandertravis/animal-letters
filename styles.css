@@ -1301,7 +1301,10 @@ html, body {
   position: relative;
   border-radius: 3px 6px 6px 3px;
   box-shadow: -6px 6px 24px rgba(0,0,0,0.55), 4px 4px 16px rgba(0,0,0,0.35);
-  overflow: clip;
+  /* No clip-path here: clip-path on a perspective-parent creates a composited
+     layer on iOS WebKit that pops visually when display:none → display:flex.
+     The spread's children naturally fit within its bounds so no clipping is
+     needed — overflow is handled by clip-path on .leaf-face and .story-cover. */
   /* 3D viewing distance for the flipping leaf. Set here (a transform-free
      element) NOT on .book — putting perspective on the transformed .book
      creates a nested 3D context that squashes the leaf. */
@@ -1347,11 +1350,10 @@ html, body {
    in only AFTER the leaf is removed — i.e. when is-flipping is dropped in the
    turn's teardown, this rule stops applying and the transition above runs. */
 .book-spread.is-flipping .book-spine { opacity: 0; }
-/* Drop the spread's own box-shadow while a leaf is in flight — it would
-   otherwise frame the transparent blank area during cover open/close,
-   producing a shadow halo around empty space. It fades back in via the
-   transition on .book-spread when is-flipping is removed. */
-.book-spread.is-flipping { box-shadow: none; }
+/* Spread shadow is kept throughout all animations. The shadow renders outside
+   the element boundary — a transparent/blanked inner page never creates an
+   interior halo, and dark-on-dark scene background makes the exterior shadow
+   imperceptible on the void side during cover open/close. */
 
 /* ── Page turn: 3D leaf flip ────────────────────────────────────────────── */
 /* A transient .page-leaf is layered over one half of the spread and rotated
@@ -1376,7 +1378,8 @@ html, body {
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   padding: 28px 24px; box-sizing: border-box;
-  overflow: clip;
+  /* clip-path: no compositing group, no preserve-3d flattening, Safari 10+ */
+  clip-path: inset(0);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -1508,7 +1511,11 @@ html, body {
    When the flip ends (is-flipping removed) they grow back out of the corner
    via the transform transition above — so they unfurl into place instead of
    popping in. */
-.book-spread.is-flipping .page-fold { transform: scale(0); opacity: 0; }
+.book-spread.is-flipping .page-fold { transform: scale(0); opacity: 0; transition: none; }
+/* transition:none makes the fold collapse instantly when is-flipping is added,
+   preventing the cubic-bezier spring-overshoot from briefly bouncing the fold
+   down/right before it disappears. The spring still fires on reveal because
+   is-flipping is removed after the leaf is gone. */
 
 /* ── Outer nav arrows ───────────────────────────────────────────────────── */
 .book-nav {
@@ -1534,12 +1541,23 @@ html, body {
   line-height: 1.7; text-align: center; color: #2d2d2d;
   margin: 0;
 }
-.book-img {
-  width: 78%; max-height: 72%; object-fit: contain;
+/* ── Book panel image — base class ─────────────────────────────────────────
+   Apply to every primary <img> inside a book page panel (static or leaf face).
+   • aspect-ratio:1 reserves a square layout box before the src loads so the
+     flex-column container does not reflow when the image arrives.
+   • display:block / object-fit:contain / flex-shrink:0 give consistent
+     default rendering across all skins.
+   Pair with ONE size class (.book-cover-img / .title-img / .book-img / your
+   new skin class). Skin-specific rules override individual properties as
+   needed — no animation-related tuning is required in the skin.            */
+.book-panel-img {
+  display: block;
+  object-fit: contain;
+  aspect-ratio: 1;
+  flex-shrink: 0;
 }
-.book-cover-img {
-  width: 55%; max-height: 52%; object-fit: contain; margin-bottom: 14px;
-}
+.book-img       { width: 78%; max-height: 72%; }
+.book-cover-img { width: 55%; max-height: 52%; margin-bottom: 14px; }
 .book-cover-title {
   font-size: clamp(0.85rem, 2.6vw, 1.3rem);
   font-weight: 700; text-align: center;
@@ -1681,7 +1699,7 @@ html, body {
    cover (`.book-closed`, `.leaf-face.cover-face`). Skin/visuals only — the
    caller sizes it; `.story-cover` fills its positioned parent.
    ══════════════════════════════════════════════════════════════════════ */
-.story-cover{position:absolute;inset:0;border-radius:3px 6px 6px 3px;overflow:clip}
+.story-cover{position:absolute;inset:0;border-radius:3px 6px 6px 3px;clip-path:inset(0 round 3px 6px 6px 3px)}
 .story-cover::before{
   content:"";position:absolute;top:0;bottom:0;left:0;width:8px;z-index:3;
   background:linear-gradient(90deg, var(--cover-shadow,rgba(0,0,0,.5)), transparent);
@@ -1773,7 +1791,7 @@ html, body {
   background:rgba(255,255,255,.4);border-radius:50%;
   width:74%;height:46%;left:calc(50% + 4px);top:14px;right:auto;transform:translateX(-50%);
   box-shadow:inset 0 0 0 3px rgba(255,255,255,.6), 0 4px 10px rgba(0,0,0,.18);
-  overflow:clip;
+  clip-path:ellipse(50% 50%);
 }
 .story-cover.skin-watercolour .cover-portrait img{width:100%;height:100%;object-fit:cover}
 .story-cover.skin-watercolour.b-rose{--board:var(--board-rose);--board-hi:var(--board-rose-hi)}

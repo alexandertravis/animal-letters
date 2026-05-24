@@ -14,10 +14,11 @@ window.APP = window.APP || {};
     // Spread N+1: outro  (left = "The End", right = cover colour)
     const coverImg = 'assets/images/cartoon/' + story.requirements[0].animalId + '.svg';
 
-    // Preload all page images into the browser cache as soon as the reader opens
-    // so they are decoded and ready before the first page turn. Without this,
-    // an image appearing on the static page beneath a turning leaf may not be
-    // rendered yet when the leaf front-face fades, causing a brief blank frame.
+    // Pre-fetch all story images as soon as the reader opens so the resource
+    // (disk → HTTP cache) is ready before any panel needs it.  The primary
+    // decode step — at the element's actual CSS size — happens inside
+    // applyRight/applyLeft via makeImg().decode().  This pre-fetch ensures
+    // the data is already parsed by the time makeImg() is called.
     (function () {
       var srcs = [coverImg].concat(story.pages.map(function (p) { return p.image; }).filter(Boolean));
       srcs.forEach(function (src) { var img = new Image(); img.src = src; });
@@ -194,90 +195,110 @@ window.APP = window.APP || {};
       container.appendChild(n);
     }
 
+    // ── Panel-image factory ─────────────────────────────────────────────────
+    // Creates an <img> with the .book-panel-img base class (layout reservation
+    // + consistent defaults) plus an optional skin size-class, then calls
+    // decode() on the live DOM element so the browser rasterises it at the
+    // element's actual CSS dimensions.  The returned Promise is collected by
+    // applyLeft / applyRight and surfaced to callers that need to gate on it.
+    //
+    // New skins: just call makeImg() for every panel <img> and pass your
+    // size class — no other animation-related wiring is needed.
+    function makeImg(pending, sizeClass, src) {
+      var el = document.createElement('img');
+      el.className = sizeClass ? 'book-panel-img ' + sizeClass : 'book-panel-img';
+      el.src = src;
+      el.alt = '';
+      pending.push(el.decode().catch(function () {}));
+      return el;
+    }
+
+    // applyLeft and applyRight both:
+    //   • use makeImg() for every <img> they create
+    //   • return Promise.all(pending) — resolves when every image in that
+    //     panel is decoded and ready to paint.
+    // Callers that need to gate a reveal on decode just .then() the result.
+    // Callers that don't care can ignore it — no existing call sites break.
+
     function applyLeft(container, spread) {
       container.style.background = '';
       container.innerHTML = '';
+      var pending = [];
       if (bookSkin === 'basic') {
         // Plain testing baseline — flat colour / plain text, no frames.
-        if (spread.leftType === 'color') { container.style.background = spread.leftContent; return; }
-        if (spread.leftType === 'theend') {
+        if (spread.leftType === 'color') {
+          container.style.background = spread.leftContent;
+        } else if (spread.leftType === 'theend') {
           var pe = document.createElement('p'); pe.className = 'book-the-end'; pe.textContent = 'The End';
-          container.appendChild(pe); return;
+          container.appendChild(pe);
+        } else {
+          var pt = document.createElement('p'); pt.className = 'book-text'; pt.textContent = spread.leftContent;
+          container.appendChild(pt);
         }
-        var pt = document.createElement('p'); pt.className = 'book-text'; pt.textContent = spread.leftContent;
-        container.appendChild(pt); return;
+        return Promise.all(pending);
       }
       if (spread.leftType === 'color') {
         // Inside front cover — fill the full leaf side.
         container.appendChild(insideCover());
-        return;
-      }
-      if (spread.leftType === 'theend') {
+      } else if (spread.leftType === 'theend') {
         container.appendChild(buildPageFrame());
         var end = document.createElement('div');
         end.className = 'theend';
         end.innerHTML = '<div class="big">The End</div>'
           + '<div class="vine"><svg viewBox="0 0 100 14"><use href="#vine"/></svg></div>';
         container.appendChild(end);
-        return;
+      } else {
+        // Text page — frame + drop-capped content + page number.
+        container.appendChild(buildPageFrame());
+        var content = document.createElement('div');
+        content.className = 'page-content';
+        var p = document.createElement('p');
+        p.textContent = spread.leftContent;
+        content.appendChild(p);
+        container.appendChild(content);
+        appendPageNum(container, spread, 'left');
       }
-      // Text page — frame + drop-capped content + page number.
-      container.appendChild(buildPageFrame());
-      var content = document.createElement('div');
-      content.className = 'page-content';
-      var p = document.createElement('p');
-      p.textContent = spread.leftContent;
-      content.appendChild(p);
-      container.appendChild(content);
-      appendPageNum(container, spread, 'left');
+      return Promise.all(pending);
     }
 
     function applyRight(container, spread) {
       container.style.background = '';
       container.innerHTML = '';
+      var pending = [];
       if (bookSkin === 'basic') {
         // Plain testing baseline.
-        if (spread.rightType === 'color') { container.style.background = spread.rightContent; return; }
-        if (spread.rightType === 'title') {
-          var d = spread.rightContent;
-          var bi = document.createElement('img'); bi.className = 'book-cover-img'; bi.src = d.image; bi.alt = '';
-          var bt = document.createElement('p'); bt.className = 'book-cover-title'; bt.textContent = d.title;
-          container.appendChild(bi); container.appendChild(bt); return;
+        if (spread.rightType === 'color') {
+          container.style.background = spread.rightContent;
+        } else if (spread.rightType === 'title') {
+          var bd = spread.rightContent;
+          var bi = makeImg(pending, 'book-cover-img', bd.image);
+          var bt = document.createElement('p'); bt.className = 'book-cover-title'; bt.textContent = bd.title;
+          container.appendChild(bi); container.appendChild(bt);
+        } else {
+          container.appendChild(makeImg(pending, 'book-img', spread.rightContent));
         }
-        var im = document.createElement('img'); im.className = 'book-img'; im.src = spread.rightContent; im.alt = '';
-        container.appendChild(im); return;
+        return Promise.all(pending);
       }
       if (spread.rightType === 'color') {
         // Inside back cover — fill the full leaf side.
         container.appendChild(insideCover());
-        return;
-      }
-      if (spread.rightType === 'title') {
-        var d = spread.rightContent;
-        var tp = document.createElement('div');
-        tp.className = 'title-page';
-        var h = document.createElement('div');
-        h.className = 'title-h';
-        h.textContent = d.title;
-        var img = document.createElement('img');
-        img.className = 'title-img';
-        img.src = d.image;
-        img.alt = '';
-        tp.appendChild(h);
-        tp.appendChild(img);
+      } else if (spread.rightType === 'title') {
+        var td = spread.rightContent;
+        var tp = document.createElement('div'); tp.className = 'title-page';
+        var th = document.createElement('div'); th.className = 'title-h'; th.textContent = td.title;
+        var ti = makeImg(pending, 'title-img', td.image);
+        tp.appendChild(th); tp.appendChild(ti);
         container.appendChild(tp);
-        return;
+      } else {
+        // Image page — frame + framed illustration + page number.
+        container.appendChild(buildPageFrame());
+        var wrap = document.createElement('div');
+        wrap.className = 'page-img frame-' + (spread.frame || defaultFrame);
+        wrap.appendChild(makeImg(pending, '', spread.rightContent));
+        container.appendChild(wrap);
+        appendPageNum(container, spread, 'right');
       }
-      // Image page — frame + framed illustration + page number.
-      container.appendChild(buildPageFrame());
-      var wrap = document.createElement('div');
-      wrap.className = 'page-img frame-' + (spread.frame || defaultFrame);
-      var img2 = document.createElement('img');
-      img2.src = spread.rightContent;
-      img2.alt = '';
-      wrap.appendChild(img2);
-      container.appendChild(wrap);
-      appendPageNum(container, spread, 'right');
+      return Promise.all(pending);
     }
 
     // ── Leaf builder (shared by page turns + cover open/close) ───────────────
@@ -376,7 +397,11 @@ window.APP = window.APP || {};
       if (direction === 'next') {
         // Leaf over the right half: front = current right, back = incoming left.
         var L = buildLeaf('right');
-        applyRight(L.front, current);
+        // Move existing rightInner children to the leaf front face rather than
+        // re-creating them. This transfers already-decoded GPU textures so the
+        // image never blanks — no re-decode step, no flash.
+        L.front.style.background = rightInner.style.background;
+        while (rightInner.firstChild) { L.front.appendChild(rightInner.firstChild); }
         applyLeft(L.back,  incoming);
         bookSpread.appendChild(L.leaf);
 
@@ -405,7 +430,9 @@ window.APP = window.APP || {};
         // PREV — mirror: leaf over the left half, front = current left,
         // back = incoming right, rotateY 0 → +180deg.
         var Lp = buildLeaf('left');
-        applyLeft(Lp.front, current);
+        // Same move-children pattern as the next branch: transfer decoded textures.
+        Lp.front.style.background = leftInner.style.background;
+        while (leftInner.firstChild) { Lp.front.appendChild(leftInner.firstChild); }
         applyRight(Lp.back, incoming);
         bookSpread.appendChild(Lp.leaf);
 
@@ -438,30 +465,34 @@ window.APP = window.APP || {};
       phase = 'opening';
       bookEl.dataset.phase = 'opening';
 
-      // Prepare the spread underneath. Mirror a NEXT turn: reveal only the
-      // right page (title) now; leave the left page BLANK so the inside cover
-      // isn't shown before the cover swings over it. The left is filled at the
-      // end, under the landing leaf.
       spreadIdx = 0;
       applyRight(rightInner, spreads[0]);
-      blankPage(leftPage, leftInner);             // left = dark scene until cover lands
-      bookSpread.style.display = 'flex';
-      bookSpread.classList.add('is-flipping');    // hide folds + fade spine
 
-      // Cover leaf over the right half: front = cover, back = inside-front
-      // cover (spread 0 left = story colour). Hide the static closed cover.
+      // Build the cover leaf and append it to the spread BEFORE the spread
+      // becomes visible.  On mobile, display:flex triggers a paint; if the
+      // leaf isn't already in the DOM at that moment the title page flashes
+      // through for one frame before the cover appears.  Building here
+      // (spread still display:none) guarantees the leaf is in place the
+      // instant the spread is shown.
       var L = buildLeaf('right');
       L.leaf.classList.add('cover-leaf');         // solid cover: no curl shade
       renderCover(L.front);
       applyLeft(L.back, spreads[0]);
       bookSpread.appendChild(L.leaf);
-      // Hide via opacity + pointer-events (not display:none) so the element stays
-      // in layout, avoiding a flex reflow on restoration. Also pause the idle-shake
-      // animation so it doesn't advance while hidden — we'll reset it on show so the
-      // cover always reappears at rotate(0) rather than mid-tilt.
+
+      // Blank the left page, hide the closed cover, and show the spread in
+      // one synchronous block — browser paints them as a single frame so
+      // there is no intermediate state where both covers are visible or
+      // neither is visible.
+      blankPage(leftPage, leftInner);
+      // Hide via opacity + pointer-events (not display:none) so the element
+      // stays in layout, avoiding a flex reflow on restoration.  Pause idle-
+      // shake so the cover reappears at rotate(0) rather than mid-tilt.
       bookClosed.style.opacity = '0';
       bookClosed.style.pointerEvents = 'none';
       bookClosed.style.animationPlayState = 'paused';
+      bookSpread.style.display = 'flex';
+      bookSpread.classList.add('is-flipping');    // hide folds + fade spine
 
       // Slide the book to its centred 2-page position while the cover flips.
       bookEl.classList.remove('book-closed-state');
@@ -580,6 +611,17 @@ window.APP = window.APP || {};
       bookSpread.classList.add('is-flipping');
       applyLeft(leftInner, spreads[0]);  // inside-cover colour, clears "The End" text
 
+      // Kick off a pre-decode of the title spread image RIGHT NOW, in parallel
+      // with the flutter animation, so it is fully rasterised (at its natural
+      // intrinsic size) before the cover swing needs it.  applyRight() will call
+      // decode() again on the live DOM element (at its CSS size) — because the
+      // image data is already decoded, that second pass is just a rasterise step
+      // and completes in the same frame.  Both the flutter timeout AND this
+      // promise must resolve before the cover swing starts.
+      var titleDecodeReady = (function () {
+        var tmp = new Image(); tmp.src = coverImg; return tmp.decode().catch(function () {});
+      })();
+
       var FLUTTER_MS    = 250;   // duration of each rapid leaf
       var STAGGER_MS    = 90;    // gap between leaf launches
       var FLUTTER_COUNT = 4;
@@ -613,10 +655,18 @@ window.APP = window.APP || {};
         })(i);
       }
 
-      // After all flutter leaves finish, run the cover swing + navigate
+      // Wait for both the flutter animation to finish AND the title image to be
+      // decoded.  On local files this is always the flutter timer that wins
+      // (decode finishes in < 50 ms); the Promise.all just ensures the cover
+      // swing never starts with a blank image rectangle showing on the right page.
       var flutterTotal = STAGGER_MS * (FLUTTER_COUNT - 1) + FLUTTER_MS + 30;
-      setTimeout(function () {
+      Promise.all([
+        new Promise(function (r) { setTimeout(r, flutterTotal); }),
+        titleDecodeReady
+      ]).then(function () {
         // Snap right page to the title spread so the cover swings over it.
+        // applyRight calls makeImg().decode() on the live element — because the
+        // data is already pre-decoded above, this resolves in the same frame.
         unblankPage(rightPage);
         applyRight(rightInner, spreads[0]);
 
@@ -637,7 +687,7 @@ window.APP = window.APP || {};
 
         setTimeout(function () { scene.classList.add('scene-fade-out'); }, COVER_MS + COVER_PAUSE);
         setTimeout(function () { ctx.go('library'); }, COVER_MS + COVER_PAUSE + 350);
-      }, flutterTotal);
+      });
     }
 
     // Tapping the inside front cover (left page, title spread) collapses the
