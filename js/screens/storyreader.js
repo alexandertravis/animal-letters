@@ -134,6 +134,13 @@ window.APP = window.APP || {};
 
     bookEl.appendChild(bookSpread);
 
+    // ── Animated shadow companion ────────────────────────────────────────────
+    // Sibling of bookSpread: animates scaleX 0.5 → 1 on cover open and
+    // 1 → 0.5 on close so the shadow grows/shrinks with the cover.
+    const bookShadow = document.createElement('div');
+    bookShadow.className = 'book-spread-shadow';
+    bookEl.appendChild(bookShadow);
+
     // ── Outer nav arrows ─────────────────────────────────────────────────────
     const navPrev = document.createElement('button');
     navPrev.className = 'book-nav prev';
@@ -444,7 +451,12 @@ window.APP = window.APP || {};
 
         setTimeout(function () { spreadIdx = nextIdx; updateNav(); }, FLIP_MS / 2);
         setTimeout(function () {
-          applyRight(rightInner, incoming);       // static right = incoming right
+          // Move Lp.back children to rightInner — the image has been in the live
+          // DOM for the full FLIP_MS so it is fully rasterised at the correct CSS
+          // size.  Moving it transfers the GPU texture with no re-decode step,
+          // eliminating the blank-then-reappear flash on SVGs (e.g. the owl).
+          rightInner.style.background = Lp.back.style.background;
+          while (Lp.back.firstChild) { rightInner.appendChild(Lp.back.firstChild); }
           if (Lp.leaf.parentNode) Lp.leaf.parentNode.removeChild(Lp.leaf);
           bookSpread.classList.remove('is-flipping');
           bookSpread.style.pointerEvents = '';
@@ -494,6 +506,15 @@ window.APP = window.APP || {};
       bookSpread.style.display = 'flex';
       bookSpread.classList.add('is-flipping');    // hide folds + fade spine
 
+      // Shadow: start at cover width (scaleX 0.5, right-anchored) then grow to
+      // full spread width over COVER_MS, matching the visual opening of the book.
+      bookShadow.style.display = 'block';
+      bookShadow.style.transition = 'none';
+      bookShadow.style.transform = 'scaleX(0.5)';
+      void bookShadow.offsetWidth;
+      bookShadow.style.transition = 'transform ' + COVER_MS + 'ms ease';
+      bookShadow.style.transform = 'scaleX(1)';
+
       // Slide the book to its centred 2-page position while the cover flips.
       bookEl.classList.remove('book-closed-state');
 
@@ -538,6 +559,10 @@ window.APP = window.APP || {};
       bookEl.classList.add('book-closed-state');  // slide back to single page
       L.front.style.animation = 'cover-front-hide ' + COVER_MS + 'ms linear forwards';
 
+      // Shadow: shrink back to cover width as the book closes.
+      bookShadow.style.transition = 'transform ' + COVER_MS + 'ms ease';
+      bookShadow.style.transform = 'scaleX(0.5)';
+
       setTimeout(function () { scene.classList.add('scene-fade-out'); }, COVER_MS + COVER_PAUSE);
       setTimeout(function () { ctx.go('library'); }, COVER_MS + COVER_PAUSE + 350);
     }
@@ -569,9 +594,14 @@ window.APP = window.APP || {};
       bookEl.classList.add('book-closed-state');   // slide back to single page
       L.front.style.animation = 'cover-front-hide ' + COVER_MS + 'ms linear forwards';
 
+      // Shadow: shrink back to cover width as the book closes.
+      bookShadow.style.transition = 'transform ' + COVER_MS + 'ms ease';
+      bookShadow.style.transform = 'scaleX(0.5)';
+
       setTimeout(function () {
         if (L.leaf.parentNode) L.leaf.parentNode.removeChild(L.leaf);
         bookSpread.classList.remove('is-flipping');
+        bookShadow.style.display = 'none';  // back to closed state; .book-closed has own shadow
         // Restore page backgrounds so they show cream on the next open, not the
         // dark scene background left by blankPage().
         unblankPage(leftPage);
@@ -603,7 +633,7 @@ window.APP = window.APP || {};
       phase = 'closing';
       bookEl.dataset.phase = 'closing';
       bookSpread.style.pointerEvents = 'none';
-      // is-flipping hides corner folds, fades spine, drops spread shadow.
+      // is-flipping hides corner folds and fades spine.
       // Replace "The End" on the left with the inside-cover colour (story.color)
       // so it disappears without leaving a dark hole. The left half stays story.color
       // throughout the flutter — the cream flutter leaves contrast against it cleanly.
@@ -684,6 +714,10 @@ window.APP = window.APP || {};
         L.leaf.classList.add('flipping');
         bookEl.classList.add('book-closed-state');
         L.front.style.animation = 'cover-front-hide ' + COVER_MS + 'ms linear forwards';
+
+        // Shadow: shrink back to cover width as the book closes.
+        bookShadow.style.transition = 'transform ' + COVER_MS + 'ms ease';
+        bookShadow.style.transform = 'scaleX(0.5)';
 
         setTimeout(function () { scene.classList.add('scene-fade-out'); }, COVER_MS + COVER_PAUSE);
         setTimeout(function () { ctx.go('library'); }, COVER_MS + COVER_PAUSE + 350);

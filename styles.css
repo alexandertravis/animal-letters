@@ -1300,7 +1300,10 @@ html, body {
   display: flex;
   position: relative;
   border-radius: 3px 6px 6px 3px;
-  box-shadow: -6px 6px 24px rgba(0,0,0,0.55), 4px 4px 16px rgba(0,0,0,0.35);
+  /* box-shadow lives on .book-spread-shadow (a sibling element) so it can
+     animate its width independently during cover open/close without any
+     transform or clip-path on the spread itself — either of which would
+     flatten the preserve-3d compositing context on iOS WebKit. */
   /* No clip-path here: clip-path on a perspective-parent creates a composited
      layer on iOS WebKit that pops visually when display:none → display:flex.
      The spread's children naturally fit within its bounds so no clipping is
@@ -1313,6 +1316,21 @@ html, body {
      moment the book opens, with the cover leaf already on top providing visual
      continuity. A fade here made the whole book (cover leaf included) blink from
      transparent — most visible with the darker leather/board covers. */
+}
+/* ── Animated shadow companion ──────────────────────────────────────────── */
+/* Sits inside .book alongside .book-spread. Animates scaleX 0.5→1 as the
+   cover opens (transform-origin right: shadow grows leftward from the spine)
+   and 1→0.5 as it closes. A separate element is used so the shadow can be
+   transformed freely without participating in the spread's 3D context. */
+.book-spread-shadow {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  border-radius: 3px 6px 6px 3px;
+  box-shadow: -6px 6px 24px rgba(0,0,0,0.55), 4px 4px 16px rgba(0,0,0,0.35);
+  transform: scaleX(0.5);
+  transform-origin: right center;
+  z-index: 0;
+  display: none;
 }
 
 /* ── Page panels ────────────────────────────────────────────────────────── */
