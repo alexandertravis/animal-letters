@@ -35,9 +35,9 @@
 - [x] Add critical tests: APP.animalStars() all boundary values 0–5+ (77d83c1)
 - [x] Add tests: advanceLetter() → newlyUnlockedStories (first unlock, already unlocked, not met) (77d83c1)
 - [x] Add tests: APP.setState and APP.goToStory (77d83c1)
-- [ ] Add tests: _migrateCompletedAnimals / _migrateCompletionCounts (not unit-testable without module reload — deferred)
-- [ ] Move activeTracer/confettiCleanup inside render() in game.js and findletter.js
-- [ ] Consider screen/game mode registry for extensibility
+- [ ] Add tests: _migrateCompletedAnimals / _migrateCompletionCounts (not unit-testable without module reload — won't fix)
+- [~] Move activeTracer/confettiCleanup inside render() — investigated: current module-level pattern is intentionally correct; moving inside render() would break cross-call cleanup. No change needed.
+- [~] Screen/game mode registry — already implemented (APP.screens.X = { render } + main.js lookup). No change needed.
 
 ## Review Batches Status
 
