@@ -29,17 +29,12 @@ window.APP = window.APP || {};
       <h1>${APP.t('complete.hooray')}</h1>
       <div class="animalName">${APP.caseOf(animal.displayName)}</div>
       <div class="animalImg" id="animalImg"></div>
-      <div class="actions">
-        <button class="btn secondary" data-act="gallery">${APP.t('complete.myAnimals')}</button>
-        <button class="btn" data-act="next">${APP.t('complete.next')}</button>
-        <button class="btn success" data-act="replay">${APP.t('complete.greatJob')}</button>
-      </div>
     `;
     wrap.appendChild(body);
 
     // ── Story unlock banner ─────────────────────────────────────────────────
     // Shown when completing this animal triggered a new story unlock.
-    // Inserted above the action buttons so it's immediately visible.
+    // Sits inside .complete-body (centre column) so it appears near the image.
     if (APP.state.newlyUnlockedStories && APP.state.newlyUnlockedStories.length > 0) {
       const newStory = APP.state.newlyUnlockedStories[0];
       const banner = document.createElement('div');
@@ -48,9 +43,19 @@ window.APP = window.APP || {};
         <span>📚 <strong>${newStory.title}</strong> unlocked!</span>
         <button class="btn" data-act="readnow">${APP.t('complete.readNow')}</button>
       `;
-      const actions = body.querySelector('.actions');
-      body.insertBefore(banner, actions);
+      body.appendChild(banner);
     }
+
+    // ── Action buttons — sibling of .complete-body so CSS Grid can place them
+    //    in the right column in landscape while they flow below in portrait.
+    const actions = document.createElement('div');
+    actions.className = 'complete-actions';
+    actions.innerHTML = `
+      <button class="btn secondary" data-act="gallery">${APP.t('complete.myAnimals')}</button>
+      <button class="btn" data-act="next">${APP.t('complete.next')}</button>
+      <button class="btn success" data-act="replay">${APP.t('complete.greatJob')}</button>
+    `;
+    wrap.appendChild(actions);
 
     root.appendChild(wrap);
 

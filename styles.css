@@ -423,7 +423,7 @@ html, body {
   90%  { transform: scaleX(0);  filter: brightness(1) invert(0); }
   100% { transform: scaleX(1);  filter: brightness(1) invert(0); }
 }
-.complete .actions {
+.complete-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
@@ -431,7 +431,7 @@ html, body {
   align-self: center;
 }
 /* "Great Job!" spans both columns to sit centred on its own row */
-.complete .actions .btn:last-child {
+.complete-actions .btn:last-child {
   grid-column: 1 / -1;
 }
 
@@ -2211,7 +2211,7 @@ html, body {
 
 /* ── D: Complete screen — buttons fit at very narrow widths ──────────────── */
 @media (max-width: 380px) {
-  .complete .actions .btn { min-width: 0; font-size: 1.1rem; padding: 14px 16px; }
+  .complete-actions .btn { min-width: 0; font-size: 1.1rem; padding: 14px 16px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -2241,24 +2241,91 @@ html, body {
   /* Compact buttons throughout landing (overrides the global .btn sizing) */
   .landing .btn { min-height: 52px; padding: 12px 20px; font-size: 1.1rem; }
 
-  /* ── Complete ────────────────────────────────────────────────────────── */
-  .complete-body { gap: 10px; padding-top: 12px; }
+  /* ── Complete — two-column layout in landscape ──────────────────────── */
+  .complete {
+    display: grid;
+    grid-template-columns: 1fr 130px;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "body nav"
+      "body actions";
+    overflow: hidden;
+    padding: 0;
+  }
+  .complete .topbar {
+    grid-area: nav;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    height: auto;
+    padding: 8px;
+    gap: 8px;
+    border-bottom: 1px solid rgba(0,0,0,.08);
+  }
+  .complete-body {
+    grid-area: body;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 12px;
+    padding-top: 8px;
+    gap: 10px;
+    overflow: hidden;
+  }
+  .complete-actions {
+    grid-area: actions;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px;
+    width: auto;
+    align-self: unset;
+  }
+  .complete .animalImg { width: min(200px, 40vh); height: min(200px, 40vh); }
+  .complete-actions .btn { min-height: 48px; padding: 8px 12px; font-size: 0.95rem; }
   .complete h1 { font-size: 1.6rem; }
   .complete .animalName { font-size: 1.4rem; }
-  .complete .animalImg {
-    width: min(140px, 35vw);
-    height: min(140px, 35vw);
-  }
-  .complete .actions { gap: 8px; }
-  .complete .actions .btn { min-height: 48px; padding: 10px 16px; font-size: 1rem; }
 
-  /* ── Game topbar ─────────────────────────────────────────────────────── */
+  /* ── Game — vertical sidebar in landscape ───────────────────────────── */
   .game {
-    grid-template-rows: 48px 1fr auto;
+    grid-template-columns: 56px 1fr;
+    grid-template-rows: 1fr auto;
+    grid-template-areas:
+      "sidebar stage"
+      "sidebar strip";
     gap: 4px;
-    padding: 4px 8px 8px;
+    padding: 4px 8px 4px 0;
   }
-  .game .strip { padding: 6px 8px; }
+  .game .topbar {
+    grid-area: sidebar;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 8px 4px;
+    gap: 6px;
+    height: auto;
+    background: rgba(255,255,255,.9);
+    border-right: 1px solid rgba(0,0,0,.08);
+  }
+  .game .stage  { grid-area: stage; }
+  .game .strip  { grid-area: strip; padding: 4px 8px; }
+  /* Groups stack vertically in sidebar */
+  .game .topbar .group { flex-direction: column; gap: 4px; }
+  /* Compact icon buttons */
+  .game .topbar .btn.icon { min-height: 40px; width: 40px; height: 40px; }
+  /* Volume slider hidden — mute icon remains */
+  .game .topbar .vol-ctrl .vol-slider { display: none; }
+  /* Restart / Skip pushed to bottom of sidebar, rotated to fit 40px column */
+  .game .topbar .group:last-child { margin-top: auto; }
+  .game .topbar .group:last-child .btn {
+    writing-mode: vertical-rl;
+    min-height: 0;
+    height: auto;
+    padding: 8px 4px;
+    font-size: 0.7rem;
+    width: 40px;
+  }
 
   /* ── Find the Letter — 4×1 row instead of 2×2 grid ──────────────────── */
   .find-prompt { font-size: 1rem; margin-bottom: 6px; }
@@ -2279,8 +2346,6 @@ html, body {
   .bookshelf-plank      { height: 12px; }
   /* Remove vertical padding so the topbar doesn't eat library space */
   .library .topbar      { padding: 0 12px; }
-  /* Trailing plank after the last row adds unused height — hide in landscape */
-  .bookshelf > .bookshelf-plank:last-child { display: none; }
   .practice-picker button {
     min-width: 36px;
     min-height: 36px;
