@@ -1803,6 +1803,39 @@ html, body {
 }
 .story-cover.is-locked .cover-title{color:#9a948a;letter-spacing:.22em}
 
+/* ── Lock requirements panel ─── */
+/* Shown on every locked cover (all skins); overlays the lower portion of the
+   book, below the padlock motif.  One row per requirement: filled gold stars
+   up to the player's count, grey stars for the remainder, then the animal name. */
+.cover-reqs{
+  position:absolute;left:0;right:0;bottom:0;
+  padding:5px 10px 7px;
+  background:rgba(0,0,0,.52);
+  display:flex;flex-direction:column;align-items:flex-start;gap:3px;
+  z-index:4;
+}
+.cover-req-row{display:flex;align-items:center;gap:4px}
+.cover-req-stars{display:flex;align-items:center;gap:1px;flex-shrink:0;line-height:1}
+.cover-req-name{
+  font-size:10px;font-weight:700;
+  font-family:system-ui,sans-serif;
+  color:rgba(255,255,255,.88);
+  text-shadow:0 1px 2px rgba(0,0,0,.5);
+  white-space:nowrap;line-height:1;
+}
+/* Basic skin: flow layout (flex-column parent), no dark overlay needed */
+.story-cover.skin-basic .basic-lock-icon{
+  width:36px;height:42px;flex-shrink:0;
+}
+.story-cover.skin-basic .basic-lock-icon svg{width:100%;height:100%;display:block}
+.story-cover.skin-basic .cover-reqs{
+  position:static;background:transparent;
+  align-items:center;padding:2px 4px 0;gap:2px;
+}
+.story-cover.skin-basic .cover-req-name{
+  color:rgba(50,40,30,.8);text-shadow:none;
+}
+
 /* ── Skin: Watercolour ─── */
 .story-cover.skin-watercolour{
   --cover-shadow:rgba(0,0,0,.35);

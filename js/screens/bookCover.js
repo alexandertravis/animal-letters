@@ -28,6 +28,46 @@ window.APP = window.APP || {};
     return n;
   }
 
+  // Small 12×12 star SVG. color: gold '#d4a017' or grey '#a09890'.
+  function starSvg(color) {
+    return '<svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true">' +
+      '<path d="M6,.5 L7.3,4.2 L11.2,4.3 L8.1,6.7 L9.2,10.5 L6,8.2 L2.8,10.5 L3.9,6.7 L.8,4.3 L4.7,4.2 Z"' +
+      ' fill="' + color + '"/></svg>';
+  }
+
+  // Padlock icon as an inline SVG (matches the data-URI used in the CSS ::after version).
+  var LOCK_SVG = '<svg viewBox="0 0 60 70" xmlns="http://www.w3.org/2000/svg">' +
+    '<g fill="#6a6258">' +
+    '<path d="M16 30 L16 22 Q16 8 30 8 Q44 8 44 22 L44 30 L40 30 L40 22 Q40 12 30 12 Q20 12 20 22 L20 30 Z"/>' +
+    '<rect x="10" y="30" width="40" height="32" rx="3"/>' +
+    '<circle cx="30" cy="44" r="3" fill="#1a1612"/>' +
+    '<rect x="29" y="44" width="2" height="10" fill="#1a1612"/>' +
+    '</g></svg>';
+
+  /* Build the requirements panel shown on locked covers.
+     Each row: filled-gold stars up to completionCount, grey stars for the rest,
+     then the animal name.  Rows match story.requirements order. */
+  function buildLockReqs(story) {
+    const counts = (APP.state && APP.state.animalCompletionCounts) || {};
+    const reqs   = story.requirements || [];
+    const wrap   = div('cover-reqs');
+    reqs.forEach(function (req) {
+      const done  = Math.min(counts[req.animalId] || 0, req.minCount);
+      const empty = req.minCount - done;
+      const row   = div('cover-req-row');
+      var   stars = div('cover-req-stars');
+      var i;
+      for (i = 0; i < done;  i++) stars.innerHTML += starSvg('#d4a017');
+      for (i = 0; i < empty; i++) stars.innerHTML += starSvg('#a09890');
+      row.appendChild(stars);
+      var name = div('cover-req-name');
+      name.textContent = req.animalId.charAt(0).toUpperCase() + req.animalId.slice(1);
+      row.appendChild(name);
+      wrap.appendChild(row);
+    });
+    return wrap;
+  }
+
   /* Build a `.story-cover` for a story.
        story  — story object (uses title, requirements[0].animalId, leather, board)
        opts   — { skin: 'classic'|'watercolour', locked: bool }
@@ -45,15 +85,18 @@ window.APP = window.APP || {};
     if (skin === 'basic') {
       const basic = div('story-cover skin-basic' + (locked ? ' is-locked' : ''));
       basic.style.background = locked ? '#cfcfcf' : (story.color || '#888');
-      if (!locked) {
+      if (locked) {
+        basic.appendChild(div('basic-lock-icon', LOCK_SVG));
+        basic.appendChild(buildLockReqs(story));
+      } else {
         const im = document.createElement('img');
         im.src = `assets/images/cartoon/${animal}.svg`;
         im.alt = '';
         basic.appendChild(im);
+        const t = div('basic-title');
+        t.textContent = story.title;
+        basic.appendChild(t);
       }
-      const t = div('basic-title');
-      t.textContent = locked ? (APP.t ? APP.t('library.locked') : 'Locked') : story.title;
-      basic.appendChild(t);
       return basic;
     }
 
@@ -76,14 +119,18 @@ window.APP = window.APP || {};
     }
     cover.appendChild(portrait);
 
-    const title = div('cover-title');
-    const span  = document.createElement('span');
-    span.className = 'cover-title-text';
-    span.textContent = locked
-      ? (APP.t ? APP.t('library.locked') : 'Locked')
-      : story.title;
-    title.appendChild(span);
-    cover.appendChild(title);
+    if (locked) {
+      // Requirements panel replaces the title on locked covers.
+      // The padlock itself is rendered by the CSS ::after on .cover-portrait.
+      cover.appendChild(buildLockReqs(story));
+    } else {
+      const title = div('cover-title');
+      const span  = document.createElement('span');
+      span.className = 'cover-title-text';
+      span.textContent = story.title;
+      title.appendChild(span);
+      cover.appendChild(title);
+    }
 
     return cover;
   };
