@@ -85,16 +85,24 @@ window.APP = window.APP || {};
   }
 
   /* Compute how many books fit per shelf row at the current viewport width.
-     Uses the same padding values as the CSS media queries in styles.css. */
+     Must stay in sync with the CSS media queries in styles.css:
+       max-height:600px  → .bookshelf padding 12px, .book width 96px
+       max-width:479px   → .bookshelf padding 16px, .book width 100px, row-pad 8px
+       480–767px         → .bookshelf padding 24px, .book width 120px
+       ≥768px            → .bookshelf padding 36px, .book width 148px
+     Shelf props (candle/teapot/…) are shown at W≥768; the widest (teapot=84px)
+     plus one gap (8px) is reserved so rows never overflow. */
   function booksPerRow() {
     const W = window.innerWidth;
     const H = window.innerHeight;
-    const SHELF_PAD = W < 480 ? 16 : W < 768 ? 24 : 36;
-    const ROW_PAD   = W < 480 ?  8 : 14;
-    // In landscape (short viewport) use a narrower book width to match the
-    // compact CSS override — keeps row grouping in sync with rendered size.
-    const BOOK_W    = W < 480 ? 100 : (H < 600 && W >= 480) ? 96 : W < 768 ? 120 : 148;
-    const available = W - 2 * SHELF_PAD - 2 * ROW_PAD;
+    const landscape  = H < 600 && W >= 480;
+    const SHELF_PAD  = landscape ? 12 : W < 480 ? 16 : W < 768 ? 24 : 36;
+    const ROW_PAD    = W < 480 ? 8 : 14;
+    const BOOK_W     = landscape ? 96 : W < 480 ? 100 : W < 768 ? 120 : 148;
+    // Props are visible (not display:none) only when W ≥ 768. Reserve the width
+    // of the widest prop (teapot 84px) plus one gap so even rows don't overflow.
+    const PROP_SPACE = W >= 768 ? 84 + 8 : 0;
+    const available  = W - 2 * SHELF_PAD - 2 * ROW_PAD - PROP_SPACE;
     return Math.max(1, Math.floor((available + 8) / (BOOK_W + 8)));
   }
 
@@ -177,6 +185,18 @@ window.APP = window.APP || {};
 
     wrap.appendChild(body);
     root.appendChild(wrap);
+
+    // Re-render when the viewport is resized so booksPerRow() stays accurate.
+    // The handler is a no-op once `wrap` leaves the DOM (user navigated away),
+    // so there is no need to explicitly remove it.
+    let _resizeTimer;
+    window.addEventListener('resize', function _libResize() {
+      clearTimeout(_resizeTimer);
+      _resizeTimer = setTimeout(() => {
+        if (document.contains(wrap)) render(root, ctx);
+        else window.removeEventListener('resize', _libResize);
+      }, 150);
+    }, { passive: true });
   }
 
   APP.screens = APP.screens || {};

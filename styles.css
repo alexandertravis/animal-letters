@@ -1628,7 +1628,7 @@ html, body {
   box-shadow:0 30px 60px rgba(0,0,0,.55);
 }
 .bookshelf-row{
-  display:flex;align-items:flex-end;gap:8px;
+  display:flex;align-items:flex-end;flex-wrap:wrap;gap:8px;
   min-height:230px;padding:0 14px;position:relative;z-index:1;
 }
 .bookshelf-row + .bookshelf-row{margin-top:22px}
