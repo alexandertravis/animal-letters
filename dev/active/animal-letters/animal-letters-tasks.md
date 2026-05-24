@@ -241,6 +241,23 @@
 - [x] **Issue 7 — Watercolour portrait miscentred**: `.story-cover.skin-watercolour .cover-portrait` changed `left:50%` → `left:calc(50% + 4px)` to account for 8px spine shadow
 - [x] **Issue 8 — iOS TTS says "Capital A"**: `speakLetter()` now passes `char.toLowerCase()` to `SpeechSynthesisUtterance`
 
+## Section 23 — iOS / Mobile Reader Animation Fixes (main, 2026-05-24)
+- [x] **Book enlarges on cover open**: `clip-path` on `.book-spread` created a composited iOS layer that popped on `display:none → display:flex`. Removed `clip-path` from `.book-spread` entirely.
+- [x] **Fold/spine jump before page turn**: spring overshoot on `.page-fold` transition caused jump when `is-flipping` added. Fixed: `transition:none` on `.book-spread.is-flipping .page-fold`.
+- [x] **Image flash at page-turn start (NEXT)**: `applyRight(L.front, current)` created off-DOM image decoded at wrong size. Fixed: move existing `rightInner` children to `L.front` (preserves GPU-decoded texture).
+- [x] **Owl SVG flash after PREV page turn**: `applyRight(rightInner, incoming)` post-timeout created fresh undecoded SVG. Fixed: move `Lp.back` children (already rasterised in-DOM for FLIP_MS) to `rightInner` + `rightInner.innerHTML = ''` before move.
+- [x] **Shadow full-width on cover open**: `display:none → block` + `void offsetWidth` unreliable on iOS (browser batches). Fixed: `clip-path:inset(0 0 0 50%) → inset(0 0 0 0%)` transition on `.book-spread-shadow` (no display change); `opacity:0/1` instead of display.
+- [x] **Corner colour bleed at curved cover corners**: `.book-page` had square corners exposing dark background behind `.book-spread` border-radius. Fixed: matching `border-radius` on `.book-page.left/.right`; `clip-path: inset(0 round …)` on `.leaf-face.front/.back` per direction.
+- [x] **Page content outside decorative border**: classic inset raised to `clamp(34px,8vw,80px)` uniform (clears 74px ornament extent); watercolour sides raised to `clamp(20px,3.8vw,46px)`.
+- [x] **Basic skin page-flip texture**: added `radial-gradient` back-face rules for `.book.book-basic .page-leaf .leaf-face.back` with focal point mirrored left↔right vs front face.
+
+## Section 24 — Lock Requirements Overlay (main, 2026-05-24)
+- [x] **Padlock on basic skin**: basic locked covers previously showed no padlock. Added inline SVG padlock icon (`basic-lock-icon`) inside locked basic cover.
+- [x] **Requirements panel on all themes**: `.cover-reqs` overlay (dark semi-transparent panel, `position:absolute;bottom:0`) appended to `.book` wrapper (NOT `.story-cover`) so it sits outside the is-locked desaturation filter.
+- [x] **Star progress rows**: `buildLockReqs(story)` builds one row per requirement — filled gold stars up to `animalCompletionCounts[animalId]`, grey stars for remainder, then animal name. Live from state on every library render.
+- [x] **Star colour standardised**: `STAR_GOLD = '#ffc72c'` / `STAR_GREY = '#a09890'` as named constants in `bookCover.js`. Single source of truth across all three themes (bookCover is shared).
+- [x] **Filter inheritance fix**: CSS `filter` on a parent composites children before applying — child filters cannot undo it. Correct fix: moved `.cover-reqs` to be a sibling of `.story-cover` (child of `.book`) so the is-locked filter never reaches it. `APP.buildLockReqs` exposed publicly; `library.js` calls it after appending the cover.
+
 ## Section 11b — Future / Nice-to-Have
 - [ ] Real cartoon SVG artwork for all animals
 - [ ] Real realistic photos for all animals

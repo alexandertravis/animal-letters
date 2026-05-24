@@ -199,3 +199,30 @@ NEXT STEP: Feature complete on main. Optional follow-ups only: Phase 3 per-page 
 Blockers: none
 Half-finished: none
 Security flags added: none
+
+---
+
+## Constraints & Gotchas (iOS / animation — added 2026-05-24)
+- **`clip-path` on perspective parent = iOS pop**: Adding `clip-path` to `.book-spread` (which has `perspective:1700px` and 3D-transformed children) creates a composited layer on iOS WebKit that pops visually when `display:none → display:flex`. Remove `clip-path` from `.book-spread` entirely; the spread contents fit naturally within bounds.
+- **`display:none → block` + `void offsetWidth` unreliable on iOS**: When `display` transitions, iOS batches style updates and `void offsetWidth` may not commit the initial state before a CSS transition fires. Use `opacity:0/1` transitions instead to avoid the need for a display change.
+- **Moving DOM children vs re-creating**: Moving existing child nodes transfers already-decoded GPU textures, eliminating the re-decode flash. Critical for SVGs (e.g. owl) which take longer to rasterise. Always prefer `while (src.firstChild) dst.appendChild(src.firstChild)` over creating fresh `applyRight(dst, spread)` inside animation timeouts.
+- **CSS `filter` on parent always wins**: A `filter:` on a parent element composites all descendants before applying — a child's own filter cannot counteract the parent's. The ONLY fix is to move the element outside the filtered subtree. Counter-filter maths on a child element does NOT work.
+
+## Constraints & Gotchas (lock requirements panel — added 2026-05-24)
+- **`.cover-reqs` is a child of `.book`, NOT `.story-cover`**: This is intentional — `.story-cover.is-locked` has a desaturation filter that would degrade star colours if `.cover-reqs` were inside it. `APP.buildLockReqs(story)` is exposed from `bookCover.js`; `library.js` appends it to the `.book` wrapper after the cover. If this ever needs to change, re-read the filter inheritance gotcha above first.
+- **`STAR_GOLD` / `STAR_GREY` in `bookCover.js`**: single source of truth for star colours across all three themes. Change them there only.
+- **`.cover-reqs` needs its own `border-radius: 0 0 6px 3px`**: as a sibling of `.story-cover` it is NOT clipped by the cover's `clip-path`. The bottom corners must match `clip-path: inset(0 round 3px 6px 6px 3px)` on the cover.
+
+## Session End — 2026-05-24
+Git status: clean on main. All work committed directly to main (no develop branch in this repo).
+Branches deleted: `feature/animation-fixes` (local), `feature/library-theming` (local + remote). `origin/feature/mobile-responsiveness` was a stale remote-tracking ref (already merged) — pruned.
+Remaining: `worktree-agent-aea84726d2291558e` (locked worktree at `.claude/worktrees/agent-aea84726d2291558e`) has one unmerged commit: `feat(game): add Find the Letter mode — tap the correct letter from 4 choices`. Not merged to main; decision deferred.
+Untracked: `assets/fonts/Playwrite_GB_S_Guides/` — unrelated near-duplicate, left locally, not committed.
+
+## Session Summary — 2026-05-24
+Completed:
+1. **iOS reader animation fixes** (Sections 23): cover-open enlarging pop, fold/spine jump, image flash at turn start, owl SVG flash after PREV turn, shadow full-width on open, corner colour bleed, page content outside decorative borders, basic skin back-face texture.
+2. **Lock requirements overlay** (Section 24): padlock on basic skin, `.cover-reqs` panel (stars + animal name rows) on all three themes, star progress from `animalCompletionCounts`, star colour standardised as `STAR_GOLD`/`STAR_GREY` constants, filter inheritance bug fixed by moving panel outside filtered subtree.
+NEXT STEP: No active work items. Optional: merge the Find-the-Letter worktree branch; Phase 3 per-page frame variants; dead-CSS cleanup; assets/fonts/Playwrite_GB_S_Guides/ decision.
+Blockers: none
+Half-finished: none
