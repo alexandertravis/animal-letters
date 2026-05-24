@@ -456,6 +456,7 @@ window.APP = window.APP || {};
           // size.  Moving it transfers the GPU texture with no re-decode step,
           // eliminating the blank-then-reappear flash on SVGs (e.g. the owl).
           rightInner.style.background = Lp.back.style.background;
+          rightInner.innerHTML = '';   // clear outgoing content before moving in the decoded back face
           while (Lp.back.firstChild) { rightInner.appendChild(Lp.back.firstChild); }
           if (Lp.leaf.parentNode) Lp.leaf.parentNode.removeChild(Lp.leaf);
           bookSpread.classList.remove('is-flipping');
