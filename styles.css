@@ -31,6 +31,10 @@ html, body {
   height: 100dvh;
   display: flex;
   flex-direction: column;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* ---------- Buttons ---------- */
@@ -77,16 +81,27 @@ html, body {
 }
 .btn.icon svg { display: block; }
 
+/* ---------- Topbar (base rule — scoped overrides in .game/.complete add specifics) ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  flex-shrink: 0;
+}
+.topbar h2 { flex: 1; margin: 0; }
+
 /* ---------- Landing ---------- */
 .landing {
   flex: 1;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   text-align: center;
   gap: 28px;
-  padding: 24px;
+  padding: max(24px, 8dvh) 24px 32px;
 }
 .landing h1 {
   font-size: clamp(2.4rem, 8vw, 4rem);
@@ -308,6 +323,7 @@ html, body {
 /* ---------- Complete screen ---------- */
 .complete {
   flex: 1;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -325,8 +341,9 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 18px;
+  padding-top: max(16px, 5dvh);
   text-align: center;
 }
 .complete h1 {
@@ -2195,4 +2212,80 @@ html, body {
 /* ── D: Complete screen — buttons fit at very narrow widths ──────────────── */
 @media (max-width: 380px) {
   .complete .actions .btn { min-width: 0; font-size: 1.1rem; padding: 14px 16px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LANDSCAPE / SHORT VIEWPORT  (max-height: 600px)
+   Targets landscape iPhones (~375–430px tall) and small portrait devices.
+   The game tracing screen already adapts well via CSS Grid 1fr — not touched.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-height: 600px) {
+
+  /* ── Landing ─────────────────────────────────────────────────────────── */
+  .landing {
+    gap: 14px;
+    padding: 16px 24px 24px;
+  }
+  .landing h1 { font-size: 1.8rem; }
+  .landing .subtitle { display: none; }
+  /* 2-column button grid so all 7 buttons fit without scrolling */
+  .landing .menu {
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: min(480px, 92%);
+    gap: 10px;
+  }
+  .landing .menu .btn { flex: 1 1 calc(50% - 5px); min-width: 0; }
+  /* Ghost "Settings" spans full width — keeps it visually subordinate */
+  .landing .menu .btn.ghost { flex: 1 1 100%; }
+  /* Compact buttons throughout landing (overrides the global .btn sizing) */
+  .landing .btn { min-height: 52px; padding: 12px 20px; font-size: 1.1rem; }
+
+  /* ── Complete ────────────────────────────────────────────────────────── */
+  .complete-body { gap: 10px; padding-top: 12px; }
+  .complete h1 { font-size: 1.6rem; }
+  .complete .animalName { font-size: 1.4rem; }
+  .complete .animalImg {
+    width: min(140px, 35vw);
+    height: min(140px, 35vw);
+  }
+  .complete .actions { gap: 8px; }
+  .complete .actions .btn { min-height: 48px; padding: 10px 16px; font-size: 1rem; }
+
+  /* ── Game topbar ─────────────────────────────────────────────────────── */
+  .game {
+    grid-template-rows: 48px 1fr auto;
+    gap: 4px;
+    padding: 4px 8px 8px;
+  }
+  .game .strip { padding: 6px 8px; }
+
+  /* ── Find the Letter — 4×1 row instead of 2×2 grid ──────────────────── */
+  .find-prompt { font-size: 1rem; margin-bottom: 6px; }
+  .find-grid {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: none;
+    gap: 8px;
+    padding: 8px 16px;
+  }
+
+  /* ── Numbers — compact digit picker to give stage more room ──────────── */
+  .numbers-screen .topbar { height: 48px; }
+
+  /* ── Story Library — compact so both shelf rows show without scrolling ── */
+  .bookshelf .book      { width: 96px; }
+  .bookshelf-row        { min-height: 150px; }
+  .bookshelf            { padding: 8px 12px 8px; }
+  .bookshelf-plank      { height: 12px; }
+  /* Remove vertical padding so the topbar doesn't eat library space */
+  .library .topbar      { padding: 0 12px; }
+  /* Trailing plank after the last row adds unused height — hide in landscape */
+  .bookshelf > .bookshelf-plank:last-child { display: none; }
+  .practice-picker button {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 4px;
+    font-size: 1rem;
+  }
+  .practice-controls .btn { min-height: 48px; padding: 10px 16px; font-size: 1rem; }
 }

@@ -88,9 +88,12 @@ window.APP = window.APP || {};
      Uses the same padding values as the CSS media queries in styles.css. */
   function booksPerRow() {
     const W = window.innerWidth;
+    const H = window.innerHeight;
     const SHELF_PAD = W < 480 ? 16 : W < 768 ? 24 : 36;
     const ROW_PAD   = W < 480 ?  8 : 14;
-    const BOOK_W    = W < 480 ? 100 : W < 768 ? 120 : 148;
+    // In landscape (short viewport) use a narrower book width to match the
+    // compact CSS override — keeps row grouping in sync with rendered size.
+    const BOOK_W    = W < 480 ? 100 : (H < 600 && W >= 480) ? 96 : W < 768 ? 120 : 148;
     const available = W - 2 * SHELF_PAD - 2 * ROW_PAD;
     return Math.max(1, Math.floor((available + 8) / (BOOK_W + 8)));
   }
