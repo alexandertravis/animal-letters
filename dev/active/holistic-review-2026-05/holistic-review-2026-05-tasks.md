@@ -14,15 +14,15 @@
 
 ## SOON (short-term UX + quality)
 
-- [ ] Fix library.js: replace APP._libCtx with ctx parameter in buildBook()
-- [ ] Fix bookCover.js: use APP.starsHtml() in buildLockReqs instead of inline SVG
-- [ ] Remove dead CSS: .books-grid, .book-tile, .achievement-* (~40 lines)
-- [ ] Fix styles.css: define --card token (or replace with existing token)
-- [ ] Fix styles.css: remove --reader-ink-2 orphaned token
-- [ ] Fix styles.css: add touch-action: none to .book-spread
-- [ ] Fix styles.css: merge 3 separate :root blocks into one
-- [ ] Fix tracer.js: clear orphaned single-point paths in endActiveInk
-- [ ] Commit: quality + CSS fixes
+- [x] Fix library.js: replace APP._libCtx with ctx parameter in buildBook()
+- [ ] Fix bookCover.js: use APP.starsHtml() in buildLockReqs (deferred — starSvg gives more colour control on varied cover backgrounds)
+- [x] Remove dead CSS: .books-grid, .book-tile, .achievement-* (~40 lines)
+- [x] Fix styles.css: --card → rgba(0,0,0,0.05)
+- [x] Fix styles.css: remove --reader-ink-2 orphaned token
+- [x] Fix styles.css: add touch-action: none to .book-spread
+- [ ] Fix styles.css: merge 3 separate :root blocks (cosmetic, deferred)
+- [ ] Fix tracer.js: clear orphaned single-point paths in endActiveInk (minor perf, deferred)
+- [x] Commit: quality + CSS fixes (c9e7316)
 
 ## LATER (architecture + tests)
 
