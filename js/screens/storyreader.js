@@ -39,11 +39,11 @@ window.APP = window.APP || {};
     const spreads = [
       {
         leftType: 'color',  leftContent: story.color,
-        rightType: 'title', rightContent: { title: story.title, image: coverImg }
+        rightType: 'title', rightContent: { title: APP.storyText(story.title), image: coverImg }
       },
       ...story.pages.map(function (p, i) {
         return {
-          leftType:  'text',  leftContent: p.text,
+          leftType:  'text',  leftContent: APP.storyText(p.text),
           rightType: 'image', rightContent: p.image,
           frame: p.frame, pageNum: i + 1
         };
