@@ -64,7 +64,12 @@ window.APP = window.APP || {};
       });
     } else {
       // Show requirements as a tooltip-style hint
-      root.title = (story.requirements || []).map(r => r.label).join('\n');
+      root.title = (story.requirements || []).map(r => {
+        const animal = APP.animals.displayName(r.animalId);
+        return r.minCount > 1
+          ? APP.t('library.req.complete', { animal, n: r.minCount })
+          : APP.t('library.req.find', { animal });
+      }).join('\n');
     }
 
     return root;

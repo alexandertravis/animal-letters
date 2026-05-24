@@ -90,6 +90,8 @@ APP.I18N = {
     'library.noAchievements':   'Complete animal combinations to unlock stories!',
     'library.read':             'Read',
     'library.locked':           'Locked',
+    'library.req.complete':     'Complete {animal} {n}×',
+    'library.req.find':         'Find the {animal}',
     'reader.finish':            'Finish',
   },
 
@@ -159,6 +161,8 @@ APP.I18N = {
     'library.noAchievements':     'Complete combinações de animais para desbloquear histórias!',
     'library.read':               'Ler',
     'library.locked':             'Bloqueado',
+    'library.req.complete':       'Completar {animal} {n}×',
+    'library.req.find':           'Encontrar {animal}',
     'reader.finish':              'Terminar',
   },
 
@@ -228,6 +232,8 @@ APP.I18N = {
     'library.noAchievements':     'Complétez des combinaisons d\'animaux pour débloquer des histoires !',
     'library.read':               'Lire',
     'library.locked':             'Verrouillé',
+    'library.req.complete':       'Compléter {animal} {n}×',
+    'library.req.find':           'Trouver {animal}',
     'reader.finish':              'Terminer',
   },
 
@@ -297,6 +303,8 @@ APP.I18N = {
     'library.noAchievements':     '¡Completa combinaciones de animales para desbloquear historias!',
     'library.read':               'Leer',
     'library.locked':             'Bloqueado',
+    'library.req.complete':       'Completar {animal} {n}×',
+    'library.req.find':           'Encontrar {animal}',
     'reader.finish':              'Terminar',
   },
 
@@ -366,6 +374,8 @@ APP.I18N = {
     'library.noAchievements':     'Schließe Tierkombinationen ab, um Geschichten freizuschalten!',
     'library.read':               'Lesen',
     'library.locked':             'Gesperrt',
+    'library.req.complete':       '{animal} {n}× abschließen',
+    'library.req.find':           '{animal} finden',
     'reader.finish':              'Fertig',
   },
 
@@ -435,6 +445,8 @@ APP.I18N = {
     'library.noAchievements':     'Completa combinazioni di animali per sbloccare le storie!',
     'library.read':               'Leggi',
     'library.locked':             'Bloccato',
+    'library.req.complete':       'Completa {animal} {n}×',
+    'library.req.find':           'Trovare {animal}',
     'reader.finish':              'Fine',
   },
 };

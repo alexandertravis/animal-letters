@@ -65,7 +65,7 @@ window.APP = window.APP || {};
       for (i = 0; i < empty; i++) stars.innerHTML += starSvg(STAR_GREY);
       row.appendChild(stars);
       var name = div('cover-req-name');
-      name.textContent = req.animalId.charAt(0).toUpperCase() + req.animalId.slice(1);
+      name.textContent = APP.animals.displayName(req.animalId);
       row.appendChild(name);
       wrap.appendChild(row);
     });
