@@ -76,6 +76,10 @@ window.APP = window.APP || {};
        story  — story object (uses title, requirements[0].animalId, leather, board)
        opts   — { skin: 'classic'|'watercolour', locked: bool }
                 skin defaults to the active theme's book skin.                */
+  /* Exposed so callers (e.g. library.js) can append the requirements panel
+     outside the .story-cover element, keeping it clear of any is-locked filter. */
+  APP.buildLockReqs = buildLockReqs;
+
   APP.bookCover = function (story, opts) {
     opts = opts || {};
     const skin    = opts.skin || (APP.activeBookSkin ? APP.activeBookSkin() : 'classic');
@@ -91,7 +95,6 @@ window.APP = window.APP || {};
       basic.style.background = locked ? '#cfcfcf' : (story.color || '#888');
       if (locked) {
         basic.appendChild(div('basic-lock-icon', LOCK_SVG));
-        basic.appendChild(buildLockReqs(story));
       } else {
         const im = document.createElement('img');
         im.src = `assets/images/cartoon/${animal}.svg`;
@@ -123,11 +126,7 @@ window.APP = window.APP || {};
     }
     cover.appendChild(portrait);
 
-    if (locked) {
-      // Requirements panel replaces the title on locked covers.
-      // The padlock itself is rendered by the CSS ::after on .cover-portrait.
-      cover.appendChild(buildLockReqs(story));
-    } else {
+    if (!locked) {
       const title = div('cover-title');
       const span  = document.createElement('span');
       span.className = 'cover-title-text';

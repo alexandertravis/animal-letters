@@ -50,6 +50,10 @@ window.APP = window.APP || {};
 
     root.appendChild(APP.bookCover(story, { skin: bookSkin, locked }));
 
+    // Append the requirements panel as a sibling of .story-cover (not a child),
+    // so it sits outside the is-locked desaturation filter on .story-cover.
+    if (locked) root.appendChild(APP.buildLockReqs(story));
+
     if (!locked) {
       root.addEventListener('click', () => {
         APP.state.currentStory = story;
