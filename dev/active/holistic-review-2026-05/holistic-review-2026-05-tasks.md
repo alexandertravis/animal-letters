@@ -26,6 +26,7 @@
 
 ## LATER (architecture + tests)
 
+- [x] Story text translation: APP.storyText() + PT/FR/ES/DE/IT for all 8 stories (07b1e95)
 - [ ] Implement APP.setState(patch) to centralise state mutations
 - [ ] Decouple complete.js: extract APP.goToStory(story, ctx) helper
 - [ ] Move activeTracer/confettiCleanup inside render() in game.js and findletter.js
@@ -33,7 +34,6 @@
 - [ ] Add critical tests: APP.isStoryUnlocked(), APP.animalStars() boundary values
 - [ ] Add tests: advanceLetter() → newlyUnlockedStories
 - [ ] Add tests: _migrateCompletedAnimals / _migrateCompletionCounts
-- [ ] Story text translation design (Option A: inline multilingual per page field)
 
 ## Review Batches Status
 
