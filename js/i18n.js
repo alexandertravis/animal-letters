@@ -24,6 +24,17 @@ window.APP = window.APP || {};
     return s;
   };
 
+  // Resolve story content (title or page text) for the current locale.
+  // Accepts either a plain string (returned as-is, for backward compat) or a
+  // { en, pt, fr, es, de, it } locale map — returns the active locale's value,
+  // falling back to English if the locale is absent.
+  APP.storyText = function (textOrMap) {
+    if (!textOrMap) return '';
+    if (typeof textOrMap === 'string') return textOrMap;
+    const locale = (APP.state && APP.state.settings.locale) || 'en';
+    return textOrMap[locale] || textOrMap.en || '';
+  };
+
   // Change the active language. Persists to localStorage.
   // Does NOT re-render — callers must trigger a re-render themselves.
   APP.setLocale = function (locale) {

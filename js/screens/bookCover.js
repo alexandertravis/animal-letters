@@ -65,7 +65,7 @@ window.APP = window.APP || {};
       for (i = 0; i < empty; i++) stars.innerHTML += starSvg(STAR_GREY);
       row.appendChild(stars);
       var name = div('cover-req-name');
-      name.textContent = req.animalId.charAt(0).toUpperCase() + req.animalId.slice(1);
+      name.textContent = APP.animals.displayName(req.animalId);
       row.appendChild(name);
       wrap.appendChild(row);
     });
@@ -101,7 +101,7 @@ window.APP = window.APP || {};
         im.alt = '';
         basic.appendChild(im);
         const t = div('basic-title');
-        t.textContent = story.title;
+        t.textContent = APP.storyText(story.title);
         basic.appendChild(t);
       }
       return basic;
@@ -130,7 +130,7 @@ window.APP = window.APP || {};
       const title = div('cover-title');
       const span  = document.createElement('span');
       span.className = 'cover-title-text';
-      span.textContent = story.title;
+      span.textContent = APP.storyText(story.title);
       title.appendChild(span);
       cover.appendChild(title);
     }

@@ -66,7 +66,7 @@ describe('APP.getLetter', () => {
   });
 
   it('returns null for an unknown character', () => {
-    expect(APP.getLetter('1')).toBeNull();
+    expect(APP.getLetter('@')).toBeNull();
     expect(APP.getLetter('!')).toBeNull();
     expect(APP.getLetter('')).toBeNull();
   });
@@ -82,7 +82,7 @@ describe('APP.getLetter', () => {
 // APP.getLetterYTransform — four branches
 // ---------------------------------------------------------------------------
 describe('APP.getLetterYTransform', () => {
-  // GUIDE_CONFIG: top.y=30, middle.y=100, bottom.y=170, lower.y=240
+  // GUIDE_CONFIG: top.y=30, middle.y=90, bottom.y=170, lower.y=230
 
   it('uppercase branch (e.g. "A"): maps y=30→top(30), y=220→bottom(170)', () => {
     const { a, b } = APP.getLetterYTransform('A');
@@ -100,42 +100,44 @@ describe('APP.getLetterYTransform', () => {
     expect(b).toBeCloseTo(30 - (140 / 180) * 30, 10);
   });
 
-  it('lowercase descender branch (e.g. "g"): identity transform — a=1, b=0', () => {
+  it('lowercase descender branch (e.g. "g"): maps old design coords (mid=100,low=240) to guide coords (mid=90,low=230)', () => {
     const { a, b } = APP.getLetterYTransform('g');
-    expect(a).toBe(1);
-    expect(b).toBe(0);
+    // Design: s1=100 (mid), s2=240 (low). Target: t1=90 (guide mid), t2=230 (guide low).
+    // a = (230-90)/(240-100) = 140/140 = 1; b = 90 - 1*100 = -10
+    expect(a).toBeCloseTo(1, 10);
+    expect(b).toBeCloseTo(-10, 10);
   });
 
-  it('lowercase descender branch (e.g. "j"): identity transform — a=1, b=0', () => {
+  it('lowercase descender branch (e.g. "j"): same design-to-guide mapping as "g"', () => {
     const { a, b } = APP.getLetterYTransform('j');
-    expect(a).toBe(1);
-    expect(b).toBe(0);
+    expect(a).toBeCloseTo(1, 10);
+    expect(b).toBeCloseTo(-10, 10);
   });
 
-  it('lowercase descender branch (e.g. "p"): identity transform — a=1, b=0', () => {
+  it('lowercase descender branch (e.g. "p"): same design-to-guide mapping as "g"', () => {
     const { a, b } = APP.getLetterYTransform('p');
-    expect(a).toBe(1);
-    expect(b).toBe(0);
+    expect(a).toBeCloseTo(1, 10);
+    expect(b).toBeCloseTo(-10, 10);
   });
 
-  it('lowercase descender branch (e.g. "q"): identity transform — a=1, b=0', () => {
+  it('lowercase descender branch (e.g. "q"): same design-to-guide mapping as "g"', () => {
     const { a, b } = APP.getLetterYTransform('q');
-    expect(a).toBe(1);
-    expect(b).toBe(0);
+    expect(a).toBeCloseTo(1, 10);
+    expect(b).toBeCloseTo(-10, 10);
   });
 
-  it('lowercase descender branch (e.g. "y"): identity transform — a=1, b=0', () => {
+  it('lowercase descender branch (e.g. "y"): same design-to-guide mapping as "g"', () => {
     const { a, b } = APP.getLetterYTransform('y');
-    expect(a).toBe(1);
-    expect(b).toBe(0);
+    expect(a).toBeCloseTo(1, 10);
+    expect(b).toBeCloseTo(-10, 10);
   });
 
-  it('lowercase default branch (e.g. "a"): maps y=100→middle(100), y=210→bottom(170)', () => {
+  it('lowercase default branch (e.g. "a"): maps y=100→middle(90), y=210→bottom(170)', () => {
     const { a, b } = APP.getLetterYTransform('a');
-    // a = (170-100)/(210-100) = 70/110 ≈ 0.6364...
-    // b = 100 - a*100 ≈ 36.364...
-    expect(a).toBeCloseTo(70 / 110, 10);
-    expect(b).toBeCloseTo(100 - (70 / 110) * 100, 10);
+    // a = (170-90)/(210-100) = 80/110 ≈ 0.7273...
+    // b = 90 - a*100 ≈ 17.273...
+    expect(a).toBeCloseTo(80 / 110, 10);
+    expect(b).toBeCloseTo(90 - (80 / 110) * 100, 10);
   });
 });
 

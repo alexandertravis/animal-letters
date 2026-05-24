@@ -8,6 +8,8 @@ window.APP = window.APP || {};
     if (!story) { ctx.go('library'); return; }
     if (!story.pages || story.pages.length === 0) { ctx.go('library'); return; }
 
+    let destroyed = false;
+
     // ── Build spread list ────────────────────────────────────────────────────
     // Spread 0: title page  (left = cover colour, right = title + cover image)
     // Spreads 1..N: story pages  (left = text, right = image)
@@ -37,11 +39,11 @@ window.APP = window.APP || {};
     const spreads = [
       {
         leftType: 'color',  leftContent: story.color,
-        rightType: 'title', rightContent: { title: story.title, image: coverImg }
+        rightType: 'title', rightContent: { title: APP.storyText(story.title), image: coverImg }
       },
       ...story.pages.map(function (p, i) {
         return {
-          leftType:  'text',  leftContent: p.text,
+          leftType:  'text',  leftContent: APP.storyText(p.text),
           rightType: 'image', rightContent: p.image,
           frame: p.frame, pageNum: i + 1
         };
@@ -69,9 +71,10 @@ window.APP = window.APP || {};
     closeBtn.setAttribute('aria-label', 'Close book');
     closeBtn.textContent = '✕';
     closeBtn.addEventListener('click', function () {
-      // If the book hasn't been opened yet (or has been collapsed back to cover),
-      // skip the animation and return to library immediately.
-      if (phase === 'closed' || phase === 'closing-to-cover') {
+      // If the book hasn't been opened yet, is collapsed, or is already mid-close,
+      // skip any pending animation and return to library immediately.
+      if (phase === 'closed' || phase === 'closing-to-cover' || phase === 'closing') {
+        destroyed = true;
         ctx.go('library');
         return;
       }
@@ -527,6 +530,7 @@ window.APP = window.APP || {};
       L.front.style.animation = 'cover-front-hide ' + COVER_MS + 'ms linear forwards';
 
       setTimeout(function () {
+        if (destroyed) return;
         unblankPage(leftPage);
         applyLeft(leftInner, spreads[0]);          // inside cover, under the leaf
         if (L.leaf.parentNode) L.leaf.parentNode.removeChild(L.leaf);
@@ -567,8 +571,15 @@ window.APP = window.APP || {};
       bookShadow.style.transition = 'clip-path ' + COVER_MS + 'ms ease';
       bookShadow.style.clipPath = 'inset(0 0 0 50%)';
 
-      setTimeout(function () { scene.classList.add('scene-fade-out'); }, COVER_MS + COVER_PAUSE);
-      setTimeout(function () { ctx.go('library'); }, COVER_MS + COVER_PAUSE + 350);
+      setTimeout(function () {
+        if (destroyed) return;
+        scene.classList.add('scene-fade-out');
+      }, COVER_MS + COVER_PAUSE);
+      setTimeout(function () {
+        if (destroyed) return;
+        destroyed = true;
+        ctx.go('library');
+      }, COVER_MS + COVER_PAUSE + 350);
     }
 
     // ── Collapse back to closed cover (left page click on title spread) ────────
@@ -725,8 +736,15 @@ window.APP = window.APP || {};
         bookShadow.style.transition = 'clip-path ' + COVER_MS + 'ms ease';
         bookShadow.style.clipPath = 'inset(0 0 0 50%)';
 
-        setTimeout(function () { scene.classList.add('scene-fade-out'); }, COVER_MS + COVER_PAUSE);
-        setTimeout(function () { ctx.go('library'); }, COVER_MS + COVER_PAUSE + 350);
+        setTimeout(function () {
+          if (destroyed) return;
+          scene.classList.add('scene-fade-out');
+        }, COVER_MS + COVER_PAUSE);
+        setTimeout(function () {
+          if (destroyed) return;
+          destroyed = true;
+          ctx.go('library');
+        }, COVER_MS + COVER_PAUSE + 350);
       });
     }
 

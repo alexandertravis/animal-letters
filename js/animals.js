@@ -56,6 +56,17 @@ window.APP = window.APP || {};
     // Used by setup.js to compute the slider min/max from the active list.
     eligibleAll() {
       return getAnimalList();
+    },
+
+    // Return the localised display name for an animal identified by its animalId
+    // (the lowercase image filename stem, e.g. 'bear'). Falls back to a
+    // capitalised form of the id if the animal isn't in the active locale list.
+    displayName(animalId) {
+      const list = getAnimalList();
+      for (let i = 0; i < list.length; i++) {
+        if (APP.animalId(list[i]) === animalId) return list[i].displayName;
+      }
+      return animalId.charAt(0).toUpperCase() + animalId.slice(1);
     }
   };
 })(window.APP);
