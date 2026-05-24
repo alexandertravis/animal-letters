@@ -1318,19 +1318,22 @@ html, body {
      transparent — most visible with the darker leather/board covers. */
 }
 /* ── Animated shadow companion ──────────────────────────────────────────── */
-/* Sits inside .book alongside .book-spread. Animates scaleX 0.5→1 as the
-   cover opens (transform-origin right: shadow grows leftward from the spine)
-   and 1→0.5 as it closes. A separate element is used so the shadow can be
-   transformed freely without participating in the spread's 3D context. */
+/* Sits inside .book alongside .book-spread. clip-path animates from
+   inset(0 0 0 50%) — right half only, matching the closed cover position —
+   to inset(0 0 0 0%) as the cover opens, then back on close. clip-path clips
+   the box-shadow too, so the shadow grows/retracts with the cover. Using a
+   separate element avoids any transform or clip on .book-spread itself, which
+   would flatten the preserve-3d compositing context on iOS WebKit.
+   opacity:0 keeps it invisible in the closed state; JS sets opacity:1 at the
+   same instant the cover open starts (no display toggle = reliable on iOS). */
 .book-spread-shadow {
   position: absolute; inset: 0;
   pointer-events: none;
   border-radius: 3px 6px 6px 3px;
   box-shadow: -6px 6px 24px rgba(0,0,0,0.55), 4px 4px 16px rgba(0,0,0,0.35);
-  transform: scaleX(0.5);
-  transform-origin: right center;
+  clip-path: inset(0 0 0 50%);
+  opacity: 0;
   z-index: 0;
-  display: none;
 }
 
 /* ── Page panels ────────────────────────────────────────────────────────── */
@@ -1344,7 +1347,11 @@ html, body {
   /* Smooth clip-path transitions for page turns */
   transition: clip-path 0.3s ease-in-out;
 }
-.book-page.left  { border-right: 1px solid rgba(0,0,0,0.07); }
+/* Round the outer corners of each page panel to match .book-spread's
+   border-radius, eliminating the dark scene-background gap in the corners. */
+.book-page.left  { border-right: 1px solid rgba(0,0,0,0.07);
+                   border-top-left-radius: 3px; border-bottom-left-radius: 3px; }
+.book-page.right { border-top-right-radius: 6px; border-bottom-right-radius: 6px; }
 
 .book-page-inner {
   width: 100%; height: 100%;
@@ -1402,6 +1409,16 @@ html, body {
   -webkit-backface-visibility: hidden;
 }
 .leaf-face.back { transform: rotateY(180deg); }
+
+/* Round leaf-face outer corners to match .book-spread border-radius, so no
+   dark background bleeds into the corners during a flip. Front faces are
+   clipped at 0° (their natural position); back faces are mirrored by rotateY,
+   so left/right are swapped — left corners of the back element appear on the
+   outer edge after the flip, right corners appear at the spine. */
+.page-leaf.right .leaf-face.front { clip-path: inset(0 round 0 6px 6px 0); }
+.page-leaf.right .leaf-face.back  { clip-path: inset(0 round 3px 0 0 3px); }
+.page-leaf.left  .leaf-face.front { clip-path: inset(0 round 3px 0 0 3px); }
+.page-leaf.left  .leaf-face.back  { clip-path: inset(0 round 0 6px 6px 0); }
 
 /* Curl shading: a gradient darkest toward the spine (the bend) fading out to
    the free edge, so the turning leaf reads as a curling page rather than a

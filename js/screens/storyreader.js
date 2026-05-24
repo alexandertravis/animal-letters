@@ -506,14 +506,17 @@ window.APP = window.APP || {};
       bookSpread.style.display = 'flex';
       bookSpread.classList.add('is-flipping');    // hide folds + fade spine
 
-      // Shadow: start at cover width (scaleX 0.5, right-anchored) then grow to
-      // full spread width over COVER_MS, matching the visual opening of the book.
-      bookShadow.style.display = 'block';
+      // Shadow: reveal from right-half (cover position) to full spread.
+      // clip-path animates inset(0 0 0 50%) → inset(0 0 0 0%) — it clips the
+      // box-shadow too, so the shadow visually grows with the cover as it opens.
+      // opacity:1 is set instantly (no display toggle) so void offsetWidth
+      // reliably commits the initial clip-path before the transition starts.
       bookShadow.style.transition = 'none';
-      bookShadow.style.transform = 'scaleX(0.5)';
+      bookShadow.style.clipPath = 'inset(0 0 0 50%)';
+      bookShadow.style.opacity = '1';
       void bookShadow.offsetWidth;
-      bookShadow.style.transition = 'transform ' + COVER_MS + 'ms ease';
-      bookShadow.style.transform = 'scaleX(1)';
+      bookShadow.style.transition = 'clip-path ' + COVER_MS + 'ms ease';
+      bookShadow.style.clipPath = 'inset(0 0 0 0%)';
 
       // Slide the book to its centred 2-page position while the cover flips.
       bookEl.classList.remove('book-closed-state');
@@ -559,9 +562,9 @@ window.APP = window.APP || {};
       bookEl.classList.add('book-closed-state');  // slide back to single page
       L.front.style.animation = 'cover-front-hide ' + COVER_MS + 'ms linear forwards';
 
-      // Shadow: shrink back to cover width as the book closes.
-      bookShadow.style.transition = 'transform ' + COVER_MS + 'ms ease';
-      bookShadow.style.transform = 'scaleX(0.5)';
+      // Shadow: retract from full spread to cover width as the book closes.
+      bookShadow.style.transition = 'clip-path ' + COVER_MS + 'ms ease';
+      bookShadow.style.clipPath = 'inset(0 0 0 50%)';
 
       setTimeout(function () { scene.classList.add('scene-fade-out'); }, COVER_MS + COVER_PAUSE);
       setTimeout(function () { ctx.go('library'); }, COVER_MS + COVER_PAUSE + 350);
@@ -594,14 +597,16 @@ window.APP = window.APP || {};
       bookEl.classList.add('book-closed-state');   // slide back to single page
       L.front.style.animation = 'cover-front-hide ' + COVER_MS + 'ms linear forwards';
 
-      // Shadow: shrink back to cover width as the book closes.
-      bookShadow.style.transition = 'transform ' + COVER_MS + 'ms ease';
-      bookShadow.style.transform = 'scaleX(0.5)';
+      // Shadow: retract from full spread to cover width as the book closes.
+      bookShadow.style.transition = 'clip-path ' + COVER_MS + 'ms ease';
+      bookShadow.style.clipPath = 'inset(0 0 0 50%)';
 
       setTimeout(function () {
         if (L.leaf.parentNode) L.leaf.parentNode.removeChild(L.leaf);
         bookSpread.classList.remove('is-flipping');
-        bookShadow.style.display = 'none';  // back to closed state; .book-closed has own shadow
+        // Hide shadow — .book-closed has its own shadow in the closed state.
+        bookShadow.style.transition = 'none';
+        bookShadow.style.opacity = '0';
         // Restore page backgrounds so they show cream on the next open, not the
         // dark scene background left by blankPage().
         unblankPage(leftPage);
@@ -715,9 +720,9 @@ window.APP = window.APP || {};
         bookEl.classList.add('book-closed-state');
         L.front.style.animation = 'cover-front-hide ' + COVER_MS + 'ms linear forwards';
 
-        // Shadow: shrink back to cover width as the book closes.
-        bookShadow.style.transition = 'transform ' + COVER_MS + 'ms ease';
-        bookShadow.style.transform = 'scaleX(0.5)';
+        // Shadow: retract from full spread to cover width as the book closes.
+        bookShadow.style.transition = 'clip-path ' + COVER_MS + 'ms ease';
+        bookShadow.style.clipPath = 'inset(0 0 0 50%)';
 
         setTimeout(function () { scene.classList.add('scene-fade-out'); }, COVER_MS + COVER_PAUSE);
         setTimeout(function () { ctx.go('library'); }, COVER_MS + COVER_PAUSE + 350);
