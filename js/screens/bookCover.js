@@ -28,7 +28,11 @@ window.APP = window.APP || {};
     return n;
   }
 
-  // Small 12×12 star SVG. color: gold '#d4a017' or grey '#a09890'.
+  // Star colours — single source of truth for all themes (bookCover is shared).
+  var STAR_GOLD = '#ffc72c';   // bright warm gold; readable on dark leather and watercolour
+  var STAR_GREY = '#a09890';   // muted warm grey for unearned stars
+
+  // Small 12×12 star SVG.
   function starSvg(color) {
     return '<svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true">' +
       '<path d="M6,.5 L7.3,4.2 L11.2,4.3 L8.1,6.7 L9.2,10.5 L6,8.2 L2.8,10.5 L3.9,6.7 L.8,4.3 L4.7,4.2 Z"' +
@@ -57,8 +61,8 @@ window.APP = window.APP || {};
       const row   = div('cover-req-row');
       var   stars = div('cover-req-stars');
       var i;
-      for (i = 0; i < done;  i++) stars.innerHTML += starSvg('#d4a017');
-      for (i = 0; i < empty; i++) stars.innerHTML += starSvg('#a09890');
+      for (i = 0; i < done;  i++) stars.innerHTML += starSvg(STAR_GOLD);
+      for (i = 0; i < empty; i++) stars.innerHTML += starSvg(STAR_GREY);
       row.appendChild(stars);
       var name = div('cover-req-name');
       name.textContent = req.animalId.charAt(0).toUpperCase() + req.animalId.slice(1);
