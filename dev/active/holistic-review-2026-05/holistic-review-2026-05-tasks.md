@@ -29,13 +29,15 @@
 - [x] Story text translation: APP.storyText() + PT/FR/ES/DE/IT for all 8 stories (07b1e95)
 - [x] Translate lock requirement hints on book covers: APP.animals.displayName() + library.req.complete/find i18n keys (7f5e92b)
 - [x] Merge review/holistic-2026-05 → main and push to origin (deployed to Vercel)
-- [ ] Implement APP.setState(patch) to centralise state mutations
-- [ ] Decouple complete.js: extract APP.goToStory(story, ctx) helper
+- [x] Implement APP.setState(patch) to centralise state mutations (77d83c1)
+- [x] Decouple complete.js + library.js: APP.goToStory(story, ctx) helper (77d83c1)
+- [x] Add critical tests: APP.isStoryUnlocked() all boundary cases (77d83c1)
+- [x] Add critical tests: APP.animalStars() all boundary values 0–5+ (77d83c1)
+- [x] Add tests: advanceLetter() → newlyUnlockedStories (first unlock, already unlocked, not met) (77d83c1)
+- [x] Add tests: APP.setState and APP.goToStory (77d83c1)
+- [ ] Add tests: _migrateCompletedAnimals / _migrateCompletionCounts (not unit-testable without module reload — deferred)
 - [ ] Move activeTracer/confettiCleanup inside render() in game.js and findletter.js
 - [ ] Consider screen/game mode registry for extensibility
-- [ ] Add critical tests: APP.isStoryUnlocked(), APP.animalStars() boundary values
-- [ ] Add tests: advanceLetter() → newlyUnlockedStories
-- [ ] Add tests: _migrateCompletedAnimals / _migrateCompletionCounts
 
 ## Review Batches Status
 

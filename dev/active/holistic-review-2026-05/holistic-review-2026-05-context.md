@@ -78,19 +78,30 @@ animalId string if not found. Used in:
 - `data/stories.js` title/text fields are now locale maps, not strings — any new story must follow the same shape
 - `data/i18n.js` has `library.req.complete` (`{animal} {n}×` pattern) and `library.req.find` for all 6 locales
 
-## Session End — 2026-05-24
-Git status: clean (untracked: assets/fonts/Playwrite_GB_S_Guides/ — intentionally not committed)
+## APP.setState + APP.goToStory design
+Both added to `js/state.js`.
+- `APP.setState(patch)` — `Object.assign(APP.state, patch)`. Shallow merge, top-level keys only.
+  Settings mutations still go through `APP.settings.update()`. Library.js theme change now uses it.
+- `APP.goToStory(story, ctx)` — calls `APP.setState({ currentStory, currentPage:0, newlyUnlockedStories:[] })` then `ctx.go('storyreader')`. Used by complete.js (read-now banner). Library.js keeps its own fade animation so uses `APP.setState` for state then calls `ctx.go` manually in the timeout.
 
-## Session Summary — 2026-05-24
+## Migration functions (_migrateCompletedAnimals / _migrateCompletionCounts)
+Private IIFEs in state.js, called at module load time. Not unit-testable without module reload (state.js loads once in setup.js). Deferred — would require a separate Vitest suite with fresh imports.
+
+## Session End — 2026-05-24 (final)
+Git status: clean. main pushed to origin/main (77d83c1). Vercel deployed.
+
+## Session Summary — 2026-05-24 (final)
 Completed:
-- APP.storyText() helper in js/i18n.js; all 8 stories translated PT/FR/ES/DE/IT (title + all pages)
-- bookCover.js + storyreader.js updated to call APP.storyText() at render time
-- Lock requirement hints translated: APP.animals.displayName() + library.req.complete/find i18n keys
-- review/holistic-2026-05 merged to main, pushed to origin, deployed to Vercel
-- 102/102 tests passing throughout
+- APP.setState(patch) in js/state.js
+- APP.goToStory(story, ctx) in js/state.js; deduplicates complete.js + library.js
+- 23 new tests: APP.setState, APP.goToStory, advanceLetter→newlyUnlockedStories (3 cases),
+  APP.isStoryUnlocked (8 cases), APP.animalStars (7 boundary values)
+- 125/125 tests passing
 
-NEXT STEP: If continuing LATER items, start with `APP.setState(patch)` in js/state.js — add a single setter that applies a partial patch to APP.state and (optionally) persists to localStorage. Then update callers in game.js, complete.js, setup.js to use it.
+NEXT STEP: Only cosmetic/deferred items remain. If picking up: move activeTracer/confettiCleanup
+inside render() in js/screens/game.js and js/screens/findletter.js (prevents stale handles if
+render() is called twice). Or consider the holistic review complete and move the dev docs to done/.
 
 Blockers: none
-Half-finished: none — all in-scope work is committed and live
+Half-finished: none
 Security flags added: none
