@@ -27,6 +27,8 @@
 ## LATER (architecture + tests)
 
 - [x] Story text translation: APP.storyText() + PT/FR/ES/DE/IT for all 8 stories (07b1e95)
+- [x] Translate lock requirement hints on book covers: APP.animals.displayName() + library.req.complete/find i18n keys (7f5e92b)
+- [x] Merge review/holistic-2026-05 → main and push to origin (deployed to Vercel)
 - [ ] Implement APP.setState(patch) to centralise state mutations
 - [ ] Decouple complete.js: extract APP.goToStory(story, ctx) helper
 - [ ] Move activeTracer/confettiCleanup inside render() in game.js and findletter.js

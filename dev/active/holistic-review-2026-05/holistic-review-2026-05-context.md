@@ -1,14 +1,17 @@
 # Holistic Review 2026-05 — Context
 
 ## Branch
-`review/holistic-2026-05` — all fixes land here. Main stays clean.
+`review/holistic-2026-05` — merged into main (2026-05-24), pushed to origin/main, deployed to Vercel.
 
-## Commits on this branch
+## Commits (all now on main)
 | Commit | What |
 |--------|------|
 | `4b2a62f` | NOW fixes: storyreader timer leak + ✕ button, i18n library keys PT/FR/ES/DE/IT, 26 test animalId fixes, viewport WCAG |
 | `c9e7316` | SOON fixes: dead CSS removed, --card token, APP._libCtx smell, touch-action on .book-spread |
 | `07b1e95` | feat(i18n): APP.storyText() + all 8 stories translated PT/FR/ES/DE/IT |
+| `7f5e92b` | feat(i18n): translated lock requirement hints — APP.animals.displayName() + library.req keys |
+| `9ecd893` | docs: final dev doc update |
+| `40e353c` | merge: review/holistic-2026-05 → main |
 
 ## Key Files Modified
 
@@ -60,8 +63,34 @@ Called at **spread construction time** in `storyreader.js` render() so `leftCont
 `rightContent.title` are always plain strings — no changes needed downstream in
 `applyLeft`/`applyRight`. Same pattern in `bookCover.js` for the cover title.
 
+## APP.animals.displayName design
+`APP.animals.displayName(animalId)` added to `js/animals.js`. Uses the private `getAnimalList()`
+helper (already locale-aware) to look up the animal by matching `APP.animalId(animal) === animalId`.
+Returns the locale `displayName` (e.g. "Ours" in FR, "Bär" in DE), falling back to a capitalised
+animalId string if not found. Used in:
+- `bookCover.js` `buildLockReqs` — the animal name label in the requirements panel
+- `library.js` — the locked-book tooltip title attribute
+
 ## Gotchas
 - `animalCompletionCounts[nextAnimal.name]` in integration tests → must use `APP.animalId(nextAnimal)`
 - `completedAnimals.has(a.name)` in filter lambdas → must use `APP.animalId(a)`
 - `flutterAndClose` timers are inside a `Promise.all().then()` — they still need the `destroyed` guard
 - `data/stories.js` title/text fields are now locale maps, not strings — any new story must follow the same shape
+- `data/i18n.js` has `library.req.complete` (`{animal} {n}×` pattern) and `library.req.find` for all 6 locales
+
+## Session End — 2026-05-24
+Git status: clean (untracked: assets/fonts/Playwrite_GB_S_Guides/ — intentionally not committed)
+
+## Session Summary — 2026-05-24
+Completed:
+- APP.storyText() helper in js/i18n.js; all 8 stories translated PT/FR/ES/DE/IT (title + all pages)
+- bookCover.js + storyreader.js updated to call APP.storyText() at render time
+- Lock requirement hints translated: APP.animals.displayName() + library.req.complete/find i18n keys
+- review/holistic-2026-05 merged to main, pushed to origin, deployed to Vercel
+- 102/102 tests passing throughout
+
+NEXT STEP: If continuing LATER items, start with `APP.setState(patch)` in js/state.js — add a single setter that applies a partial patch to APP.state and (optionally) persists to localStorage. Then update callers in game.js, complete.js, setup.js to use it.
+
+Blockers: none
+Half-finished: none — all in-scope work is committed and live
+Security flags added: none
