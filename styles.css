@@ -1823,6 +1823,15 @@ html, body {
   text-shadow:0 1px 2px rgba(0,0,0,.5);
   white-space:nowrap;line-height:1;
 }
+/* Counter-filter: the is-locked desaturation filter is applied to the whole
+   .story-cover, which degrades the star colours inside .cover-reqs.
+   These rules apply the mathematical inverse to restore the intended colours.
+   Classic:      saturate(.4)  brightness(.78) → invert: brightness(1.282) saturate(2.5)
+   Watercolour:  saturate(.42) brightness(.9)  → invert: brightness(1.111) saturate(2.381)
+   Black (panel bg) and white (label text) are unaffected by saturation/brightness. */
+.story-cover.is-locked.skin-classic    .cover-reqs { filter:brightness(1.282) saturate(2.5);   }
+.story-cover.is-locked.skin-watercolour .cover-reqs { filter:brightness(1.111) saturate(2.381); }
+
 /* Basic skin lock icon — centered by the flex-column parent above the overlay */
 .story-cover.skin-basic .basic-lock-icon{
   width:36px;height:42px;flex-shrink:0;
