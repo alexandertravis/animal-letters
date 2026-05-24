@@ -45,12 +45,14 @@ describe('APP.isDot', () => {
     expect(APP.isDot('M 100 56 L 100 56')).toBe(true);
   });
 
-  it('returns false when x-coordinates match but y-coordinates differ', () => {
-    expect(APP.isDot('M 100,56 L 100,57')).toBe(false);
+  it('returns false when coordinates differ by more than the 4-unit tolerance', () => {
+    // Distance of 5 units exceeds the < 4 threshold → not a dot.
+    expect(APP.isDot('M 100,56 L 100,61')).toBe(false);
   });
 
-  it('returns false when y-coordinates match but x-coordinates differ', () => {
-    expect(APP.isDot('M 99,56 L 100,56')).toBe(false);
+  it('returns true for a near-zero path within the 4-unit tolerance', () => {
+    // Distance of 1 unit is < 4 → treated as a dot (handles authoring-tool off-by-one).
+    expect(APP.isDot('M 100,56 L 100,57')).toBe(true);
   });
 });
 
@@ -204,16 +206,19 @@ describe('APP.addGuidelines', () => {
     else APP.GUIDE_CONFIG.lines.top.hidden = origTop;
   });
 
-  it('appended lines use y1 and y2 equal to the guide line y value', () => {
+  it('appended lines use y1 and y2 with the guide offset applied', () => {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    // No isUpper argument → lowercase offset (GUIDE_OFFSET_LOW).
     APP.addGuidelines(svg, '0 0 200 250');
 
     const g = svg.querySelector('g.writing-guidelines');
     const lines = [...g.querySelectorAll('line')];
     const visibleLines = Object.values(APP.GUIDE_CONFIG.lines).filter(l => !l.hidden);
+    const cfg = APP.TRACER_CONFIG;
+    const offset = cfg ? (cfg.GUIDE_OFFSET_LOW || 0) : 0;
 
     lines.forEach((lineEl, i) => {
-      const expectedY = String(visibleLines[i].y);
+      const expectedY = String(visibleLines[i].y + (visibleLines[i].expand || 0) * offset);
       expect(lineEl.getAttribute('y1')).toBe(expectedY);
       expect(lineEl.getAttribute('y2')).toBe(expectedY);
     });

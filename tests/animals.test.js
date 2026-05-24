@@ -95,7 +95,7 @@ describe('APP.animals.pickRandom', () => {
 describe('APP.animals.pickNext', () => {
   it('returns an unfound animal when consecutiveFoundCount >= 2 and unfound animals exist', () => {
     // Mark ANT and BEE as found; CAT, BEAR, DUCK, RABBIT remain unfound.
-    APP.state.completedAnimals = new Set(['ANT', 'BEE']);
+    APP.state.completedAnimals = new Set(['ant', 'bee']);
     APP.state.consecutiveFoundCount = 2;
 
     // Force Math.random to 0 so the first item in the unfound pool is chosen.
@@ -110,7 +110,7 @@ describe('APP.animals.pickNext', () => {
 
   it('falls back to pickRandom when consecutiveFoundCount >= 2 but ALL eligible animals are already found', () => {
     // Mark every animal in the fixture as found.
-    APP.state.completedAnimals = new Set(ANIMALS_FIXTURE.map(a => a.name));
+    APP.state.completedAnimals = new Set(ANIMALS_FIXTURE.map(a => APP.animalId(a)));
     APP.state.consecutiveFoundCount = 2;
 
     vi.spyOn(Math, 'random').mockReturnValue(0);
@@ -126,7 +126,7 @@ describe('APP.animals.pickNext', () => {
     // Mark most animals as found; only CAT is unfound.
     // If bias were applied, we'd only ever get CAT.
     // Below threshold, the full eligible pool is used — so a found animal can be returned.
-    APP.state.completedAnimals = new Set(['ANT', 'BEE', 'BEAR', 'DUCK', 'RABBIT']);
+    APP.state.completedAnimals = new Set(['ant', 'bee', 'bear', 'duck', 'rabbit']);
     APP.state.consecutiveFoundCount = 1; // below threshold
 
     // With Math.random mocked to 0, pickRandom always picks index 0 of the full
@@ -143,7 +143,7 @@ describe('APP.animals.pickNext', () => {
     // consecutiveFoundCount >= 2, unfound animals exist, and exclude is one of them.
     // Unfound: CAT, BEAR, DUCK, RABBIT. Exclude: CAT (index 0 of unfound).
     // After filtering CAT out: [BEAR, DUCK, RABBIT]. Math.random=0 → index 0 → BEAR.
-    APP.state.completedAnimals = new Set(['ANT', 'BEE']);
+    APP.state.completedAnimals = new Set(['ant', 'bee']);
     APP.state.consecutiveFoundCount = 2;
     const catAnimal = ANIMALS_FIXTURE.find(a => a.name === 'CAT');
 
@@ -157,7 +157,7 @@ describe('APP.animals.pickNext', () => {
 
   it('falls back to the full unfound list when the only unfound animal is also excluded', () => {
     // Only CAT is unfound. Exclude CAT → filtered pool is empty → falls back to unfound (CAT).
-    APP.state.completedAnimals = new Set(['ANT', 'BEE', 'BEAR', 'DUCK', 'RABBIT']);
+    APP.state.completedAnimals = new Set(['ant', 'bee', 'bear', 'duck', 'rabbit']);
     APP.state.consecutiveFoundCount = 2;
     const catAnimal = ANIMALS_FIXTURE.find(a => a.name === 'CAT');
 
@@ -172,7 +172,7 @@ describe('APP.animals.pickNext', () => {
     // consecutiveFoundCount >= 2, so bias toward unfound is active.
     // maxLength=3 → only ANT, BEE, CAT are eligible. All three are already found.
     // → unfound pool is empty → falls back to pickRandom within those 3 animals.
-    APP.state.completedAnimals = new Set(['ANT', 'BEE', 'CAT']);
+    APP.state.completedAnimals = new Set(['ant', 'bee', 'cat']);
     APP.state.consecutiveFoundCount = 2;
 
     const result = APP.animals.pickNext(3, null);

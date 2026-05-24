@@ -38,7 +38,7 @@ describe('Integration: full game round-trip', () => {
     completeCurrentAnimal();
 
     expect(APP.state.screen).toBe('complete');
-    expect(APP.state.completedAnimals.has(animal.name)).toBe(true);
+    expect(APP.state.completedAnimals.has(APP.animalId(animal))).toBe(true);
     expect(APP.state.letterIndex).toBe(animal.name.length);
     expect(APP.state.completedLetters).toHaveLength(animal.name.length);
   });
@@ -73,7 +73,7 @@ describe('Integration: save → reload persistence cycle', () => {
     const rawSaved = ls.getItem('animalProgress');
     expect(rawSaved).not.toBeNull();
     const saved = JSON.parse(rawSaved);
-    expect(saved.completedAnimals).toContain(animal.name);
+    expect(saved.completedAnimals).toContain(APP.animalId(animal));
 
     // Simulate a "page reload": clear in-memory state, then restore from storage.
     APP.clearProgress();
@@ -83,7 +83,7 @@ describe('Integration: save → reload persistence cycle', () => {
     const restored = JSON.parse(rawSaved);
     APP.state.completedAnimals = new Set(restored.completedAnimals);
 
-    expect(APP.state.completedAnimals.has(animal.name)).toBe(true);
+    expect(APP.state.completedAnimals.has(APP.animalId(animal))).toBe(true);
   });
 
   it('clearProgress removes the localStorage entry so a subsequent reload starts fresh', () => {
@@ -169,7 +169,7 @@ describe('Integration: consecutiveFoundCount streak and pickNext bias', () => {
   });
 
   it('first completion of an unfound animal does not increment consecutiveFoundCount', () => {
-    APP.state.completedAnimals = new Set(['ANT', 'BEE']);
+    APP.state.completedAnimals = new Set(['ant', 'bee']);
     APP.state.consecutiveFoundCount = 2;
 
     const cat = ANIMALS_FIXTURE.find(a => a.name === 'CAT');
@@ -182,7 +182,7 @@ describe('Integration: consecutiveFoundCount streak and pickNext bias', () => {
 
   it('second play-through of an already-found animal increments consecutiveFoundCount to 1', () => {
     // CAT is already found before startGame is called.
-    APP.state.completedAnimals = new Set(['CAT']);
+    APP.state.completedAnimals = new Set(['cat']);
     APP.state.consecutiveFoundCount = 0;
 
     const cat = ANIMALS_FIXTURE.find(a => a.name === 'CAT');
@@ -193,7 +193,7 @@ describe('Integration: consecutiveFoundCount streak and pickNext bias', () => {
   });
 
   it('third play-through of an already-found animal increments consecutiveFoundCount to 2', () => {
-    APP.state.completedAnimals = new Set(['CAT']);
+    APP.state.completedAnimals = new Set(['cat']);
     APP.state.consecutiveFoundCount = 1;
 
     const cat = ANIMALS_FIXTURE.find(a => a.name === 'CAT');
@@ -205,7 +205,7 @@ describe('Integration: consecutiveFoundCount streak and pickNext bias', () => {
 
   it('pickNext returns an unfound animal when consecutiveFoundCount reaches 2 — end-to-end bias check', () => {
     // Mark ANT and BEE as found; CAT, BEAR, DUCK, RABBIT are unfound.
-    APP.state.completedAnimals = new Set(['ANT', 'BEE']);
+    APP.state.completedAnimals = new Set(['ant', 'bee']);
     APP.state.consecutiveFoundCount = 2;
 
     const cat = ANIMALS_FIXTURE.find(a => a.name === 'CAT');
@@ -214,7 +214,7 @@ describe('Integration: consecutiveFoundCount streak and pickNext bias', () => {
     // Result must be unfound (not ANT or BEE) and not the excluded animal (CAT).
     // Build the expected set: not completed AND not the excluded animal.
     const expectedNames = ANIMALS_FIXTURE
-      .filter(a => !APP.state.completedAnimals.has(a.name) && a.name !== cat.name)
+      .filter(a => !APP.state.completedAnimals.has(APP.animalId(a)) && a.name !== cat.name)
       .map(a => a.name); // BEAR, DUCK, RABBIT
     expect(expectedNames).toContain(result.name);
     expect(result.name).not.toBe('CAT'); // excluded
@@ -263,9 +263,9 @@ describe('Integration: skipAnimal state integrity', () => {
     APP.startGame(nextAnimal);
     completeCurrentAnimal();
 
-    expect(APP.state.completedAnimals.has(nextAnimal.name)).toBe(true);
+    expect(APP.state.completedAnimals.has(APP.animalId(nextAnimal))).toBe(true);
     // ANT was never completed — skip does not add it.
-    expect(APP.state.completedAnimals.has('ANT')).toBe(false);
+    expect(APP.state.completedAnimals.has('ant')).toBe(false);
   });
 
   it('animalCompletionCounts has exactly one entry after skip + completion of next animal', () => {
@@ -280,7 +280,7 @@ describe('Integration: skipAnimal state integrity', () => {
     completeCurrentAnimal();
 
     expect(Object.keys(APP.state.animalCompletionCounts)).toHaveLength(1);
-    expect(APP.state.animalCompletionCounts[nextAnimal.name]).toBe(1);
+    expect(APP.state.animalCompletionCounts[APP.animalId(nextAnimal)]).toBe(1);
   });
 });
 
@@ -300,7 +300,7 @@ describe('Integration: state completion tracking and animals maxLength filtering
     APP.startGame(ant);
     completeCurrentAnimal();
 
-    expect(APP.state.completedAnimals.has('ANT')).toBe(true);
+    expect(APP.state.completedAnimals.has('ant')).toBe(true);
 
     // RABBIT is 6 letters — it must never appear when maxLength is 3.
     for (let i = 0; i < 10; i++) {
@@ -312,7 +312,7 @@ describe('Integration: state completion tracking and animals maxLength filtering
   it('pickNext respects maxLength even when bias is active', () => {
     // consecutiveFoundCount=2 with ANT and BEE found, but maxLength=3 means
     // BEAR (4), DUCK (4), RABBIT (6) are ineligible — only ANT/BEE/CAT qualify.
-    APP.state.completedAnimals = new Set(['ANT', 'BEE']);
+    APP.state.completedAnimals = new Set(['ant', 'bee']);
     APP.state.consecutiveFoundCount = 2;
 
     const eligible3Names = ['ANT', 'BEE', 'CAT'];

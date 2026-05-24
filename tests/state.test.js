@@ -41,7 +41,7 @@ describe('APP.startGame', () => {
 
   it('does NOT reset consecutiveFoundCount when animal is already found', () => {
     const animal = makeAnimal({ name: 'CAT', displayName: 'Cat' });
-    APP.state.completedAnimals = new Set(['CAT']);
+    APP.state.completedAnimals = new Set(['cat']);
     APP.state.consecutiveFoundCount = 2;
 
     APP.startGame(animal);
@@ -83,7 +83,7 @@ describe('APP.advanceLetter', () => {
     APP.advanceLetter();
 
     expect(APP.state.screen).toBe('complete');
-    expect(APP.state.completedAnimals.has('CAT')).toBe(true);
+    expect(APP.state.completedAnimals.has('cat')).toBe(true);
   });
 
   it('increments animalCompletionCounts correctly on first completion', () => {
@@ -93,24 +93,24 @@ describe('APP.advanceLetter', () => {
 
     APP.advanceLetter();
 
-    expect(APP.state.animalCompletionCounts['CAT']).toBe(1);
+    expect(APP.state.animalCompletionCounts['cat']).toBe(1);
   });
 
   it('increments animalCompletionCounts correctly on repeat completion', () => {
     const animal = makeAnimal({ name: 'CAT', displayName: 'Cat' });
-    APP.state.animalCompletionCounts['CAT'] = 2; // already completed twice before
+    APP.state.animalCompletionCounts['cat'] = 2; // already completed twice before
 
     APP.startGame(animal);
     APP.state.letterIndex = 2; // final letter
 
     APP.advanceLetter();
 
-    expect(APP.state.animalCompletionCounts['CAT']).toBe(3);
+    expect(APP.state.animalCompletionCounts['cat']).toBe(3);
   });
 
   it('increments consecutiveFoundCount only when animal was already found before the call', () => {
     const animal = makeAnimal({ name: 'CAT', displayName: 'Cat' });
-    APP.state.completedAnimals = new Set(['CAT']); // already found
+    APP.state.completedAnimals = new Set(['cat']); // already found
     APP.state.consecutiveFoundCount = 1;
 
     APP.startGame(animal);
@@ -152,7 +152,7 @@ describe('APP.advanceLetter', () => {
     const [, rawValue] = spy.mock.calls[0];
     const parsed = JSON.parse(rawValue);
     expect(Array.isArray(parsed.completedAnimals)).toBe(true);
-    expect(parsed.completedAnimals).toContain('CAT');
+    expect(parsed.completedAnimals).toContain('cat');
     expect(parsed.completedAnimals).toHaveLength(1);
   });
 });
@@ -166,8 +166,8 @@ describe('APP.saveProgress', () => {
     vi.stubGlobal('localStorage', ls);
     const spy = vi.spyOn(ls, 'setItem');
 
-    APP.state.completedAnimals = new Set(['CAT', 'DOG']);
-    APP.state.animalCompletionCounts = { CAT: 2, DOG: 1 };
+    APP.state.completedAnimals = new Set(['cat', 'dog']);
+    APP.state.animalCompletionCounts = { cat: 2, dog: 1 };
 
     APP.saveProgress();
 
@@ -176,9 +176,9 @@ describe('APP.saveProgress', () => {
     expect(key).toBe('animalProgress');
     const parsed = JSON.parse(rawValue);
     expect(Array.isArray(parsed.completedAnimals)).toBe(true);
-    expect(parsed.completedAnimals).toEqual(expect.arrayContaining(['CAT', 'DOG']));
+    expect(parsed.completedAnimals).toEqual(expect.arrayContaining(['cat', 'dog']));
     expect(parsed.completedAnimals).toHaveLength(2);
-    expect(parsed.animalCompletionCounts).toEqual({ CAT: 2, DOG: 1 });
+    expect(parsed.animalCompletionCounts).toEqual({ cat: 2, dog: 1 });
   });
 });
 
@@ -188,12 +188,12 @@ describe('APP.saveProgress', () => {
 describe('APP.clearProgress', () => {
   it('removes the localStorage key and resets completedAnimals, animalCompletionCounts, and consecutiveFoundCount', () => {
     const ls = mockLocalStorage();
-    ls.setItem('animalProgress', JSON.stringify({ completedAnimals: ['CAT'], animalCompletionCounts: { CAT: 1 } }));
+    ls.setItem('animalProgress', JSON.stringify({ completedAnimals: ['cat'], animalCompletionCounts: { cat: 1 } }));
     vi.stubGlobal('localStorage', ls);
     const removeSpy = vi.spyOn(ls, 'removeItem');
 
-    APP.state.completedAnimals = new Set(['CAT']);
-    APP.state.animalCompletionCounts = { CAT: 1 };
+    APP.state.completedAnimals = new Set(['cat']);
+    APP.state.animalCompletionCounts = { cat: 1 };
     APP.state.consecutiveFoundCount = 3;
 
     APP.clearProgress();
@@ -262,13 +262,13 @@ describe('APP.advanceLetter — null guard', () => {
   it('returns without modifying state when currentAnimal is null', () => {
     APP.state.currentAnimal = null;
     APP.state.letterIndex = 5;
-    APP.state.completedAnimals = new Set(['DOG']);
+    APP.state.completedAnimals = new Set(['dog']);
     APP.state.screen = 'game';
 
     APP.advanceLetter();
 
     expect(APP.state.letterIndex).toBe(5);
-    expect(APP.state.completedAnimals.has('DOG')).toBe(true);
+    expect(APP.state.completedAnimals.has('dog')).toBe(true);
     expect(APP.state.screen).toBe('game');
   });
 });
