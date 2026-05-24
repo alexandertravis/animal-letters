@@ -258,6 +258,19 @@
 - [x] **Star colour standardised**: `STAR_GOLD = '#ffc72c'` / `STAR_GREY = '#a09890'` as named constants in `bookCover.js`. Single source of truth across all three themes (bookCover is shared).
 - [x] **Filter inheritance fix**: CSS `filter` on a parent composites children before applying — child filters cannot undo it. Correct fix: moved `.cover-reqs` to be a sibling of `.story-cover` (child of `.book`) so the is-locked filter never reaches it. `APP.buildLockReqs` exposed publicly; `library.js` calls it after appending the cover.
 
+## Section 25 — Responsive / Landscape Layout (main, 2026-05-24)
+- [x] **`viewport-fit=cover`**: added to viewport meta in `index.html` to enable `env(safe-area-inset-*)` on iOS
+- [x] **`#app` safe-area insets**: `padding: env(safe-area-inset-top/left/right/bottom, 0px)` so notch/home-bar never hides content
+- [x] **Landing scroll fix**: `overflow-y: auto` + `justify-content: flex-start` + `padding: max(24px, 8dvh)` — Settings button no longer clipped in landscape
+- [x] **Landing 2-col landscape menu**: `@media (max-height:600px)` gives `.landing .menu` `flex-wrap:wrap` 2-column layout; all 7 buttons fit within 375px landscape height
+- [x] **Complete scroll fix**: `overflow-y: auto` on `.complete`, `justify-content: flex-start` on `.complete-body` — hooray title + image + buttons all scrollable
+- [x] **Base `.topbar` rule**: added `display:flex; align-items:center; flex-shrink:0` — library, numbers, progress topbars were `display:block`, causing vertical stacking
+- [x] **Game landscape compact**: `grid-template-rows: 48px 1fr auto; gap: 4px` in `@media (max-height:600px)` — stage gains a few more pixels
+- [x] **FindLetter 4×1 landscape**: `grid-template-columns: repeat(4, 1fr)` in landscape — tiles stay visible in a single row (was 2×2, overflowed)
+- [x] **Numbers compact picker**: `min-width/height: 36px` on buttons in landscape
+- [x] **Library landscape**: books shrink to 96px, rows to 150px min-height, trailing plank hidden (`bookshelf > .bookshelf-plank:last-child { display:none }`)
+- [x] **`booksPerRow()` landscape sync**: added `H < 600 && W >= 480 ? 96` branch so JS row grouping matches CSS book width in landscape
+
 ## Section 11b — Future / Nice-to-Have
 - [ ] Real cartoon SVG artwork for all animals
 - [ ] Real realistic photos for all animals

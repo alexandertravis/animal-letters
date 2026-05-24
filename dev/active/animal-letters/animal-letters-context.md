@@ -219,10 +219,23 @@ Branches deleted: `feature/animation-fixes` (local), `feature/library-theming` (
 Remaining: `worktree-agent-aea84726d2291558e` (locked worktree at `.claude/worktrees/agent-aea84726d2291558e`) has one unmerged commit: `feat(game): add Find the Letter mode — tap the correct letter from 4 choices`. Not merged to main; decision deferred.
 Untracked: `assets/fonts/Playwrite_GB_S_Guides/` — unrelated near-duplicate, left locally, not committed.
 
-## Session Summary — 2026-05-24
+## Session Summary — 2026-05-24 (holistic review)
 Completed:
-1. **iOS reader animation fixes** (Sections 23): cover-open enlarging pop, fold/spine jump, image flash at turn start, owl SVG flash after PREV turn, shadow full-width on open, corner colour bleed, page content outside decorative borders, basic skin back-face texture.
+1. **iOS reader animation fixes** (Section 23): cover-open enlarging pop, fold/spine jump, image flash at turn start, owl SVG flash after PREV turn, shadow full-width on open, corner colour bleed, page content outside decorative borders, basic skin back-face texture.
 2. **Lock requirements overlay** (Section 24): padlock on basic skin, `.cover-reqs` panel (stars + animal name rows) on all three themes, star progress from `animalCompletionCounts`, star colour standardised as `STAR_GOLD`/`STAR_GREY` constants, filter inheritance bug fixed by moving panel outside filtered subtree.
+
+## Constraints & Gotchas (responsive / landscape — added 2026-05-24)
+- **`justify-content:center` + no `overflow-y`**: When a flex column overflows upward, the start edge is inaccessible — you can't scroll to clipped top content. Always pair centred flex layouts with `overflow-y: auto` + `justify-content: flex-start`.
+- **Base `.topbar` must be `display:flex`**: only `.game .topbar` and `.complete .topbar` had `display:flex` rules. Library/numbers/progress topbars were `display:block`, stacking vertically. Base rule added before all screen-specific topbar overrides.
+- **`min-height` beats `height` on `.btn`**: `.btn { min-height:64px }` overrides `.btn.icon { height:56px }`. Icon buttons are 64px tall, not 56px. Don't try to change the base without auditing the game screen grid rows.
+- **`booksPerRow()` must match CSS book width**: the JS calculation and CSS `.bookshelf .book { width }` must agree. In landscape (`H<600 && W>=480`) both use 96px. If you change the CSS override, update `booksPerRow()` too.
+- **Trailing `.bookshelf-plank`**: `library.js` appends a plank after every row including the last. In landscape this wastes height — hidden via `.bookshelf > .bookshelf-plank:last-child { display:none }`.
+- **`@media (max-height:600px)` landscape threshold**: iPhone SE landscape = 375px (well below 600px). Desktop chrome dev tools emulation at 667×375 is a reliable test. Portrait devices (375×667) are above 600px — queries do not fire in portrait.
+
+## Session Summary — 2026-05-24 (responsive layout)
+Completed:
+1. **Responsive / landscape layout** (Section 25): `viewport-fit=cover`, safe-area insets on `#app`, landing + complete scroll fixes, base `.topbar` rule, landscape `@media (max-height:600px)` compact overrides for all screens, `booksPerRow()` landscape sync.
+Commit: `7498711` fix(responsive): landscape layout fixes across all screens
 NEXT STEP: No active work items. Optional: merge the Find-the-Letter worktree branch; Phase 3 per-page frame variants; dead-CSS cleanup; assets/fonts/Playwrite_GB_S_Guides/ decision.
 Blockers: none
 Half-finished: none
