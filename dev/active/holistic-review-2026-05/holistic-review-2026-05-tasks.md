@@ -3,14 +3,14 @@
 ## NOW (correctness bugs)
 
 - [x] Create dev docs (plan, context, tasks)
-- [ ] Fix storyreader.js: `destroyed` flag on all setTimeout callbacks
-- [ ] Fix storyreader.js: ✕ button add `|| phase === 'closing'` to early-exit
-- [ ] Fix data/i18n.js: translate library/reader keys in PT, FR, ES, DE, IT
-- [ ] Fix tests: animalId uppercase → lowercase in state.test.js
-- [ ] Fix tests: animalId uppercase → lowercase in animals.test.js
-- [ ] Fix tests: animalId uppercase → lowercase in integration.test.js
-- [ ] Fix index.html: remove `maximum-scale=1,user-scalable=no` from viewport meta
-- [ ] Commit: correctness fixes
+- [x] Fix storyreader.js: `destroyed` flag on all setTimeout callbacks
+- [x] Fix storyreader.js: ✕ button add `|| phase === 'closing'` to early-exit
+- [x] Fix data/i18n.js: translate library/reader keys in PT, FR, ES, DE, IT
+- [x] Fix tests: animalId uppercase → lowercase in state.test.js
+- [x] Fix tests: animalId uppercase → lowercase in animals.test.js
+- [x] Fix tests: animalId uppercase → lowercase in integration.test.js
+- [x] Fix index.html: remove `maximum-scale=1,user-scalable=no` from viewport meta
+- [x] Commit: correctness fixes (4b2a62f)
 
 ## SOON (short-term UX + quality)
 

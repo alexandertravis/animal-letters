@@ -37,7 +37,7 @@ window.APP = window.APP || {};
   /* Build a face-out book card for a single story. The painted cover is the
      shared APP.bookCover component (also used by the reader); the `.book` card
      only provides on-shelf geometry (size + hover lift). */
-  function buildBook(story, isUnlocked, bookSkin) {
+  function buildBook(story, isUnlocked, bookSkin, ctx) {
     const locked = !isUnlocked;
 
     const root = el('div', {
@@ -60,7 +60,7 @@ window.APP = window.APP || {};
         APP.state.currentPage  = 0;
         const wrap = root.closest('.library');
         if (wrap) { wrap.style.transition = 'opacity 0.3s ease'; wrap.style.opacity = '0'; }
-        setTimeout(() => APP._libCtx.go('storyreader'), wrap ? 320 : 0);
+        setTimeout(() => ctx.go('storyreader'), wrap ? 320 : 0);
       });
     } else {
       // Show requirements as a tooltip-style hint
@@ -108,7 +108,6 @@ window.APP = window.APP || {};
   }
 
   function render(root, ctx) {
-    APP._libCtx = ctx;  // stashed for the click handlers above
     root.innerHTML = '';
 
     // Active theme (session-only), resolved by the shared helper in state.js.
@@ -160,7 +159,7 @@ window.APP = window.APP || {};
         if (rIdx % 2 === 0 && bIdx === Math.floor(row.books.length / 2)) {
           r.appendChild(shelfProp(row.prop, row.prop));
         }
-        r.appendChild(buildBook(story, APP.isStoryUnlocked(story), BOOK_SKIN));
+        r.appendChild(buildBook(story, APP.isStoryUnlocked(story), BOOK_SKIN, ctx));
       });
       // Always end with one prop for visual rhythm if the row has space
       if (rIdx % 2 === 1) r.appendChild(shelfProp(row.prop, row.prop));
