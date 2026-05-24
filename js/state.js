@@ -250,6 +250,22 @@ window.APP = window.APP || {};
     }
   };
 
+  // ── Centralised state mutation ───────────────────────────────────────────
+  // Apply a partial patch to APP.state. Prefer this over direct property
+  // assignment in screen modules so mutations are easy to grep and future
+  // subscriber hooks can be added here without touching every call site.
+  APP.setState = function (patch) {
+    Object.assign(APP.state, patch);
+  };
+
+  // ── Story navigation helper ──────────────────────────────────────────────
+  // Open a story in the reader. Used by complete.js (read-now banner) and
+  // library.js (book card click) so the three-line setup is not duplicated.
+  APP.goToStory = function (story, ctx) {
+    APP.setState({ currentStory: story, currentPage: 0, newlyUnlockedStories: [] });
+    ctx.go('storyreader');
+  };
+
   APP.goHome = function () {
     APP.state.screen = "landing";
   };

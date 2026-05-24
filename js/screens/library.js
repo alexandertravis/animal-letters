@@ -56,8 +56,7 @@ window.APP = window.APP || {};
 
     if (!locked) {
       root.addEventListener('click', () => {
-        APP.state.currentStory = story;
-        APP.state.currentPage  = 0;
+        APP.setState({ currentStory: story, currentPage: 0 });
         const wrap = root.closest('.library');
         if (wrap) { wrap.style.transition = 'opacity 0.3s ease'; wrap.style.opacity = '0'; }
         setTimeout(() => ctx.go('storyreader'), wrap ? 320 : 0);
@@ -141,7 +140,7 @@ window.APP = window.APP || {};
 
     const themeSelect = el('select', {
       class:'locale-select library-theme-select', 'aria-label':'Theme',
-      on: { change: (e) => { APP.state.libraryTheme = e.target.value; render(root, ctx); } }
+      on: { change: (e) => { APP.setState({ libraryTheme: e.target.value }); render(root, ctx); } }
     });
     Object.keys(THEMES).forEach(key => {
       const opt = el('option', { value: key }, THEMES[key].label);

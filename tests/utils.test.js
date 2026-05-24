@@ -258,3 +258,137 @@ describe('APP.addGuidelines', () => {
     });
   });
 });
+
+// ---------------------------------------------------------------------------
+// APP.isStoryUnlocked
+// ---------------------------------------------------------------------------
+describe('APP.isStoryUnlocked', () => {
+  // Helper: build a minimal story object with the given requirements array.
+  function makeStory(requirements) {
+    return { id: 'test', title: 'Test', requirements, pages: [] };
+  }
+
+  beforeEach(() => {
+    // Start with a clean slate for completion counts.
+    APP.state.animalCompletionCounts = {};
+  });
+
+  it('returns false for null or a story with no requirements field', () => {
+    expect(APP.isStoryUnlocked(null)).toBe(false);
+    expect(APP.isStoryUnlocked(undefined)).toBe(false);
+    expect(APP.isStoryUnlocked({ id: 'x' })).toBe(false);
+  });
+
+  it('returns true for a story with an empty requirements array (vacuously unlocked)', () => {
+    expect(APP.isStoryUnlocked(makeStory([]))).toBe(true);
+  });
+
+  it('returns false when a single requirement is not yet met', () => {
+    APP.state.animalCompletionCounts = { bear: 2 };
+    const story = makeStory([{ animalId: 'bear', minCount: 3 }]);
+
+    expect(APP.isStoryUnlocked(story)).toBe(false);
+  });
+
+  it('returns true when a single requirement is exactly met', () => {
+    APP.state.animalCompletionCounts = { bear: 3 };
+    const story = makeStory([{ animalId: 'bear', minCount: 3 }]);
+
+    expect(APP.isStoryUnlocked(story)).toBe(true);
+  });
+
+  it('returns true when a single requirement is exceeded', () => {
+    APP.state.animalCompletionCounts = { bear: 5 };
+    const story = makeStory([{ animalId: 'bear', minCount: 3 }]);
+
+    expect(APP.isStoryUnlocked(story)).toBe(true);
+  });
+
+  it('returns false when any one of multiple requirements is not met', () => {
+    APP.state.animalCompletionCounts = { pig: 3, wolf: 0 };
+    const story = makeStory([
+      { animalId: 'pig',  minCount: 3 },
+      { animalId: 'wolf', minCount: 1 },
+    ]);
+
+    expect(APP.isStoryUnlocked(story)).toBe(false);
+  });
+
+  it('returns true when all multiple requirements are met', () => {
+    APP.state.animalCompletionCounts = { pig: 3, wolf: 1 };
+    const story = makeStory([
+      { animalId: 'pig',  minCount: 3 },
+      { animalId: 'wolf', minCount: 1 },
+    ]);
+
+    expect(APP.isStoryUnlocked(story)).toBe(true);
+  });
+
+  it('returns false when the animal has never been completed (key absent from counts)', () => {
+    APP.state.animalCompletionCounts = {}; // bear not in counts at all
+    const story = makeStory([{ animalId: 'bear', minCount: 1 }]);
+
+    expect(APP.isStoryUnlocked(story)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// APP.animalStars
+// ---------------------------------------------------------------------------
+describe('APP.animalStars', () => {
+  // makeAnimal is not imported here — construct inline since utils.test.js
+  // only imports fixtures for dot/stroke paths.
+  function makeAnimalFor(id) {
+    return {
+      name: id.toUpperCase(),
+      displayName: id.charAt(0).toUpperCase() + id.slice(1),
+      images: { cartoon: `assets/images/cartoon/${id}.svg`, realistic: `assets/images/realistic/${id}.jpg` },
+      audio: `assets/audio/${id}.mp3`,
+    };
+  }
+
+  beforeEach(() => {
+    APP.state.animalCompletionCounts = {};
+  });
+
+  it('returns 0 stars when the animal has never been completed', () => {
+    const animal = makeAnimalFor('cat');
+    expect(APP.animalStars(animal)).toBe(0);
+  });
+
+  it('returns 1 star after 1 completion', () => {
+    const animal = makeAnimalFor('cat');
+    APP.state.animalCompletionCounts['cat'] = 1;
+    expect(APP.animalStars(animal)).toBe(1);
+  });
+
+  it('returns 1 star after 2 completions (boundary below 3)', () => {
+    const animal = makeAnimalFor('cat');
+    APP.state.animalCompletionCounts['cat'] = 2;
+    expect(APP.animalStars(animal)).toBe(1);
+  });
+
+  it('returns 2 stars after exactly 3 completions', () => {
+    const animal = makeAnimalFor('cat');
+    APP.state.animalCompletionCounts['cat'] = 3;
+    expect(APP.animalStars(animal)).toBe(2);
+  });
+
+  it('returns 2 stars after 4 completions (boundary below 5)', () => {
+    const animal = makeAnimalFor('cat');
+    APP.state.animalCompletionCounts['cat'] = 4;
+    expect(APP.animalStars(animal)).toBe(2);
+  });
+
+  it('returns 3 stars after exactly 5 completions', () => {
+    const animal = makeAnimalFor('cat');
+    APP.state.animalCompletionCounts['cat'] = 5;
+    expect(APP.animalStars(animal)).toBe(3);
+  });
+
+  it('returns 3 stars for any count above 5', () => {
+    const animal = makeAnimalFor('cat');
+    APP.state.animalCompletionCounts['cat'] = 99;
+    expect(APP.animalStars(animal)).toBe(3);
+  });
+});

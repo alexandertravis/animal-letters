@@ -71,10 +71,7 @@ window.APP = window.APP || {};
       readNowBtn.addEventListener('click', () => {
         const story = APP.state.newlyUnlockedStories && APP.state.newlyUnlockedStories[0];
         if (!story) return;
-        APP.state.currentStory = story;
-        APP.state.currentPage  = 0;
-        APP.state.newlyUnlockedStories = [];
-        navigate(() => ctx.go('storyreader'));
+        navigate(() => APP.goToStory(story, ctx));
       });
     }
 

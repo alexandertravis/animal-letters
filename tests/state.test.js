@@ -328,6 +328,127 @@ describe('APP.resetSettings', () => {
 });
 
 // ---------------------------------------------------------------------------
+// APP.setState
+// ---------------------------------------------------------------------------
+describe('APP.setState', () => {
+  it('merges a partial patch into APP.state without overwriting unrelated fields', () => {
+    APP.state.currentPage = 3;
+    APP.state.libraryTheme = 'walnut';
+
+    APP.setState({ currentPage: 0 });
+
+    expect(APP.state.currentPage).toBe(0);
+    expect(APP.state.libraryTheme).toBe('walnut'); // untouched
+    expect(APP.state.screen).toBe('landing');       // untouched
+  });
+
+  it('applies multiple keys from the patch in one call', () => {
+    APP.setState({ currentPage: 2, libraryTheme: 'basic' });
+
+    expect(APP.state.currentPage).toBe(2);
+    expect(APP.state.libraryTheme).toBe('basic');
+  });
+
+  it('overwrites an existing field with the patch value', () => {
+    APP.state.letterIndex = 5;
+
+    APP.setState({ letterIndex: 0 });
+
+    expect(APP.state.letterIndex).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// APP.goToStory
+// ---------------------------------------------------------------------------
+describe('APP.goToStory', () => {
+  it('sets currentStory, resets currentPage to 0, clears newlyUnlockedStories, and calls ctx.go("storyreader")', () => {
+    const story = { id: 'test-story', title: 'Test', requirements: [], pages: [] };
+    APP.state.currentPage = 4;
+    APP.state.newlyUnlockedStories = [story];
+    const ctx = { go: vi.fn() };
+
+    APP.goToStory(story, ctx);
+
+    expect(APP.state.currentStory).toBe(story);
+    expect(APP.state.currentPage).toBe(0);
+    expect(APP.state.newlyUnlockedStories).toEqual([]);
+    expect(ctx.go).toHaveBeenCalledWith('storyreader');
+  });
+
+  it('still navigates when newlyUnlockedStories is already empty', () => {
+    const story = { id: 'test-story', title: 'Test', requirements: [], pages: [] };
+    APP.state.newlyUnlockedStories = [];
+    const ctx = { go: vi.fn() };
+
+    APP.goToStory(story, ctx);
+
+    expect(ctx.go).toHaveBeenCalledWith('storyreader');
+    expect(APP.state.currentStory).toBe(story);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// APP.advanceLetter — newlyUnlockedStories
+// ---------------------------------------------------------------------------
+describe('APP.advanceLetter — newlyUnlockedStories', () => {
+  const BEAR = makeAnimal({
+    name: 'BEAR',
+    displayName: 'Bear',
+    images: { cartoon: 'assets/images/cartoon/bear.svg', realistic: 'assets/images/realistic/bear.jpg' },
+    audio: 'assets/audio/bear.mp3',
+  });
+
+  beforeEach(() => {
+    // Minimal stories fixture: one story unlocked after bear completed 1×.
+    APP.STORIES = [
+      { id: 'bear-story', title: 'Bear Story', requirements: [{ animalId: 'bear', minCount: 1 }], pages: [] }
+    ];
+    APP.state.newlyUnlockedStories = [];
+  });
+
+  afterEach(() => {
+    delete APP.STORIES;
+  });
+
+  it('populates newlyUnlockedStories when the completion unlocks a story for the first time', () => {
+    APP.state.animalCompletionCounts = {};
+    APP.startGame(BEAR);
+    APP.state.letterIndex = 3; // final letter of 'BEAR'
+
+    APP.advanceLetter();
+
+    expect(APP.state.newlyUnlockedStories).toHaveLength(1);
+    expect(APP.state.newlyUnlockedStories[0].id).toBe('bear-story');
+  });
+
+  it('does NOT populate newlyUnlockedStories when the story was already unlocked before the completion', () => {
+    // Bear already completed once → story was already unlocked before this round.
+    APP.state.animalCompletionCounts = { bear: 1 };
+    APP.startGame(BEAR);
+    APP.state.letterIndex = 3;
+
+    APP.advanceLetter();
+
+    expect(APP.state.newlyUnlockedStories).toHaveLength(0);
+  });
+
+  it('leaves newlyUnlockedStories empty when no story requirements are met by this completion', () => {
+    // Story requires minCount:3; completing once (count: 0 → 1) is not enough.
+    APP.STORIES = [
+      { id: 'hard-story', title: 'Hard', requirements: [{ animalId: 'bear', minCount: 3 }], pages: [] }
+    ];
+    APP.state.animalCompletionCounts = {};
+    APP.startGame(BEAR);
+    APP.state.letterIndex = 3;
+
+    APP.advanceLetter();
+
+    expect(APP.state.newlyUnlockedStories).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // APP.saveProgress / APP.clearProgress — localStorage error swallowing
 // ---------------------------------------------------------------------------
 describe('APP.saveProgress — error resilience', () => {
