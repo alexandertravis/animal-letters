@@ -44,6 +44,10 @@ APP.I18N = {
     'painting.sticker':   'Stickers',
     'painting.undo':      'Undo',
     'painting.clear':     'Clear all',
+    'painting.draw':      'Draw',
+    'painting.colourIn':  'Colour-in',
+    'painting.pickTemplate': 'Pick a template',
+    'painting.pbn':       'Paint by Numbers',
 
     // Progress screen
     'screens.progress.title': 'My Progress',

@@ -2542,6 +2542,101 @@ html, body {
   display: flex;
   gap: 6px;
 }
+
+/* Mode toggle */
+.paint-mode-toggle {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 24px;
+  padding: 3px;
+  max-width: 240px;
+}
+.paint-mode-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 20px;
+  background: transparent;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.paint-mode-btn.active {
+  background: #fff;
+  color: #2980d9;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Template picker */
+.paint-template-picker {
+  flex-shrink: 0;
+  background: #ede9e0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 8px 12px 10px;
+}
+.paint-template-picker.hidden {
+  display: none;
+}
+.pick-label {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.template-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.template-thumb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: #fff;
+  padding: 6px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.template-thumb canvas {
+  display: block;
+  border-radius: 6px;
+}
+.template-thumb span {
+  font-size: 0.7rem;
+  color: #555;
+  font-weight: 600;
+}
+.template-thumb.active {
+  border-color: #2980d9;
+  box-shadow: 0 0 0 3px rgba(41, 128, 217, 0.25);
+}
+.template-thumb:hover {
+  border-color: #aac8ee;
+}
+
+/* PBN shake on wrong colour */
+@keyframes pbn-shake {
+  0%   { transform: translateX(0); }
+  20%  { transform: translateX(-6px); }
+  40%  { transform: translateX(6px); }
+  60%  { transform: translateX(-4px); }
+  80%  { transform: translateX(4px); }
+  100% { transform: translateX(0); }
+}
+.pbn-shake {
+  animation: pbn-shake 0.4s ease;
+}
 .painting-stage {
   position: relative;
   flex: 1;
@@ -2649,14 +2744,44 @@ html, body {
   }
   .painting-topbar {
     flex-direction: column;
-    width: 56px;
+    width: 64px;
     padding: 8px 6px;
   }
-  .painting-topbar h2 {
-    display: none;
+  .paint-mode-toggle {
+    flex-direction: column;
+    max-width: 52px;
+    padding: 2px;
+    gap: 2px;
+  }
+  .paint-mode-btn {
+    padding: 5px 4px;
+    font-size: 0.7rem;
+    border-radius: 16px;
   }
   .painting-topbar-actions {
     flex-direction: column;
+  }
+  .paint-template-picker {
+    position: absolute;
+    top: 0;
+    left: 64px;
+    right: 124px;
+    z-index: 10;
+    max-height: 100%;
+    overflow-y: auto;
+    border-bottom: none;
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  .template-grid {
+    flex-direction: column;
+  }
+  .template-thumb {
+    flex-direction: row;
+    gap: 6px;
+  }
+  .template-thumb canvas {
+    width: 44px !important;
+    height: 44px !important;
   }
   .painting-stage {
     margin: 8px;
