@@ -259,3 +259,19 @@ Commit: `3fda88f` — pushed to main, Vercel deploying.
 NEXT STEP: No active work items. Optional follow-ups: merge Find-the-Letter worktree branch; Phase 3 per-page frame variants; dead-CSS cleanup; Playwrite_GB_S_Guides/ decision.
 Blockers: none
 Half-finished: none
+
+---
+
+## Session End — 2026-05-25
+Git status: clean. Branch: `feature/story-library-expansion`. Untracked: `assets/fonts/Playwrite_GB_S_Guides/` (do not commit).
+
+## Session Summary — 2026-05-25 (tooling / MCPmarket setup)
+Completed:
+1. **MCPmarket plugin fully configured**: `pluginConfigs` added to `~/.claude/settings.json` with `toolkit_url` + `api_token` (copied from existing plaintext `.mcp.json`); remote control now authenticates on startup.
+2. **kids-book-writer skill installed**: manually placed downloaded SKILL.md into `~/.claude/plugins/mcpmarket-my-toolkit/skills/kids-book-writer/SKILL.md` — available immediately without sync.
+3. **Diagnosed Remote Control failure**: caused by missing `api_token` in secure storage; resolved by adding token to `pluginConfigs` in `settings.json`.
+4. **Claude Code CLI architecture clarified**: `claude.exe` in `AppData/Roaming/Claude/claude-code/2.1.149/` is a Windows launcher; actual binary is an ELF Linux executable in `claude-code-vm/2.1.149/claude` running inside Claude Code's built-in Linux VM — cannot be invoked directly from PowerShell/cmd/Git Bash.
+NEXT STEP: Start story library expansion — add new stories to `data/stories.js` and corresponding SVG images.
+Blockers: none
+Half-finished: none
+Security flags added: MCPmarket api_token stored in `~/.claude/settings.json` (plaintext, same as pre-existing `.mcp.json` — acceptable for local dev tooling)
