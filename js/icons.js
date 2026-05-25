@@ -54,5 +54,42 @@ window.APP = window.APP || {};
       '<polygon points="5 4 15 12 5 20 5 4"/>' +
       '<line x1="19" y1="4" x2="19" y2="20"/>'
     ),
+
+    // Paintbrush: handle + bristle head
+    brush: icon(
+      '<path d="M14 4l6 6-7.5 7.5a3 3 0 01-1.6.83l-4.6.92.92-4.6a3 3 0 01.83-1.6z"/>' +
+      '<line x1="13" y1="5" x2="19" y2="11"/>'
+    ),
+
+    // Eraser: angled block sweeping along a baseline
+    eraser: icon(
+      '<path d="M4 16l8-8a2 2 0 012.83 0l3.17 3.17a2 2 0 010 2.83L14 20H7z"/>' +
+      '<line x1="4" y1="20" x2="20" y2="20"/>'
+    ),
+
+    // Paint bucket: tipped pail with a drip
+    fill: icon(
+      '<path d="M3 11l8-8 8 8-8 8z"/>' +
+      '<path d="M19 14s2 2.5 2 4a2 2 0 01-4 0c0-1.5 2-4 2-4z" fill="currentColor" stroke="none"/>'
+    ),
+
+    // Sticker: star (tap to stamp)
+    sticker: icon(
+      '<polygon points="12 3 14.7 8.6 21 9.3 16.5 13.7 17.6 20 12 17 6.4 20 7.5 13.7 3 9.3 9.3 8.6 12 3"/>'
+    ),
+
+    // Undo: curved arrow back to the left
+    undo: icon(
+      '<polyline points="9 7 4 12 9 17"/>' +
+      '<path d="M4 12h11a5 5 0 010 10h-1"/>'
+    ),
+
+    // Trash: lid + bin body (clear all)
+    trash: icon(
+      '<polyline points="3 6 5 6 21 6"/>' +
+      '<path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>' +
+      '<path d="M10 11v6M14 11v6"/>' +
+      '<path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>'
+    ),
   };
 })(window.APP);
