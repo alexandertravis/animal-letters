@@ -2466,13 +2466,17 @@ html, body {
     width: min(740px, 94vw, calc(92vh * 2 / 1.1));
   }
 
-  /* Match portrait frame + corners exactly — ornament extent = 8 + 22 − 6 = 24px,
-     safely below the 26px content inset used in both orientations */
-  .book.book-classic .page-frame               { inset: 8px; }
+  /* Proportionally scaled frame + insets — the landscape leaf is ~1.9× wider than
+     portrait (~326px vs ~172px), so the same pixel values look much tighter.
+     Values are scaled to produce the same visual proportions as portrait:
+       classic:  frame 4.7% leaf w → 15px; content 8.8%/12.8% → 32px/40px
+       wc:       frame 5.8% leaf w → 18px; content 4.7%/ 7.0% → 20px/22px
+     Ornament-clearance check: frame(15) + corner(22) − 6 = 31px < 32px content ✓ */
+  .book.book-classic .page-frame               { inset: 15px; }
   .book.book-classic .page-frame .corner        { width: 22px; height: 22px; }
 
   .book.book-classic .page-content {
-    inset: 26px 22px;
+    inset: 32px 40px;
     font-size: clamp(15px, 5vh, 19px);
     line-height: 1.42;
   }
@@ -2481,10 +2485,9 @@ html, body {
     font-size: clamp(22px, 6vh, 38px);
   }
 
-  /* Watercolour frame — match portrait value so the border-to-text gap is identical */
-  .book.book-watercolour .page-frame { inset: 10px; }
+  .book.book-watercolour .page-frame { inset: 18px; }
   .book.book-watercolour .page-content {
-    inset: 14px 12px;
+    inset: 20px 22px;
     font-size: clamp(14px, 4.5vh, 18px);
     line-height: 1.42;
   }
@@ -2493,8 +2496,8 @@ html, body {
     font-size: clamp(18px, 5vh, 32px);
   }
 
-  .book.book-classic .page-scroll-over     { inset: 26px 22px; }
-  .book.book-watercolour .page-scroll-over { inset: 14px 12px; }
+  .book.book-classic .page-scroll-over     { inset: 32px 40px; }
+  .book.book-watercolour .page-scroll-over { inset: 20px 22px; }
 
   /* ── Story Library — compact so both shelf rows show without scrolling ── */
   .bookshelf .book      { width: 96px; }
