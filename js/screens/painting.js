@@ -170,8 +170,15 @@ window.APP = window.APP || {};
           // Overlay: permanent visual layer (lines stay on top of all paint)
           ox.clearRect(0, 0, overlay.width, overlay.height);
           ox.save(); ox.setTransform(...t); ox.drawImage(img, 0, 0); ox.restore();
-          // Paint layer: barrier for flood fill
-          cx.save(); cx.setTransform(...t); cx.drawImage(img, 0, 0); cx.restore();
+          // Paint layer: white fill then image. Pre-filling white makes the
+          // coloring regions opaque so flood fill stays inside the image bounds
+          // rather than bleeding into the surrounding transparent canvas.
+          cx.save();
+          cx.setTransform(...t);
+          cx.fillStyle = '#ffffff';
+          cx.fillRect(0, 0, img.naturalWidth, img.naturalHeight);
+          cx.drawImage(img, 0, 0);
+          cx.restore();
         }).catch(() => {});
         return;
       }
@@ -222,6 +229,8 @@ window.APP = window.APP || {};
           const { scale, tx, ty } = imageTransform(img);
           cx.save();
           cx.setTransform(scale * paint.dpr, 0, 0, scale * paint.dpr, tx * paint.dpr, ty * paint.dpr);
+          cx.fillStyle = '#ffffff';
+          cx.fillRect(0, 0, img.naturalWidth, img.naturalHeight);
           cx.drawImage(img, 0, 0);
           cx.restore();
         }).catch(() => {});
