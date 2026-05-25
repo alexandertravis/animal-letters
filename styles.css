@@ -2067,6 +2067,39 @@ html, body {
   font-family:var(--reader-serif-soft);font-weight:600;font-size:clamp(20px,6vw,46px);float:left;line-height:.9;padding:clamp(2px,0.4vw,4px) clamp(3px,0.8vw,8px) 0 0;color:#8a4f3a;
 }
 
+/* ── Scroll-fade overlay — sits over page-content, pointer-events none ────── */
+/* Gradient colour matches each skin's leaf background so the fade is seamless.*/
+.page-scroll-over{
+  position:absolute;inset:clamp(34px,8vw,80px);
+  z-index:4;pointer-events:none;
+}
+.book.book-watercolour .page-scroll-over{
+  inset:clamp(24px,4.8vw,50px) clamp(20px,3.8vw,46px);
+}
+.page-scroll-over::before,
+.page-scroll-over::after{
+  content:'';position:absolute;left:0;right:0;height:44px;
+  opacity:0;transition:opacity .25s;
+}
+/* Top fade */
+.page-scroll-over::before{
+  top:0;
+  background:linear-gradient(to bottom,#fffef9 0%,transparent 100%);
+}
+.book.book-watercolour .page-scroll-over::before{
+  background:linear-gradient(to bottom,#fbf6ea 0%,transparent 100%);
+}
+/* Bottom fade + subtle down-chevron */
+.page-scroll-over::after{
+  bottom:0;
+  background:linear-gradient(to top,#fffef9 20%,transparent 100%);
+}
+.book.book-watercolour .page-scroll-over::after{
+  background:linear-gradient(to top,#fbf6ea 20%,transparent 100%);
+}
+.page-scroll-over.up::before  { opacity:1; }
+.page-scroll-over.down::after { opacity:1; }
+
 /* ── Image on the right page ─── */
 .page-img{position:absolute;inset:clamp(34px,8vw,80px);z-index:3;display:flex;align-items:center;justify-content:center}
 .book.book-classic .page-img img{width:78%;height:78%;object-fit:contain;filter:drop-shadow(0 6px 12px rgba(70,40,10,.4))}
@@ -2184,6 +2217,28 @@ html, body {
 @media (max-width: 480px) {
   .book-page-inner,
   .leaf-face { padding: 16px 14px; }
+}
+
+/* ── A7: Book reader — tighter text layout on mobile ─────────────────────── */
+/* At 375 px the classic corner ornaments reach ~30 px from the leaf edge
+   (frame inset 10 px + corner 26 px − 6 px overlap).  32 px is the safe
+   floor; 26 px is safe on the sides where no corner ornament reaches. */
+@media (max-width: 480px) {
+  .book.book-classic .page-content {
+    inset: 32px 26px;
+    line-height: 1.38;
+  }
+  .book.book-classic .page-content p { margin: 0 0 8px; }
+
+  .book.book-watercolour .page-content {
+    inset: 22px 18px;
+    line-height: 1.38;
+  }
+  .book.book-watercolour .page-content p { margin: 0 0 8px; }
+
+  /* Scroll overlay must track the same inset as page-content */
+  .book.book-classic .page-scroll-over      { inset: 32px 26px; }
+  .book.book-watercolour .page-scroll-over  { inset: 22px 18px; }
 }
 
 /* ── B2: Library shelf — narrower tiles and fewer books per row ──────────── */

@@ -266,6 +266,23 @@ window.APP = window.APP || {};
         p.textContent = spread.leftContent;
         content.appendChild(p);
         container.appendChild(content);
+
+        // Scroll-fade overlay — shows gradient fades at top/bottom when
+        // the paragraph text overflows and can be scrolled.
+        var scrollOver = document.createElement('div');
+        scrollOver.className = 'page-scroll-over';
+        container.appendChild(scrollOver);
+        function syncScrollOver() {
+          var atTop = content.scrollTop <= 4;
+          var atBot = content.scrollTop + content.clientHeight >= content.scrollHeight - 4;
+          var canScroll = content.scrollHeight > content.clientHeight + 4;
+          scrollOver.classList.toggle('up',   canScroll && !atTop);
+          scrollOver.classList.toggle('down', canScroll && !atBot);
+        }
+        content.addEventListener('scroll', syncScrollOver, { passive: true });
+        // Two rAFs: first fires after paint, second after layout is fully resolved.
+        requestAnimationFrame(function () { requestAnimationFrame(syncScrollOver); });
+
         appendPageNum(container, spread, 'left');
       }
       return Promise.all(pending);
