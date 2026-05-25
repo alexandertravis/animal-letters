@@ -283,6 +283,13 @@
 - [x] **Complete topbar group stacking**: `.complete .topbar .group { flex-direction:column }` so two icon buttons fit within the 60px nav column
 - [x] **Story reader landscape**: `.book { width: min(740px, 92vw, calc(88vh * 2 / 1.35)) }` in landscape — prevents the 2:1.35 aspect-ratio spread from overflowing the viewport height (e.g. 489px × 330px on iPhone SE landscape)
 
+## Section 27 — Mobile Story Reader Layout Polish (main, 2026-05-25)
+- [x] Scroll indicators: `.page-scroll-over` sibling div + `::before`/`::after` gradient fades; JS toggles `.up`/`.down` classes from scroll listener + double-rAF on mount
+- [x] Portrait mobile aspect ratio: `2/1.72` (was `2/2.2` — too extreme/tall)
+- [x] 16 missing leather CSS variables added to `:root` and matching `.story-cover.skin-classic.l-*` / `.book.book-classic.l-* .inside-cover-classic` rules — fixes transparent walnut-theme covers on bookshelf
+- [x] Landscape proportional scaling: frame/inset values scaled proportionally to landscape leaf width (~326px vs ~172px portrait) — frame `8→15px`, content `26/22→32/40px` (classic), frame `10→18px`, content `14/12→20/22px` (watercolour)
+- [x] Ornament-clearance confirmed: `frame(15) + corner(22) − 6 = 31px < 32px content inset` ✓
+
 ## Section 11b — Future / Nice-to-Have
 - [ ] Real cartoon SVG artwork for all animals
 - [ ] Real realistic photos for all animals

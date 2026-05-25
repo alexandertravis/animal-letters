@@ -262,7 +262,7 @@ Half-finished: none
 
 ---
 
-## Session End — 2026-05-25
+## Session End — 2026-05-25 (story library expansion)
 Git status: clean. Branch: `feature/story-library-expansion`. Untracked: `assets/fonts/Playwrite_GB_S_Guides/` (do not commit).
 
 ## Session Summary — 2026-05-25 (tooling / MCPmarket setup)
@@ -271,7 +271,23 @@ Completed:
 2. **kids-book-writer skill installed**: manually placed downloaded SKILL.md into `~/.claude/plugins/mcpmarket-my-toolkit/skills/kids-book-writer/SKILL.md` — available immediately without sync.
 3. **Diagnosed Remote Control failure**: caused by missing `api_token` in secure storage; resolved by adding token to `pluginConfigs` in `settings.json`.
 4. **Claude Code CLI architecture clarified**: `claude.exe` in `AppData/Roaming/Claude/claude-code/2.1.149/` is a Windows launcher; actual binary is an ELF Linux executable in `claude-code-vm/2.1.149/claude` running inside Claude Code's built-in Linux VM — cannot be invoked directly from PowerShell/cmd/Git Bash.
-NEXT STEP: Start story library expansion — add new stories to `data/stories.js` and corresponding SVG images.
+
+## Constraints & Gotchas (mobile reader layout — added 2026-05-25)
+- **Landscape proportional mismatch**: The landscape leaf is ~1.9× wider than portrait (~326px vs ~172px). Copying portrait pixel values for frame/inset produces visually tighter gaps in landscape. Always scale proportionally: e.g. 8px frame at 4.7% of 172px portrait = 15px for 326px landscape.
+- **Ornament clearance formula**: `frame_inset + corner_size − 6px` is the minimum safe content inset for classic skin. Changing frame or corner size without rechecking this will clip text under the corner ornaments.
+- **16 leather colour names**: `chestnut`, `slate`, `teal`, `mauve`, `sienna`, `gold`, `russet`, `amber`, `terracotta`, `leaf`, `arctic`, `midnight`, `buff`, `dustblue`, `sage`, `charcoal`. All must have `:root` variable triplets (`--leather-*`, `--leather-*-hi`, `--leather-*-lo`) AND matching `.story-cover.skin-classic.l-*` + `.book.book-classic.l-* .inside-cover-classic` CSS rules. Missing either causes transparent covers.
+- **Walnut theme = classic skin**: `APP.LIBRARY_THEMES.walnut.book = 'classic'` — walnut shelf + leather book skin. Transparent walnut covers always means missing `l-{leather}` CSS rules.
+- **Portrait aspect ratio `2/1.72`**: chosen to be "slightly taller" than 2/1.45 base while not being extreme. Do not increase beyond 1.9 — book becomes too tall for the viewport on short devices.
+
+## Session Summary — 2026-05-25 (mobile reader layout polish)
+Completed (Section 27):
+1. Scroll indicators (`.page-scroll-over` + gradient fades + JS `.up`/`.down` toggle).
+2. Portrait aspect ratio corrected to `2/1.72`.
+3. 16 missing leather CSS variables + cover/inside-cover rules — transparent walnut covers fixed.
+4. Landscape proportional scaling: frame and content insets scaled to match visual proportions of portrait (not just pixel values).
+Commits: multiple on main — latest `15ee69f`.
+Branches cleaned: `feature/story-library-expansion` deleted (local + remote — all work was on main).
+NEXT STEP: No active work. Pick up from story library expansion (new stories) or any new feature request.
 Blockers: none
 Half-finished: none
-Security flags added: MCPmarket api_token stored in `~/.claude/settings.json` (plaintext, same as pre-existing `.mcp.json` — acceptable for local dev tooling)
+Security flags added: none
