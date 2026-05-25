@@ -1,5 +1,10 @@
 window.APP = window.APP || {};
 
+// To add an image-based coloring page:
+// 1. Put the PNG in assets/images/coloring/ (white/transparent bg + dark bold outlines)
+// 2. Add an entry: { id, label, type: 'image', src: 'assets/images/coloring/filename.png', regions: [] }
+// Note: image templates require HTTP/HTTPS (Vercel) — they won't work from file://
+
 APP.PAINTING_TEMPLATES = [
   {
     id: 'star',

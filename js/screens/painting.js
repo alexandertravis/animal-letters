@@ -12,6 +12,18 @@ window.APP = window.APP || {};
   const FILL_TOLERANCE = 40;
 
   let resizeHandler = null;
+  const imageCache = {};
+
+  function loadImg(src) {
+    return new Promise((resolve, reject) => {
+      if (imageCache[src]) { resolve(imageCache[src]); return; }
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => { imageCache[src] = img; resolve(img); };
+      img.onerror = reject;
+      img.src = src;
+    });
+  }
 
   function render(root, ctx) {
     if (resizeHandler) { window.removeEventListener('resize', resizeHandler); resizeHandler = null; }
@@ -27,9 +39,9 @@ window.APP = window.APP || {};
       dpr: 1,
       drawing: false,
       last: null,
-      mode: 'free',       // 'free' | 'template'
-      template: null,     // selected APP.PAINTING_TEMPLATES entry
-      pbnDone: new Set(), // region numbers completed this session
+      mode: 'free',
+      template: null,
+      pbnDone: new Set(),
     };
 
     const wrap = document.createElement('div');
@@ -112,7 +124,7 @@ window.APP = window.APP || {};
         try { cx.putImageData(snapshot, 0, 0); } catch (_) {}
       }
       if (paint.mode === 'template' && paint.template) {
-        drawTemplate(paint.template);
+        redrawOverlay(paint.template);
       }
     }
 
@@ -120,7 +132,7 @@ window.APP = window.APP || {};
     window.addEventListener('resize', resizeHandler);
     resize();
 
-    // ---- Template rendering ---------------------------------------------------
+    // ---- Template transforms --------------------------------------------------
     function templateTransform(tpl) {
       const cssW = stage.clientWidth, cssH = stage.clientHeight;
       const scale = Math.min(cssW, cssH) / 400 * 0.85;
@@ -129,6 +141,15 @@ window.APP = window.APP || {};
       return { scale, tx, ty };
     }
 
+    function imageTransform(img) {
+      const cssW = stage.clientWidth, cssH = stage.clientHeight;
+      const scale = Math.min(cssW / img.naturalWidth, cssH / img.naturalHeight) * 0.9;
+      const tx = (cssW - img.naturalWidth * scale) / 2;
+      const ty = (cssH - img.naturalHeight * scale) / 2;
+      return { scale, tx, ty, w: img.naturalWidth, h: img.naturalHeight };
+    }
+
+    // ---- Template rendering ---------------------------------------------------
     function drawOutlineTo(context, tpl, scl, tx, ty, lineWidth) {
       context.save();
       context.setTransform(scl * paint.dpr, 0, 0, scl * paint.dpr, tx * paint.dpr, ty * paint.dpr);
@@ -136,37 +157,84 @@ window.APP = window.APP || {};
       context.lineWidth = lineWidth || tpl.lineWidth || 6;
       context.lineCap = 'round';
       context.lineJoin = 'round';
-      tpl.outline.forEach(d => {
-        const p = new Path2D(d);
-        context.stroke(p);
-      });
+      tpl.outline.forEach(d => context.stroke(new Path2D(d)));
       context.restore();
     }
 
     function drawTemplate(tpl) {
+      if (tpl.type === 'image') {
+        loadImg(tpl.src).then(img => {
+          const { scale, tx, ty } = imageTransform(img);
+          const t = [scale * paint.dpr, 0, 0, scale * paint.dpr, tx * paint.dpr, ty * paint.dpr];
+          // Overlay: permanent visual layer (lines stay on top of all paint)
+          ox.clearRect(0, 0, overlay.width, overlay.height);
+          ox.save(); ox.setTransform(...t); ox.drawImage(img, 0, 0); ox.restore();
+          // Paint layer: barrier for flood fill
+          cx.save(); cx.setTransform(...t); cx.drawImage(img, 0, 0); cx.restore();
+        }).catch(() => {});
+        return;
+      }
+      // Path-based template
       const { scale, tx, ty } = templateTransform(tpl);
-
-      // Clear overlay and redraw outline crisply
       ox.clearRect(0, 0, overlay.width, overlay.height);
       drawOutlineTo(ox, tpl, scale, tx, ty);
-
-      // Draw opaque barrier into paint layer (without clearing user's paint)
+      // Paint-layer barrier uses 2× lineWidth so strokes overlap at junctions,
+      // preventing flood-fill leaking between adjacent same-coloured regions.
       cx.save();
       cx.setTransform(scale * paint.dpr, 0, 0, scale * paint.dpr, tx * paint.dpr, ty * paint.dpr);
       cx.strokeStyle = '#1a1a1a';
-      cx.lineWidth = tpl.lineWidth || 6;
+      cx.lineWidth = (tpl.lineWidth || 6) * 2;
       cx.lineCap = 'round';
       cx.lineJoin = 'round';
-      tpl.outline.forEach(d => {
-        const p = new Path2D(d);
-        cx.stroke(p);
-      });
+      tpl.outline.forEach(d => cx.stroke(new Path2D(d)));
       cx.restore();
-
-      // If PBN template, render region numbers on overlay
       if (tpl.regions && tpl.regions.length) {
         renderPbnNumbers(tpl, scale, tx, ty);
       }
+    }
+
+    // Redraw overlay only (used after undo / resize where paint canvas is already correct)
+    function redrawOverlay(tpl) {
+      if (tpl.type === 'image') {
+        loadImg(tpl.src).then(img => {
+          const { scale, tx, ty } = imageTransform(img);
+          ox.clearRect(0, 0, overlay.width, overlay.height);
+          ox.save();
+          ox.setTransform(scale * paint.dpr, 0, 0, scale * paint.dpr, tx * paint.dpr, ty * paint.dpr);
+          ox.drawImage(img, 0, 0);
+          ox.restore();
+        }).catch(() => {});
+        return;
+      }
+      const { scale, tx, ty } = templateTransform(tpl);
+      ox.clearRect(0, 0, overlay.width, overlay.height);
+      drawOutlineTo(ox, tpl, scale, tx, ty);
+      if (tpl.regions && tpl.regions.length) {
+        renderPbnNumbers(tpl, scale, tx, ty);
+      }
+    }
+
+    // Redraw paint-layer barrier only (used after clearAll)
+    function drawBarrier(tpl) {
+      if (tpl.type === 'image') {
+        loadImg(tpl.src).then(img => {
+          const { scale, tx, ty } = imageTransform(img);
+          cx.save();
+          cx.setTransform(scale * paint.dpr, 0, 0, scale * paint.dpr, tx * paint.dpr, ty * paint.dpr);
+          cx.drawImage(img, 0, 0);
+          cx.restore();
+        }).catch(() => {});
+        return;
+      }
+      const { scale, tx, ty } = templateTransform(tpl);
+      cx.save();
+      cx.setTransform(scale * paint.dpr, 0, 0, scale * paint.dpr, tx * paint.dpr, ty * paint.dpr);
+      cx.strokeStyle = '#1a1a1a';
+      cx.lineWidth = (tpl.lineWidth || 6) * 2;
+      cx.lineCap = 'round';
+      cx.lineJoin = 'round';
+      tpl.outline.forEach(d => cx.stroke(new Path2D(d)));
+      cx.restore();
     }
 
     function renderPbnNumbers(tpl, scale, tx, ty) {
@@ -175,7 +243,6 @@ window.APP = window.APP || {};
       ox.textAlign = 'center';
       ox.textBaseline = 'middle';
       tpl.regions.forEach(r => {
-        // Approximate centroid: sample the path bounding box via a scratch canvas
         const centroid = getPathCentroid(r.d, scale, tx, ty);
         ox.fillStyle = '#ffffff';
         ox.fillText(String(r.number), centroid.x + 1, centroid.y + 1);
@@ -186,44 +253,40 @@ window.APP = window.APP || {};
     }
 
     function getPathCentroid(d, scale, tx, ty) {
-      // Parse first M command to get a reasonable anchor point
-      const m = d.match(/M\s*([\d.]+)[,\s]+([\d.]+)/);
-      if (!m) return { x: stage.clientWidth / 2, y: stage.clientHeight / 2 };
-      // Use midpoint between first M and first subsequent coordinate pair
       const coords = [...d.matchAll(/[\d.]+[,\s]+[\d.]+/g)].map(c => {
         const parts = c[0].trim().split(/[,\s]+/);
         return { x: parseFloat(parts[0]), y: parseFloat(parts[1]) };
       });
       if (!coords.length) return { x: stage.clientWidth / 2, y: stage.clientHeight / 2 };
-      const sumX = coords.reduce((s, p) => s + p.x, 0);
-      const sumY = coords.reduce((s, p) => s + p.y, 0);
-      const avgX = sumX / coords.length;
-      const avgY = sumY / coords.length;
+      const avgX = coords.reduce((s, p) => s + p.x, 0) / coords.length;
+      const avgY = coords.reduce((s, p) => s + p.y, 0) / coords.length;
       return { x: avgX * scale + tx, y: avgY * scale + ty };
-    }
-
-    function drawBarrier(tpl) {
-      const { scale, tx, ty } = templateTransform(tpl);
-      cx.save();
-      cx.setTransform(scale * paint.dpr, 0, 0, scale * paint.dpr, tx * paint.dpr, ty * paint.dpr);
-      cx.strokeStyle = '#1a1a1a';
-      cx.lineWidth = tpl.lineWidth || 6;
-      cx.lineCap = 'round';
-      cx.lineJoin = 'round';
-      tpl.outline.forEach(d => cx.stroke(new Path2D(d)));
-      cx.restore();
     }
 
     // ---- Thumbnail rendering --------------------------------------------------
     function drawThumbnails() {
-      const thumbs = wrap.querySelectorAll('.template-thumb');
-      thumbs.forEach(btn => {
+      wrap.querySelectorAll('.template-thumb').forEach(btn => {
         const id = btn.getAttribute('data-tpl');
         const tpl = (APP.PAINTING_TEMPLATES || []).find(t => t.id === id);
         if (!tpl) return;
         const tc = btn.querySelector('canvas');
         const tcx = tc.getContext('2d');
         const size = 80;
+
+        if (tpl.type === 'image') {
+          loadImg(tpl.src).then(img => {
+            const scl = Math.min(size / img.naturalWidth, size / img.naturalHeight) * 0.85;
+            const ttx = (size - img.naturalWidth * scl) / 2;
+            const tty = (size - img.naturalHeight * scl) / 2;
+            tcx.clearRect(0, 0, size, size);
+            tcx.save();
+            tcx.setTransform(scl, 0, 0, scl, ttx, tty);
+            tcx.drawImage(img, 0, 0);
+            tcx.restore();
+          }).catch(() => {});
+          return;
+        }
+
         const scl = size / 400 * 0.8;
         const ttx = (size - 400 * scl) / 2;
         const tty = (size - 400 * scl) / 2;
@@ -239,7 +302,7 @@ window.APP = window.APP || {};
       });
     }
 
-    // ---- History ---------------------------------------------------------------
+    // ---- History --------------------------------------------------------------
     function pushHistory() {
       if (!canvas.width || !canvas.height) return;
       try {
@@ -254,14 +317,8 @@ window.APP = window.APP || {};
       cx.setTransform(1, 0, 0, 1, 0, 0);
       cx.putImageData(img, 0, 0);
       cx.restore();
-      // Re-draw overlay in template mode
       if (paint.mode === 'template' && paint.template) {
-        const { scale, tx, ty } = templateTransform(paint.template);
-        ox.clearRect(0, 0, overlay.width, overlay.height);
-        drawOutlineTo(ox, paint.template, scale, tx, ty);
-        if (paint.template.regions && paint.template.regions.length) {
-          renderPbnNumbers(paint.template, scale, tx, ty);
-        }
+        redrawOverlay(paint.template);
       }
     }
     function clearAll() {
@@ -270,12 +327,7 @@ window.APP = window.APP || {};
       if (paint.mode === 'template' && paint.template) {
         paint.pbnDone.clear();
         drawBarrier(paint.template);
-        const { scale, tx, ty } = templateTransform(paint.template);
-        ox.clearRect(0, 0, overlay.width, overlay.height);
-        drawOutlineTo(ox, paint.template, scale, tx, ty);
-        if (paint.template.regions && paint.template.regions.length) {
-          renderPbnNumbers(paint.template, scale, tx, ty);
-        }
+        redrawOverlay(paint.template);
       }
     }
 
@@ -327,7 +379,9 @@ window.APP = window.APP || {};
     function floodFill(sx, sy, fill) {
       const W = canvas.width, H = canvas.height;
       if (sx < 0 || sy < 0 || sx >= W || sy >= H) return;
-      const img = cx.getImageData(0, 0, W, H), d = img.data;
+      let img;
+      try { img = cx.getImageData(0, 0, W, H); } catch (_) { return; }
+      const d = img.data;
       const idx = (x, y) => (y * W + x) * 4;
       const s = idx(sx, sy);
       const target = [d[s], d[s + 1], d[s + 2], d[s + 3]];
@@ -362,31 +416,23 @@ window.APP = window.APP || {};
     // ---- PBN hit detection ---------------------------------------------------
     function checkPbnHit(cssX, cssY) {
       const tpl = paint.template;
-      if (!tpl || !tpl.regions || !tpl.regions.length) return;
+      if (!tpl || !tpl.regions || !tpl.regions.length || tpl.type === 'image') return;
       const { scale, tx, ty } = templateTransform(tpl);
-      // Convert CSS tap point to template coordinates
       const templateX = (cssX - tx) / scale;
       const templateY = (cssY - ty) / scale;
-
-      // Use a scratch canvas to test isPointInPath without disturbing the real contexts
       const scratch = document.createElement('canvas');
-      scratch.width = 400;
-      scratch.height = 400;
+      scratch.width = 400; scratch.height = 400;
       const scx = scratch.getContext('2d');
-
       for (const region of tpl.regions) {
         if (paint.pbnDone.has(region.number)) continue;
         const path = new Path2D(region.d);
         if (scx.isPointInPath(path, templateX, templateY)) {
           const targetRgba = hexToRgba(region.targetColor);
           const fillRgba = hexToRgba(paint.color);
-          const match = targetRgba[0] === fillRgba[0] &&
-                        targetRgba[1] === fillRgba[1] &&
-                        targetRgba[2] === fillRgba[2];
+          const match = targetRgba[0] === fillRgba[0] && targetRgba[1] === fillRgba[1] && targetRgba[2] === fillRgba[2];
           if (match) {
             paint.pbnDone.add(region.number);
             if (APP.audio) APP.audio.strokeDone();
-            // Check full completion
             const allDone = tpl.regions.every(r => paint.pbnDone.has(r.number));
             if (allDone) {
               setTimeout(() => {
@@ -395,7 +441,6 @@ window.APP = window.APP || {};
               }, 200);
             }
           } else {
-            // Wrong colour — shake the stage briefly
             stage.classList.add('pbn-shake');
             setTimeout(() => stage.classList.remove('pbn-shake'), 400);
           }
@@ -415,10 +460,8 @@ window.APP = window.APP || {};
         const dp = devicePoint(e);
         floodFill(dp.x, dp.y, hexToRgba(paint.color));
         if (APP.audio) APP.audio.strokeDone();
-        // PBN check after fill
         if (paint.mode === 'template' && paint.template) {
-          const cp = cssPoint(e);
-          checkPbnHit(cp.x, cp.y);
+          checkPbnHit(cssPoint(e).x, cssPoint(e).y);
         }
         return;
       }
@@ -453,15 +496,14 @@ window.APP = window.APP || {};
     canvas.addEventListener('pointerup', onUp);
     canvas.addEventListener('pointercancel', onUp);
 
+    // ---- Picker show/hide ----------------------------------------------------
     function showPicker() {
       picker.classList.remove('hidden');
       drawThumbnails();
-      // Resize after picker enters the flow (portrait: stage shrinks)
       setTimeout(resize, 0);
     }
     function hidePicker() {
       picker.classList.add('hidden');
-      // Resize after picker leaves the flow (portrait: stage grows back)
       setTimeout(resize, 0);
     }
 
@@ -470,11 +512,7 @@ window.APP = window.APP || {};
       btn.addEventListener('click', () => {
         const mode = btn.getAttribute('data-mode');
         if (mode === 'template') {
-          // Already in template mode → re-open picker to change template
-          if (paint.mode === 'template') {
-            showPicker();
-            return;
-          }
+          if (paint.mode === 'template') { showPicker(); return; }
           paint.mode = 'template';
           wrap.querySelectorAll('.paint-mode-btn').forEach(b =>
             b.classList.toggle('active', b.getAttribute('data-mode') === 'template'));
@@ -503,7 +541,6 @@ window.APP = window.APP || {};
         btn.classList.add('active');
         paint.template = tpl;
         paint.pbnDone.clear();
-        // Hide picker first so stage reclaims its full size, then resize + draw
         hidePicker();
         setTimeout(() => {
           cx.clearRect(0, 0, canvas.width, canvas.height);
