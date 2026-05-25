@@ -201,7 +201,7 @@ APP.PAINTING_TEMPLATES = [
     id: 'kawaii-food',
     label: 'Kawaii Food',
     type: 'image',
-    src: 'assets/images/coloring/food.jpg',
+    src: 'assets/images/coloring/food.png',
     regions: [],
   },
 
