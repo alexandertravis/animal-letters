@@ -2,11 +2,22 @@ window.APP = window.APP || {};
 
 (function (APP) {
   const COLORS = [
-    '#000000', '#e84393', '#e74c3c', '#f39c12',
-    '#f6e58d', '#27ae60', '#2980d9', '#8e44ad',
+    '#000000', '#ffffff', '#e84393', '#e74c3c', '#f39c12',
+    '#f6e58d', '#27ae60', '#2980d9', '#8e44ad', '#a0522d',
   ];
   const SIZES = [8, 16, 30];
-  const STICKERS = ['😀', '🐶', '🐱', '🌟', '❤️', '🌈', '🚗', '🦄', '🌸', '🍎'];
+  // Full sticker library. The toolbar shows the 5 most recently used;
+  // tapping ⋯ opens a panel to browse and pick from all of them.
+  const ALL_STICKERS = [
+    '😀','😂','😍','🥰','😎','🤩','😴','🥳','😜','🤔',
+    '🐶','🐱','🐭','🐰','🦊','🐻','🐼','🐨','🐯','🦁',
+    '🐸','🐵','🐔','🐧','🦆','🦉','🦋','🐛','🐝','🐞',
+    '🌸','🌺','🌻','🌹','🌷','🍀','🌈','⭐','🌟','☀️',
+    '🍎','🍊','🍋','🍇','🍓','🍕','🍔','🍦','🎂','🍩',
+    '❤️','🧡','💛','💚','💙','💜','🎈','🎁','🎀','🏆',
+    '🦄','🌙','💫','🎵','🎨','⚽','🏀','🌊','🧸','🚗',
+  ];
+  const RECENT_STICKER_COUNT = 5;
   const MAX_DPR = 2;
   const HISTORY_CAP = 6;
   const FILL_TOLERANCE = 40;
@@ -35,7 +46,8 @@ window.APP = window.APP || {};
       tool: 'brush',
       color: COLORS[1],
       size: SIZES[1],
-      sticker: STICKERS[0],
+      sticker: ALL_STICKERS[0],
+      recentStickers: ALL_STICKERS.slice(0, RECENT_STICKER_COUNT),
       history: [],
       dpr: 1,
       drawing: false,
@@ -80,20 +92,28 @@ window.APP = window.APP || {};
           <button class="tool-btn" data-tool="brush" aria-label="${APP.t('painting.brush')}">${APP.ICONS.brush}</button>
           <button class="tool-btn" data-tool="eraser" aria-label="${APP.t('painting.eraser')}">${APP.ICONS.eraser}</button>
           <button class="tool-btn" data-tool="fill" aria-label="${APP.t('painting.fill')}">${APP.ICONS.fill}</button>
+          <button class="tool-btn" data-tool="splash" aria-label="${APP.t('painting.splash')}">${APP.ICONS.splash}</button>
           <button class="tool-btn" data-tool="sticker" aria-label="${APP.t('painting.sticker')}">${APP.ICONS.sticker}</button>
         </div>
         <div class="tool-group swatches">
-          ${COLORS.map(c => `<button class="swatch" data-color="${c}" style="background:${c}" aria-label="colour ${c}"></button>`).join('')}
+          ${COLORS.map(c => `<button class="swatch" data-color="${c}" style="background:${c};${c==='#ffffff'?'border:2px solid #ccc':''}" aria-label="colour ${c}"></button>`).join('')}
         </div>
         <div class="tool-group sizes">
           ${SIZES.map(s => `<button class="size-btn" data-size="${s}" aria-label="size ${s}"><span style="width:${s}px;height:${s}px"></span></button>`).join('')}
         </div>
         <div class="tool-group stickers">
-          ${STICKERS.map(e => `<button class="sticker-btn" data-sticker="${e}">${e}</button>`).join('')}
+          <div class="sticker-tray"></div>
+          <button class="sticker-more-btn" aria-label="More stickers">⋯</button>
         </div>
       </div>
     `;
     root.appendChild(wrap);
+
+    // Emoji panel — appended separately so it overlays the toolbar
+    const emojiPanel = document.createElement('div');
+    emojiPanel.className = 'emoji-panel hidden';
+    emojiPanel.innerHTML = `<div class="emoji-panel-grid">${ALL_STICKERS.map(e => `<button class="sticker-btn" data-sticker="${e}">${e}</button>`).join('')}</div>`;
+    wrap.appendChild(emojiPanel);
 
     const picker = wrap.querySelector('.paint-template-picker');
     const stage = wrap.querySelector('.painting-stage');
@@ -122,16 +142,18 @@ window.APP = window.APP || {};
       cx.lineCap = 'round';
       cx.lineJoin = 'round';
       ox.setTransform(dpr, 0, 0, dpr, 0, 0);
-      if (snapshot) {
-        try { cx.putImageData(snapshot, 0, 0); } catch (_) {}
-      }
       if (paint.mode === 'template' && paint.template) {
+        // Template mode: always redraw barrier at the new dimensions rather than
+        // restoring the old snapshot. Restoring would leave the old barrier drawn
+        // at the wrong scale/position (visible as a double-image after rotation).
+        // User paint within a template is lost on orientation change — acceptable
+        // for this demo; a 3-canvas architecture would be needed to preserve it.
+        cx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBarrier(paint.template);   // also rebuilds wallMap
         redrawOverlay(paint.template);
-        // Wall map is indexed by device pixel — rebuild whenever canvas dimensions change
-        if (paint.template.type === 'image') {
-          buildWallMapFromCanvas();
-        } else {
-          buildWallMap(paint.template);
+      } else {
+        if (snapshot) {
+          try { cx.putImageData(snapshot, 0, 0); } catch (_) {}
         }
       }
     }
@@ -335,10 +357,15 @@ window.APP = window.APP || {};
 
         if (tpl.type === 'image') {
           loadImg(tpl.src).then(img => {
-            const scl = Math.min(size / img.naturalWidth, size / img.naturalHeight) * 0.85;
+            const scl = Math.min(size / img.naturalWidth, size / img.naturalHeight) * 0.9;
             const ttx = (size - img.naturalWidth * scl) / 2;
             const tty = (size - img.naturalHeight * scl) / 2;
             tcx.clearRect(0, 0, size, size);
+            // White background so image lines are visible on the canvas
+            tcx.fillStyle = '#fff';
+            tcx.fillRect(0, 0, size, size);
+            tcx.imageSmoothingEnabled = true;
+            tcx.imageSmoothingQuality = 'high';
             tcx.save();
             tcx.setTransform(scl, 0, 0, scl, ttx, tty);
             tcx.drawImage(img, 0, 0);
@@ -425,10 +452,50 @@ window.APP = window.APP || {};
     }
     function stampSticker(p) {
       cx.globalCompositeOperation = 'source-over';
-      cx.font = (paint.size * 4) + 'px serif';
-      cx.textAlign = 'center';
-      cx.textBaseline = 'middle';
-      cx.fillText(paint.sticker, p.x, p.y);
+      const fontSize = paint.size * 4;
+      // Pre-render to an offscreen canvas first. Some emoji (notably ❤️) load
+      // their glyph lazily and only draw the left half on the very first canvas
+      // call. The offscreen draw forces the font engine to complete the load,
+      // so the subsequent drawImage onto the main canvas is always complete.
+      const tmp = document.createElement('canvas');
+      tmp.width = Math.ceil(fontSize * 2.2);
+      tmp.height = Math.ceil(fontSize * 2.2);
+      const tc = tmp.getContext('2d');
+      tc.font = fontSize + 'px serif';
+      tc.textAlign = 'center';
+      tc.textBaseline = 'middle';
+      tc.fillText(paint.sticker, tmp.width / 2, tmp.height / 2);
+      cx.drawImage(tmp, Math.round(p.x - tmp.width / 2), Math.round(p.y - tmp.height / 2));
+    }
+    function doSplash(p) {
+      cx.globalCompositeOperation = 'source-over';
+      cx.fillStyle = paint.color;
+      cx.strokeStyle = paint.color;
+      const r = paint.size / 2;
+      // Central blob
+      cx.beginPath();
+      cx.arc(p.x, p.y, r * 1.2, 0, Math.PI * 2);
+      cx.fill();
+      // Radiating drops
+      const count = 6 + Math.floor(Math.random() * 5);
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i / count) + (Math.random() - 0.5) * 0.7;
+        const dist = r * (1.8 + Math.random() * 2.5);
+        const dr = r * (0.15 + Math.random() * 0.45);
+        const bx = p.x + Math.cos(angle) * dist;
+        const by = p.y + Math.sin(angle) * dist;
+        cx.beginPath();
+        cx.arc(bx, by, dr, 0, Math.PI * 2);
+        cx.fill();
+        // Drip tail
+        cx.beginPath();
+        cx.lineWidth = dr * 0.9;
+        cx.lineCap = 'round';
+        cx.moveTo(p.x + Math.cos(angle) * r, p.y + Math.sin(angle) * r);
+        cx.lineTo(bx, by);
+        cx.stroke();
+      }
+      cx.globalCompositeOperation = 'source-over';
     }
 
     // ---- Flood fill -----------------------------------------------------------
@@ -530,6 +597,12 @@ window.APP = window.APP || {};
         }
         return;
       }
+      if (paint.tool === 'splash') {
+        pushHistory();
+        doSplash(cssPoint(e));
+        if (APP.audio) APP.audio.strokeDone();
+        return;
+      }
       if (paint.tool === 'sticker') {
         pushHistory();
         stampSticker(cssPoint(e));
@@ -617,6 +690,28 @@ window.APP = window.APP || {};
       });
     });
 
+    // ---- Sticker tray (dynamic recent list) ----------------------------------
+    function renderStickerTray() {
+      const tray = wrap.querySelector('.sticker-tray');
+      if (!tray) return;
+      tray.innerHTML = paint.recentStickers.map(e =>
+        `<button class="sticker-btn${e === paint.sticker ? ' active' : ''}" data-sticker="${e}">${e}</button>`
+      ).join('');
+      tray.querySelectorAll('[data-sticker]').forEach(b =>
+        b.addEventListener('click', () => selectSticker(b.getAttribute('data-sticker')))
+      );
+    }
+    function selectSticker(emoji) {
+      paint.sticker = emoji;
+      paint.tool = 'sticker';
+      setActive('[data-tool]', 'data-tool', 'sticker');
+      // Promote to front of recent list
+      paint.recentStickers = [emoji, ...paint.recentStickers.filter(s => s !== emoji)]
+        .slice(0, RECENT_STICKER_COUNT);
+      renderStickerTray();
+      emojiPanel.classList.add('hidden');
+    }
+
     // ---- UI wiring -----------------------------------------------------------
     function setActive(selector, attr, value) {
       wrap.querySelectorAll(selector).forEach(b => {
@@ -629,7 +724,7 @@ window.APP = window.APP || {};
     }));
     wrap.querySelectorAll('[data-color]').forEach(b => b.addEventListener('click', () => {
       paint.color = b.getAttribute('data-color');
-      if (paint.tool === 'eraser' || paint.tool === 'sticker') {
+      if (paint.tool === 'eraser' || paint.tool === 'sticker' || paint.tool === 'splash') {
         paint.tool = 'brush';
         setActive('[data-tool]', 'data-tool', 'brush');
       }
@@ -639,12 +734,14 @@ window.APP = window.APP || {};
       paint.size = Number(b.getAttribute('data-size'));
       setActive('[data-size]', 'data-size', paint.size);
     }));
-    wrap.querySelectorAll('[data-sticker]').forEach(b => b.addEventListener('click', () => {
-      paint.sticker = b.getAttribute('data-sticker');
-      paint.tool = 'sticker';
-      setActive('[data-tool]', 'data-tool', 'sticker');
-      setActive('[data-sticker]', 'data-sticker', paint.sticker);
-    }));
+    // Sticker tray: rendered dynamically; emoji panel wired here
+    renderStickerTray();
+    emojiPanel.querySelectorAll('[data-sticker]').forEach(b =>
+      b.addEventListener('click', () => selectSticker(b.getAttribute('data-sticker')))
+    );
+    wrap.querySelector('.sticker-more-btn').addEventListener('click', () => {
+      emojiPanel.classList.toggle('hidden');
+    });
 
     wrap.querySelector('[data-act=undo]').addEventListener('click', undo);
     wrap.querySelector('[data-act=clear]').addEventListener('click', clearAll);
@@ -657,7 +754,7 @@ window.APP = window.APP || {};
     setActive('[data-tool]', 'data-tool', paint.tool);
     setActive('[data-color]', 'data-color', paint.color);
     setActive('[data-size]', 'data-size', paint.size);
-    setActive('[data-sticker]', 'data-sticker', paint.sticker);
+    // sticker tray active state is managed by renderStickerTray()
   }
 
   APP.screens = APP.screens || {};

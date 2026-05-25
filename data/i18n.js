@@ -41,6 +41,7 @@ APP.I18N = {
     'painting.brush':     'Brush',
     'painting.eraser':    'Eraser',
     'painting.fill':      'Fill',
+    'painting.splash':    'Splash',
     'painting.sticker':   'Stickers',
     'painting.undo':      'Undo',
     'painting.clear':     'Clear all',
