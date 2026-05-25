@@ -196,4 +196,20 @@ APP.PAINTING_TEMPLATES = [
         d: 'M 265,240 A 65,72 0 0 1 135,240 A 65,72 0 0 1 265,240 Z' },
     ],
   },
+
+  {
+    id: 'kawaii-food',
+    label: 'Kawaii Food',
+    type: 'image',
+    src: 'assets/images/coloring/food.jpg',
+    regions: [],
+  },
+
+  {
+    id: 'mushrooms',
+    label: 'Mushrooms',
+    type: 'image',
+    src: 'assets/images/coloring/mushrooms.jpg',
+    regions: [],
+  },
 ];
