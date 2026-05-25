@@ -2471,11 +2471,11 @@ html, body {
   .book.book-classic .page-frame .corner        { width: 18px; height: 18px; }
 
   .book.book-classic .page-content {
-    inset: 22px 18px;
+    inset: 26px 22px;
     font-size: clamp(15px, 5vh, 19px);
-    line-height: 1.35;
+    line-height: 1.42;
   }
-  .book.book-classic .page-content p { margin: 0 0 8px; }
+  .book.book-classic .page-content p { margin: 0 0 10px; }
   .book.book-classic .page-content p:first-of-type::first-letter {
     font-size: clamp(22px, 6vh, 38px);
   }
@@ -2483,17 +2483,17 @@ html, body {
   /* Watercolour frame is fixed-pixel — tighten for landscape */
   .book.book-watercolour .page-frame { inset: 8px; }
   .book.book-watercolour .page-content {
-    inset: 12px 10px;
+    inset: 14px 12px;
     font-size: clamp(14px, 4.5vh, 18px);
-    line-height: 1.35;
+    line-height: 1.42;
   }
-  .book.book-watercolour .page-content p { margin: 0 0 8px; }
+  .book.book-watercolour .page-content p { margin: 0 0 10px; }
   .book.book-watercolour .page-content p:first-of-type::first-letter {
     font-size: clamp(18px, 5vh, 32px);
   }
 
-  .book.book-classic .page-scroll-over     { inset: 22px 18px; }
-  .book.book-watercolour .page-scroll-over { inset: 12px 10px; }
+  .book.book-classic .page-scroll-over     { inset: 26px 22px; }
+  .book.book-watercolour .page-scroll-over { inset: 14px 12px; }
 
   /* ── Story Library — compact so both shelf rows show without scrolling ── */
   .bookshelf .book      { width: 96px; }
