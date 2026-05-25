@@ -2273,7 +2273,7 @@ html, body {
    Corner ornament extent = frame(8px) + corner(22px) − 6px = 24px, so a
    26px content inset clears corners with 2px to spare on all sides. */
 @media (max-width: 480px) {
-  .book { aspect-ratio: 2 / 2.2; }
+  .book { aspect-ratio: 2 / 1.72; }
 
   /* Shrink frame + corners so the text area can grow */
   .book.book-classic .page-frame               { inset: 8px; }
