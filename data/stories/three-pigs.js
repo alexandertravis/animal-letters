@@ -104,7 +104,7 @@ no horror or gore, no scary expressions, no real-world brands.`;
       {
         id: 1,
         text: { en: `Once upon a time three little pig brothers set off to build homes of their very own, each with a toolbox over one shoulder and a song in their heart. The eldest said he would be done by teatime. The middle one agreed. The youngest shook his head and said he would take as long as the work needed.` },
-        image:    'assets/images/cartoon/pig.svg',
+        image:    'assets/images/story/three-pigs/page-01.webp',
         imageAlt: 'Three cheerful little pigs walking along a sunny road, each carrying a toolbox, setting off to build their homes.',
         imagePrompt: prompt({
           scene:       `${CAST.pig1}, ${CAST.pig2}, and ${CAST.pig3} walk along a sunny country lane together. Each carries a small wooden toolbox. Pig1 is striding ahead confidently. Pig2 is whistling. Pig3 is consulting a small notebook. Rolling hills behind them, birds in the sky.`,
@@ -116,7 +116,7 @@ no horror or gore, no scary expressions, no real-world brands.`;
       {
         id: 2,
         text: { en: `The eldest pig gathered armfuls of golden straw from a sunny meadow and built himself a cosy thatched house in a single afternoon. He tucked his toolbox under the eaves, put a pot on the stove, and sat down on the front step, very pleased with himself.` },
-        image:    'assets/images/cartoon/pig.svg',
+        image:    'assets/images/story/three-pigs/page-03.webp',
         imageAlt: 'A pig in dungarees and a straw hat sitting contentedly on the step of a small thatched straw house, the meadow behind him.',
         imagePrompt: prompt({
           scene:       `${CAST.pig1} sits on the front step of a freshly built straw house, small and round with a thatched roof, his straw hat pushed back on his head, looking thoroughly pleased. A pot of steam drifts from the chimney. Sunny meadow behind.`,
@@ -128,7 +128,7 @@ no horror or gore, no scary expressions, no real-world brands.`;
       {
         id: 3,
         text: { en: `The second pig found a pile of dry sticks at the edge of the wood and built a neat house by mid-morning. He swept the front path, planted a small window box full of pansies, and settled inside just as the first clouds rolled in from the west.` },
-        image:    'assets/images/cartoon/pig.svg',
+        image:    'assets/images/story/three-pigs/page-02.webp',
         imageAlt: 'A pig in a green cap sweeping the front path of a stick house, a cheerful window box of pansies beside the door.',
         imagePrompt: prompt({
           scene:       `${CAST.pig2} sweeps the front path of his stick house with a small broom. The house is built of bundled sticks, slightly rough but charming, with a window box of yellow and purple pansies. Clouds gathering in the background sky.`,
