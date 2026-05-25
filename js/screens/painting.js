@@ -43,6 +43,7 @@ window.APP = window.APP || {};
       mode: 'free',
       template: null,
       pbnDone: new Set(),
+      wallPixels: null,   // Uint8Array — barrier pixel positions; checked by floodFill
     };
 
     const wrap = document.createElement('div');
@@ -126,12 +127,57 @@ window.APP = window.APP || {};
       }
       if (paint.mode === 'template' && paint.template) {
         redrawOverlay(paint.template);
+        // Wall map is indexed by device pixel — rebuild whenever canvas dimensions change
+        if (paint.template.type === 'image') {
+          buildWallMapFromCanvas();
+        } else {
+          buildWallMap(paint.template);
+        }
       }
     }
 
     resizeHandler = function () { resize(); };
     window.addEventListener('resize', resizeHandler);
     resize();
+
+    // ---- Wall map (flood-fill barrier) ----------------------------------------
+    // buildWallMap renders the barrier strokes to an offscreen canvas and marks
+    // every covered pixel in a flat Uint8Array. floodFill treats marked pixels as
+    // hard walls regardless of their colour, so tapping on an outline never
+    // floods it, and black paint (#000000) can't leak through near-black barriers.
+    function buildWallMap(tpl) {
+      const W = canvas.width, H = canvas.height;
+      paint.wallPixels = new Uint8Array(W * H);
+      if (!tpl || tpl.type === 'image') return; // image walls built separately
+      const tmp = document.createElement('canvas');
+      tmp.width = W; tmp.height = H;
+      const tcx = tmp.getContext('2d');
+      const { scale, tx, ty } = templateTransform(tpl);
+      tcx.setTransform(scale * paint.dpr, 0, 0, scale * paint.dpr, tx * paint.dpr, ty * paint.dpr);
+      tcx.strokeStyle = '#000000';
+      tcx.lineWidth = (tpl.lineWidth || 6) * 2;
+      tcx.lineCap = 'round';
+      tcx.lineJoin = 'round';
+      tpl.outline.forEach(d => tcx.stroke(new Path2D(d)));
+      const data = tcx.getImageData(0, 0, W, H).data;
+      for (let i = 0, len = W * H; i < len; i++) {
+        if (data[i * 4 + 3] > 64) paint.wallPixels[i] = 1;
+      }
+    }
+
+    // For image templates: sample the paint canvas after drawing white+image.
+    // Any pixel darker than threshold is a printed outline → mark as wall.
+    function buildWallMapFromCanvas() {
+      const W = canvas.width, H = canvas.height;
+      paint.wallPixels = new Uint8Array(W * H);
+      try {
+        const data = cx.getImageData(0, 0, W, H).data;
+        for (let i = 0, len = W * H; i < len; i++) {
+          const r = data[i * 4], g = data[i * 4 + 1], b = data[i * 4 + 2], a = data[i * 4 + 3];
+          if (a > 128 && r < 80 && g < 80 && b < 80) paint.wallPixels[i] = 1;
+        }
+      } catch (_) {}
+    }
 
     // ---- Template transforms --------------------------------------------------
     function templateTransform(tpl) {
@@ -179,6 +225,7 @@ window.APP = window.APP || {};
           cx.fillRect(0, 0, img.naturalWidth, img.naturalHeight);
           cx.drawImage(img, 0, 0);
           cx.restore();
+          buildWallMapFromCanvas(); // mark dark outline pixels as hard walls
         }).catch(() => {});
         return;
       }
@@ -196,6 +243,7 @@ window.APP = window.APP || {};
       cx.lineJoin = 'round';
       tpl.outline.forEach(d => cx.stroke(new Path2D(d)));
       cx.restore();
+      buildWallMap(tpl); // mark barrier stroke pixels as hard walls
       if (tpl.regions && tpl.regions.length) {
         renderPbnNumbers(tpl, scale, tx, ty);
       }
@@ -233,6 +281,7 @@ window.APP = window.APP || {};
           cx.fillRect(0, 0, img.naturalWidth, img.naturalHeight);
           cx.drawImage(img, 0, 0);
           cx.restore();
+          buildWallMapFromCanvas();
         }).catch(() => {});
         return;
       }
@@ -245,6 +294,7 @@ window.APP = window.APP || {};
       cx.lineJoin = 'round';
       tpl.outline.forEach(d => cx.stroke(new Path2D(d)));
       cx.restore();
+      buildWallMap(tpl);
     }
 
     function renderPbnNumbers(tpl, scale, tx, ty) {
@@ -392,7 +442,10 @@ window.APP = window.APP || {};
       let img;
       try { img = cx.getImageData(0, 0, W, H); } catch (_) { return; }
       const d = img.data;
-      const idx = (x, y) => (y * W + x) * 4;
+      const pidx = (x, y) => y * W + x;
+      const idx = (x, y) => pidx(x, y) * 4;
+      const walls = paint.wallPixels; // Uint8Array of barrier positions (or null)
+      const isWall = (x, y) => walls && walls[pidx(x, y)];
       const s = idx(sx, sy);
       const target = [d[s], d[s + 1], d[s + 2], d[s + 3]];
       const tol2 = FILL_TOLERANCE * FILL_TOLERANCE * 4;
@@ -400,21 +453,23 @@ window.APP = window.APP || {};
         const dr = d[i] - ref[0], dg = d[i + 1] - ref[1], db = d[i + 2] - ref[2], da = d[i + 3] - ref[3];
         return dr * dr + dg * dg + db * db + da * da <= tol2;
       };
+      // Don't fill if tap landed on a barrier stroke (would flood entire outline network)
+      if (isWall(sx, sy)) return;
       if (close(idx(sx, sy), fill)) return;
       const seen = new Uint8Array(W * H);
       const stack = [[sx, sy]];
       while (stack.length) {
         const [x, y] = stack.pop();
         let xL = x;
-        while (xL >= 0 && !seen[y * W + xL] && close(idx(xL, y), target)) xL--;
+        while (xL >= 0 && !seen[pidx(xL, y)] && !isWall(xL, y) && close(idx(xL, y), target)) xL--;
         xL++;
         let up = false, down = false;
-        for (let xi = xL; xi < W && !seen[y * W + xi] && close(idx(xi, y), target); xi++) {
+        for (let xi = xL; xi < W && !seen[pidx(xi, y)] && !isWall(xi, y) && close(idx(xi, y), target); xi++) {
           const p = idx(xi, y);
           d[p] = fill[0]; d[p + 1] = fill[1]; d[p + 2] = fill[2]; d[p + 3] = fill[3];
-          seen[y * W + xi] = 1;
-          if (y > 0 && close(idx(xi, y - 1), target)) { if (!up) { stack.push([xi, y - 1]); up = true; } } else up = false;
-          if (y < H - 1 && close(idx(xi, y + 1), target)) { if (!down) { stack.push([xi, y + 1]); down = true; } } else down = false;
+          seen[pidx(xi, y)] = 1;
+          if (y > 0 && !isWall(xi, y - 1) && close(idx(xi, y - 1), target)) { if (!up) { stack.push([xi, y - 1]); up = true; } } else up = false;
+          if (y < H - 1 && !isWall(xi, y + 1) && close(idx(xi, y + 1), target)) { if (!down) { stack.push([xi, y + 1]); down = true; } } else down = false;
         }
       }
       cx.save();
