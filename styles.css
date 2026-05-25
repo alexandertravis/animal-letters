@@ -1596,12 +1596,29 @@ html, body {
 :root{
   --gold-1:#f8e29a; --gold-2:#d8b04a; --gold-3:#8a5e10;
 
-  --leather-burgundy:#3d0d10; --leather-burgundy-hi:#6b1a1f; --leather-burgundy-lo:#1f0608;
-  --leather-forest  :#1a2a16; --leather-forest-hi  :#2e4828; --leather-forest-lo  :#0a1408;
-  --leather-navy    :#101a35; --leather-navy-hi    :#1f2e58; --leather-navy-lo    :#06091a;
-  --leather-tan     :#4a3018; --leather-tan-hi     :#7a5028; --leather-tan-lo     :#28180a;
-  --leather-plum    :#2e122e; --leather-plum-hi    :#4e224e; --leather-plum-lo    :#180818;
-  --leather-dust    :#3a342c; --leather-dust-hi    :#5a5248; --leather-dust-lo    :#1a1612;
+  --leather-burgundy  :#3d0d10; --leather-burgundy-hi  :#6b1a1f; --leather-burgundy-lo  :#1f0608;
+  --leather-forest    :#1a2a16; --leather-forest-hi    :#2e4828; --leather-forest-lo    :#0a1408;
+  --leather-navy      :#101a35; --leather-navy-hi      :#1f2e58; --leather-navy-lo      :#06091a;
+  --leather-tan       :#4a3018; --leather-tan-hi       :#7a5028; --leather-tan-lo       :#28180a;
+  --leather-plum      :#2e122e; --leather-plum-hi      :#4e224e; --leather-plum-lo      :#180818;
+  --leather-dust      :#3a342c; --leather-dust-hi      :#5a5248; --leather-dust-lo      :#1a1612;
+  /* Extended palette — used by newer story files */
+  --leather-chestnut  :#4a1c0a; --leather-chestnut-hi  :#7a3014; --leather-chestnut-lo  :#241008;
+  --leather-slate     :#1e2c3e; --leather-slate-hi     :#304460; --leather-slate-lo     :#0c141e;
+  --leather-teal      :#082a2a; --leather-teal-hi      :#144444; --leather-teal-lo      :#041414;
+  --leather-mauve     :#301828; --leather-mauve-hi     :#503040; --leather-mauve-lo     :#180c14;
+  --leather-sienna    :#4a1a0c; --leather-sienna-hi    :#7a2c14; --leather-sienna-lo    :#240e06;
+  --leather-gold      :#3e2c00; --leather-gold-hi      :#664a00; --leather-gold-lo      :#1e1600;
+  --leather-russet    :#481408; --leather-russet-hi    :#7a2010; --leather-russet-lo    :#220a04;
+  --leather-amber     :#4e2c00; --leather-amber-hi     :#804a00; --leather-amber-lo     :#261600;
+  --leather-terracotta:#4a1c10; --leather-terracotta-hi:#7a2e18; --leather-terracotta-lo:#240e08;
+  --leather-leaf      :#182a10; --leather-leaf-hi      :#2a4418; --leather-leaf-lo      :#0c1408;
+  --leather-arctic    :#162030; --leather-arctic-hi    :#264050; --leather-arctic-lo    :#0a1018;
+  --leather-midnight  :#080814; --leather-midnight-hi  :#121220; --leather-midnight-lo  :#020208;
+  --leather-buff      :#3e2a10; --leather-buff-hi      :#664618; --leather-buff-lo      :#1e1408;
+  --leather-dustblue  :#182030; --leather-dustblue-hi  :#2a3448; --leather-dustblue-lo  :#0c1018;
+  --leather-sage      :#1e2c14; --leather-sage-hi      :#304820; --leather-sage-lo      :#0e1608;
+  --leather-charcoal  :#1a1a1c; --leather-charcoal-hi  :#2c2c30; --leather-charcoal-lo  :#0c0c0e;
 
   --board-rose:#d4828a;  --board-rose-hi:#e9b0b4;
   --board-sage:#8aaa86;  --board-sage-hi:#b5cfb1;
@@ -1763,11 +1780,27 @@ html, body {
   background:radial-gradient(ellipse 80% 80% at 50% 50%, rgba(248,226,154,.18), transparent 65%);
   border-radius:4px;
 }
-.story-cover.skin-classic.l-burgundy{--leather:var(--leather-burgundy);--leather-hi:var(--leather-burgundy-hi);--leather-lo:var(--leather-burgundy-lo)}
-.story-cover.skin-classic.l-forest  {--leather:var(--leather-forest);  --leather-hi:var(--leather-forest-hi);  --leather-lo:var(--leather-forest-lo)}
-.story-cover.skin-classic.l-navy    {--leather:var(--leather-navy);    --leather-hi:var(--leather-navy-hi);    --leather-lo:var(--leather-navy-lo)}
-.story-cover.skin-classic.l-tan     {--leather:var(--leather-tan);     --leather-hi:var(--leather-tan-hi);     --leather-lo:var(--leather-tan-lo)}
-.story-cover.skin-classic.l-plum    {--leather:var(--leather-plum);    --leather-hi:var(--leather-plum-hi);    --leather-lo:var(--leather-plum-lo)}
+.story-cover.skin-classic.l-burgundy  {--leather:var(--leather-burgundy);  --leather-hi:var(--leather-burgundy-hi);  --leather-lo:var(--leather-burgundy-lo)}
+.story-cover.skin-classic.l-forest    {--leather:var(--leather-forest);    --leather-hi:var(--leather-forest-hi);    --leather-lo:var(--leather-forest-lo)}
+.story-cover.skin-classic.l-navy      {--leather:var(--leather-navy);      --leather-hi:var(--leather-navy-hi);      --leather-lo:var(--leather-navy-lo)}
+.story-cover.skin-classic.l-tan       {--leather:var(--leather-tan);       --leather-hi:var(--leather-tan-hi);       --leather-lo:var(--leather-tan-lo)}
+.story-cover.skin-classic.l-plum      {--leather:var(--leather-plum);      --leather-hi:var(--leather-plum-hi);      --leather-lo:var(--leather-plum-lo)}
+.story-cover.skin-classic.l-chestnut  {--leather:var(--leather-chestnut);  --leather-hi:var(--leather-chestnut-hi);  --leather-lo:var(--leather-chestnut-lo)}
+.story-cover.skin-classic.l-slate     {--leather:var(--leather-slate);     --leather-hi:var(--leather-slate-hi);     --leather-lo:var(--leather-slate-lo)}
+.story-cover.skin-classic.l-teal      {--leather:var(--leather-teal);      --leather-hi:var(--leather-teal-hi);      --leather-lo:var(--leather-teal-lo)}
+.story-cover.skin-classic.l-mauve     {--leather:var(--leather-mauve);     --leather-hi:var(--leather-mauve-hi);     --leather-lo:var(--leather-mauve-lo)}
+.story-cover.skin-classic.l-sienna    {--leather:var(--leather-sienna);    --leather-hi:var(--leather-sienna-hi);    --leather-lo:var(--leather-sienna-lo)}
+.story-cover.skin-classic.l-gold      {--leather:var(--leather-gold);      --leather-hi:var(--leather-gold-hi);      --leather-lo:var(--leather-gold-lo)}
+.story-cover.skin-classic.l-russet    {--leather:var(--leather-russet);    --leather-hi:var(--leather-russet-hi);    --leather-lo:var(--leather-russet-lo)}
+.story-cover.skin-classic.l-amber     {--leather:var(--leather-amber);     --leather-hi:var(--leather-amber-hi);     --leather-lo:var(--leather-amber-lo)}
+.story-cover.skin-classic.l-terracotta{--leather:var(--leather-terracotta);--leather-hi:var(--leather-terracotta-hi);--leather-lo:var(--leather-terracotta-lo)}
+.story-cover.skin-classic.l-leaf      {--leather:var(--leather-leaf);      --leather-hi:var(--leather-leaf-hi);      --leather-lo:var(--leather-leaf-lo)}
+.story-cover.skin-classic.l-arctic    {--leather:var(--leather-arctic);    --leather-hi:var(--leather-arctic-hi);    --leather-lo:var(--leather-arctic-lo)}
+.story-cover.skin-classic.l-midnight  {--leather:var(--leather-midnight);  --leather-hi:var(--leather-midnight-hi);  --leather-lo:var(--leather-midnight-lo)}
+.story-cover.skin-classic.l-buff      {--leather:var(--leather-buff);      --leather-hi:var(--leather-buff-hi);      --leather-lo:var(--leather-buff-lo)}
+.story-cover.skin-classic.l-dustblue  {--leather:var(--leather-dustblue);  --leather-hi:var(--leather-dustblue-hi);  --leather-lo:var(--leather-dustblue-lo)}
+.story-cover.skin-classic.l-sage      {--leather:var(--leather-sage);      --leather-hi:var(--leather-sage-hi);      --leather-lo:var(--leather-sage-lo)}
+.story-cover.skin-classic.l-charcoal  {--leather:var(--leather-charcoal);  --leather-hi:var(--leather-charcoal-hi);  --leather-lo:var(--leather-charcoal-lo)}
 
 /* Locked face (desaturate; card drop-shadow stays on the shelf `.book`) */
 .story-cover.is-locked.skin-classic{
@@ -2124,11 +2157,27 @@ html, body {
   box-shadow:inset 0 0 0 1px rgba(216,176,74,.3),inset 0 0 60px rgba(0,0,0,.4);
   z-index:3;
 }
-.book.book-classic.l-burgundy .inside-cover-classic{--leather:var(--leather-burgundy);--leather-hi:var(--leather-burgundy-hi);--leather-lo:var(--leather-burgundy-lo)}
-.book.book-classic.l-forest   .inside-cover-classic{--leather:var(--leather-forest);  --leather-hi:var(--leather-forest-hi);  --leather-lo:var(--leather-forest-lo)}
-.book.book-classic.l-navy     .inside-cover-classic{--leather:var(--leather-navy);    --leather-hi:var(--leather-navy-hi);    --leather-lo:var(--leather-navy-lo)}
-.book.book-classic.l-tan      .inside-cover-classic{--leather:var(--leather-tan);     --leather-hi:var(--leather-tan-hi);     --leather-lo:var(--leather-tan-lo)}
-.book.book-classic.l-plum     .inside-cover-classic{--leather:var(--leather-plum);    --leather-hi:var(--leather-plum-hi);    --leather-lo:var(--leather-plum-lo)}
+.book.book-classic.l-burgundy   .inside-cover-classic{--leather:var(--leather-burgundy);  --leather-hi:var(--leather-burgundy-hi);  --leather-lo:var(--leather-burgundy-lo)}
+.book.book-classic.l-forest     .inside-cover-classic{--leather:var(--leather-forest);    --leather-hi:var(--leather-forest-hi);    --leather-lo:var(--leather-forest-lo)}
+.book.book-classic.l-navy       .inside-cover-classic{--leather:var(--leather-navy);      --leather-hi:var(--leather-navy-hi);      --leather-lo:var(--leather-navy-lo)}
+.book.book-classic.l-tan        .inside-cover-classic{--leather:var(--leather-tan);       --leather-hi:var(--leather-tan-hi);       --leather-lo:var(--leather-tan-lo)}
+.book.book-classic.l-plum       .inside-cover-classic{--leather:var(--leather-plum);      --leather-hi:var(--leather-plum-hi);      --leather-lo:var(--leather-plum-lo)}
+.book.book-classic.l-chestnut   .inside-cover-classic{--leather:var(--leather-chestnut);  --leather-hi:var(--leather-chestnut-hi);  --leather-lo:var(--leather-chestnut-lo)}
+.book.book-classic.l-slate      .inside-cover-classic{--leather:var(--leather-slate);     --leather-hi:var(--leather-slate-hi);     --leather-lo:var(--leather-slate-lo)}
+.book.book-classic.l-teal       .inside-cover-classic{--leather:var(--leather-teal);      --leather-hi:var(--leather-teal-hi);      --leather-lo:var(--leather-teal-lo)}
+.book.book-classic.l-mauve      .inside-cover-classic{--leather:var(--leather-mauve);     --leather-hi:var(--leather-mauve-hi);     --leather-lo:var(--leather-mauve-lo)}
+.book.book-classic.l-sienna     .inside-cover-classic{--leather:var(--leather-sienna);    --leather-hi:var(--leather-sienna-hi);    --leather-lo:var(--leather-sienna-lo)}
+.book.book-classic.l-gold       .inside-cover-classic{--leather:var(--leather-gold);      --leather-hi:var(--leather-gold-hi);      --leather-lo:var(--leather-gold-lo)}
+.book.book-classic.l-russet     .inside-cover-classic{--leather:var(--leather-russet);    --leather-hi:var(--leather-russet-hi);    --leather-lo:var(--leather-russet-lo)}
+.book.book-classic.l-amber      .inside-cover-classic{--leather:var(--leather-amber);     --leather-hi:var(--leather-amber-hi);     --leather-lo:var(--leather-amber-lo)}
+.book.book-classic.l-terracotta .inside-cover-classic{--leather:var(--leather-terracotta);--leather-hi:var(--leather-terracotta-hi);--leather-lo:var(--leather-terracotta-lo)}
+.book.book-classic.l-leaf       .inside-cover-classic{--leather:var(--leather-leaf);      --leather-hi:var(--leather-leaf-hi);      --leather-lo:var(--leather-leaf-lo)}
+.book.book-classic.l-arctic     .inside-cover-classic{--leather:var(--leather-arctic);    --leather-hi:var(--leather-arctic-hi);    --leather-lo:var(--leather-arctic-lo)}
+.book.book-classic.l-midnight   .inside-cover-classic{--leather:var(--leather-midnight);  --leather-hi:var(--leather-midnight-hi);  --leather-lo:var(--leather-midnight-lo)}
+.book.book-classic.l-buff       .inside-cover-classic{--leather:var(--leather-buff);      --leather-hi:var(--leather-buff-hi);      --leather-lo:var(--leather-buff-lo)}
+.book.book-classic.l-dustblue   .inside-cover-classic{--leather:var(--leather-dustblue);  --leather-hi:var(--leather-dustblue-hi);  --leather-lo:var(--leather-dustblue-lo)}
+.book.book-classic.l-sage       .inside-cover-classic{--leather:var(--leather-sage);      --leather-hi:var(--leather-sage-hi);      --leather-lo:var(--leather-sage-lo)}
+.book.book-classic.l-charcoal   .inside-cover-classic{--leather:var(--leather-charcoal);  --leather-hi:var(--leather-charcoal-hi);  --leather-lo:var(--leather-charcoal-lo)}
 
 .inside-cover-watercolour{
   position:absolute;inset:0;
@@ -2219,35 +2268,42 @@ html, body {
   .leaf-face { padding: 16px 14px; }
 }
 
-/* ── A7: Book reader — tighter text layout on portrait mobile ────────────── */
-/* Corner ornament extent at 375 px ≈ 30 px (frame 10 px + corner 26 px − 6 px
-   overlap).  28 px top/bottom is the safe minimum; 20 px is fine on the sides
-   where no ornament reaches.  Font drops to 13 px and line-height to 1.3 so
-   a typical 40-word paragraph fits in one view on 390 px+ devices. */
+/* ── A7: Book reader — portrait mobile layout ────────────────────────────── */
+/* Taller aspect-ratio fills the viewport better (book was in the top-third).
+   Corner ornament extent = frame(8px) + corner(22px) − 6px = 24px, so a
+   26px content inset clears corners with 2px to spare on all sides. */
 @media (max-width: 480px) {
+  .book { aspect-ratio: 2 / 2.2; }
+
+  /* Shrink frame + corners so the text area can grow */
+  .book.book-classic .page-frame               { inset: 8px; }
+  .book.book-classic .page-frame .corner        { width: 22px; height: 22px; }
+
   .book.book-classic .page-content {
-    inset: 28px 20px;
-    font-size: 13px;
-    line-height: 1.3;
+    inset: 26px 22px;
+    font-size: 14px;
+    line-height: 1.42;
   }
-  .book.book-classic .page-content p { margin: 0 0 7px; }
+  .book.book-classic .page-content p { margin: 0 0 10px; }
   .book.book-classic .page-content p:first-of-type::first-letter {
-    font-size: clamp(22px, 7vw, 38px);
+    font-size: clamp(22px, 7vw, 36px);
   }
 
+  /* Watercolour frame is a fixed-pixel inset — bring it in for mobile */
+  .book.book-watercolour .page-frame { inset: 10px; }
   .book.book-watercolour .page-content {
-    inset: 20px 16px;
-    font-size: 12px;
-    line-height: 1.3;
+    inset: 14px 12px;
+    font-size: 14px;
+    line-height: 1.42;
   }
-  .book.book-watercolour .page-content p { margin: 0 0 7px; }
+  .book.book-watercolour .page-content p { margin: 0 0 10px; }
   .book.book-watercolour .page-content p:first-of-type::first-letter {
-    font-size: clamp(18px, 6vw, 32px);
+    font-size: clamp(18px, 6vw, 30px);
   }
 
   /* Scroll overlay must track the same inset as page-content */
-  .book.book-classic .page-scroll-over      { inset: 28px 20px; }
-  .book.book-watercolour .page-scroll-over  { inset: 20px 16px; }
+  .book.book-classic .page-scroll-over      { inset: 26px 22px; }
+  .book.book-watercolour .page-scroll-over  { inset: 14px 12px; }
 }
 
 /* ── B2: Library shelf — narrower tiles and fewer books per row ──────────── */
@@ -2400,36 +2456,44 @@ html, body {
   /* ── Numbers — compact digit picker to give stage more room ──────────── */
   .numbers-screen .topbar { height: 48px; }
 
-  /* ── Story reader — wider book + tight text in landscape ────────────────── */
-  /* Landscape pages are wide and short, so we switch to a 2/1.1 aspect ratio
-     (each half-page is ~1.8× wider than it is tall) and cap at 92 vh.
-     Font switches to vh-based so it scales with the short viewport dimension,
-     not the wide one.  Insets are minimised — ornament extent in landscape is
-     the same ~30 px, but the shorter leaf height makes every pixel count. */
+  /* ── Story reader — wider book + text in landscape ──────────────────────── */
+  /* Aspect-ratio 2/1.1 (each page ~1.8× wider than tall) fills landscape well.
+     Ornaments are reduced so insets can be tight without overlapping the frame.
+     Font is vh-based — scales with the SHORT viewport dimension (height) rather
+     than the wide vw, so it doesn't blow up on wide landscape phones. */
   .book {
     aspect-ratio: 2 / 1.1;
     width: min(740px, 94vw, calc(92vh * 2 / 1.1));
   }
+
+  /* Shrink classic frame + corners — ornament extent = 6 + 18 − 6 = 18px */
+  .book.book-classic .page-frame               { inset: 6px; }
+  .book.book-classic .page-frame .corner        { width: 18px; height: 18px; }
+
   .book.book-classic .page-content {
-    inset: 24px 18px;
-    font-size: clamp(13px, 3.4vh, 15px);
-    line-height: 1.28;
+    inset: 22px 18px;
+    font-size: clamp(15px, 5vh, 19px);
+    line-height: 1.35;
   }
-  .book.book-classic .page-content p { margin: 0 0 5px; }
+  .book.book-classic .page-content p { margin: 0 0 8px; }
   .book.book-classic .page-content p:first-of-type::first-letter {
-    font-size: clamp(20px, 5.5vh, 36px);
+    font-size: clamp(22px, 6vh, 38px);
   }
+
+  /* Watercolour frame is fixed-pixel — tighten for landscape */
+  .book.book-watercolour .page-frame { inset: 8px; }
   .book.book-watercolour .page-content {
-    inset: 16px 14px;
-    font-size: clamp(12px, 3.2vh, 14px);
-    line-height: 1.28;
+    inset: 12px 10px;
+    font-size: clamp(14px, 4.5vh, 18px);
+    line-height: 1.35;
   }
-  .book.book-watercolour .page-content p { margin: 0 0 5px; }
+  .book.book-watercolour .page-content p { margin: 0 0 8px; }
   .book.book-watercolour .page-content p:first-of-type::first-letter {
-    font-size: clamp(16px, 4.5vh, 28px);
+    font-size: clamp(18px, 5vh, 32px);
   }
-  .book.book-classic .page-scroll-over     { inset: 24px 18px; }
-  .book.book-watercolour .page-scroll-over { inset: 16px 14px; }
+
+  .book.book-classic .page-scroll-over     { inset: 22px 18px; }
+  .book.book-watercolour .page-scroll-over { inset: 12px 10px; }
 
   /* ── Story Library — compact so both shelf rows show without scrolling ── */
   .bookshelf .book      { width: 96px; }
