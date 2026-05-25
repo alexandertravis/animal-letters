@@ -2642,11 +2642,19 @@ html, body {
   position: relative;
   flex: 1;
   min-height: 0;
+  min-width: 0;   /* prevent stage overflowing in landscape flex-row layout */
   margin: 0 12px;
   background: #ffffff;
   border-radius: 14px;
   box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.08);
   overflow: hidden;
+}
+/* Zoom wrapper: same size as stage; CSS transform applied by JS for pinch-zoom. */
+.canvas-zoom-wrapper {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;  /* top-left origin for simpler coordinate math */
+  will-change: transform;
 }
 .painting-stage canvas {
   position: absolute;
@@ -2672,6 +2680,44 @@ html, body {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* Palette row: size-dot triangle on the left, 2-row colour grid on the right */
+.painting-toolbar .palette-row {
+  flex: 1 0 100%;   /* always own full toolbar row in portrait */
+  justify-content: flex-start;
+  gap: 10px;
+}
+.palette-row .sizes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  flex-shrink: 0;
+}
+/* First (largest) dot spans both columns — creates the triangle/pyramid look */
+.palette-row .sizes .size-btn:first-child {
+  grid-column: 1 / -1;
+}
+.palette-row .sizes .size-btn {
+  width: 44px;
+  height: 44px;
+}
+.palette-row .swatches {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
+}
+.palette-row .swatch {
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+/* Sticker tray: keep slots spaced and aligned */
+.sticker-tray {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 .painting-toolbar .tool-btn {
   width: 56px;
@@ -2768,7 +2814,7 @@ html, body {
   z-index: 30;
   padding: 14px 12px 16px;
   max-height: 45vh;
-  overflow-y: auto;
+  overflow-y: scroll;  /* always show scrollbar so it's obvious there are more */
   box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.14);
   -webkit-overflow-scrolling: touch;
 }
@@ -2776,8 +2822,15 @@ html, body {
 .emoji-panel-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
   justify-content: center;
+}
+/* Larger emoji buttons in the panel so they're easy to tap */
+.emoji-panel .sticker-btn {
+  width: 54px;
+  height: 54px;
+  font-size: 2rem;
+  border-radius: 14px;
 }
 
 @media (max-height: 600px) {
@@ -2832,6 +2885,7 @@ html, body {
     flex-direction: column;
     flex-wrap: nowrap;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     width: 124px;
     padding: 8px;
     gap: 8px;
@@ -2840,6 +2894,25 @@ html, body {
     flex-wrap: wrap;
     justify-content: center;
   }
+  /* Palette-row reflows to a single wrapping column in the narrow side toolbar */
+  .painting-toolbar .palette-row {
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .palette-row .sizes {
+    grid-template-columns: 1fr 1fr 1fr;  /* 3 dots in a row in landscape */
+  }
+  .palette-row .sizes .size-btn:first-child {
+    grid-column: auto;  /* cancel portrait span */
+  }
+  .palette-row .sizes .size-btn { width: 36px; height: 36px; }
+  .palette-row .swatches {
+    grid-template-columns: repeat(5, 1fr);
+    width: 100%;
+  }
+  .palette-row .swatch { min-width: 0; }
   .painting-toolbar .tool-btn { width: 48px; height: 48px; }
   .painting-toolbar .swatch { width: 36px; height: 36px; }
   .painting-toolbar .size-btn,

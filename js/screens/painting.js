@@ -23,6 +23,7 @@ window.APP = window.APP || {};
   const FILL_TOLERANCE = 40;
 
   let resizeHandler = null;
+  let orientationHandler = null;
   const imageCache = {};
 
   function loadImg(src) {
@@ -39,6 +40,7 @@ window.APP = window.APP || {};
 
   function render(root, ctx) {
     if (resizeHandler) { window.removeEventListener('resize', resizeHandler); resizeHandler = null; }
+    if (orientationHandler) { window.removeEventListener('orientationchange', orientationHandler); orientationHandler = null; }
 
     root.innerHTML = '';
 
@@ -47,7 +49,9 @@ window.APP = window.APP || {};
       color: COLORS[1],
       size: SIZES[1],
       sticker: ALL_STICKERS[0],
-      recentStickers: ALL_STICKERS.slice(0, RECENT_STICKER_COUNT),
+      // Each slot: { emoji, used } — used is a timestamp; negative initial values
+      // give a stable, unique ordering so the first 5 slots don't all tie at 0.
+      recentStickers: ALL_STICKERS.slice(0, RECENT_STICKER_COUNT).map((e, i) => ({ emoji: e, used: -i })),
       history: [],
       dpr: 1,
       drawing: false,
@@ -56,6 +60,9 @@ window.APP = window.APP || {};
       template: null,
       pbnDone: new Set(),
       wallPixels: null,   // Uint8Array — barrier pixel positions; checked by floodFill
+      zoom: 1,
+      panX: 0,
+      panY: 0,
     };
 
     const wrap = document.createElement('div');
@@ -84,8 +91,10 @@ window.APP = window.APP || {};
         </div>
       </div>
       <div class="painting-stage">
-        <canvas class="paint-layer"></canvas>
-        <canvas class="overlay-layer"></canvas>
+        <div class="canvas-zoom-wrapper">
+          <canvas class="paint-layer"></canvas>
+          <canvas class="overlay-layer"></canvas>
+        </div>
       </div>
       <div class="painting-toolbar">
         <div class="tool-group tools">
@@ -95,11 +104,13 @@ window.APP = window.APP || {};
           <button class="tool-btn" data-tool="splash" aria-label="${APP.t('painting.splash')}">${APP.ICONS.splash}</button>
           <button class="tool-btn" data-tool="sticker" aria-label="${APP.t('painting.sticker')}">${APP.ICONS.sticker}</button>
         </div>
-        <div class="tool-group swatches">
-          ${COLORS.map(c => `<button class="swatch" data-color="${c}" style="background:${c};${c==='#ffffff'?'border:2px solid #ccc':''}" aria-label="colour ${c}"></button>`).join('')}
-        </div>
-        <div class="tool-group sizes">
-          ${SIZES.map(s => `<button class="size-btn" data-size="${s}" aria-label="size ${s}"><span style="width:${s}px;height:${s}px"></span></button>`).join('')}
+        <div class="tool-group palette-row">
+          <div class="sizes">
+            ${SIZES.map(s => `<button class="size-btn" data-size="${s}" aria-label="size ${s}"><span style="width:${s}px;height:${s}px"></span></button>`).join('')}
+          </div>
+          <div class="swatches">
+            ${COLORS.map(c => `<button class="swatch" data-color="${c}" style="background:${c};${c==='#ffffff'?'border:2px solid #ccc':''}" aria-label="colour ${c}"></button>`).join('')}
+          </div>
         </div>
         <div class="tool-group stickers">
           <div class="sticker-tray"></div>
@@ -156,11 +167,28 @@ window.APP = window.APP || {};
           try { cx.putImageData(snapshot, 0, 0); } catch (_) {}
         }
       }
+      applyTransform();
     }
 
     resizeHandler = function () { resize(); };
     window.addEventListener('resize', resizeHandler);
+    orientationHandler = function () { setTimeout(resize, 300); };
+    window.addEventListener('orientationchange', orientationHandler);
     resize();
+
+    // ---- Zoom / pan transform -------------------------------------------------
+    // Applied to the .canvas-zoom-wrapper div; both canvas layers move together.
+    // transform-origin is 0 0 (top-left of the wrapper) for simpler coordinate math.
+    function applyTransform() {
+      const wrapper = stage.querySelector('.canvas-zoom-wrapper');
+      if (!wrapper) return;
+      if (paint.zoom === 1 && paint.panX === 0 && paint.panY === 0) {
+        wrapper.style.transform = '';
+      } else {
+        wrapper.style.transform =
+          `translate(${paint.panX}px,${paint.panY}px) scale(${paint.zoom})`;
+      }
+    }
 
     // ---- Wall map (flood-fill barrier) ----------------------------------------
     // buildWallMap renders the barrier strokes to an offscreen canvas and marks
@@ -419,15 +447,20 @@ window.APP = window.APP || {};
     }
 
     // ---- Coordinate helpers ---------------------------------------------------
+    // getBoundingClientRect already accounts for the CSS zoom transform on the
+    // wrapper, so dividing by paint.zoom converts back to canvas CSS pixels.
     function cssPoint(e) {
       const r = canvas.getBoundingClientRect();
-      return { x: e.clientX - r.left, y: e.clientY - r.top };
+      return {
+        x: (e.clientX - r.left) / paint.zoom,
+        y: (e.clientY - r.top) / paint.zoom,
+      };
     }
     function devicePoint(e) {
       const r = canvas.getBoundingClientRect();
       return {
-        x: Math.floor((e.clientX - r.left) * paint.dpr),
-        y: Math.floor((e.clientY - r.top) * paint.dpr),
+        x: Math.floor((e.clientX - r.left) / paint.zoom * paint.dpr),
+        y: Math.floor((e.clientY - r.top) / paint.zoom * paint.dpr),
       };
     }
 
@@ -581,11 +614,33 @@ window.APP = window.APP || {};
       }
     }
 
-    // ---- Pointer handling -----------------------------------------------------
+    // ---- Pointer handling (with pinch-to-zoom) --------------------------------
+    // activePointers tracks all live touch/pen contacts so we can detect when
+    // two fingers are down and switch from drawing into pinch-zoom mode.
+    const activePointers = new Map(); // pointerId → {clientX, clientY}
+    let prevPinch = null;             // {dist, midX, midY} relative to stage
+
     function onDown(e) {
-      if (APP.audio) APP.audio._wake();
       try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+      activePointers.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
       e.preventDefault();
+
+      if (activePointers.size >= 2) {
+        // Second finger down: abort any current drawing stroke and enter pinch mode.
+        paint.drawing = false;
+        paint.last = null;
+        const pts = [...activePointers.values()];
+        const r = stage.getBoundingClientRect();
+        prevPinch = {
+          dist: Math.hypot(pts[1].clientX - pts[0].clientX, pts[1].clientY - pts[0].clientY),
+          midX: (pts[0].clientX + pts[1].clientX) / 2 - r.left,
+          midY: (pts[0].clientY + pts[1].clientY) / 2 - r.top,
+        };
+        return;
+      }
+
+      // Single finger — normal drawing tools.
+      if (APP.audio) APP.audio._wake();
 
       if (paint.tool === 'fill') {
         pushHistory();
@@ -616,6 +671,33 @@ window.APP = window.APP || {};
       dab(p);
     }
     function onMove(e) {
+      if (activePointers.has(e.pointerId)) {
+        activePointers.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
+      }
+
+      // Pinch-zoom: two fingers moving.
+      if (activePointers.size >= 2 && prevPinch) {
+        e.preventDefault();
+        const pts = [...activePointers.values()];
+        const r = stage.getBoundingClientRect();
+        const dist = Math.hypot(pts[1].clientX - pts[0].clientX, pts[1].clientY - pts[0].clientY);
+        const midX = (pts[0].clientX + pts[1].clientX) / 2 - r.left;
+        const midY = (pts[0].clientY + pts[1].clientY) / 2 - r.top;
+
+        // Keep the same canvas content point under the pinch midpoint.
+        const contentX = (prevPinch.midX - paint.panX) / paint.zoom;
+        const contentY = (prevPinch.midY - paint.panY) / paint.zoom;
+        const newZoom = Math.max(1, Math.min(4, paint.zoom * dist / prevPinch.dist));
+        paint.panX = midX - contentX * newZoom;
+        paint.panY = midY - contentY * newZoom;
+        paint.zoom = newZoom;
+        // Snap back to no-transform when pinched all the way back to 1×.
+        if (paint.zoom <= 1.02) { paint.zoom = 1; paint.panX = 0; paint.panY = 0; }
+        prevPinch = { dist, midX, midY };
+        applyTransform();
+        return;
+      }
+
       if (!paint.drawing) return;
       e.preventDefault();
       const p = cssPoint(e);
@@ -623,6 +705,8 @@ window.APP = window.APP || {};
       paint.last = p;
     }
     function onUp(e) {
+      activePointers.delete(e.pointerId);
+      if (activePointers.size < 2) prevPinch = null;
       if (!paint.drawing) return;
       paint.drawing = false;
       paint.last = null;
@@ -694,20 +778,30 @@ window.APP = window.APP || {};
     function renderStickerTray() {
       const tray = wrap.querySelector('.sticker-tray');
       if (!tray) return;
-      tray.innerHTML = paint.recentStickers.map(e =>
-        `<button class="sticker-btn${e === paint.sticker ? ' active' : ''}" data-sticker="${e}">${e}</button>`
+      tray.innerHTML = paint.recentStickers.map(s =>
+        `<button class="sticker-btn${s.emoji === paint.sticker ? ' active' : ''}" data-sticker="${s.emoji}">${s.emoji}</button>`
       ).join('');
       tray.querySelectorAll('[data-sticker]').forEach(b =>
         b.addEventListener('click', () => selectSticker(b.getAttribute('data-sticker')))
       );
     }
     function selectSticker(emoji) {
+      const now = Date.now();
+      const slotIdx = paint.recentStickers.findIndex(s => s.emoji === emoji);
+      if (slotIdx >= 0) {
+        // Already in tray: refresh its timestamp but keep its position.
+        paint.recentStickers[slotIdx].used = now;
+      } else {
+        // Not in tray: replace the LRU slot (oldest used; rightmost wins on tie).
+        let lru = 0;
+        for (let i = 1; i < paint.recentStickers.length; i++) {
+          if (paint.recentStickers[i].used <= paint.recentStickers[lru].used) lru = i;
+        }
+        paint.recentStickers[lru] = { emoji, used: now };
+      }
       paint.sticker = emoji;
       paint.tool = 'sticker';
       setActive('[data-tool]', 'data-tool', 'sticker');
-      // Promote to front of recent list
-      paint.recentStickers = [emoji, ...paint.recentStickers.filter(s => s !== emoji)]
-        .slice(0, RECENT_STICKER_COUNT);
       renderStickerTray();
       emojiPanel.classList.add('hidden');
     }
@@ -724,7 +818,7 @@ window.APP = window.APP || {};
     }));
     wrap.querySelectorAll('[data-color]').forEach(b => b.addEventListener('click', () => {
       paint.color = b.getAttribute('data-color');
-      if (paint.tool === 'eraser' || paint.tool === 'sticker' || paint.tool === 'splash') {
+      if (paint.tool === 'eraser' || paint.tool === 'sticker') {
         paint.tool = 'brush';
         setActive('[data-tool]', 'data-tool', 'brush');
       }
@@ -747,6 +841,7 @@ window.APP = window.APP || {};
     wrap.querySelector('[data-act=clear]').addEventListener('click', clearAll);
     wrap.querySelector('[data-act=back]').addEventListener('click', () => {
       if (resizeHandler) { window.removeEventListener('resize', resizeHandler); resizeHandler = null; }
+      if (orientationHandler) { window.removeEventListener('orientationchange', orientationHandler); orientationHandler = null; }
       const prev = APP.state.previousScreen;
       ctx.go(prev && prev !== 'painting' ? prev : 'landing');
     });
