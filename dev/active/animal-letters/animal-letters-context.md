@@ -291,3 +291,77 @@ NEXT STEP: No active work. Pick up from story library expansion (new stories) or
 Blockers: none
 Half-finished: none
 Security flags added: none
+
+---
+
+## Constraints & Gotchas (story illustrations — added 2026-05-25)
+- **Image format:** Store illustrations as WebP at quality 82. Convert from PNG source using Python Pillow (`Image.open().save('out.webp', 'WEBP', quality=82)`). PNG originals stay in Downloads — do NOT commit them.
+- **Directory convention:** `assets/images/story/<story-id>/page-NN.webp` (zero-padded, 1-indexed).
+- **stories.js paragraph `image` field:** Each paragraph has its own `image` path. The `pages` getter on `APP.Story` maps `p.image` transparently — just update the `image` field on the relevant paragraph object.
+- **Classic skin fill:** `.book.book-classic .page-img img` was `78%/78%/contain` — updated to `100%/100%/cover` so illustrations fill the page. Watercolour was already `cover`. Don't revert this.
+- **Landscape `.page-img` insets:** Added `inset: 26px 22px` in `@media(max-width:480px)` and `inset: 32px 40px` in `@media(max-height:600px)` for classic skin — matches content inset and clears ornaments.
+- **Conversion tool:** `magick` (ImageMagick) not available on this machine. Use Windows Python at `C:\Users\alext\AppData\Local\Programs\Python\Python313\python.exe` with Pillow (already installed).
+- **Scene order vs filename order may differ:** Always verify which image is which before mapping to page numbers.
+
+## Session End — 2026-05-25 (story illustrations)
+Git status: clean — commit `fb507da` pushed to main.
+Untracked: `assets/fonts/Playwrite_GB_S_Guides/` (do not commit).
+
+---
+
+## Painting Feature (feature/painting, 2026-05-25)
+
+### Key files added/changed
+| File | Role |
+|---|---|
+| `js/screens/painting.js` | **NEW.** Full painting screen IIFE. Two-canvas stack (paint layer + overlay), DPR-aware sizing (synchronous resize, clamped at 2), brush / eraser / scanline flood-fill / emoji-sticker tools, preset colours + sizes, undo (6-deep `ImageData` stack), clear, window resize listener lifecycle. |
+| `js/icons.js` | Added `brush`, `eraser`, `fill`, `sticker`, `undo`, `trash` icons. |
+| `data/i18n.js` | Added `landing.painting`, `painting.title`, plus aria-label keys to `en` block (other locales fall back automatically). |
+| `styles.css` | Added `/* ── Painting ── */` section: full-bleed stage with white background, absolutely-positioned stacked canvases, toolbar (tools / swatches / sizes / stickers), portrait bottom-bar + landscape side-column layout. |
+| `js/screens/landing.js` | Added Painting button + click handler → `ctx.go('painting')`. |
+| `index.html` | Added `<script src="js/screens/painting.js">` before `js/main.js`. |
+
+### Decisions Log
+**2026-05-25** — Two stacked canvases: transparent paint layer (bottom, pointer events) + overlay (top, `pointer-events:none`). Stage has white CSS background so "white" = absence of paint. `destination-out` composite for eraser — consistent regardless of painted colours and doesn't require knowing the background colour. Overlay unused in MVP; reserved for Phase 2 template outlines.
+
+**2026-05-25** — `resize()` called synchronously (not via `requestAnimationFrame`). The stage (`flex:1` in a `flex-column #app`) has correct `clientWidth/Height` immediately after `root.appendChild(wrap)`. rAF doesn't fire in hidden/background tabs (preview environment), making rAF-based init unreliable.
+
+**2026-05-25** — Flood fill is scanline-based over `getImageData`. Fill tap point converted to device pixels (`clientX * dpr`) because `getImageData`/`putImageData` ignore `setTransform`. Tolerance = 40 per-channel (summed-squared comparison) to swallow anti-aliased edges.
+
+**2026-05-25** — Emoji stickers stamped into the bitmap via `ctx.fillText` — simplest approach; sticker becomes part of the paint so eraser/fill interact naturally. No per-sticker reposition (planned for a later iteration).
+
+**2026-05-25** — Never `drawImage` an external file on the paint canvas before `getImageData` — SecurityError on `file://`. Phase 2 templates must use inline `Path2D` paths only.
+
+### Constraints & Gotchas (painting — added 2026-05-25)
+- **DPR coordinate split:** brush/sticker draw in CSS px (honoured by `setTransform`); flood-fill and `getImageData`/`putImageData` operate on raw backing-store px. Convert fill/erase tap points by multiplying by `paint.dpr`.
+- **`touch-action:none`** required on `.painting-stage canvas` (plus global `html,body` rule already present). Without it, finger drags trigger page scroll.
+- **`setPointerCapture` in try/catch:** mirrors tracer.js — prevents stroke-end when pointer drifts outside canvas edge, no-op when pointer ID is invalid.
+- **`resize()` synchronous init:** rAF doesn't fire in hidden tabs. Always call resize() directly in render() after appendChild. The window `resize` listener covers orientation changes.
+- **Undo memory:** each `ImageData` snapshot at dpr=2 on a tablet ≈ 12 MB. Stack capped at 6. `MAX_DPR` clamped to 2.
+- **Phase 2 tainting:** loading external SVG/img onto canvas via `drawImage` before `getImageData` = SecurityError on `file://`. Templates must be inline vector paths drawn via `Path2D`.
+
+## Session Summary — 2026-05-25 (painting feature)
+Completed (Section 29):
+1. New `feature/painting` branch.
+2. Painting screen with brush, eraser, fill-bucket (scanline flood fill), emoji sticker, undo, clear.
+3. Preset colour swatches (8 colours), 3 brush sizes, 10 emoji stickers.
+4. Portrait (bottom toolbar) + landscape (side toolbar) responsive layout.
+5. All tools verified in browser: brush paints, eraser uses `destination-out`, fill floods correctly, stickers stamp to bitmap, undo restores prior state, clear resets, back returns to landing. Console clean.
+NEXT STEP: Open in a real browser / tablet and test with finger input. Refine colour palette, sizes, and toddler-friendliness as needed. Phase 2 = template colour-in mode (hand-coded outline paths → `data/painting-templates.js`).
+Blockers: none
+Half-finished: none
+
+**2026-05-25** — Decision: WebP at quality 82 chosen for story illustrations (5–10× smaller than PNG, 188–236 KB per image vs ~2 MB). PNG sources kept locally in Downloads, not committed. `assets/images/story/<id>/` directory structure established.
+
+**2026-05-25** — Decision: Classic skin image fill changed from `78%/78%/contain` to `100%/100%/cover` globally (not just for three-pigs). Rationale: placeholder SVGs are unaffected visually; all future real illustrations should fill the page. Landscape inset overrides added to both mobile breakpoints to match content alignment.
+
+## Session Summary — 2026-05-25 (story illustrations)
+Completed (Section 28, partial):
+1. Three Little Pigs pages 1–3 wired to real watercolour WebP illustrations.
+2. Classic skin image CSS updated to fill page within borders (cover/100%).
+3. Landscape `.page-img` inset overrides added for classic skin.
+4. Commit `fb507da` pushed to main.
+NEXT STEP: Generate remaining 8 illustrations for Three Little Pigs (pages 4–11: wolf scenes, brick house, ending). Use the existing `imagePrompt` fields in `data/stories/three-pigs.js` as generation prompts. Convert PNGs → WebP using same Python command, save to `assets/images/story/three-pigs/page-04.webp` through `page-11.webp`, update `data/stories/three-pigs.js` paragraph `image` fields accordingly.
+Blockers: none
+Half-finished: none
+Security flags added: none

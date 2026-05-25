@@ -290,6 +290,23 @@
 - [x] Landscape proportional scaling: frame/inset values scaled proportionally to landscape leaf width (~326px vs ~172px portrait) — frame `8→15px`, content `26/22→32/40px` (classic), frame `10→18px`, content `14/12→20/22px` (watercolour)
 - [x] Ornament-clearance confirmed: `frame(15) + corner(22) − 6 = 31px < 32px content inset` ✓
 
+## Section 28 — Story Illustrations (in progress, 2026-05-25)
+- [x] Convert PNG illustrations to WebP (q82) via Python Pillow — `assets/images/story/three-pigs/page-01/02/03.webp` (188–236 KB each)
+- [x] Wire pages 1–3 of Three Little Pigs to real watercolour images (`data/stories/three-pigs.js`)
+- [x] Classic skin `object-fit` updated to `cover` / 100% so images fill the page within borders (`styles.css`)
+- [x] Landscape `.page-img` inset overrides added for classic skin in both `@media` breakpoints
+- [ ] Generate remaining 8 pages (4–11) for Three Little Pigs (wolf scenes + brick house + ending)
+- [ ] Generate illustrations for remaining 7 stories (Goldilocks, Hare & Tortoise, Ugly Duckling, Three Billy Goats, Three Blind Mice, Hey Diddle Diddle, Owl & Pussy-Cat)
+- [ ] Consider watercolour inset `.page-img` landscape override (currently inherits base clamp, visually acceptable)
+
+## Section 29 — Painting Feature (feature/painting, 2026-05-25)
+- [x] `js/icons.js` — add brush, eraser, fill (bucket), sticker, undo, trash icons via `icon()` helper
+- [x] `data/i18n.js` — add `landing.painting`, `painting.title` + aria-label keys to `en` block
+- [x] `js/screens/painting.js` — IIFE, `render(root, ctx)`, two-canvas stage (paint + overlay), DPR sizing (synchronous, dpr clamped at 2), brush / eraser (`destination-out`) / scanline flood-fill / emoji sticker tools, preset colour swatches, 3 size presets, undo (6-deep `ImageData` stack), clear, portrait + landscape toolbar, resize listener lifecycle
+- [x] `styles.css` — `/* ── Painting ── */` section: full-bleed stage, toolbar, swatches, sizes, stickers, portrait + landscape layout
+- [x] `js/screens/landing.js` — Painting button + click handler added
+- [x] `index.html` — `<script src="js/screens/painting.js">` before main.js
+
 ## Section 11b — Future / Nice-to-Have
 - [ ] Real cartoon SVG artwork for all animals
 - [ ] Real realistic photos for all animals

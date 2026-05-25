@@ -33,7 +33,17 @@ APP.I18N = {
     'landing.myAnimals':  'My Animals',
     'landing.progress':   'My Progress',
     'landing.numbers':    'Numbers',
+    'landing.painting':   'Painting',
     'landing.settings':   'Settings',
+
+    // Painting screen
+    'painting.title':     'Painting',
+    'painting.brush':     'Brush',
+    'painting.eraser':    'Eraser',
+    'painting.fill':      'Fill',
+    'painting.sticker':   'Stickers',
+    'painting.undo':      'Undo',
+    'painting.clear':     'Clear all',
 
     // Progress screen
     'screens.progress.title': 'My Progress',
