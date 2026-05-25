@@ -229,13 +229,33 @@ Completed:
 - **Base `.topbar` must be `display:flex`**: only `.game .topbar` and `.complete .topbar` had `display:flex` rules. Library/numbers/progress topbars were `display:block`, stacking vertically. Base rule added before all screen-specific topbar overrides.
 - **`min-height` beats `height` on `.btn`**: `.btn { min-height:64px }` overrides `.btn.icon { height:56px }`. Icon buttons are 64px tall, not 56px. Don't try to change the base without auditing the game screen grid rows.
 - **`booksPerRow()` must match CSS book width**: the JS calculation and CSS `.bookshelf .book { width }` must agree. In landscape (`H<600 && W>=480`) both use 96px. If you change the CSS override, update `booksPerRow()` too.
-- **Trailing `.bookshelf-plank`**: `library.js` appends a plank after every row including the last. In landscape this wastes height — hidden via `.bookshelf > .bookshelf-plank:last-child { display:none }`.
+- **Trailing `.bookshelf-plank`**: `library.js` appends a plank after every row including the last. The `display:none` last-child override was removed in 2026-05-25 so all rows have visible planks. The plank is 12px in landscape — negligible scroll cost.
 - **`@media (max-height:600px)` landscape threshold**: iPhone SE landscape = 375px (well below 600px). Desktop chrome dev tools emulation at 667×375 is a reliable test. Portrait devices (375×667) are above 600px — queries do not fire in portrait.
 
 ## Session Summary — 2026-05-24 (responsive layout)
 Completed:
 1. **Responsive / landscape layout** (Section 25): `viewport-fit=cover`, safe-area insets on `#app`, landing + complete scroll fixes, base `.topbar` rule, landscape `@media (max-height:600px)` compact overrides for all screens, `booksPerRow()` landscape sync.
-Commit: `7498711` fix(responsive): landscape layout fixes across all screens
-NEXT STEP: No active work items. Optional: merge the Find-the-Letter worktree branch; Phase 3 per-page frame variants; dead-CSS cleanup; assets/fonts/Playwrite_GB_S_Guides/ decision.
+Commit: `7498711` fix(responsive): landscape layout fixes across all screens.
+2. **Library booksPerRow fix** (same day, follow-up): corrected SHELF_PAD for landscape, added PROP_SPACE, window resize listener, `flex-wrap:wrap` on `.bookshelf-row`. Commits `fd3516b`, `f3d48ea`.
+3. **Game vertical sidebar + complete 2-col**: `.game` landscape becomes sidebar grid; `.complete` becomes 2-col grid with topbar in right `nav` area. Commit `f3d48ea`.
+
+---
+
+## Constraints & Gotchas (landscape polish — added 2026-05-25)
+- **Complete screen `flex:1` + `display:grid`**: In portrait `.complete` is `flex:1` (fills `#app` flex container). In landscape it switches to `display:grid` internally. These coexist: `flex:1` controls sizing within the parent; `display:grid` only changes internal layout. No conflict.
+- **`tileMetrics()` uses `window.innerWidth`, not strip width**: In landscape the strip is narrower (full width minus 56px sidebar), but `window.innerWidth` overestimates. Tiles are still capped at 40px in landscape so they always fit — the JS doesn't need to know the actual strip width.
+- **Restart/skip are now icon buttons**: Both use `class="btn icon ghost"` in portrait AND landscape. The sidebar's `.game .topbar .btn.icon { width:40px; height:40px }` applies equally. No `writing-mode` or text-specific sidebar rules needed.
+- **`.bookshelf .book` overrides the reader `.book`**: In `@media(max-height:600px)`, `.book { width: min(…) }` is the reader rule. `.bookshelf .book { width: 96px }` comes after and has higher specificity (2 selectors), so shelf books stay at 96px. Don't reorder these rules.
+- **Tap-to-complete threshold is 75%**: `onDown` calls `checkProgress` for regular strokes when `currentCheckpoint >= Math.floor(checkpoints[currentStroke].length * 0.75)`. Below that threshold, dragging is still required — prevents a tap at the start dot from skipping through clustered early checkpoints.
+
+## Session Summary — 2026-05-25 (landscape polish round 2)
+Completed (Section 26):
+1. Library: shelf planks visible under every row; `booksPerRow()` SHELF_PAD landscape fix + PROP_SPACE; resize listener.
+2. Game: restart/skip icon buttons (`APP.ICONS.restart`/`.skip`); tile size capped at 40px in landscape → ~21px more stage height; removed rotated-text CSS.
+3. Tracer: tap-to-complete when ≥75% of stroke done — children no longer stuck dragging the invisible tail.
+4. Complete: 3-column landscape grid (`nav|body|actions`), fixing both the "header bar" appearance and the nav/actions placement; stars badge reduced to 1.4rem in landscape.
+5. Story reader: book width constrained by `calc(88vh × 2/1.35)` in landscape — no more overflow on iPhone SE.
+Commit: `3fda88f` — pushed to main, Vercel deploying.
+NEXT STEP: No active work items. Optional follow-ups: merge Find-the-Letter worktree branch; Phase 3 per-page frame variants; dead-CSS cleanup; Playwrite_GB_S_Guides/ decision.
 Blockers: none
 Half-finished: none

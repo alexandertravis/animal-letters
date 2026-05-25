@@ -271,6 +271,18 @@
 - [x] **Library landscape**: books shrink to 96px, rows to 150px min-height, trailing plank hidden (`bookshelf > .bookshelf-plank:last-child { display:none }`)
 - [x] **`booksPerRow()` landscape sync**: added `H < 600 && W >= 480 ? 96` branch so JS row grouping matches CSS book width in landscape
 
+## Section 26 — Landscape Polish Round 2 (main, 2026-05-25)
+- [x] **Library shelf planks**: removed `.bookshelf > .bookshelf-plank:last-child { display:none }` — every row now has a visible plank underneath it in landscape
+- [x] **Library `booksPerRow()` sync**: corrected SHELF_PAD for landscape (12px not 24/36px), added PROP_SPACE=92px reservation for shelf props at W≥768, added self-cleaning window resize listener (re-renders only while `wrap` is in DOM)
+- [x] **Game sidebar icons**: `APP.ICONS.restart` (circular arrow) + `APP.ICONS.skip` (skip-forward) added to `js/icons.js`; restart/skip buttons converted from `btn ghost` text to `btn icon ghost` — fit the 40px sidebar column without rotation
+- [x] **Game landscape sidebar cleanup**: removed `writing-mode:vertical-rl` + height/padding overrides from `.game .topbar .group:last-child .btn` (now unneeded with icon buttons)
+- [x] **Strip height in landscape**: `tileMetrics()` caps tile width at 40px in landscape (`window.innerHeight < 600`), reducing tile height 72→51px and strip height ~80→59px; gives stage ~21px more tracing room
+- [x] **Tap-to-complete strokes**: `tracer.js` `onDown` now calls `checkProgress()` for regular strokes when `currentCheckpoint ≥ 75%` of total — tapping the near-invisible tail of a stroke finishes it without requiring a drag
+- [x] **Stars badge in landscape**: `.animal-stars-badge--lg` overridden to `font-size:1.4rem` in `@media(max-height:600px)` — scales with the smaller 200px/40vh landscape image box
+- [x] **Complete screen 3-column layout**: changed from 2-column `"body nav"/"body actions"` to single-row 3-column `"nav body actions"` (`60px | 1fr | 140px`); home/settings LEFT sidebar, animal content CENTRE, action buttons RIGHT; topbar uses `border-right` not `border-bottom`
+- [x] **Complete topbar group stacking**: `.complete .topbar .group { flex-direction:column }` so two icon buttons fit within the 60px nav column
+- [x] **Story reader landscape**: `.book { width: min(740px, 92vw, calc(88vh * 2 / 1.35)) }` in landscape — prevents the 2:1.35 aspect-ratio spread from overflowing the viewport height (e.g. 489px × 330px on iPhone SE landscape)
+
 ## Section 11b — Future / Nice-to-Have
 - [ ] Real cartoon SVG artwork for all animals
 - [ ] Real realistic photos for all animals
