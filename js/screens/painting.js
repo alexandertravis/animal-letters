@@ -453,25 +453,40 @@ window.APP = window.APP || {};
     canvas.addEventListener('pointerup', onUp);
     canvas.addEventListener('pointercancel', onUp);
 
+    function showPicker() {
+      picker.classList.remove('hidden');
+      drawThumbnails();
+      // Resize after picker enters the flow (portrait: stage shrinks)
+      setTimeout(resize, 0);
+    }
+    function hidePicker() {
+      picker.classList.add('hidden');
+      // Resize after picker leaves the flow (portrait: stage grows back)
+      setTimeout(resize, 0);
+    }
+
     // ---- Mode toggle ----------------------------------------------------------
     wrap.querySelectorAll('.paint-mode-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const mode = btn.getAttribute('data-mode');
-        if (mode === paint.mode) return;
-        paint.mode = mode;
-        wrap.querySelectorAll('.paint-mode-btn').forEach(b =>
-          b.classList.toggle('active', b.getAttribute('data-mode') === mode));
         if (mode === 'template') {
-          picker.classList.remove('hidden');
-          drawThumbnails();
-          // Don't auto-select; wait for user to pick
+          // Already in template mode → re-open picker to change template
+          if (paint.mode === 'template') {
+            showPicker();
+            return;
+          }
+          paint.mode = 'template';
+          wrap.querySelectorAll('.paint-mode-btn').forEach(b =>
+            b.classList.toggle('active', b.getAttribute('data-mode') === 'template'));
+          showPicker();
         } else {
-          picker.classList.add('hidden');
+          paint.mode = 'free';
+          wrap.querySelectorAll('.paint-mode-btn').forEach(b =>
+            b.classList.toggle('active', b.getAttribute('data-mode') === 'free'));
+          hidePicker();
           paint.template = null;
           paint.pbnDone.clear();
-          // Clear overlay
           ox.clearRect(0, 0, overlay.width, overlay.height);
-          // Switch back to brush
           paint.tool = 'brush';
           setActive('[data-tool]', 'data-tool', 'brush');
         }
@@ -488,11 +503,13 @@ window.APP = window.APP || {};
         btn.classList.add('active');
         paint.template = tpl;
         paint.pbnDone.clear();
-        // Clear both canvases
-        cx.clearRect(0, 0, canvas.width, canvas.height);
-        ox.clearRect(0, 0, overlay.width, overlay.height);
-        drawTemplate(tpl);
-        // Default to fill for colour-in
+        // Hide picker first so stage reclaims its full size, then resize + draw
+        hidePicker();
+        setTimeout(() => {
+          cx.clearRect(0, 0, canvas.width, canvas.height);
+          ox.clearRect(0, 0, overlay.width, overlay.height);
+          drawTemplate(tpl);
+        }, 20);
         paint.tool = 'fill';
         setActive('[data-tool]', 'data-tool', 'fill');
       });
