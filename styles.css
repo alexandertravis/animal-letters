@@ -2657,6 +2657,7 @@ html, body {
 }
 .painting-stage .overlay-layer {
   pointer-events: none;
+  mix-blend-mode: multiply;
 }
 .painting-toolbar {
   flex-shrink: 0;
