@@ -9,7 +9,10 @@ window.APP = window.APP || {};
     const available = Math.min(window.innerWidth, 760) - 32;
     const gap = 6;
     const naturalW = 56;
-    const tileW = Math.min(naturalW, Math.floor((available - (nameLength - 1) * gap) / nameLength));
+    // In landscape (short viewport) use smaller tiles so the tracing stage gets more height
+    const isLandscape = window.innerHeight < 600;
+    const maxW = isLandscape ? 40 : naturalW;
+    const tileW = Math.min(maxW, Math.floor((available - (nameLength - 1) * gap) / nameLength));
     const tileH = Math.round(tileW * (72 / 56));          // keep natural aspect ratio
     const fontSize = ((tileW / naturalW) * 2.4).toFixed(2); // scale 2.4rem linearly
     return { tileW, tileH, fontSize: `${fontSize}rem`, gap };
@@ -79,8 +82,8 @@ window.APP = window.APP || {};
         <input type="range" class="vol-slider" min="0" max="100" step="1" value="${volPct}" aria-label="Volume">
       </div>
       <div class="group">
-        <button class="btn ghost" data-act="restart">${APP.t('game.restart')}</button>
-        <button class="btn ghost" data-act="skip">${APP.t('game.skip')}</button>
+        <button class="btn icon ghost" data-act="restart" aria-label="${APP.t('game.restart')}">${APP.ICONS.restart}</button>
+        <button class="btn icon ghost" data-act="skip" aria-label="${APP.t('game.skip')}">${APP.ICONS.skip}</button>
       </div>
     `;
     wrap.appendChild(bar);

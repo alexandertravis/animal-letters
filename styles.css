@@ -2241,27 +2241,29 @@ html, body {
   /* Compact buttons throughout landing (overrides the global .btn sizing) */
   .landing .btn { min-height: 52px; padding: 12px 20px; font-size: 1.1rem; }
 
-  /* ── Complete — two-column layout in landscape ──────────────────────── */
+  /* ── Complete — three-column landscape layout ───────────────────────── */
+  /* nav (home/settings) LEFT │ body (animal, hooray) CENTRE │ actions RIGHT */
   .complete {
     display: grid;
-    grid-template-columns: 1fr 130px;
-    grid-template-rows: auto 1fr;
-    grid-template-areas:
-      "body nav"
-      "body actions";
+    grid-template-columns: 60px 1fr 140px;
+    grid-template-rows: 1fr;
+    grid-template-areas: "nav body actions";
     overflow: hidden;
     padding: 0;
   }
   .complete .topbar {
     grid-area: nav;
-    flex-direction: row;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: flex-start;
     align-items: center;
     height: auto;
-    padding: 8px;
+    padding: 8px 4px;
     gap: 8px;
-    border-bottom: 1px solid rgba(0,0,0,.08);
+    border-bottom: none;
+    border-right: 1px solid rgba(0,0,0,.08);
   }
+  /* Stack buttons vertically inside the narrow 60px nav column */
+  .complete .topbar .group { flex-direction: column; gap: 6px; }
   .complete-body {
     grid-area: body;
     flex-direction: column;
@@ -2286,6 +2288,8 @@ html, body {
   .complete-actions .btn { min-height: 48px; padding: 8px 12px; font-size: 0.95rem; }
   .complete h1 { font-size: 1.6rem; }
   .complete .animalName { font-size: 1.4rem; }
+  /* Stars badge scales with the smaller landscape image box */
+  .animal-stars-badge--lg { font-size: 1.4rem; gap: 2px; }
 
   /* ── Game — vertical sidebar in landscape ───────────────────────────── */
   .game {
@@ -2316,16 +2320,8 @@ html, body {
   .game .topbar .btn.icon { min-height: 40px; width: 40px; height: 40px; }
   /* Volume slider hidden — mute icon remains */
   .game .topbar .vol-ctrl .vol-slider { display: none; }
-  /* Restart / Skip pushed to bottom of sidebar, rotated to fit 40px column */
+  /* Restart / Skip pushed to bottom of sidebar */
   .game .topbar .group:last-child { margin-top: auto; }
-  .game .topbar .group:last-child .btn {
-    writing-mode: vertical-rl;
-    min-height: 0;
-    height: auto;
-    padding: 8px 4px;
-    font-size: 0.7rem;
-    width: 40px;
-  }
 
   /* ── Find the Letter — 4×1 row instead of 2×2 grid ──────────────────── */
   .find-prompt { font-size: 1rem; margin-bottom: 6px; }
@@ -2338,6 +2334,10 @@ html, body {
 
   /* ── Numbers — compact digit picker to give stage more room ──────────── */
   .numbers-screen .topbar { height: 48px; }
+
+  /* ── Story reader — constrain book to viewport height in landscape ────── */
+  /* aspect-ratio 2/1.35 means height = width × 1.35/2; cap width so height ≤ 88vh */
+  .book { width: min(740px, 92vw, calc(88vh * 2 / 1.35)); }
 
   /* ── Story Library — compact so both shelf rows show without scrolling ── */
   .bookshelf .book      { width: 96px; }

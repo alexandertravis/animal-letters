@@ -373,9 +373,12 @@ window.APP = window.APP || {};
         startStrokeIfNeeded();
         activeInkPoints.push(p);
         activeInkPath.setAttribute('d', pointsToPath(activeInkPoints));
-        // Exception: dot strokes (i/j dot) have no length to drag along.
-        // A tap on the dot is the correct gesture — complete it immediately.
+        // Dot strokes (i/j dot) have no length to drag along — tap completes immediately.
+        // For regular strokes near the end (≥75% of checkpoints done), the guide is
+        // barely visible; allow a tap to finish rather than requiring a drag motion.
         if (isDot(data.strokes[currentStroke].d)) {
+          checkProgress(p);
+        } else if (currentCheckpoint >= Math.floor(checkpoints[currentStroke].length * 0.75)) {
           checkProgress(p);
         }
       }

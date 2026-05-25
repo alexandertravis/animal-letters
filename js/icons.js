@@ -42,5 +42,17 @@ window.APP = window.APP || {};
       '<line x1="19" y1="12" x2="5" y2="12"/>' +
       '<polyline points="12 19 5 12 12 5"/>'
     ),
+
+    // Circular counter-clockwise arrow (refresh / restart)
+    restart: icon(
+      '<polyline points="1 4 1 10 7 10"/>' +
+      '<path d="M3.51 15a9 9 0 1 0 .49-4.7"/>'
+    ),
+
+    // Right-pointing play triangle + vertical bar (skip forward)
+    skip: icon(
+      '<polygon points="5 4 15 12 5 20 5 4"/>' +
+      '<line x1="19" y1="4" x2="19" y2="20"/>'
+    ),
   };
 })(window.APP);
