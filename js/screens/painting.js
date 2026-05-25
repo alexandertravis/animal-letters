@@ -18,7 +18,8 @@ window.APP = window.APP || {};
     return new Promise((resolve, reject) => {
       if (imageCache[src]) { resolve(imageCache[src]); return; }
       const img = new Image();
-      img.crossOrigin = 'anonymous';
+      // No crossOrigin: same-origin on Vercel never taints canvas; on file://
+      // crossOrigin causes image load to fail entirely (CORS with no server).
       img.onload = () => { imageCache[src] = img; resolve(img); };
       img.onerror = reject;
       img.src = src;
