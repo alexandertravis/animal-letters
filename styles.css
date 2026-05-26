@@ -2863,7 +2863,7 @@ html, body {
   font-size: 1.4rem;
   line-height: 1;
   border: 2px solid #ddd;
-  border-radius: 12px;
+  border-radius: 50%;
   background: #f8f8f8;
   cursor: pointer;
   display: flex;
