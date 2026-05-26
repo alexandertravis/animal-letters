@@ -2912,9 +2912,10 @@ html, body {
     grid-template-columns: repeat(5, 1fr);
     width: 100%;
   }
-  .palette-row .swatch { min-width: 0; }
   .painting-toolbar .tool-btn { width: 48px; height: 48px; }
   .painting-toolbar .swatch { width: 36px; height: 36px; }
+  /* Must come after .painting-toolbar .swatch to win on specificity (both 2 classes) */
+  .palette-row .swatches .swatch { width: 100%; min-width: 0; }
   .painting-toolbar .size-btn,
   .painting-toolbar .sticker-btn { width: 40px; height: 40px; }
   .sticker-more-btn { width: 40px; height: 40px; font-size: 1.1rem; }

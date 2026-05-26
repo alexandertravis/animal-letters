@@ -130,7 +130,10 @@ window.APP = window.APP || {};
     const stage = wrap.querySelector('.painting-stage');
     const canvas = wrap.querySelector('.paint-layer');
     const overlay = wrap.querySelector('.overlay-layer');
-    const cx = canvas.getContext('2d');
+    // willReadFrequently: true tells the browser to optimise for frequent
+    // getImageData calls (flood-fill + wall-map building) — avoids the console
+    // warning and improves fill performance on repeated reads.
+    const cx = canvas.getContext('2d', { willReadFrequently: true });
     const ox = overlay.getContext('2d');
 
     // ---- Sizing ---------------------------------------------------------------
