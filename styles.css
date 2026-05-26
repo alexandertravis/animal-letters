@@ -2649,13 +2649,20 @@ html, body {
   box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.08);
   overflow: hidden;
 }
-/* Zoom wrapper: anchored at top-left; JS sizes and centres it via transform. */
+/* Zoom wrapper: anchored at top-left; JS sizes and centres it via transform.
+   The transition smooths out the zoom/pan shift that happens on orientation
+   change.  It is disabled while the user is touching the canvas so that brush
+   strokes and pinch-zoom feel instant (see .painting--interacting below). */
 .canvas-zoom-wrapper {
   position: absolute;
   top: 0;
   left: 0;
-  transform-origin: 0 0;  /* top-left origin for simpler coordinate math */
+  transform-origin: 0 0;
   will-change: transform;
+  transition: transform 0.28s ease-out;
+}
+.painting--interacting .canvas-zoom-wrapper {
+  transition: none;
 }
 .painting-stage canvas {
   position: absolute;

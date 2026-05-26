@@ -218,9 +218,14 @@ window.APP = window.APP || {};
       applyTransform();
     }
 
+    // window 'resize' fires after the browser has reflowed at the new viewport
+    // dimensions — this is the correct moment to update base zoom/pan.
+    // 'orientationchange' fires *before* layout is stable, so we use it only as
+    // a fast-path hint with no delay; if dims are still stale the call is a
+    // near-no-op and 'resize' will follow with the correct values.
     resizeHandler = function () { resize(); };
     window.addEventListener('resize', resizeHandler);
-    orientationHandler = function () { setTimeout(resize, 300); };
+    orientationHandler = function () { resize(); };
     window.addEventListener('orientationchange', orientationHandler);
     resize();
 
@@ -680,6 +685,9 @@ window.APP = window.APP || {};
     function onDown(e) {
       try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
       activePointers.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
+      // Disable wrapper CSS transition while touching so brush strokes and
+      // pinch-zoom are rendered instantly without animation delay.
+      wrap.classList.add('painting--interacting');
       e.preventDefault();
 
       if (activePointers.size >= 2) {
@@ -769,6 +777,8 @@ window.APP = window.APP || {};
     function onUp(e) {
       activePointers.delete(e.pointerId);
       if (activePointers.size < 2) prevPinch = null;
+      // Re-enable the orientation-change transition once all fingers are lifted.
+      if (activePointers.size === 0) wrap.classList.remove('painting--interacting');
       if (!paint.drawing) return;
       paint.drawing = false;
       paint.last = null;
