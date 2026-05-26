@@ -9,13 +9,32 @@ window.APP = window.APP || {};
   // Full sticker library. The toolbar shows the 5 most recently used;
   // tapping ⋯ opens a panel to browse and pick from all of them.
   const ALL_STICKERS = [
+    // Faces
     '😀','😂','😍','🥰','😎','🤩','😴','🥳','😜','🤔',
+    // Pets & common animals
     '🐶','🐱','🐭','🐰','🦊','🐻','🐼','🐨','🐯','🦁',
+    // Small critters & birds
     '🐸','🐵','🐔','🐧','🦆','🦉','🦋','🐛','🐝','🐞',
+    // More birds & woodland
+    '🦜','🦩','🦚','🦢','🦅','🦔','🐿️','🦦','🦃','🐓',
+    // Big animals & reptiles
+    '🐘','🦒','🦓','🦏','🦛','🐊','🐢','🦕','🦖','🐆',
+    // Sea creatures
+    '🐬','🐳','🐟','🐠','🐡','🐙','🦑','🦀','🦞','🦈',
+    // Nature & weather
     '🌸','🌺','🌻','🌹','🌷','🍀','🌈','⭐','🌟','☀️',
-    '🍎','🍊','🍋','🍇','🍓','🍕','🍔','🍦','🎂','🍩',
+    '🌴','🌵','🍄','🌍','🌊','❄️','🔥','🌙','💫','🌦️',
+    // Fruit
+    '🍎','🍊','🍋','🍇','🍓','🍉','🍑','🍒','🫐','🍌',
+    '🍍','🥭','🍈','🥝','🥥','🍐','🫒','🌶️','🫑','🥒',
+    // Veg & savoury food
+    '🌽','🥕','🥦','🥑','🍅','🫛','🥜','🍕','🍔','🌮',
+    // Sweet food & drinks
+    '🍦','🎂','🍩','🍭','🧁','🍰','🥧','🍪','🍫','🧃',
+    // Hearts & gifts
     '❤️','🧡','💛','💚','💙','💜','🎈','🎁','🎀','🏆',
-    '🦄','🌙','💫','🎵','🎨','⚽','🏀','🌊','🧸','🚗',
+    // Fun & toys
+    '🦄','🧸','🚗','🎵','🎨','⚽','🏀','🎠','🎡','🎪',
   ];
   const RECENT_STICKER_COUNT = 5;
   const MAX_DPR = 2;
@@ -489,19 +508,27 @@ window.APP = window.APP || {};
     function stampSticker(p) {
       cx.globalCompositeOperation = 'source-over';
       const fontSize = paint.size * 4;
-      // Pre-render to an offscreen canvas first. Some emoji (notably ❤️) load
-      // their glyph lazily and only draw the left half on the very first canvas
-      // call. The offscreen draw forces the font engine to complete the load,
-      // so the subsequent drawImage onto the main canvas is always complete.
+      const dpr = paint.dpr;
+      // Render the emoji at physical pixel resolution so it is crisp on hi-DPI
+      // screens. Without DPR scaling the offscreen canvas would be upscaled by
+      // the main canvas transform, causing visible pixelation.
+      // The offscreen draw also forces lazy-loading glyphs (e.g. ❤️) to fully
+      // render before the image is stamped onto the main canvas.
+      const sz = Math.ceil(fontSize * 2.2 * dpr);
       const tmp = document.createElement('canvas');
-      tmp.width = Math.ceil(fontSize * 2.2);
-      tmp.height = Math.ceil(fontSize * 2.2);
+      tmp.width = sz;
+      tmp.height = sz;
       const tc = tmp.getContext('2d');
-      tc.font = fontSize + 'px serif';
+      tc.font = (fontSize * dpr) + 'px serif';
       tc.textAlign = 'center';
       tc.textBaseline = 'middle';
-      tc.fillText(paint.sticker, tmp.width / 2, tmp.height / 2);
-      cx.drawImage(tmp, Math.round(p.x - tmp.width / 2), Math.round(p.y - tmp.height / 2));
+      tc.fillText(paint.sticker, sz / 2, sz / 2);
+      // Supply explicit CSS-px destination size: the DPR-sized source maps 1:1
+      // to the backing store (current transform × explicit size = physical px).
+      const disp = fontSize * 2.2;
+      cx.drawImage(tmp,
+        Math.round(p.x - disp / 2), Math.round(p.y - disp / 2),
+        disp, disp);
     }
     function doSplash(p) {
       cx.globalCompositeOperation = 'source-over';

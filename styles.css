@@ -2860,7 +2860,7 @@ html, body {
     position: absolute;
     top: 0;
     left: 64px;
-    right: 124px;
+    right: 120px;
     z-index: 10;
     max-height: 100%;
     overflow-y: auto;
@@ -2881,44 +2881,70 @@ html, body {
   .painting-stage {
     margin: 8px;
   }
+
+  /* ── Landscape toolbar: narrow column, max 2 items wide, clips overflow ── */
   .painting-toolbar {
     flex-direction: column;
     flex-wrap: nowrap;
+    justify-content: flex-start; /* override base center — items must start at top */
     overflow-y: auto;
+    overflow-x: hidden;          /* prevent sticker tray etc. bleeding over canvas */
     -webkit-overflow-scrolling: touch;
-    width: 124px;
-    padding: 8px;
-    gap: 8px;
+    width: 120px;
+    padding: 8px 6px;
+    gap: 6px;
   }
   .painting-toolbar .tool-group {
     flex-wrap: wrap;
     justify-content: center;
+    width: 100%;
   }
-  /* Palette-row reflows to a single wrapping column in the narrow side toolbar */
+
+  /* Tools: 2-wide natural wrap (2×48px = 96px < 108px inner width) ✓ */
+  .painting-toolbar .tool-btn { width: 48px; height: 48px; }
+
+  /* Palette-row stacks sizes above swatches in the narrow column */
   .painting-toolbar .palette-row {
     flex: 0 0 auto;
     flex-direction: column;
     align-items: center;
     gap: 6px;
-  }
-  .palette-row .sizes {
-    grid-template-columns: 1fr 1fr 1fr;  /* 3 dots in a row in landscape */
-  }
-  .palette-row .sizes .size-btn:first-child {
-    grid-column: auto;  /* cancel portrait span */
-  }
-  .palette-row .sizes .size-btn { width: 36px; height: 36px; }
-  .palette-row .swatches {
-    grid-template-columns: repeat(5, 1fr);
     width: 100%;
   }
-  .painting-toolbar .tool-btn { width: 48px; height: 48px; }
-  .painting-toolbar .swatch { width: 36px; height: 36px; }
-  /* Must come after .painting-toolbar .swatch to win on specificity (both 2 classes) */
+
+  /* Sizes: 2-column grid → first 2 buttons on row 1, third alone on row 2 */
+  .palette-row .sizes {
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
+  .palette-row .sizes .size-btn:first-child {
+    grid-column: auto;  /* cancel portrait full-width span — natural 2-col flow */
+  }
+  .palette-row .sizes .size-btn { width: 100%; height: 40px; }
+
+  /* Colours: transposed to 2 columns × 5 rows */
+  .palette-row .swatches {
+    grid-template-columns: repeat(2, 1fr);
+    width: 100%;
+  }
+  /* Must be declared after .painting-toolbar .swatch to win the specificity tie */
   .palette-row .swatches .swatch { width: 100%; min-width: 0; }
-  .painting-toolbar .size-btn,
+  .painting-toolbar .swatch { width: 36px; height: 36px; }
+
+  /* Sticker section: tray wraps to 2 wide, ⋯ button sits below on its own row */
+  .painting-toolbar .tool-group.stickers {
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .sticker-tray {
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 96px;   /* exactly 2 × 40px button + 1 × 8px gap */
+  }
   .painting-toolbar .sticker-btn { width: 40px; height: 40px; }
-  .sticker-more-btn { width: 40px; height: 40px; font-size: 1.1rem; }
+  .sticker-more-btn { width: 80px; height: 36px; font-size: 1.0rem; }
+
   .emoji-panel {
     left: 64px; /* clear the left topbar */
     border-radius: 12px 12px 0 0;
