@@ -2810,35 +2810,88 @@ html, body {
   letter-spacing: -0.05em;
 }
 
-/* Emoji picker bottom sheet */
+/* ── Emoji picker bottom sheet ────────────────────────────────────────────── */
 .emoji-panel {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
+  display: flex;           /* scroll area + sidebar side-by-side */
+  flex-direction: row;
+  max-height: 50vh;
   background: #fff;
   border-top: 2px solid #e0dbd0;
   border-radius: 20px 20px 0 0;
   z-index: 30;
-  padding: 14px 12px 16px;
-  max-height: 45vh;
-  overflow-y: scroll;  /* always show scrollbar so it's obvious there are more */
   box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.14);
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
 }
 .emoji-panel.hidden { display: none; }
+
+/* Scrollable emoji grid (left / centre) */
+.emoji-panel-scroll {
+  flex: 1;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px 10px 16px;
+}
+
+/* Per-category section */
+.emoji-section { margin-bottom: 8px; }
+.emoji-section-header {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(0, 24, 88, 0.45);
+  padding: 6px 4px 4px;
+}
 .emoji-panel-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
+  gap: 6px;
 }
-/* Larger emoji buttons in the panel so they're easy to tap */
+
+/* Larger emoji buttons so they're easy to tap */
 .emoji-panel .sticker-btn {
-  width: 54px;
-  height: 54px;
-  font-size: 2rem;
-  border-radius: 14px;
+  width: 52px;
+  height: 52px;
+  font-size: 1.9rem;
+  border-radius: 12px;
+}
+
+/* Right sidebar: category-jump buttons + close */
+.emoji-panel-sidebar {
+  width: 46px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 3px;
+  background: rgba(0, 24, 88, 0.04);
+  border-left: 1px solid rgba(0, 24, 88, 0.08);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.emoji-sidebar-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.12s;
+}
+.emoji-sidebar-btn:active { background: rgba(0, 24, 88, 0.1); }
+.emoji-close-btn {
+  font-size: 1rem;
+  color: rgba(0, 24, 88, 0.55);
+  margin-bottom: 4px;
 }
 
 @media (max-height: 600px) {
@@ -2955,8 +3008,10 @@ html, body {
   .sticker-more-btn { width: 80px; height: 36px; font-size: 1.0rem; }
 
   .emoji-panel {
-    left: 64px; /* clear the left topbar */
+    left: 64px;            /* clear the left topbar column */
     border-radius: 12px 12px 0 0;
-    max-height: 60vh;
+    max-height: 65vh;
   }
+  .emoji-panel-scroll { padding: 8px 8px 12px; }
+  .emoji-panel .sticker-btn { width: 46px; height: 46px; font-size: 1.7rem; }
 }

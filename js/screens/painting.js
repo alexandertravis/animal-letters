@@ -36,6 +36,49 @@ window.APP = window.APP || {};
     // Fun & toys
     '🦄','🧸','🚗','🎵','🎨','⚽','🏀','🎠','🎡','🎪',
   ];
+  const STICKER_CATEGORIES = [
+    { id: 'faces',     icon: '😀', label: 'Faces', emoji: [
+      '😀','😂','😍','🥰','😎','🤩','😴','🥳','😜','🤔',
+      '😊','😅','🤣','😭','😤','🥺','😇','🤗','😏','🙄',
+    ]},
+    { id: 'people',    icon: '👷', label: 'People', emoji: [
+      '👶','👦','👧','🧒','🧑','👨','👩','👴','👵','👮',
+      '💂','🕵️','👷','🤵','💃','🕺','👸','🤴','🎅','👼',
+    ]},
+    { id: 'fantasy',   icon: '🧙', label: 'Fantasy', emoji: [
+      '🦸','🦹','🧙','🧛','🧟','🧞','🧜','🧝','🤖','👽',
+      '👻','☠️','🐉','🦄','🧚','🧌','🔮','🪄','🎩','🧿',
+    ]},
+    { id: 'animals',   icon: '🐶', label: 'Animals', emoji: [
+      '🐶','🐱','🐭','🐰','🦊','🐻','🐼','🐨','🐯','🦁',
+      '🐸','🐵','🐔','🐧','🦆','🦉','🦋','🐛','🐝','🐞',
+      '🦜','🦩','🦚','🦢','🦅','🦔','🐿️','🦦','🦃','🐓',
+      '🐘','🦒','🦓','🦏','🦛','🐊','🐢','🦕','🦖','🐆',
+      '🐬','🐳','🐟','🐠','🐡','🐙','🦑','🦀','🦞','🦈',
+    ]},
+    { id: 'food',      icon: '🍕', label: 'Food', emoji: [
+      '🍎','🍊','🍋','🍇','🍓','🍉','🍑','🍒','🫐','🍌',
+      '🍍','🥭','🍈','🥝','🥥','🍐','🌶️','🫑','🥒','🌽',
+      '🥕','🥦','🥑','🍅','🫛','🥜','🍕','🍔','🌮','🌯',
+      '🍜','🍣','🍦','🎂','🍩','🍭','🧁','🍰','🍪','🍫',
+    ]},
+    { id: 'sport',     icon: '⚽', label: 'Sport', emoji: [
+      '⚽','🏀','🏈','⚾','🎾','🏐','🏉','🎱','🏓','🏸',
+      '🥊','🏊','🚴','🏋️','🤸','🧗','🤺','🏇','🏆','🥇',
+    ]},
+    { id: 'transport', icon: '🚗', label: 'Transport', emoji: [
+      '🚗','🚕','🚙','🚌','🚑','🚒','🚓','🚜','🏎️','🏍️',
+      '🛵','🚲','🛴','✈️','🚀','🛸','🚁','🛶','⛵','🚢',
+      '🚂','🚄','🚇','🛺','🚤','🛥️','🚦','⛽','🪂','🛩️',
+    ]},
+    { id: 'misc',      icon: '🎮', label: 'Misc', emoji: [
+      '🎮','🕹️','🎲','🧸','🪀','🪁','🎨','🎭','🎈','🎁',
+      '🎀','❤️','🧡','💛','💚','💙','💜','🌈','☀️','🌙',
+      '❄️','🔥','💧','⭐','💫','🎵','🎶','🎤','🎸','🎹',
+    ]},
+  ];
+  // Flat array used by the sticker tray (recent list)
+  const ALL_STICKERS = STICKER_CATEGORIES.flatMap(c => c.emoji);
   const RECENT_STICKER_COUNT = 5;
   const MAX_DPR = 2;
   const HISTORY_CAP = 6;
@@ -65,7 +108,7 @@ window.APP = window.APP || {};
 
     const paint = {
       tool: 'brush',
-      color: COLORS[1],
+      color: COLORS[0],  // black — top-left of palette, visible on white canvas
       size: SIZES[1],
       sticker: ALL_STICKERS[0],
       // Each slot: { emoji, used } — used is a timestamp; negative initial values
@@ -146,10 +189,29 @@ window.APP = window.APP || {};
     `;
     root.appendChild(wrap);
 
-    // Emoji panel — appended separately so it overlays the toolbar
+    // Emoji panel — appended separately so it overlays the toolbar.
+    // Structure: scrollable section grid on the left + narrow sidebar on the right
+    // for category-jump and close. Pull-down from the top also closes the panel.
     const emojiPanel = document.createElement('div');
     emojiPanel.className = 'emoji-panel hidden';
-    emojiPanel.innerHTML = `<div class="emoji-panel-grid">${ALL_STICKERS.map(e => `<button class="sticker-btn" data-sticker="${e}">${e}</button>`).join('')}</div>`;
+    emojiPanel.innerHTML = `
+      <div class="emoji-panel-scroll">
+        ${STICKER_CATEGORIES.map(cat => `
+          <div class="emoji-section" id="emoji-sec-${cat.id}">
+            <div class="emoji-section-header">${cat.icon} ${cat.label}</div>
+            <div class="emoji-panel-grid">
+              ${cat.emoji.map(e => `<button class="sticker-btn" data-sticker="${e}">${e}</button>`).join('')}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="emoji-panel-sidebar">
+        <button class="emoji-sidebar-btn emoji-close-btn" aria-label="Close emoji panel">✕</button>
+        ${STICKER_CATEGORIES.map(cat => `
+          <button class="emoji-sidebar-btn emoji-cat-btn" data-cat="${cat.id}" aria-label="${cat.label}" title="${cat.label}">${cat.icon}</button>
+        `).join('')}
+      </div>
+    `;
     wrap.appendChild(emojiPanel);
 
     const picker = wrap.querySelector('.paint-template-picker');
@@ -267,7 +329,9 @@ window.APP = window.APP || {};
     }
 
     // For image templates: sample the paint canvas after drawing white+image.
-    // Any pixel darker than threshold is a printed outline → mark as wall.
+    // Any pixel meaningfully darker than white is a printed outline → mark as wall.
+    // Threshold is generous (any channel below 180) to catch anti-aliased edge
+    // pixels that would otherwise let flood-fill leak through thin outlines.
     function buildWallMapFromCanvas() {
       const W = canvas.width, H = canvas.height;
       paint.wallPixels = new Uint8Array(W * H);
@@ -275,7 +339,9 @@ window.APP = window.APP || {};
         const data = cx.getImageData(0, 0, W, H).data;
         for (let i = 0, len = W * H; i < len; i++) {
           const r = data[i * 4], g = data[i * 4 + 1], b = data[i * 4 + 2], a = data[i * 4 + 3];
-          if (a > 128 && r < 80 && g < 80 && b < 80) paint.wallPixels[i] = 1;
+          // Mark as wall: opaque pixel that isn't close to white.
+          // Threshold 160 catches medium-grey anti-aliased edges too.
+          if (a > 64 && (r < 160 || g < 160 || b < 160)) paint.wallPixels[i] = 1;
         }
       } catch (_) {}
     }
@@ -317,16 +383,21 @@ window.APP = window.APP || {};
           // Overlay: permanent visual layer (lines stay on top of all paint)
           ox.clearRect(0, 0, overlay.width, overlay.height);
           ox.save(); ox.setTransform(...t); ox.drawImage(img, 0, 0); ox.restore();
-          // Paint layer: white fill then image. Pre-filling white makes the
-          // coloring regions opaque so flood fill stays inside the image bounds
-          // rather than bleeding into the surrounding transparent canvas.
+          // Paint layer: flood-fill the ENTIRE canvas white first (identity
+          // transform → physical pixels) so the area outside the image is also
+          // solid white, not transparent. Transparent pixels would act as a
+          // separate fill zone and cause fills to "escape" the image outline.
+          cx.save();
+          cx.setTransform(1, 0, 0, 1, 0, 0);
+          cx.fillStyle = '#ffffff';
+          cx.fillRect(0, 0, canvas.width, canvas.height);
+          cx.restore();
+          // Draw the image with its correct scale/position on top of the white base.
           cx.save();
           cx.setTransform(...t);
-          cx.fillStyle = '#ffffff';
-          cx.fillRect(0, 0, img.naturalWidth, img.naturalHeight);
           cx.drawImage(img, 0, 0);
           cx.restore();
-          buildWallMapFromCanvas(); // mark dark outline pixels as hard walls
+          buildWallMapFromCanvas(); // mark outline pixels as hard walls
         }).catch(() => {});
         return;
       }
@@ -376,10 +447,14 @@ window.APP = window.APP || {};
       if (tpl.type === 'image') {
         loadImg(tpl.src).then(img => {
           const { scale, tx, ty } = imageTransform(img);
+          // Full-canvas white base (same as drawTemplate) then image on top.
+          cx.save();
+          cx.setTransform(1, 0, 0, 1, 0, 0);
+          cx.fillStyle = '#ffffff';
+          cx.fillRect(0, 0, canvas.width, canvas.height);
+          cx.restore();
           cx.save();
           cx.setTransform(scale * paint.dpr, 0, 0, scale * paint.dpr, tx * paint.dpr, ty * paint.dpr);
-          cx.fillStyle = '#ffffff';
-          cx.fillRect(0, 0, img.naturalWidth, img.naturalHeight);
           cx.drawImage(img, 0, 0);
           cx.restore();
           buildWallMapFromCanvas();
@@ -683,7 +758,9 @@ window.APP = window.APP || {};
     let prevPinch = null;             // {dist, midX, midY} relative to stage
 
     function onDown(e) {
-      try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+      // Capture on the stage (where listeners live) so pointermove/up always
+      // arrive here even when the finger leaves the stage area.
+      try { stage.setPointerCapture(e.pointerId); } catch (_) {}
       activePointers.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
       // Disable wrapper CSS transition while touching so brush strokes and
       // pinch-zoom are rendered instantly without animation delay.
@@ -785,10 +862,15 @@ window.APP = window.APP || {};
       if (APP.audio) APP.audio.strokeDone();
     }
 
-    canvas.addEventListener('pointerdown', onDown);
-    canvas.addEventListener('pointermove', onMove);
-    canvas.addEventListener('pointerup', onUp);
-    canvas.addEventListener('pointercancel', onUp);
+    // Attach to stage (not canvas) so the entire stage area is interactive.
+    // In landscape the canvas is centred with small margins; using canvas
+    // listeners would leave those margin strips non-drawable.
+    // cssPoint/devicePoint use canvas.getBoundingClientRect(), so coordinate
+    // mapping is still correct regardless of which element receives the event.
+    stage.addEventListener('pointerdown', onDown);
+    stage.addEventListener('pointermove', onMove);
+    stage.addEventListener('pointerup', onUp);
+    stage.addEventListener('pointercancel', onUp);
 
     // ---- Picker show/hide ----------------------------------------------------
     function showPicker() {
@@ -900,11 +982,37 @@ window.APP = window.APP || {};
       paint.size = Number(b.getAttribute('data-size'));
       setActive('[data-size]', 'data-size', paint.size);
     }));
-    // Sticker tray: rendered dynamically; emoji panel wired here
+    // Sticker tray: rendered dynamically
     renderStickerTray();
+
+    // Emoji panel: sticker picks, category jump, close, pull-down-to-close
     emojiPanel.querySelectorAll('[data-sticker]').forEach(b =>
       b.addEventListener('click', () => selectSticker(b.getAttribute('data-sticker')))
     );
+    emojiPanel.querySelectorAll('.emoji-cat-btn').forEach(btn =>
+      btn.addEventListener('click', () => {
+        const sec = emojiPanel.querySelector(`#emoji-sec-${btn.getAttribute('data-cat')}`);
+        if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      })
+    );
+    emojiPanel.querySelector('.emoji-close-btn').addEventListener('click', () => {
+      emojiPanel.classList.add('hidden');
+    });
+    // Pull-down-to-close: drag down ≥40 px while the list is scrolled to the top
+    const emojiScroll = emojiPanel.querySelector('.emoji-panel-scroll');
+    let pullStartY = null;
+    emojiScroll.addEventListener('pointerdown', e => {
+      if (emojiScroll.scrollTop <= 0) pullStartY = e.clientY;
+    }, { passive: true });
+    emojiScroll.addEventListener('pointermove', e => {
+      if (pullStartY !== null && e.clientY - pullStartY > 40) {
+        emojiPanel.classList.add('hidden');
+        pullStartY = null;
+      }
+    });
+    emojiScroll.addEventListener('pointerup',     () => { pullStartY = null; });
+    emojiScroll.addEventListener('pointercancel', () => { pullStartY = null; });
+
     wrap.querySelector('.sticker-more-btn').addEventListener('click', () => {
       emojiPanel.classList.toggle('hidden');
     });
