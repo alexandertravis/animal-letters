@@ -2598,14 +2598,10 @@ html, body {
   gap: 10px;
   margin-bottom: 10px;
 }
-.tpl-mode-row {
-  display: flex;
-  gap: 4px;
+/* Single toggle button: Normal ↔ Invisi-fill ✨ */
+.tpl-invisi-toggle {
   flex: 1;
-}
-.tpl-mode-btn {
-  flex: 1;
-  padding: 6px 10px;
+  padding: 6px 14px;
   border: 2px solid #ccc;
   border-radius: 20px;
   background: #fff;
@@ -2615,15 +2611,16 @@ html, body {
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
   white-space: nowrap;
+  text-align: center;
 }
-.tpl-mode-btn.active {
-  background: #2980d9;
-  border-color: #2980d9;
+.tpl-invisi-toggle.active {
+  background: #8e44ad;
+  border-color: #8e44ad;
   color: #fff;
 }
-.tpl-mode-btn:not(.active):hover {
-  border-color: #aac8ee;
-  color: #2980d9;
+.tpl-invisi-toggle:not(.active):hover {
+  border-color: #c9a0dc;
+  color: #8e44ad;
 }
 .tpl-random-btn {
   padding: 6px 12px;
@@ -2859,6 +2856,23 @@ html, body {
   flex-shrink: 0;
   letter-spacing: -0.05em;
 }
+/* Palette cycle button — same visual weight as sticker-more-btn */
+.palette-cycle-btn {
+  width: 48px;
+  height: 48px;
+  font-size: 1.4rem;
+  line-height: 1;
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  background: #f8f8f8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+.palette-cycle-btn:hover { background: #ede9e0; border-color: #bbb; }
 
 /* ── Emoji picker bottom sheet ────────────────────────────────────────────── */
 .emoji-panel {

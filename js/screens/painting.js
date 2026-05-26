@@ -1,10 +1,15 @@
 window.APP = window.APP || {};
 
 (function (APP) {
-  const COLORS = [
-    '#000000', '#ffffff', '#e84393', '#e74c3c', '#f39c12',
-    '#f6e58d', '#27ae60', '#2980d9', '#8e44ad', '#a0522d',
-  ];
+  // Three colour palettes: normal, light (pastels), dark (deep shades).
+  // Each has 10 swatches; white stays in slot 2 for all palettes.
+  const PALETTES = {
+    normal: ['#000000','#ffffff','#e84393','#e74c3c','#f39c12','#f6e58d','#27ae60','#2980d9','#8e44ad','#a0522d'],
+    light:  ['#aaaaaa','#ffffff','#f9a8d4','#fca5a5','#fed7aa','#fef9c3','#86efac','#93c5fd','#d8b4fe','#d4b896'],
+    dark:   ['#000000','#ffffff','#9d174d','#991b1b','#92400e','#a16207','#14532d','#1e3a8a','#4c1d95','#431407'],
+  };
+  const PALETTE_ORDER = ['normal', 'light', 'dark'];
+  const PALETTE_ICONS  = { normal: '🎨', light: '☀️', dark: '🌙' };
   const SIZES = [8, 16, 30];
   // Full sticker library. The toolbar shows the 5 most recently used;
   // tapping ⋯ opens a panel to browse and pick from all of them.
@@ -80,8 +85,9 @@ window.APP = window.APP || {};
 
     const paint = {
       tool: 'brush',
-      color: COLORS[0],  // black — top-left of palette, visible on white canvas
+      color: PALETTES.normal[0],  // black — top-left of normal palette
       size: SIZES[1],
+      palette: 'normal',
       sticker: ALL_STICKERS[0],
       // Each slot: { emoji, used } — used is a timestamp; negative initial values
       // give a stable, unique ordering so the first 5 slots don't all tie at 0.
@@ -123,10 +129,7 @@ window.APP = window.APP || {};
       </div>
       <div class="paint-template-picker hidden">
         <div class="tpl-picker-header">
-          <div class="tpl-mode-row">
-            <button class="tpl-mode-btn active" data-invisi="false">Normal</button>
-            <button class="tpl-mode-btn" data-invisi="true">Invisi-fill ✨</button>
-          </div>
+          <button class="tpl-invisi-toggle">Normal</button>
           <button class="tpl-random-btn" aria-label="Random template">🎲 Random</button>
         </div>
         <div class="template-grid">
@@ -156,11 +159,10 @@ window.APP = window.APP || {};
           <div class="sizes">
             ${SIZES.map(s => `<button class="size-btn" data-size="${s}" aria-label="size ${s}"><span style="width:${s}px;height:${s}px"></span></button>`).join('')}
           </div>
-          <div class="swatches">
-            ${COLORS.map(c => `<button class="swatch" data-color="${c}" style="background:${c};${c==='#ffffff'?'border:2px solid #ccc':''}" aria-label="colour ${c}"></button>`).join('')}
-          </div>
+          <div class="swatches"></div>
         </div>
         <div class="tool-group stickers">
+          <button class="palette-cycle-btn" aria-label="Normal palette" title="Cycle colour palette">🎨</button>
           <div class="sticker-tray"></div>
           <button class="sticker-more-btn" aria-label="More stickers">⋯</button>
         </div>
@@ -515,6 +517,32 @@ window.APP = window.APP || {};
       return { x: avgX * scale + tx, y: avgY * scale + ty };
     }
 
+    // ---- Swatch renderer (called on init and on palette cycle) ----------------
+    // Rebuilds the .swatches container from the current palette and re-attaches
+    // click listeners, so no stale handlers from a previous render survive.
+    function renderSwatches() {
+      const colors = PALETTES[paint.palette];
+      const container = wrap.querySelector('.swatches');
+      container.innerHTML = colors.map(c =>
+        `<button class="swatch${paint.color === c ? ' active' : ''}" data-color="${c}"
+          style="background:${c};${c === '#ffffff' ? 'border:2px solid #ccc' : ''}"
+          aria-label="colour ${c}"></button>`
+      ).join('');
+      container.querySelectorAll('.swatch').forEach(b => {
+        b.addEventListener('click', () => {
+          paint.color = b.getAttribute('data-color');
+          if (paint.tool === 'eraser' || paint.tool === 'sticker') {
+            paint.tool = 'brush';
+            setActive('[data-tool]', 'data-tool', 'brush');
+          }
+          renderSwatches(); // refresh active ring
+        });
+      });
+      // Update palette cycle button icon to reflect current palette.
+      const pcb = wrap.querySelector('.palette-cycle-btn');
+      if (pcb) pcb.textContent = PALETTE_ICONS[paint.palette];
+    }
+
     // ---- Apply template (shared by thumb click and random button) -------------
     // Clears both canvases, resets PBN state, applies the template in the
     // current invisi/normal mode, and switches the active tool to fill.
@@ -598,12 +626,18 @@ window.APP = window.APP || {};
       pushHistory();
       // DPR-safe clear: use identity transform so the dimensions are in physical pixels.
       cx.save(); cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, canvas.width, canvas.height); cx.restore();
-      if (paint.mode === 'template' && paint.template) {
+      if (paint.mode === 'free') {
+        // In free-draw mode, clear also removes any residual template walls and
+        // overlay (e.g. from switching away from template mode without clearing).
+        ox.clearRect(0, 0, overlay.width, overlay.height);
+        paint.wallPixels = null;
+        paint.template   = null;
+      } else if (paint.template) {
         paint.pbnDone.clear();
         if (paint.invisi) {
           // Invisi-fill: walls live in paint.wallPixels, not on the canvas.
-          // The clear above already wiped the user's painting; overlay is already
-          // blank; wall map is intentionally preserved so fills still work.
+          // The clear above wiped the user's painting; wall map is preserved so
+          // fills still reveal the image; overlay stays blank.
           ox.clearRect(0, 0, overlay.width, overlay.height);
         } else {
           drawBarrier(paint.template);
@@ -948,14 +982,15 @@ window.APP = window.APP || {};
     });
 
     // ---- Template selection ---------------------------------------------------
-    // Invisi / Normal mode toggle (inside the picker header)
-    wrap.querySelectorAll('.tpl-mode-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        paint.invisi = btn.getAttribute('data-invisi') === 'true';
-        wrap.querySelectorAll('.tpl-mode-btn').forEach(b =>
-          b.classList.toggle('active', b.getAttribute('data-invisi') === String(paint.invisi)));
+    // Invisi-fill toggle — single button that cycles Normal ↔ Invisi-fill ✨
+    const invisiToggle = wrap.querySelector('.tpl-invisi-toggle');
+    if (invisiToggle) {
+      invisiToggle.addEventListener('click', () => {
+        paint.invisi = !paint.invisi;
+        invisiToggle.textContent = paint.invisi ? 'Invisi-fill ✨' : 'Normal';
+        invisiToggle.classList.toggle('active', paint.invisi);
       });
-    });
+    }
 
     // Random template button
     const randomBtn = wrap.querySelector('.tpl-random-btn');
@@ -1024,18 +1059,20 @@ window.APP = window.APP || {};
       paint.tool = b.getAttribute('data-tool');
       setActive('[data-tool]', 'data-tool', paint.tool);
     }));
-    wrap.querySelectorAll('[data-color]').forEach(b => b.addEventListener('click', () => {
-      paint.color = b.getAttribute('data-color');
-      if (paint.tool === 'eraser' || paint.tool === 'sticker') {
-        paint.tool = 'brush';
-        setActive('[data-tool]', 'data-tool', 'brush');
-      }
-      setActive('[data-color]', 'data-color', paint.color);
-    }));
+    // Swatch clicks are handled inside renderSwatches(); no static listener needed.
     wrap.querySelectorAll('[data-size]').forEach(b => b.addEventListener('click', () => {
       paint.size = Number(b.getAttribute('data-size'));
       setActive('[data-size]', 'data-size', paint.size);
     }));
+    // Palette cycle button — steps through normal → light → dark → normal.
+    const paletteCycleBtn = wrap.querySelector('.palette-cycle-btn');
+    if (paletteCycleBtn) {
+      paletteCycleBtn.addEventListener('click', () => {
+        const idx = PALETTE_ORDER.indexOf(paint.palette);
+        paint.palette = PALETTE_ORDER[(idx + 1) % PALETTE_ORDER.length];
+        renderSwatches();
+      });
+    }
     // Sticker tray: rendered dynamically
     renderStickerTray();
 
@@ -1081,7 +1118,7 @@ window.APP = window.APP || {};
     });
 
     setActive('[data-tool]', 'data-tool', paint.tool);
-    setActive('[data-color]', 'data-color', paint.color);
+    renderSwatches();  // populates .swatches and sets initial active ring
     setActive('[data-size]', 'data-size', paint.size);
     // sticker tray active state is managed by renderStickerTray()
   }
