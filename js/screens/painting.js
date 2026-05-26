@@ -129,7 +129,11 @@ window.APP = window.APP || {};
       </div>
       <div class="paint-template-picker hidden">
         <div class="tpl-picker-header">
-          <button class="tpl-invisi-toggle">Normal</button>
+          <div class="tpl-invisi-slider" role="switch" aria-checked="false" tabindex="0">
+            <div class="tpl-invisi-knob"></div>
+            <span class="tpl-invisi-opt">Normal</span>
+            <span class="tpl-invisi-opt">Invisi-fill ✨</span>
+          </div>
           <button class="tpl-random-btn" aria-label="Random template">🎲 Random</button>
         </div>
         <div class="template-grid">
@@ -982,13 +986,17 @@ window.APP = window.APP || {};
     });
 
     // ---- Template selection ---------------------------------------------------
-    // Invisi-fill toggle — single button that cycles Normal ↔ Invisi-fill ✨
-    const invisiToggle = wrap.querySelector('.tpl-invisi-toggle');
-    if (invisiToggle) {
-      invisiToggle.addEventListener('click', () => {
+    // Invisi-fill slider toggle — shows both labels, knob slides between them.
+    const invisiSlider = wrap.querySelector('.tpl-invisi-slider');
+    if (invisiSlider) {
+      const toggle = () => {
         paint.invisi = !paint.invisi;
-        invisiToggle.textContent = paint.invisi ? 'Invisi-fill ✨' : 'Normal';
-        invisiToggle.classList.toggle('active', paint.invisi);
+        invisiSlider.classList.toggle('active', paint.invisi);
+        invisiSlider.setAttribute('aria-checked', String(paint.invisi));
+      };
+      invisiSlider.addEventListener('click', toggle);
+      invisiSlider.addEventListener('keydown', e => {
+        if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); }
       });
     }
 

@@ -2598,29 +2598,48 @@ html, body {
   gap: 10px;
   margin-bottom: 10px;
 }
-/* Single toggle button: Normal ↔ Invisi-fill ✨ */
-.tpl-invisi-toggle {
+/* Pill slider: both labels always visible, knob slides between them */
+.tpl-invisi-slider {
+  position: relative;
+  display: flex;
   flex: 1;
-  padding: 6px 14px;
-  border: 2px solid #ccc;
+  background: #d8d2c8;
   border-radius: 20px;
-  background: #fff;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #555;
+  padding: 3px;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-  white-space: nowrap;
+  user-select: none;
+}
+.tpl-invisi-knob {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  background: #fff;
+  border-radius: 17px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  transition: left 0.2s ease;
+  pointer-events: none;
+}
+.tpl-invisi-slider.active .tpl-invisi-knob {
+  left: 50%;
+}
+.tpl-invisi-opt {
+  position: relative;
+  flex: 1;
   text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 6px;
+  z-index: 1;
+  color: rgba(0, 0, 0, 0.45);
+  transition: color 0.2s;
+  white-space: nowrap;
 }
-.tpl-invisi-toggle.active {
-  background: #8e44ad;
-  border-color: #8e44ad;
-  color: #fff;
-}
-.tpl-invisi-toggle:not(.active):hover {
-  border-color: #c9a0dc;
-  color: #8e44ad;
+/* Highlight the active side */
+.tpl-invisi-slider:not(.active) .tpl-invisi-opt:first-of-type,
+.tpl-invisi-slider.active .tpl-invisi-opt:last-of-type {
+  color: #333;
 }
 .tpl-random-btn {
   padding: 6px 12px;
