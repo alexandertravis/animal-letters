@@ -84,6 +84,13 @@ window.APP = window.APP || {};
       panY: 0,
     };
 
+    // Fixed canvas dimensions — set once on first resize(), preserved on rotation.
+    // canvasW/H are landscape-oriented (canvasW > canvasH). On rotation we update
+    // the base zoom/pan so the viewport changes without ever clearing the backing store.
+    let canvasW = 0;
+    let canvasH = 0;
+    let baseZoom = 1, basePanX = 0, basePanY = 0;
+
     const wrap = document.createElement('div');
     wrap.className = 'painting';
     wrap.innerHTML = `
@@ -156,39 +163,58 @@ window.APP = window.APP || {};
     const ox = overlay.getContext('2d');
 
     // ---- Sizing ---------------------------------------------------------------
+    // The canvas backing store is set ONCE to landscape-oriented dimensions on the
+    // first call and never resized again. Orientation changes just update the base
+    // zoom/pan so the viewport shifts without clearing any painted content.
+    //
+    // Portrait  → zoom scales canvas height to fill stage height; the canvas is
+    //             wider than the stage so the centre strip is visible (sides clip).
+    // Landscape → zoom fits the entire canvas within the stage with small margins.
     function resize() {
       const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
-      const cssW = stage.clientWidth, cssH = stage.clientHeight;
-      if (!cssW || !cssH) return;
-      let snapshot = null;
-      if (canvas.width && canvas.height) {
-        try { snapshot = cx.getImageData(0, 0, canvas.width, canvas.height); } catch (_) {}
+      const stageW = stage.clientWidth, stageH = stage.clientHeight;
+      if (!stageW || !stageH) return;
+
+      if (!canvasW) {
+        // First call: initialise backing store at landscape dimensions.
+        // max(w,h) × min(w,h) gives a landscape shape regardless of which
+        // orientation we happen to be in at first render.
+        paint.dpr = dpr;
+        canvasW = Math.max(stageW, stageH);
+        canvasH = Math.min(stageW, stageH);
+        const pw = Math.round(canvasW * dpr);
+        const ph = Math.round(canvasH * dpr);
+        [canvas, overlay].forEach(c => {
+          c.style.width  = canvasW + 'px';
+          c.style.height = canvasH + 'px';
+          c.width  = pw;
+          c.height = ph;
+        });
+        cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        cx.lineCap  = 'round';
+        cx.lineJoin = 'round';
+        ox.setTransform(dpr, 0, 0, dpr, 0, 0);
+        paint.history = [];
       }
-      paint.dpr = dpr;
-      [canvas, overlay].forEach(c => {
-        c.style.width = cssW + 'px';
-        c.style.height = cssH + 'px';
-        c.width = Math.round(cssW * dpr);
-        c.height = Math.round(cssH * dpr);
-      });
-      cx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      cx.lineCap = 'round';
-      cx.lineJoin = 'round';
-      ox.setTransform(dpr, 0, 0, dpr, 0, 0);
-      if (paint.mode === 'template' && paint.template) {
-        // Template mode: always redraw barrier at the new dimensions rather than
-        // restoring the old snapshot. Restoring would leave the old barrier drawn
-        // at the wrong scale/position (visible as a double-image after rotation).
-        // User paint within a template is lost on orientation change — acceptable
-        // for this demo; a 3-canvas architecture would be needed to preserve it.
-        cx.clearRect(0, 0, canvas.width, canvas.height);
-        drawBarrier(paint.template);   // also rebuilds wallMap
-        redrawOverlay(paint.template);
+
+      // Compute base zoom and pan for the current stage size.
+      if (stageH > stageW) {
+        // Portrait: scale canvas so its height fills the stage height.
+        // Canvas is wider → horizontal overflow is clipped by stage overflow:hidden,
+        // revealing only the centre square of the landscape canvas.
+        baseZoom = stageH / canvasH;
+        basePanX = (stageW - canvasW * baseZoom) / 2;
+        basePanY = 0;
       } else {
-        if (snapshot) {
-          try { cx.putImageData(snapshot, 0, 0); } catch (_) {}
-        }
+        // Landscape: fit the entire canvas inside the stage.
+        baseZoom = Math.min(stageW / canvasW, stageH / canvasH);
+        basePanX = (stageW  - canvasW * baseZoom) / 2;
+        basePanY = (stageH - canvasH * baseZoom) / 2;
       }
+      paint.zoom = baseZoom;
+      paint.panX = basePanX;
+      paint.panY = basePanY;
+
       applyTransform();
     }
 
@@ -204,12 +230,10 @@ window.APP = window.APP || {};
     function applyTransform() {
       const wrapper = stage.querySelector('.canvas-zoom-wrapper');
       if (!wrapper) return;
-      if (paint.zoom === 1 && paint.panX === 0 && paint.panY === 0) {
-        wrapper.style.transform = '';
-      } else {
-        wrapper.style.transform =
-          `translate(${paint.panX}px,${paint.panY}px) scale(${paint.zoom})`;
-      }
+      // panX/Y always includes the base centering offset, so we always set the
+      // transform (clearing it would show the canvas at 0,0 — top-left, not centred).
+      wrapper.style.transform =
+        `translate(${paint.panX}px,${paint.panY}px) scale(${paint.zoom})`;
     }
 
     // ---- Wall map (flood-fill barrier) ----------------------------------------
@@ -253,18 +277,18 @@ window.APP = window.APP || {};
 
     // ---- Template transforms --------------------------------------------------
     function templateTransform(tpl) {
-      const cssW = stage.clientWidth, cssH = stage.clientHeight;
-      const scale = Math.min(cssW, cssH) / 400 * 0.85;
-      const tx = (cssW - 400 * scale) / 2;
-      const ty = (cssH - 400 * scale) / 2;
+      // Use fixed canvas dimensions (not stage dims) so templates stay centred
+      // on the backing store regardless of current orientation.
+      const scale = Math.min(canvasW, canvasH) / 400 * 0.85;
+      const tx = (canvasW - 400 * scale) / 2;
+      const ty = (canvasH - 400 * scale) / 2;
       return { scale, tx, ty };
     }
 
     function imageTransform(img) {
-      const cssW = stage.clientWidth, cssH = stage.clientHeight;
-      const scale = Math.min(cssW / img.naturalWidth, cssH / img.naturalHeight) * 0.9;
-      const tx = (cssW - img.naturalWidth * scale) / 2;
-      const ty = (cssH - img.naturalHeight * scale) / 2;
+      const scale = Math.min(canvasW / img.naturalWidth, canvasH / img.naturalHeight) * 0.9;
+      const tx = (canvasW - img.naturalWidth * scale) / 2;
+      const ty = (canvasH - img.naturalHeight * scale) / 2;
       return { scale, tx, ty, w: img.naturalWidth, h: img.naturalHeight };
     }
 
@@ -389,7 +413,7 @@ window.APP = window.APP || {};
         const parts = c[0].trim().split(/[,\s]+/);
         return { x: parseFloat(parts[0]), y: parseFloat(parts[1]) };
       });
-      if (!coords.length) return { x: stage.clientWidth / 2, y: stage.clientHeight / 2 };
+      if (!coords.length) return { x: canvasW / 2, y: canvasH / 2 };
       const avgX = coords.reduce((s, p) => s + p.x, 0) / coords.length;
       const avgY = coords.reduce((s, p) => s + p.y, 0) / coords.length;
       return { x: avgX * scale + tx, y: avgY * scale + ty };
@@ -509,23 +533,26 @@ window.APP = window.APP || {};
       cx.globalCompositeOperation = 'source-over';
       const fontSize = paint.size * 4;
       const dpr = paint.dpr;
-      // Render the emoji at physical pixel resolution so it is crisp on hi-DPI
-      // screens. Without DPR scaling the offscreen canvas would be upscaled by
-      // the main canvas transform, causing visible pixelation.
-      // The offscreen draw also forces lazy-loading glyphs (e.g. ❤️) to fully
-      // render before the image is stamped onto the main canvas.
-      const sz = Math.ceil(fontSize * 2.2 * dpr);
+      // 2× oversampling: render the emoji on an offscreen canvas that is twice
+      // the required physical size, then scale it down via drawImage.  The
+      // downsampling acts as a box filter, eliminating jaggies on the glyph
+      // edges and producing sharper results than a 1:1 render on most platforms.
+      const oversample = 2;
+      const sz = Math.ceil(fontSize * 2.2 * dpr * oversample);
       const tmp = document.createElement('canvas');
       tmp.width = sz;
       tmp.height = sz;
       const tc = tmp.getContext('2d');
-      tc.font = (fontSize * dpr) + 'px serif';
+      tc.font = (fontSize * dpr * oversample) + 'px serif';
       tc.textAlign = 'center';
       tc.textBaseline = 'middle';
       tc.fillText(paint.sticker, sz / 2, sz / 2);
-      // Supply explicit CSS-px destination size: the DPR-sized source maps 1:1
-      // to the backing store (current transform × explicit size = physical px).
+      // Draw at CSS-px size; the setTransform(dpr,…) on the main canvas maps
+      // CSS px to physical pixels, so the oversampled source is scaled to exactly
+      // the right physical size.
       const disp = fontSize * 2.2;
+      cx.imageSmoothingEnabled  = true;
+      cx.imageSmoothingQuality  = 'high';
       cx.drawImage(tmp,
         Math.round(p.x - disp / 2), Math.round(p.y - disp / 2),
         disp, disp);
@@ -717,12 +744,17 @@ window.APP = window.APP || {};
         // Keep the same canvas content point under the pinch midpoint.
         const contentX = (prevPinch.midX - paint.panX) / paint.zoom;
         const contentY = (prevPinch.midY - paint.panY) / paint.zoom;
-        const newZoom = Math.max(1, Math.min(4, paint.zoom * dist / prevPinch.dist));
+        // Minimum zoom is baseZoom (the fitted/centred base for this orientation).
+        const newZoom = Math.max(baseZoom, Math.min(4, paint.zoom * dist / prevPinch.dist));
         paint.panX = midX - contentX * newZoom;
         paint.panY = midY - contentY * newZoom;
         paint.zoom = newZoom;
-        // Snap back to no-transform when pinched all the way back to 1×.
-        if (paint.zoom <= 1.02) { paint.zoom = 1; paint.panX = 0; paint.panY = 0; }
+        // Snap back to base when pinched all the way back to the base zoom.
+        if (paint.zoom <= baseZoom * 1.02) {
+          paint.zoom = baseZoom;
+          paint.panX  = basePanX;
+          paint.panY  = basePanY;
+        }
         prevPinch = { dist, midX, midY };
         applyTransform();
         return;
