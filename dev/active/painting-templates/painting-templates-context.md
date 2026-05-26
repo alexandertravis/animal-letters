@@ -60,3 +60,25 @@ activated when a template has `regions[]` populated.
 
 ## Open Questions
 - None currently.
+
+
+## Completed — 2026-05-26
+Branch: feature/painting-templates
+Merged into: main (direct — no develop branch on this project)
+Version: no bump (project does not use semantic versioning)
+
+### What shipped
+- Full painting screen: brush, eraser, fill, splash, sticker tools
+- Pinch zoom, orientation-preserving fixed canvas, CSS rotation transition
+- 3 colour palettes (normal / light / dark) via palette cycle button
+- 210-sticker emoji panel with category sidebar and pull-to-close
+- Image-based coloring templates (Unicorn, Dinosaurs, Animals, Space Rabbit,
+  Kawaii Food, Mushrooms) — all WebP, ~130-300 KB each
+- Invisi-fill mode: invisible walls from template, flood-fill reveals image
+- Pill slider toggle for Normal / Invisi-fill, Random template button
+- Lion and the Mouse story illustrations: pages 1-4 as WebP
+
+### Known follow-up
+- Coloring template images are slightly pixelated — may need higher-resolution
+  source images or increased WebP quality (currently q=88) for sharper thumbnails
+  and full-canvas display on hi-DPI screens.
