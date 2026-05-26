@@ -104,7 +104,7 @@ no horror or gore, no scary expressions, no real-world brands.`;
       {
         id: 1,
         text: { en: `Deep in a sun-warm forest, where tall oaks spread their arms wide and bluebells nodded in the breeze, a great lion lay sleeping. His amber mane fanned out across the soft moss. His enormous paws rose and fell with each slow, rumbling breath.` },
-        image:    'assets/images/cartoon/lion.svg',
+        image:    'assets/images/story/lion-mouse/page-01.webp',
         imageAlt: 'A great lion asleep in a forest clearing, amber mane spread across green moss, bluebells around him.',
         imagePrompt: prompt({
           scene:       `Establishing shot. ${CAST.lion} asleep in a wide forest clearing. His great head rests on crossed paws, amber mane fanned out across deep green moss. Tall oak trunks frame the background. Bluebells and soft ferns grow around him. A butterfly rests on one ear. No other characters in frame.`,
@@ -116,7 +116,7 @@ no horror or gore, no scary expressions, no real-world brands.`;
       {
         id: 2,
         text: { en: `Along came a small grey mouse, whiskers twitching, red neckerchief bright in the morning light. She was so busy sniffing for seeds that she did not see the enormous lion until, oh dear, her tiny feet scurried right across the tip of his nose.` },
-        image:    'assets/images/cartoon/mouse.svg',
+        image:    'assets/images/story/lion-mouse/page-02.webp',
         imageAlt: 'A tiny mouse with a red neckerchief perched on the nose of a sleeping lion, eyes wide with surprise.',
         imagePrompt: prompt({
           scene:       `Close shot. ${CAST.mouse} stands right on the end of the sleeping lion's enormous nose, frozen mid-step, eyes round with sudden alarm. Her crimson neckerchief is a bright spot against the lion's tawny fur. The lion's mane and closed eyes fill the background.`,
@@ -128,7 +128,7 @@ no horror or gore, no scary expressions, no real-world brands.`;
       {
         id: 3,
         text: { en: `One golden eye opened. Then the other. Quick as sunrise, a great warm paw pressed gently down, holding the mouse in place. She trembled from the tips of her whiskers to the end of her tail, and looked up at the most enormous face she had ever seen.` },
-        image:    'assets/images/cartoon/lion.svg',
+        image:    'assets/images/story/lion-mouse/page-03.webp',
         imageAlt: 'A lion\'s great paw resting lightly over a tiny mouse who looks up with wide, frightened eyes.',
         imagePrompt: prompt({
           scene:       `${CAST.lion} is now awake, sitting upright. One of his great paws rests gently but firmly on the ground, with ${CAST.mouse} caught beneath it — just her head, shoulders and forepaws visible. She looks straight up at the lion's face. His expression is curious rather than fierce.`,
@@ -140,7 +140,7 @@ no horror or gore, no scary expressions, no real-world brands.`;
       {
         id: 4,
         text: { en: `"Little creature," said the lion, his voice rolling through the forest like far-away thunder, "you have woken me from the most wonderful dream." The mouse took the deepest breath she could manage. "Please," she said, very steadily. "Let me go. One day, I promise, I will repay you."` },
-        image:    'assets/images/cartoon/mouse.svg',
+        image:    'assets/images/story/lion-mouse/page-04.webp',
         imageAlt: 'A tiny mouse standing upright and speaking bravely up to a great lion whose face fills the background.',
         imagePrompt: prompt({
           scene:       `${CAST.mouse} stands upright on her hind paws, tiny forepaws clasped together, looking directly up at ${CAST.lion}. Her expression is earnest and brave, not cringing. The lion looks down at her with mild curiosity, one ear tilted forward. Soft fern fronds and tree roots around them.`,

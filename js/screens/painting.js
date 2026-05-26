@@ -1,110 +1,613 @@
 window.APP = window.APP || {};
 
-// Free-paint screen: a finger-painting canvas with brush / eraser / fill-bucket /
-// emoji-sticker tools, preset colours, three brush sizes, and undo / clear.
-// Session-only (nothing is persisted). Two stacked canvases: the bottom one holds
-// all paint pixels; the top overlay is unused in this MVP but reserved for Phase 2
-// colour-in templates.
 (function (APP) {
-  const COLORS = [
-    '#000000', '#e84393', '#e74c3c', '#f39c12',
-    '#f6e58d', '#27ae60', '#2980d9', '#8e44ad',
-  ];
+  // Three colour palettes: normal, light (pastels), dark (deep shades).
+  // Each has 10 swatches; white stays in slot 2 for all palettes.
+  const PALETTES = {
+    normal: ['#000000','#ffffff','#e84393','#e74c3c','#f39c12','#f6e58d','#27ae60','#2980d9','#8e44ad','#a0522d'],
+    light:  ['#aaaaaa','#ffffff','#f9a8d4','#fca5a5','#fed7aa','#fef9c3','#86efac','#93c5fd','#d8b4fe','#d4b896'],
+    dark:   ['#000000','#ffffff','#9d174d','#991b1b','#92400e','#a16207','#14532d','#1e3a8a','#4c1d95','#431407'],
+  };
+  const PALETTE_ORDER = ['normal', 'light', 'dark'];
+  const PALETTE_ICONS  = { normal: '🎨', light: '☀️', dark: '🌙' };
   const SIZES = [8, 16, 30];
-  const STICKERS = ['😀', '🐶', '🐱', '🌟', '❤️', '🌈', '🚗', '🦄', '🌸', '🍎'];
+  // Full sticker library. The toolbar shows the 5 most recently used;
+  // tapping ⋯ opens a panel to browse and pick from all of them.
+  const STICKER_CATEGORIES = [
+    { id: 'faces',     icon: '😀', label: 'Faces', emoji: [
+      '😀','😂','😍','🥰','😎','🤩','😴','🥳','😜','🤔',
+      '😊','😅','🤣','😭','😤','🥺','😇','🤗','😏','🙄',
+    ]},
+    { id: 'people',    icon: '👷', label: 'People', emoji: [
+      '👶','👦','👧','🧒','🧑','👨','👩','👴','👵','👮',
+      '💂','🕵️','👷','🤵','💃','🕺','👸','🤴','🎅','👼',
+    ]},
+    { id: 'fantasy',   icon: '🧙', label: 'Fantasy', emoji: [
+      '🦸','🦹','🧙','🧛','🧟','🧞','🧜','🧝','🤖','👽',
+      '👻','☠️','🐉','🦄','🧚','🧌','🔮','🪄','🎩','🧿',
+    ]},
+    { id: 'animals',   icon: '🐶', label: 'Animals', emoji: [
+      '🐶','🐱','🐭','🐰','🦊','🐻','🐼','🐨','🐯','🦁',
+      '🐸','🐵','🐔','🐧','🦆','🦉','🦋','🐛','🐝','🐞',
+      '🦜','🦩','🦚','🦢','🦅','🦔','🐿️','🦦','🦃','🐓',
+      '🐘','🦒','🦓','🦏','🦛','🐊','🐢','🦕','🦖','🐆',
+      '🐬','🐳','🐟','🐠','🐡','🐙','🦑','🦀','🦞','🦈',
+    ]},
+    { id: 'food',      icon: '🍕', label: 'Food', emoji: [
+      '🍎','🍊','🍋','🍇','🍓','🍉','🍑','🍒','🫐','🍌',
+      '🍍','🥭','🍈','🥝','🥥','🍐','🌶️','🫑','🥒','🌽',
+      '🥕','🥦','🥑','🍅','🫛','🥜','🍕','🍔','🌮','🌯',
+      '🍜','🍣','🍦','🎂','🍩','🍭','🧁','🍰','🍪','🍫',
+    ]},
+    { id: 'sport',     icon: '⚽', label: 'Sport', emoji: [
+      '⚽','🏀','🏈','⚾','🎾','🏐','🏉','🎱','🏓','🏸',
+      '🥊','🏊','🚴','🏋️','🤸','🧗','🤺','🏇','🏆','🥇',
+    ]},
+    { id: 'transport', icon: '🚗', label: 'Transport', emoji: [
+      '🚗','🚕','🚙','🚌','🚑','🚒','🚓','🚜','🏎️','🏍️',
+      '🛵','🚲','🛴','✈️','🚀','🛸','🚁','🛶','⛵','🚢',
+      '🚂','🚄','🚇','🛺','🚤','🛥️','🚦','⛽','🪂','🛩️',
+    ]},
+    { id: 'misc',      icon: '🎮', label: 'Misc', emoji: [
+      '🎮','🕹️','🎲','🧸','🪀','🪁','🎨','🎭','🎈','🎁',
+      '🎀','❤️','🧡','💛','💚','💙','💜','🌈','☀️','🌙',
+      '❄️','🔥','💧','⭐','💫','🎵','🎶','🎤','🎸','🎹',
+    ]},
+  ];
+  // Flat array used by the sticker tray (recent list)
+  const ALL_STICKERS = STICKER_CATEGORIES.flatMap(c => c.emoji);
+  const RECENT_STICKER_COUNT = 5;
   const MAX_DPR = 2;
   const HISTORY_CAP = 6;
-  const FILL_TOLERANCE = 40; // per-channel; squared-sum threshold below
+  const FILL_TOLERANCE = 40;
 
-  // Module-scoped so we can detach the resize listener from a previous mount.
-  // main.js has no destroy hook, so we clean up at the top of the next render.
   let resizeHandler = null;
+  let orientationHandler = null;
+  const imageCache = {};
+
+  function loadImg(src) {
+    return new Promise((resolve, reject) => {
+      if (imageCache[src]) { resolve(imageCache[src]); return; }
+      const img = new Image();
+      // No crossOrigin: same-origin on Vercel never taints canvas; on file://
+      // crossOrigin causes image load to fail entirely (CORS with no server).
+      img.onload = () => { imageCache[src] = img; resolve(img); };
+      img.onerror = reject;
+      img.src = src;
+    });
+  }
 
   function render(root, ctx) {
     if (resizeHandler) { window.removeEventListener('resize', resizeHandler); resizeHandler = null; }
+    if (orientationHandler) { window.removeEventListener('orientationchange', orientationHandler); orientationHandler = null; }
 
     root.innerHTML = '';
 
     const paint = {
       tool: 'brush',
-      color: COLORS[1],
+      color: PALETTES.normal[0],  // black — top-left of normal palette
       size: SIZES[1],
-      sticker: STICKERS[0],
+      palette: 'normal',
+      sticker: ALL_STICKERS[0],
+      // Each slot: { emoji, used } — used is a timestamp; negative initial values
+      // give a stable, unique ordering so the first 5 slots don't all tie at 0.
+      recentStickers: ALL_STICKERS.slice(0, RECENT_STICKER_COUNT).map((e, i) => ({ emoji: e, used: -i })),
       history: [],
       dpr: 1,
       drawing: false,
       last: null,
+      mode: 'free',
+      template: null,
+      pbnDone: new Set(),
+      wallPixels: null,   // Uint8Array — barrier pixel positions; checked by floodFill
+      invisi: false,      // invisi-fill mode: walls built but not drawn visibly
+      zoom: 1,
+      panX: 0,
+      panY: 0,
     };
+
+    // Fixed canvas dimensions — set once on first resize(), preserved on rotation.
+    // canvasW/H are landscape-oriented (canvasW > canvasH). On rotation we update
+    // the base zoom/pan so the viewport changes without ever clearing the backing store.
+    let canvasW = 0;
+    let canvasH = 0;
+    let baseZoom = 1, basePanX = 0, basePanY = 0;
 
     const wrap = document.createElement('div');
     wrap.className = 'painting';
     wrap.innerHTML = `
       <div class="painting-topbar">
         <button class="btn icon ghost" data-act="back" aria-label="Back">${APP.ICONS.back}</button>
-        <h2>${APP.t('painting.title')}</h2>
+        <div class="paint-mode-toggle">
+          <button class="paint-mode-btn active" data-mode="free">${APP.t('painting.draw')}</button>
+          <button class="paint-mode-btn" data-mode="template">${APP.t('painting.colourIn')}</button>
+        </div>
         <div class="painting-topbar-actions">
           <button class="btn icon ghost" data-act="undo" aria-label="${APP.t('painting.undo')}">${APP.ICONS.undo}</button>
           <button class="btn icon ghost" data-act="clear" aria-label="${APP.t('painting.clear')}">${APP.ICONS.trash}</button>
         </div>
       </div>
+      <div class="paint-template-picker hidden">
+        <div class="tpl-picker-header">
+          <div class="tpl-invisi-slider" role="switch" aria-checked="false" tabindex="0">
+            <div class="tpl-invisi-knob"></div>
+            <span class="tpl-invisi-opt">Normal</span>
+            <span class="tpl-invisi-opt">Invisi-fill ✨</span>
+          </div>
+          <button class="tpl-random-btn" aria-label="Random template">🎲 Random</button>
+        </div>
+        <div class="template-grid">
+          ${(APP.PAINTING_TEMPLATES || []).map(tpl => `
+            <button class="template-thumb" data-tpl="${tpl.id}" aria-label="${tpl.label}">
+              <canvas width="80" height="80"></canvas>
+              <span>${tpl.label}</span>
+            </button>
+          `).join('')}
+        </div>
+      </div>
       <div class="painting-stage">
-        <canvas class="paint-layer"></canvas>
-        <canvas class="overlay-layer"></canvas>
+        <div class="canvas-zoom-wrapper">
+          <canvas class="paint-layer"></canvas>
+          <canvas class="overlay-layer"></canvas>
+        </div>
       </div>
       <div class="painting-toolbar">
         <div class="tool-group tools">
           <button class="tool-btn" data-tool="brush" aria-label="${APP.t('painting.brush')}">${APP.ICONS.brush}</button>
           <button class="tool-btn" data-tool="eraser" aria-label="${APP.t('painting.eraser')}">${APP.ICONS.eraser}</button>
           <button class="tool-btn" data-tool="fill" aria-label="${APP.t('painting.fill')}">${APP.ICONS.fill}</button>
+          <button class="tool-btn" data-tool="splash" aria-label="${APP.t('painting.splash')}">${APP.ICONS.splash}</button>
           <button class="tool-btn" data-tool="sticker" aria-label="${APP.t('painting.sticker')}">${APP.ICONS.sticker}</button>
         </div>
-        <div class="tool-group swatches">
-          ${COLORS.map(c => `<button class="swatch" data-color="${c}" style="background:${c}" aria-label="colour ${c}"></button>`).join('')}
-        </div>
-        <div class="tool-group sizes">
-          ${SIZES.map(s => `<button class="size-btn" data-size="${s}" aria-label="size ${s}"><span style="width:${s}px;height:${s}px"></span></button>`).join('')}
+        <div class="tool-group palette-row">
+          <div class="sizes">
+            ${SIZES.map(s => `<button class="size-btn" data-size="${s}" aria-label="size ${s}"><span style="width:${s}px;height:${s}px"></span></button>`).join('')}
+          </div>
+          <div class="swatches"></div>
         </div>
         <div class="tool-group stickers">
-          ${STICKERS.map(e => `<button class="sticker-btn" data-sticker="${e}">${e}</button>`).join('')}
+          <button class="palette-cycle-btn" aria-label="Normal palette" title="Cycle colour palette">🎨</button>
+          <div class="sticker-tray"></div>
+          <button class="sticker-more-btn" aria-label="More stickers">⋯</button>
         </div>
       </div>
     `;
     root.appendChild(wrap);
 
+    // Emoji panel — appended separately so it overlays the toolbar.
+    // Structure: scrollable section grid on the left + narrow sidebar on the right
+    // for category-jump and close. Pull-down from the top also closes the panel.
+    const emojiPanel = document.createElement('div');
+    emojiPanel.className = 'emoji-panel hidden';
+    emojiPanel.innerHTML = `
+      <div class="emoji-panel-scroll">
+        ${STICKER_CATEGORIES.map(cat => `
+          <div class="emoji-section" id="emoji-sec-${cat.id}">
+            <div class="emoji-section-header">${cat.icon} ${cat.label}</div>
+            <div class="emoji-panel-grid">
+              ${cat.emoji.map(e => `<button class="sticker-btn" data-sticker="${e}">${e}</button>`).join('')}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="emoji-panel-sidebar">
+        <button class="emoji-sidebar-btn emoji-close-btn" aria-label="Close emoji panel">✕</button>
+        ${STICKER_CATEGORIES.map(cat => `
+          <button class="emoji-sidebar-btn emoji-cat-btn" data-cat="${cat.id}" aria-label="${cat.label}" title="${cat.label}">${cat.icon}</button>
+        `).join('')}
+      </div>
+    `;
+    wrap.appendChild(emojiPanel);
+
+    const picker = wrap.querySelector('.paint-template-picker');
     const stage = wrap.querySelector('.painting-stage');
     const canvas = wrap.querySelector('.paint-layer');
-    const cx = canvas.getContext('2d');
+    const overlay = wrap.querySelector('.overlay-layer');
+    // willReadFrequently: true tells the browser to optimise for frequent
+    // getImageData calls (flood-fill + wall-map building) — avoids the console
+    // warning and improves fill performance on repeated reads.
+    const cx = canvas.getContext('2d', { willReadFrequently: true });
+    const ox = overlay.getContext('2d');
 
-    // ---- Sizing (devicePixelRatio aware) -----------------------------------
+    // ---- Sizing ---------------------------------------------------------------
+    // The canvas backing store is set ONCE to landscape-oriented dimensions on the
+    // first call and never resized again. Orientation changes just update the base
+    // zoom/pan so the viewport shifts without clearing any painted content.
+    //
+    // Portrait  → zoom scales canvas height to fill stage height; the canvas is
+    //             wider than the stage so the centre strip is visible (sides clip).
+    // Landscape → zoom fits the entire canvas within the stage with small margins.
     function resize() {
       const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
-      const cssW = stage.clientWidth, cssH = stage.clientHeight;
-      if (!cssW || !cssH) return;
-      // Preserve current pixels across a resize.
-      let snapshot = null;
-      if (canvas.width && canvas.height) {
-        try { snapshot = cx.getImageData(0, 0, canvas.width, canvas.height); } catch (_) {}
+      const stageW = stage.clientWidth, stageH = stage.clientHeight;
+      if (!stageW || !stageH) return;
+
+      if (!canvasW) {
+        // First call: initialise backing store at landscape dimensions.
+        // max(w,h) × min(w,h) gives a landscape shape regardless of which
+        // orientation we happen to be in at first render.
+        paint.dpr = dpr;
+        canvasW = Math.max(stageW, stageH);
+        canvasH = Math.min(stageW, stageH);
+        const pw = Math.round(canvasW * dpr);
+        const ph = Math.round(canvasH * dpr);
+        [canvas, overlay].forEach(c => {
+          c.style.width  = canvasW + 'px';
+          c.style.height = canvasH + 'px';
+          c.width  = pw;
+          c.height = ph;
+        });
+        cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        cx.lineCap  = 'round';
+        cx.lineJoin = 'round';
+        ox.setTransform(dpr, 0, 0, dpr, 0, 0);
+        paint.history = [];
       }
-      paint.dpr = dpr;
-      canvas.style.width = cssW + 'px';
-      canvas.style.height = cssH + 'px';
-      canvas.width = Math.round(cssW * dpr);
-      canvas.height = Math.round(cssH * dpr);
-      cx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      cx.lineCap = 'round';
-      cx.lineJoin = 'round';
-      if (snapshot) {
-        try { cx.putImageData(snapshot, 0, 0); } catch (_) {}
+
+      // Compute base zoom and pan for the current stage size.
+      if (stageH > stageW) {
+        // Portrait: scale canvas so its height fills the stage height.
+        // Canvas is wider → horizontal overflow is clipped by stage overflow:hidden,
+        // revealing only the centre square of the landscape canvas.
+        baseZoom = stageH / canvasH;
+        basePanX = (stageW - canvasW * baseZoom) / 2;
+        basePanY = 0;
+      } else {
+        // Landscape: fit the entire canvas inside the stage.
+        baseZoom = Math.min(stageW / canvasW, stageH / canvasH);
+        basePanX = (stageW  - canvasW * baseZoom) / 2;
+        basePanY = (stageH - canvasH * baseZoom) / 2;
+      }
+      paint.zoom = baseZoom;
+      paint.panX = basePanX;
+      paint.panY = basePanY;
+
+      applyTransform();
+    }
+
+    // window 'resize' fires after the browser has reflowed at the new viewport
+    // dimensions — this is the correct moment to update base zoom/pan.
+    // 'orientationchange' fires *before* layout is stable, so we use it only as
+    // a fast-path hint with no delay; if dims are still stale the call is a
+    // near-no-op and 'resize' will follow with the correct values.
+    resizeHandler = function () { resize(); };
+    window.addEventListener('resize', resizeHandler);
+    orientationHandler = function () { resize(); };
+    window.addEventListener('orientationchange', orientationHandler);
+    resize();
+
+    // ---- Zoom / pan transform -------------------------------------------------
+    // Applied to the .canvas-zoom-wrapper div; both canvas layers move together.
+    // transform-origin is 0 0 (top-left of the wrapper) for simpler coordinate math.
+    function applyTransform() {
+      const wrapper = stage.querySelector('.canvas-zoom-wrapper');
+      if (!wrapper) return;
+      // panX/Y always includes the base centering offset, so we always set the
+      // transform (clearing it would show the canvas at 0,0 — top-left, not centred).
+      wrapper.style.transform =
+        `translate(${paint.panX}px,${paint.panY}px) scale(${paint.zoom})`;
+    }
+
+    // ---- Wall map (flood-fill barrier) ----------------------------------------
+    // buildWallMap renders the barrier strokes to an offscreen canvas and marks
+    // every covered pixel in a flat Uint8Array. floodFill treats marked pixels as
+    // hard walls regardless of their colour, so tapping on an outline never
+    // floods it, and black paint (#000000) can't leak through near-black barriers.
+    function buildWallMap(tpl) {
+      const W = canvas.width, H = canvas.height;
+      paint.wallPixels = new Uint8Array(W * H);
+      if (!tpl || tpl.type === 'image') return; // image walls built separately
+      const tmp = document.createElement('canvas');
+      tmp.width = W; tmp.height = H;
+      const tcx = tmp.getContext('2d');
+      const { scale, tx, ty } = templateTransform(tpl);
+      tcx.setTransform(scale * paint.dpr, 0, 0, scale * paint.dpr, tx * paint.dpr, ty * paint.dpr);
+      tcx.strokeStyle = '#000000';
+      tcx.lineWidth = (tpl.lineWidth || 6) * 2;
+      tcx.lineCap = 'round';
+      tcx.lineJoin = 'round';
+      tpl.outline.forEach(d => tcx.stroke(new Path2D(d)));
+      const data = tcx.getImageData(0, 0, W, H).data;
+      for (let i = 0, len = W * H; i < len; i++) {
+        if (data[i * 4 + 3] > 64) paint.wallPixels[i] = 1;
       }
     }
 
-    resizeHandler = function () { resize(); };
-    window.addEventListener('resize', resizeHandler);
-    // Stage is already laid out at this point (clientWidth/Height are non-zero
-    // immediately after appendChild in a flex container). Call resize() directly.
-    resize();
+    // For image templates: sample the paint canvas after drawing white+image.
+    // Any pixel meaningfully darker than white is a printed outline → mark as wall.
+    // Threshold is generous (any channel below 180) to catch anti-aliased edge
+    // pixels that would otherwise let flood-fill leak through thin outlines.
+    function buildWallMapFromCanvas() {
+      const W = canvas.width, H = canvas.height;
+      paint.wallPixels = new Uint8Array(W * H);
+      try {
+        const data = cx.getImageData(0, 0, W, H).data;
+        for (let i = 0, len = W * H; i < len; i++) {
+          const r = data[i * 4], g = data[i * 4 + 1], b = data[i * 4 + 2], a = data[i * 4 + 3];
+          // Mark as wall: opaque pixel that isn't close to white.
+          // Threshold 160 catches medium-grey anti-aliased edges too.
+          if (a > 64 && (r < 160 || g < 160 || b < 160)) paint.wallPixels[i] = 1;
+        }
+      } catch (_) {}
+    }
 
-    // ---- History ------------------------------------------------------------
+    // For image templates in invisi-fill mode: build wall map from the image
+    // without drawing anything on the main canvas.  An offscreen canvas is used
+    // to composite white + image, then walls are extracted from that.
+    function buildWallMapFromImage(img) {
+      const W = canvas.width, H = canvas.height;
+      paint.wallPixels = new Uint8Array(W * H);
+      const { scale, tx, ty } = imageTransform(img);
+      const tmp = document.createElement('canvas');
+      tmp.width = W; tmp.height = H;
+      const tcx = tmp.getContext('2d');
+      tcx.fillStyle = '#ffffff';
+      tcx.fillRect(0, 0, W, H);
+      tcx.save();
+      tcx.setTransform(scale * paint.dpr, 0, 0, scale * paint.dpr, tx * paint.dpr, ty * paint.dpr);
+      tcx.drawImage(img, 0, 0);
+      tcx.restore();
+      try {
+        const data = tcx.getImageData(0, 0, W, H).data;
+        for (let i = 0, len = W * H; i < len; i++) {
+          const r = data[i * 4], g = data[i * 4 + 1], b = data[i * 4 + 2], a = data[i * 4 + 3];
+          if (a > 64 && (r < 160 || g < 160 || b < 160)) paint.wallPixels[i] = 1;
+        }
+      } catch (_) {}
+    }
+
+    // ---- Template transforms --------------------------------------------------
+    function templateTransform(tpl) {
+      // Use fixed canvas dimensions (not stage dims) so templates stay centred
+      // on the backing store regardless of current orientation.
+      const scale = Math.min(canvasW, canvasH) / 400 * 0.85;
+      const tx = (canvasW - 400 * scale) / 2;
+      const ty = (canvasH - 400 * scale) / 2;
+      return { scale, tx, ty };
+    }
+
+    function imageTransform(img) {
+      const scale = Math.min(canvasW / img.naturalWidth, canvasH / img.naturalHeight) * 0.9;
+      const tx = (canvasW - img.naturalWidth * scale) / 2;
+      const ty = (canvasH - img.naturalHeight * scale) / 2;
+      return { scale, tx, ty, w: img.naturalWidth, h: img.naturalHeight };
+    }
+
+    // ---- Template rendering ---------------------------------------------------
+    function drawOutlineTo(context, tpl, scl, tx, ty, lineWidth) {
+      context.save();
+      context.setTransform(scl * paint.dpr, 0, 0, scl * paint.dpr, tx * paint.dpr, ty * paint.dpr);
+      context.strokeStyle = '#1a1a1a';
+      context.lineWidth = lineWidth || tpl.lineWidth || 6;
+      context.lineCap = 'round';
+      context.lineJoin = 'round';
+      tpl.outline.forEach(d => context.stroke(new Path2D(d)));
+      context.restore();
+    }
+
+    function drawTemplate(tpl) {
+      if (tpl.type === 'image') {
+        loadImg(tpl.src).then(img => {
+          const { scale, tx, ty } = imageTransform(img);
+          const t = [scale * paint.dpr, 0, 0, scale * paint.dpr, tx * paint.dpr, ty * paint.dpr];
+          ox.clearRect(0, 0, overlay.width, overlay.height);
+          if (paint.invisi) {
+            // Invisi-fill: build wall map from image without touching the main canvas.
+            // The canvas stays transparent/white so the image is invisible; flood-fill
+            // is still bounded by the wall map derived from the image outlines.
+            cx.save(); cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, canvas.width, canvas.height); cx.restore();
+            buildWallMapFromImage(img);
+          } else {
+            // Normal: image shown on overlay (always on top of paint); paint layer
+            // gets a white base + image so flood-fill can't escape through the
+            // transparent outer area that surrounds the image.
+            ox.save(); ox.setTransform(...t); ox.drawImage(img, 0, 0); ox.restore();
+            cx.save(); cx.setTransform(1, 0, 0, 1, 0, 0); cx.fillStyle = '#ffffff'; cx.fillRect(0, 0, canvas.width, canvas.height); cx.restore();
+            cx.save(); cx.setTransform(...t); cx.drawImage(img, 0, 0); cx.restore();
+            buildWallMapFromCanvas();
+          }
+        }).catch(() => {});
+        return;
+      }
+      // Path-based template
+      const { scale, tx, ty } = templateTransform(tpl);
+      ox.clearRect(0, 0, overlay.width, overlay.height);
+      if (paint.invisi) {
+        // Invisi-fill: build the wall map but draw nothing visible.
+        cx.save(); cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, canvas.width, canvas.height); cx.restore();
+        buildWallMap(tpl);
+      } else {
+        // Normal: outline on overlay, 2× barrier on paint layer.
+        drawOutlineTo(ox, tpl, scale, tx, ty);
+        cx.save();
+        cx.setTransform(scale * paint.dpr, 0, 0, scale * paint.dpr, tx * paint.dpr, ty * paint.dpr);
+        cx.strokeStyle = '#1a1a1a';
+        cx.lineWidth = (tpl.lineWidth || 6) * 2;
+        cx.lineCap = 'round';
+        cx.lineJoin = 'round';
+        tpl.outline.forEach(d => cx.stroke(new Path2D(d)));
+        cx.restore();
+        buildWallMap(tpl);
+        if (tpl.regions && tpl.regions.length) {
+          renderPbnNumbers(tpl, scale, tx, ty);
+        }
+      }
+    }
+
+    // Redraw overlay only (used after undo / resize where paint canvas is already correct)
+    function redrawOverlay(tpl) {
+      // In invisi-fill mode the overlay is always blank — nothing to redraw.
+      if (paint.invisi) { ox.clearRect(0, 0, overlay.width, overlay.height); return; }
+      if (tpl.type === 'image') {
+        loadImg(tpl.src).then(img => {
+          const { scale, tx, ty } = imageTransform(img);
+          ox.clearRect(0, 0, overlay.width, overlay.height);
+          ox.save();
+          ox.setTransform(scale * paint.dpr, 0, 0, scale * paint.dpr, tx * paint.dpr, ty * paint.dpr);
+          ox.drawImage(img, 0, 0);
+          ox.restore();
+        }).catch(() => {});
+        return;
+      }
+      const { scale, tx, ty } = templateTransform(tpl);
+      ox.clearRect(0, 0, overlay.width, overlay.height);
+      drawOutlineTo(ox, tpl, scale, tx, ty);
+      if (tpl.regions && tpl.regions.length) {
+        renderPbnNumbers(tpl, scale, tx, ty);
+      }
+    }
+
+    // Redraw paint-layer barrier only (used after clearAll)
+    function drawBarrier(tpl) {
+      // In invisi-fill mode the walls are kept in paint.wallPixels (never on the
+      // canvas), so "redrawing the barrier" just means clearing the canvas so the
+      // user's painting is gone but the invisible walls survive.
+      if (paint.invisi) {
+        cx.save(); cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, canvas.width, canvas.height); cx.restore();
+        return;
+      }
+      if (tpl.type === 'image') {
+        loadImg(tpl.src).then(img => {
+          const { scale, tx, ty } = imageTransform(img);
+          // Full-canvas white base (same as drawTemplate) then image on top.
+          cx.save();
+          cx.setTransform(1, 0, 0, 1, 0, 0);
+          cx.fillStyle = '#ffffff';
+          cx.fillRect(0, 0, canvas.width, canvas.height);
+          cx.restore();
+          cx.save();
+          cx.setTransform(scale * paint.dpr, 0, 0, scale * paint.dpr, tx * paint.dpr, ty * paint.dpr);
+          cx.drawImage(img, 0, 0);
+          cx.restore();
+          buildWallMapFromCanvas();
+        }).catch(() => {});
+        return;
+      }
+      const { scale, tx, ty } = templateTransform(tpl);
+      cx.save();
+      cx.setTransform(scale * paint.dpr, 0, 0, scale * paint.dpr, tx * paint.dpr, ty * paint.dpr);
+      cx.strokeStyle = '#1a1a1a';
+      cx.lineWidth = (tpl.lineWidth || 6) * 2;
+      cx.lineCap = 'round';
+      cx.lineJoin = 'round';
+      tpl.outline.forEach(d => cx.stroke(new Path2D(d)));
+      cx.restore();
+      buildWallMap(tpl);
+    }
+
+    function renderPbnNumbers(tpl, scale, tx, ty) {
+      ox.save();
+      ox.font = 'bold 18px sans-serif';
+      ox.textAlign = 'center';
+      ox.textBaseline = 'middle';
+      tpl.regions.forEach(r => {
+        const centroid = getPathCentroid(r.d, scale, tx, ty);
+        ox.fillStyle = '#ffffff';
+        ox.fillText(String(r.number), centroid.x + 1, centroid.y + 1);
+        ox.fillStyle = '#1a1a1a';
+        ox.fillText(String(r.number), centroid.x, centroid.y);
+      });
+      ox.restore();
+    }
+
+    function getPathCentroid(d, scale, tx, ty) {
+      const coords = [...d.matchAll(/[\d.]+[,\s]+[\d.]+/g)].map(c => {
+        const parts = c[0].trim().split(/[,\s]+/);
+        return { x: parseFloat(parts[0]), y: parseFloat(parts[1]) };
+      });
+      if (!coords.length) return { x: canvasW / 2, y: canvasH / 2 };
+      const avgX = coords.reduce((s, p) => s + p.x, 0) / coords.length;
+      const avgY = coords.reduce((s, p) => s + p.y, 0) / coords.length;
+      return { x: avgX * scale + tx, y: avgY * scale + ty };
+    }
+
+    // ---- Swatch renderer (called on init and on palette cycle) ----------------
+    // Rebuilds the .swatches container from the current palette and re-attaches
+    // click listeners, so no stale handlers from a previous render survive.
+    function renderSwatches() {
+      const colors = PALETTES[paint.palette];
+      const container = wrap.querySelector('.swatches');
+      container.innerHTML = colors.map(c =>
+        `<button class="swatch${paint.color === c ? ' active' : ''}" data-color="${c}"
+          style="background:${c};${c === '#ffffff' ? 'border:2px solid #ccc' : ''}"
+          aria-label="colour ${c}"></button>`
+      ).join('');
+      container.querySelectorAll('.swatch').forEach(b => {
+        b.addEventListener('click', () => {
+          paint.color = b.getAttribute('data-color');
+          if (paint.tool === 'eraser' || paint.tool === 'sticker') {
+            paint.tool = 'brush';
+            setActive('[data-tool]', 'data-tool', 'brush');
+          }
+          renderSwatches(); // refresh active ring
+        });
+      });
+      // Update palette cycle button icon to reflect current palette.
+      const pcb = wrap.querySelector('.palette-cycle-btn');
+      if (pcb) pcb.textContent = PALETTE_ICONS[paint.palette];
+    }
+
+    // ---- Apply template (shared by thumb click and random button) -------------
+    // Clears both canvases, resets PBN state, applies the template in the
+    // current invisi/normal mode, and switches the active tool to fill.
+    function applyTemplate(tpl) {
+      paint.template = tpl;
+      paint.pbnDone.clear();
+      hidePicker();
+      setTimeout(() => {
+        cx.save(); cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, canvas.width, canvas.height); cx.restore();
+        ox.clearRect(0, 0, overlay.width, overlay.height);
+        drawTemplate(tpl);
+      }, 20);
+      paint.tool = 'fill';
+      setActive('[data-tool]', 'data-tool', 'fill');
+    }
+
+    // ---- Thumbnail rendering --------------------------------------------------
+    function drawThumbnails() {
+      wrap.querySelectorAll('.template-thumb').forEach(btn => {
+        const id = btn.getAttribute('data-tpl');
+        const tpl = (APP.PAINTING_TEMPLATES || []).find(t => t.id === id);
+        if (!tpl) return;
+        const tc = btn.querySelector('canvas');
+        const tcx = tc.getContext('2d');
+        const size = 80;
+
+        if (tpl.type === 'image') {
+          loadImg(tpl.src).then(img => {
+            const scl = Math.min(size / img.naturalWidth, size / img.naturalHeight) * 0.9;
+            const ttx = (size - img.naturalWidth * scl) / 2;
+            const tty = (size - img.naturalHeight * scl) / 2;
+            tcx.clearRect(0, 0, size, size);
+            // White background so image lines are visible on the canvas
+            tcx.fillStyle = '#fff';
+            tcx.fillRect(0, 0, size, size);
+            tcx.imageSmoothingEnabled = true;
+            tcx.imageSmoothingQuality = 'high';
+            tcx.save();
+            tcx.setTransform(scl, 0, 0, scl, ttx, tty);
+            tcx.drawImage(img, 0, 0);
+            tcx.restore();
+          }).catch(() => {});
+          return;
+        }
+
+        const scl = size / 400 * 0.8;
+        const ttx = (size - 400 * scl) / 2;
+        const tty = (size - 400 * scl) / 2;
+        tcx.clearRect(0, 0, size, size);
+        tcx.save();
+        tcx.setTransform(scl, 0, 0, scl, ttx, tty);
+        tcx.strokeStyle = '#1a1a1a';
+        tcx.lineWidth = tpl.lineWidth || 6;
+        tcx.lineCap = 'round';
+        tcx.lineJoin = 'round';
+        tpl.outline.forEach(d => tcx.stroke(new Path2D(d)));
+        tcx.restore();
+      });
+    }
+
+    // ---- History --------------------------------------------------------------
     function pushHistory() {
       if (!canvas.width || !canvas.height) return;
       try {
@@ -116,29 +619,56 @@ window.APP = window.APP || {};
       const img = paint.history.pop();
       if (!img) return;
       cx.save();
-      cx.setTransform(1, 0, 0, 1, 0, 0); // putImageData ignores transform; reset for safety
+      cx.setTransform(1, 0, 0, 1, 0, 0);
       cx.putImageData(img, 0, 0);
       cx.restore();
+      if (paint.mode === 'template' && paint.template) {
+        redrawOverlay(paint.template);
+      }
     }
     function clearAll() {
       pushHistory();
-      cx.clearRect(0, 0, canvas.width, canvas.height);
+      // DPR-safe clear: use identity transform so the dimensions are in physical pixels.
+      cx.save(); cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, canvas.width, canvas.height); cx.restore();
+      if (paint.mode === 'free') {
+        // In free-draw mode, clear also removes any residual template walls and
+        // overlay (e.g. from switching away from template mode without clearing).
+        ox.clearRect(0, 0, overlay.width, overlay.height);
+        paint.wallPixels = null;
+        paint.template   = null;
+      } else if (paint.template) {
+        paint.pbnDone.clear();
+        if (paint.invisi) {
+          // Invisi-fill: walls live in paint.wallPixels, not on the canvas.
+          // The clear above wiped the user's painting; wall map is preserved so
+          // fills still reveal the image; overlay stays blank.
+          ox.clearRect(0, 0, overlay.width, overlay.height);
+        } else {
+          drawBarrier(paint.template);
+          redrawOverlay(paint.template);
+        }
+      }
     }
 
-    // ---- Coordinate helpers -------------------------------------------------
+    // ---- Coordinate helpers ---------------------------------------------------
+    // getBoundingClientRect already accounts for the CSS zoom transform on the
+    // wrapper, so dividing by paint.zoom converts back to canvas CSS pixels.
     function cssPoint(e) {
       const r = canvas.getBoundingClientRect();
-      return { x: e.clientX - r.left, y: e.clientY - r.top };
+      return {
+        x: (e.clientX - r.left) / paint.zoom,
+        y: (e.clientY - r.top) / paint.zoom,
+      };
     }
     function devicePoint(e) {
       const r = canvas.getBoundingClientRect();
       return {
-        x: Math.floor((e.clientX - r.left) * paint.dpr),
-        y: Math.floor((e.clientY - r.top) * paint.dpr),
+        x: Math.floor((e.clientX - r.left) / paint.zoom * paint.dpr),
+        y: Math.floor((e.clientY - r.top) / paint.zoom * paint.dpr),
       };
     }
 
-    // ---- Drawing ------------------------------------------------------------
+    // ---- Drawing --------------------------------------------------------------
     function strokeSegment(from, to) {
       cx.globalCompositeOperation = paint.tool === 'eraser' ? 'destination-out' : 'source-over';
       cx.strokeStyle = paint.color;
@@ -150,7 +680,6 @@ window.APP = window.APP || {};
       cx.globalCompositeOperation = 'source-over';
     }
     function dab(p) {
-      // A single tap should leave a dot.
       cx.globalCompositeOperation = paint.tool === 'eraser' ? 'destination-out' : 'source-over';
       cx.fillStyle = paint.color;
       cx.beginPath();
@@ -160,13 +689,64 @@ window.APP = window.APP || {};
     }
     function stampSticker(p) {
       cx.globalCompositeOperation = 'source-over';
-      cx.font = (paint.size * 4) + 'px serif';
-      cx.textAlign = 'center';
-      cx.textBaseline = 'middle';
-      cx.fillText(paint.sticker, p.x, p.y);
+      const fontSize = paint.size * 4;
+      const dpr = paint.dpr;
+      // 2× oversampling: render the emoji on an offscreen canvas that is twice
+      // the required physical size, then scale it down via drawImage.  The
+      // downsampling acts as a box filter, eliminating jaggies on the glyph
+      // edges and producing sharper results than a 1:1 render on most platforms.
+      const oversample = 2;
+      const sz = Math.ceil(fontSize * 2.2 * dpr * oversample);
+      const tmp = document.createElement('canvas');
+      tmp.width = sz;
+      tmp.height = sz;
+      const tc = tmp.getContext('2d');
+      tc.font = (fontSize * dpr * oversample) + 'px serif';
+      tc.textAlign = 'center';
+      tc.textBaseline = 'middle';
+      tc.fillText(paint.sticker, sz / 2, sz / 2);
+      // Draw at CSS-px size; the setTransform(dpr,…) on the main canvas maps
+      // CSS px to physical pixels, so the oversampled source is scaled to exactly
+      // the right physical size.
+      const disp = fontSize * 2.2;
+      cx.imageSmoothingEnabled  = true;
+      cx.imageSmoothingQuality  = 'high';
+      cx.drawImage(tmp,
+        Math.round(p.x - disp / 2), Math.round(p.y - disp / 2),
+        disp, disp);
+    }
+    function doSplash(p) {
+      cx.globalCompositeOperation = 'source-over';
+      cx.fillStyle = paint.color;
+      cx.strokeStyle = paint.color;
+      const r = paint.size / 2;
+      // Central blob
+      cx.beginPath();
+      cx.arc(p.x, p.y, r * 1.2, 0, Math.PI * 2);
+      cx.fill();
+      // Radiating drops
+      const count = 6 + Math.floor(Math.random() * 5);
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i / count) + (Math.random() - 0.5) * 0.7;
+        const dist = r * (1.8 + Math.random() * 2.5);
+        const dr = r * (0.15 + Math.random() * 0.45);
+        const bx = p.x + Math.cos(angle) * dist;
+        const by = p.y + Math.sin(angle) * dist;
+        cx.beginPath();
+        cx.arc(bx, by, dr, 0, Math.PI * 2);
+        cx.fill();
+        // Drip tail
+        cx.beginPath();
+        cx.lineWidth = dr * 0.9;
+        cx.lineCap = 'round';
+        cx.moveTo(p.x + Math.cos(angle) * r, p.y + Math.sin(angle) * r);
+        cx.lineTo(bx, by);
+        cx.stroke();
+      }
+      cx.globalCompositeOperation = 'source-over';
     }
 
-    // ---- Flood fill (scanline) ---------------------------------------------
+    // ---- Flood fill -----------------------------------------------------------
     function hexToRgba(hex) {
       const h = hex.replace('#', '');
       return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16), 255];
@@ -174,8 +754,13 @@ window.APP = window.APP || {};
     function floodFill(sx, sy, fill) {
       const W = canvas.width, H = canvas.height;
       if (sx < 0 || sy < 0 || sx >= W || sy >= H) return;
-      const img = cx.getImageData(0, 0, W, H), d = img.data;
-      const idx = (x, y) => (y * W + x) * 4;
+      let img;
+      try { img = cx.getImageData(0, 0, W, H); } catch (_) { return; }
+      const d = img.data;
+      const pidx = (x, y) => y * W + x;
+      const idx = (x, y) => pidx(x, y) * 4;
+      const walls = paint.wallPixels; // Uint8Array of barrier positions (or null)
+      const isWall = (x, y) => walls && walls[pidx(x, y)];
       const s = idx(sx, sy);
       const target = [d[s], d[s + 1], d[s + 2], d[s + 3]];
       const tol2 = FILL_TOLERANCE * FILL_TOLERANCE * 4;
@@ -183,23 +768,23 @@ window.APP = window.APP || {};
         const dr = d[i] - ref[0], dg = d[i + 1] - ref[1], db = d[i + 2] - ref[2], da = d[i + 3] - ref[3];
         return dr * dr + dg * dg + db * db + da * da <= tol2;
       };
-      if (close(idx(sx, sy), fill)) return; // already this colour
+      // Don't fill if tap landed on a barrier stroke (would flood entire outline network)
+      if (isWall(sx, sy)) return;
+      if (close(idx(sx, sy), fill)) return;
       const seen = new Uint8Array(W * H);
       const stack = [[sx, sy]];
       while (stack.length) {
         const [x, y] = stack.pop();
         let xL = x;
-        while (xL >= 0 && !seen[y * W + xL] && close(idx(xL, y), target)) xL--;
+        while (xL >= 0 && !seen[pidx(xL, y)] && !isWall(xL, y) && close(idx(xL, y), target)) xL--;
         xL++;
         let up = false, down = false;
-        for (let xi = xL; xi < W && !seen[y * W + xi] && close(idx(xi, y), target); xi++) {
+        for (let xi = xL; xi < W && !seen[pidx(xi, y)] && !isWall(xi, y) && close(idx(xi, y), target); xi++) {
           const p = idx(xi, y);
           d[p] = fill[0]; d[p + 1] = fill[1]; d[p + 2] = fill[2]; d[p + 3] = fill[3];
-          seen[y * W + xi] = 1;
-          if (y > 0 && close(idx(xi, y - 1), target)) { if (!up) { stack.push([xi, y - 1]); up = true; } }
-          else up = false;
-          if (y < H - 1 && close(idx(xi, y + 1), target)) { if (!down) { stack.push([xi, y + 1]); down = true; } }
-          else down = false;
+          seen[pidx(xi, y)] = 1;
+          if (y > 0 && !isWall(xi, y - 1) && close(idx(xi, y - 1), target)) { if (!up) { stack.push([xi, y - 1]); up = true; } } else up = false;
+          if (y < H - 1 && !isWall(xi, y + 1) && close(idx(xi, y + 1), target)) { if (!down) { stack.push([xi, y + 1]); down = true; } } else down = false;
         }
       }
       cx.save();
@@ -208,16 +793,88 @@ window.APP = window.APP || {};
       cx.restore();
     }
 
-    // ---- Pointer handling ---------------------------------------------------
+    // ---- PBN hit detection ---------------------------------------------------
+    function checkPbnHit(cssX, cssY) {
+      const tpl = paint.template;
+      if (!tpl || !tpl.regions || !tpl.regions.length || tpl.type === 'image') return;
+      const { scale, tx, ty } = templateTransform(tpl);
+      const templateX = (cssX - tx) / scale;
+      const templateY = (cssY - ty) / scale;
+      const scratch = document.createElement('canvas');
+      scratch.width = 400; scratch.height = 400;
+      const scx = scratch.getContext('2d');
+      for (const region of tpl.regions) {
+        if (paint.pbnDone.has(region.number)) continue;
+        const path = new Path2D(region.d);
+        if (scx.isPointInPath(path, templateX, templateY)) {
+          const targetRgba = hexToRgba(region.targetColor);
+          const fillRgba = hexToRgba(paint.color);
+          const match = targetRgba[0] === fillRgba[0] && targetRgba[1] === fillRgba[1] && targetRgba[2] === fillRgba[2];
+          if (match) {
+            paint.pbnDone.add(region.number);
+            if (APP.audio) APP.audio.strokeDone();
+            const allDone = tpl.regions.every(r => paint.pbnDone.has(r.number));
+            if (allDone) {
+              setTimeout(() => {
+                if (APP.launchConfetti) APP.launchConfetti();
+                if (APP.audio) APP.audio.wordDone();
+              }, 200);
+            }
+          } else {
+            stage.classList.add('pbn-shake');
+            setTimeout(() => stage.classList.remove('pbn-shake'), 400);
+          }
+          return;
+        }
+      }
+    }
+
+    // ---- Pointer handling (with pinch-to-zoom) --------------------------------
+    // activePointers tracks all live touch/pen contacts so we can detect when
+    // two fingers are down and switch from drawing into pinch-zoom mode.
+    const activePointers = new Map(); // pointerId → {clientX, clientY}
+    let prevPinch = null;             // {dist, midX, midY} relative to stage
+
     function onDown(e) {
-      if (APP.audio) APP.audio._wake();
-      try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+      // Capture on the stage (where listeners live) so pointermove/up always
+      // arrive here even when the finger leaves the stage area.
+      try { stage.setPointerCapture(e.pointerId); } catch (_) {}
+      activePointers.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
+      // Disable wrapper CSS transition while touching so brush strokes and
+      // pinch-zoom are rendered instantly without animation delay.
+      wrap.classList.add('painting--interacting');
       e.preventDefault();
+
+      if (activePointers.size >= 2) {
+        // Second finger down: abort any current drawing stroke and enter pinch mode.
+        paint.drawing = false;
+        paint.last = null;
+        const pts = [...activePointers.values()];
+        const r = stage.getBoundingClientRect();
+        prevPinch = {
+          dist: Math.hypot(pts[1].clientX - pts[0].clientX, pts[1].clientY - pts[0].clientY),
+          midX: (pts[0].clientX + pts[1].clientX) / 2 - r.left,
+          midY: (pts[0].clientY + pts[1].clientY) / 2 - r.top,
+        };
+        return;
+      }
+
+      // Single finger — normal drawing tools.
+      if (APP.audio) APP.audio._wake();
 
       if (paint.tool === 'fill') {
         pushHistory();
         const dp = devicePoint(e);
         floodFill(dp.x, dp.y, hexToRgba(paint.color));
+        if (APP.audio) APP.audio.strokeDone();
+        if (paint.mode === 'template' && paint.template) {
+          checkPbnHit(cssPoint(e).x, cssPoint(e).y);
+        }
+        return;
+      }
+      if (paint.tool === 'splash') {
+        pushHistory();
+        doSplash(cssPoint(e));
         if (APP.audio) APP.audio.strokeDone();
         return;
       }
@@ -227,7 +884,6 @@ window.APP = window.APP || {};
         if (APP.audio) APP.audio.strokeDone();
         return;
       }
-      // brush / eraser
       pushHistory();
       paint.drawing = true;
       const p = cssPoint(e);
@@ -235,6 +891,38 @@ window.APP = window.APP || {};
       dab(p);
     }
     function onMove(e) {
+      if (activePointers.has(e.pointerId)) {
+        activePointers.set(e.pointerId, { clientX: e.clientX, clientY: e.clientY });
+      }
+
+      // Pinch-zoom: two fingers moving.
+      if (activePointers.size >= 2 && prevPinch) {
+        e.preventDefault();
+        const pts = [...activePointers.values()];
+        const r = stage.getBoundingClientRect();
+        const dist = Math.hypot(pts[1].clientX - pts[0].clientX, pts[1].clientY - pts[0].clientY);
+        const midX = (pts[0].clientX + pts[1].clientX) / 2 - r.left;
+        const midY = (pts[0].clientY + pts[1].clientY) / 2 - r.top;
+
+        // Keep the same canvas content point under the pinch midpoint.
+        const contentX = (prevPinch.midX - paint.panX) / paint.zoom;
+        const contentY = (prevPinch.midY - paint.panY) / paint.zoom;
+        // Minimum zoom is baseZoom (the fitted/centred base for this orientation).
+        const newZoom = Math.max(baseZoom, Math.min(4, paint.zoom * dist / prevPinch.dist));
+        paint.panX = midX - contentX * newZoom;
+        paint.panY = midY - contentY * newZoom;
+        paint.zoom = newZoom;
+        // Snap back to base when pinched all the way back to the base zoom.
+        if (paint.zoom <= baseZoom * 1.02) {
+          paint.zoom = baseZoom;
+          paint.panX  = basePanX;
+          paint.panY  = basePanY;
+        }
+        prevPinch = { dist, midX, midY };
+        applyTransform();
+        return;
+      }
+
       if (!paint.drawing) return;
       e.preventDefault();
       const p = cssPoint(e);
@@ -242,18 +930,134 @@ window.APP = window.APP || {};
       paint.last = p;
     }
     function onUp(e) {
+      activePointers.delete(e.pointerId);
+      if (activePointers.size < 2) prevPinch = null;
+      // Re-enable the orientation-change transition once all fingers are lifted.
+      if (activePointers.size === 0) wrap.classList.remove('painting--interacting');
       if (!paint.drawing) return;
       paint.drawing = false;
       paint.last = null;
       if (APP.audio) APP.audio.strokeDone();
     }
 
-    canvas.addEventListener('pointerdown', onDown);
-    canvas.addEventListener('pointermove', onMove);
-    canvas.addEventListener('pointerup', onUp);
-    canvas.addEventListener('pointercancel', onUp);
+    // Attach to stage (not canvas) so the entire stage area is interactive.
+    // In landscape the canvas is centred with small margins; using canvas
+    // listeners would leave those margin strips non-drawable.
+    // cssPoint/devicePoint use canvas.getBoundingClientRect(), so coordinate
+    // mapping is still correct regardless of which element receives the event.
+    stage.addEventListener('pointerdown', onDown);
+    stage.addEventListener('pointermove', onMove);
+    stage.addEventListener('pointerup', onUp);
+    stage.addEventListener('pointercancel', onUp);
 
-    // ---- UI wiring ----------------------------------------------------------
+    // ---- Picker show/hide ----------------------------------------------------
+    function showPicker() {
+      picker.classList.remove('hidden');
+      drawThumbnails();
+      setTimeout(resize, 0);
+    }
+    function hidePicker() {
+      picker.classList.add('hidden');
+      setTimeout(resize, 0);
+    }
+
+    // ---- Mode toggle ----------------------------------------------------------
+    wrap.querySelectorAll('.paint-mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mode = btn.getAttribute('data-mode');
+        if (mode === 'template') {
+          if (paint.mode === 'template') { showPicker(); return; }
+          paint.mode = 'template';
+          wrap.querySelectorAll('.paint-mode-btn').forEach(b =>
+            b.classList.toggle('active', b.getAttribute('data-mode') === 'template'));
+          showPicker();
+        } else {
+          paint.mode = 'free';
+          wrap.querySelectorAll('.paint-mode-btn').forEach(b =>
+            b.classList.toggle('active', b.getAttribute('data-mode') === 'free'));
+          hidePicker();
+          paint.template = null;
+          paint.pbnDone.clear();
+          ox.clearRect(0, 0, overlay.width, overlay.height);
+          paint.tool = 'brush';
+          setActive('[data-tool]', 'data-tool', 'brush');
+        }
+      });
+    });
+
+    // ---- Template selection ---------------------------------------------------
+    // Invisi-fill slider toggle — shows both labels, knob slides between them.
+    const invisiSlider = wrap.querySelector('.tpl-invisi-slider');
+    if (invisiSlider) {
+      const toggle = () => {
+        paint.invisi = !paint.invisi;
+        invisiSlider.classList.toggle('active', paint.invisi);
+        invisiSlider.setAttribute('aria-checked', String(paint.invisi));
+      };
+      invisiSlider.addEventListener('click', toggle);
+      invisiSlider.addEventListener('keydown', e => {
+        if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); }
+      });
+    }
+
+    // Random template button
+    const randomBtn = wrap.querySelector('.tpl-random-btn');
+    if (randomBtn) {
+      randomBtn.addEventListener('click', () => {
+        const templates = APP.PAINTING_TEMPLATES || [];
+        if (!templates.length) return;
+        const tpl = templates[Math.floor(Math.random() * templates.length)];
+        wrap.querySelectorAll('.template-thumb').forEach(b =>
+          b.classList.toggle('active', b.getAttribute('data-tpl') === tpl.id));
+        applyTemplate(tpl);
+      });
+    }
+
+    // Individual template thumbs
+    wrap.querySelectorAll('.template-thumb').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-tpl');
+        const tpl = (APP.PAINTING_TEMPLATES || []).find(t => t.id === id);
+        if (!tpl) return;
+        wrap.querySelectorAll('.template-thumb').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        applyTemplate(tpl);
+      });
+    });
+
+    // ---- Sticker tray (dynamic recent list) ----------------------------------
+    function renderStickerTray() {
+      const tray = wrap.querySelector('.sticker-tray');
+      if (!tray) return;
+      tray.innerHTML = paint.recentStickers.map(s =>
+        `<button class="sticker-btn${s.emoji === paint.sticker ? ' active' : ''}" data-sticker="${s.emoji}">${s.emoji}</button>`
+      ).join('');
+      tray.querySelectorAll('[data-sticker]').forEach(b =>
+        b.addEventListener('click', () => selectSticker(b.getAttribute('data-sticker')))
+      );
+    }
+    function selectSticker(emoji) {
+      const now = Date.now();
+      const slotIdx = paint.recentStickers.findIndex(s => s.emoji === emoji);
+      if (slotIdx >= 0) {
+        // Already in tray: refresh its timestamp but keep its position.
+        paint.recentStickers[slotIdx].used = now;
+      } else {
+        // Not in tray: replace the LRU slot (oldest used; rightmost wins on tie).
+        let lru = 0;
+        for (let i = 1; i < paint.recentStickers.length; i++) {
+          if (paint.recentStickers[i].used <= paint.recentStickers[lru].used) lru = i;
+        }
+        paint.recentStickers[lru] = { emoji, used: now };
+      }
+      paint.sticker = emoji;
+      paint.tool = 'sticker';
+      setActive('[data-tool]', 'data-tool', 'sticker');
+      renderStickerTray();
+      emojiPanel.classList.add('hidden');
+    }
+
+    // ---- UI wiring -----------------------------------------------------------
     function setActive(selector, attr, value) {
       wrap.querySelectorAll(selector).forEach(b => {
         b.classList.toggle('active', b.getAttribute(attr) === String(value));
@@ -263,38 +1067,68 @@ window.APP = window.APP || {};
       paint.tool = b.getAttribute('data-tool');
       setActive('[data-tool]', 'data-tool', paint.tool);
     }));
-    wrap.querySelectorAll('[data-color]').forEach(b => b.addEventListener('click', () => {
-      paint.color = b.getAttribute('data-color');
-      if (paint.tool === 'eraser' || paint.tool === 'sticker') {
-        paint.tool = 'brush';
-        setActive('[data-tool]', 'data-tool', 'brush');
-      }
-      setActive('[data-color]', 'data-color', paint.color);
-    }));
+    // Swatch clicks are handled inside renderSwatches(); no static listener needed.
     wrap.querySelectorAll('[data-size]').forEach(b => b.addEventListener('click', () => {
       paint.size = Number(b.getAttribute('data-size'));
       setActive('[data-size]', 'data-size', paint.size);
     }));
-    wrap.querySelectorAll('[data-sticker]').forEach(b => b.addEventListener('click', () => {
-      paint.sticker = b.getAttribute('data-sticker');
-      paint.tool = 'sticker';
-      setActive('[data-tool]', 'data-tool', 'sticker');
-      setActive('[data-sticker]', 'data-sticker', paint.sticker);
-    }));
+    // Palette cycle button — steps through normal → light → dark → normal.
+    const paletteCycleBtn = wrap.querySelector('.palette-cycle-btn');
+    if (paletteCycleBtn) {
+      paletteCycleBtn.addEventListener('click', () => {
+        const idx = PALETTE_ORDER.indexOf(paint.palette);
+        paint.palette = PALETTE_ORDER[(idx + 1) % PALETTE_ORDER.length];
+        renderSwatches();
+      });
+    }
+    // Sticker tray: rendered dynamically
+    renderStickerTray();
+
+    // Emoji panel: sticker picks, category jump, close, pull-down-to-close
+    emojiPanel.querySelectorAll('[data-sticker]').forEach(b =>
+      b.addEventListener('click', () => selectSticker(b.getAttribute('data-sticker')))
+    );
+    emojiPanel.querySelectorAll('.emoji-cat-btn').forEach(btn =>
+      btn.addEventListener('click', () => {
+        const sec = emojiPanel.querySelector(`#emoji-sec-${btn.getAttribute('data-cat')}`);
+        if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      })
+    );
+    emojiPanel.querySelector('.emoji-close-btn').addEventListener('click', () => {
+      emojiPanel.classList.add('hidden');
+    });
+    // Pull-down-to-close: drag down ≥40 px while the list is scrolled to the top
+    const emojiScroll = emojiPanel.querySelector('.emoji-panel-scroll');
+    let pullStartY = null;
+    emojiScroll.addEventListener('pointerdown', e => {
+      if (emojiScroll.scrollTop <= 0) pullStartY = e.clientY;
+    }, { passive: true });
+    emojiScroll.addEventListener('pointermove', e => {
+      if (pullStartY !== null && e.clientY - pullStartY > 40) {
+        emojiPanel.classList.add('hidden');
+        pullStartY = null;
+      }
+    });
+    emojiScroll.addEventListener('pointerup',     () => { pullStartY = null; });
+    emojiScroll.addEventListener('pointercancel', () => { pullStartY = null; });
+
+    wrap.querySelector('.sticker-more-btn').addEventListener('click', () => {
+      emojiPanel.classList.toggle('hidden');
+    });
 
     wrap.querySelector('[data-act=undo]').addEventListener('click', undo);
     wrap.querySelector('[data-act=clear]').addEventListener('click', clearAll);
     wrap.querySelector('[data-act=back]').addEventListener('click', () => {
       if (resizeHandler) { window.removeEventListener('resize', resizeHandler); resizeHandler = null; }
+      if (orientationHandler) { window.removeEventListener('orientationchange', orientationHandler); orientationHandler = null; }
       const prev = APP.state.previousScreen;
       ctx.go(prev && prev !== 'painting' ? prev : 'landing');
     });
 
-    // Initial active states.
     setActive('[data-tool]', 'data-tool', paint.tool);
-    setActive('[data-color]', 'data-color', paint.color);
+    renderSwatches();  // populates .swatches and sets initial active ring
     setActive('[data-size]', 'data-size', paint.size);
-    setActive('[data-sticker]', 'data-sticker', paint.sticker);
+    // sticker tray active state is managed by renderStickerTray()
   }
 
   APP.screens = APP.screens || {};

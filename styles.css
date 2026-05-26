@@ -2519,6 +2519,7 @@ html, body {
 
 /* ---------- Painting ---------- */
 .painting {
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -2542,25 +2543,203 @@ html, body {
   display: flex;
   gap: 6px;
 }
+
+/* Mode toggle */
+.paint-mode-toggle {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 24px;
+  padding: 3px;
+  max-width: 240px;
+}
+.paint-mode-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 20px;
+  background: transparent;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.paint-mode-btn.active {
+  background: #fff;
+  color: #2980d9;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Template picker */
+.paint-template-picker {
+  flex-shrink: 0;
+  background: #ede9e0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 8px 12px 10px;
+}
+.paint-template-picker.hidden {
+  display: none;
+}
+.pick-label {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+/* Invisi-fill mode toggle + random button row */
+.tpl-picker-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+/* Pill slider: both labels always visible, knob slides between them */
+.tpl-invisi-slider {
+  position: relative;
+  display: flex;
+  flex: 1;
+  background: #d8d2c8;
+  border-radius: 20px;
+  padding: 3px;
+  cursor: pointer;
+  user-select: none;
+}
+.tpl-invisi-knob {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  background: #fff;
+  border-radius: 17px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  transition: left 0.2s ease;
+  pointer-events: none;
+}
+.tpl-invisi-slider.active .tpl-invisi-knob {
+  left: 50%;
+}
+.tpl-invisi-opt {
+  position: relative;
+  flex: 1;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 6px;
+  z-index: 1;
+  color: rgba(0, 0, 0, 0.45);
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+/* Highlight the active side */
+.tpl-invisi-slider:not(.active) .tpl-invisi-opt:first-of-type,
+.tpl-invisi-slider.active .tpl-invisi-opt:last-of-type {
+  color: #333;
+}
+.tpl-random-btn {
+  padding: 6px 12px;
+  border: 2px solid #ccc;
+  border-radius: 20px;
+  background: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #555;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+.tpl-random-btn:hover {
+  border-color: #f39c12;
+  background: #fff8ee;
+}
+.template-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.template-thumb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: #fff;
+  padding: 6px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.template-thumb canvas {
+  display: block;
+  border-radius: 6px;
+}
+.template-thumb span {
+  font-size: 0.7rem;
+  color: #555;
+  font-weight: 600;
+}
+.template-thumb.active {
+  border-color: #2980d9;
+  box-shadow: 0 0 0 3px rgba(41, 128, 217, 0.25);
+}
+.template-thumb:hover {
+  border-color: #aac8ee;
+}
+
+/* PBN shake on wrong colour */
+@keyframes pbn-shake {
+  0%   { transform: translateX(0); }
+  20%  { transform: translateX(-6px); }
+  40%  { transform: translateX(6px); }
+  60%  { transform: translateX(-4px); }
+  80%  { transform: translateX(4px); }
+  100% { transform: translateX(0); }
+}
+.pbn-shake {
+  animation: pbn-shake 0.4s ease;
+}
 .painting-stage {
   position: relative;
   flex: 1;
   min-height: 0;
+  min-width: 0;   /* prevent stage overflowing in landscape flex-row layout */
   margin: 0 12px;
   background: #ffffff;
   border-radius: 14px;
   box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.08);
   overflow: hidden;
 }
+/* Zoom wrapper: anchored at top-left; JS sizes and centres it via transform.
+   The transition smooths out the zoom/pan shift that happens on orientation
+   change.  It is disabled while the user is touching the canvas so that brush
+   strokes and pinch-zoom feel instant (see .painting--interacting below). */
+.canvas-zoom-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+  transition: transform 0.28s ease-out;
+}
+.painting--interacting .canvas-zoom-wrapper {
+  transition: none;
+}
 .painting-stage canvas {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  top: 0;
+  left: 0;
   touch-action: none;
+  display: block;
 }
 .painting-stage .overlay-layer {
   pointer-events: none;
+  mix-blend-mode: multiply;
 }
 .painting-toolbar {
   flex-shrink: 0;
@@ -2575,6 +2754,44 @@ html, body {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* Palette row: size-dot triangle on the left, 2-row colour grid on the right */
+.painting-toolbar .palette-row {
+  flex: 1 0 100%;   /* always own full toolbar row in portrait */
+  justify-content: flex-start;
+  gap: 10px;
+}
+.palette-row .sizes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  flex-shrink: 0;
+}
+/* First (largest) dot spans both columns — creates the triangle/pyramid look */
+.palette-row .sizes .size-btn:first-child {
+  grid-column: 1 / -1;
+}
+.palette-row .sizes .size-btn {
+  width: 44px;
+  height: 44px;
+}
+.palette-row .swatches {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
+}
+.palette-row .swatch {
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+/* Sticker tray: keep slots spaced and aligned */
+.sticker-tray {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 .painting-toolbar .tool-btn {
   width: 56px;
@@ -2642,6 +2859,123 @@ html, body {
   outline: 3px solid #2980d9;
   outline-offset: 1px;
 }
+.sticker-more-btn {
+  width: 48px;
+  height: 48px;
+  font-size: 1.3rem;
+  line-height: 1;
+  border: 2px dashed #ccc;
+  border-radius: 12px;
+  background: #f8f8f8;
+  color: #888;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: -0.05em;
+}
+/* Palette cycle button — same visual weight as sticker-more-btn */
+.palette-cycle-btn {
+  width: 48px;
+  height: 48px;
+  font-size: 1.4rem;
+  line-height: 1;
+  border: 2px solid #ddd;
+  border-radius: 50%;
+  background: #f8f8f8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+.palette-cycle-btn:hover { background: #ede9e0; border-color: #bbb; }
+
+/* ── Emoji picker bottom sheet ────────────────────────────────────────────── */
+.emoji-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;           /* scroll area + sidebar side-by-side */
+  flex-direction: row;
+  max-height: 50vh;
+  background: #fff;
+  border-top: 2px solid #e0dbd0;
+  border-radius: 20px 20px 0 0;
+  z-index: 30;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.14);
+  overflow: hidden;
+}
+.emoji-panel.hidden { display: none; }
+
+/* Scrollable emoji grid (left / centre) */
+.emoji-panel-scroll {
+  flex: 1;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px 10px 16px;
+}
+
+/* Per-category section */
+.emoji-section { margin-bottom: 8px; }
+.emoji-section-header {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(0, 24, 88, 0.45);
+  padding: 6px 4px 4px;
+}
+.emoji-panel-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Larger emoji buttons so they're easy to tap */
+.emoji-panel .sticker-btn {
+  width: 52px;
+  height: 52px;
+  font-size: 1.9rem;
+  border-radius: 12px;
+}
+
+/* Right sidebar: category-jump buttons + close */
+.emoji-panel-sidebar {
+  width: 46px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 3px;
+  background: rgba(0, 24, 88, 0.04);
+  border-left: 1px solid rgba(0, 24, 88, 0.08);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.emoji-sidebar-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.12s;
+}
+.emoji-sidebar-btn:active { background: rgba(0, 24, 88, 0.1); }
+.emoji-close-btn {
+  font-size: 1rem;
+  color: rgba(0, 24, 88, 0.55);
+  margin-bottom: 4px;
+}
 
 @media (max-height: 600px) {
   .painting {
@@ -2649,32 +2983,118 @@ html, body {
   }
   .painting-topbar {
     flex-direction: column;
-    width: 56px;
+    width: 64px;
     padding: 8px 6px;
   }
-  .painting-topbar h2 {
-    display: none;
+  .paint-mode-toggle {
+    flex-direction: column;
+    max-width: 52px;
+    padding: 2px;
+    gap: 2px;
+  }
+  .paint-mode-btn {
+    padding: 5px 4px;
+    font-size: 0.7rem;
+    border-radius: 16px;
   }
   .painting-topbar-actions {
     flex-direction: column;
   }
+  .paint-template-picker {
+    position: absolute;
+    top: 0;
+    left: 64px;
+    right: 120px;
+    z-index: 10;
+    max-height: 100%;
+    overflow-y: auto;
+    border-bottom: none;
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  .template-grid {
+    flex-direction: column;
+  }
+  .template-thumb {
+    flex-direction: row;
+    gap: 6px;
+  }
+  .template-thumb canvas {
+    width: 44px !important;
+    height: 44px !important;
+  }
   .painting-stage {
     margin: 8px;
   }
+
+  /* ── Landscape toolbar: narrow column, max 2 items wide, clips overflow ── */
   .painting-toolbar {
     flex-direction: column;
     flex-wrap: nowrap;
+    justify-content: flex-start; /* override base center — items must start at top */
     overflow-y: auto;
-    width: 124px;
-    padding: 8px;
-    gap: 8px;
+    overflow-x: hidden;          /* prevent sticker tray etc. bleeding over canvas */
+    -webkit-overflow-scrolling: touch;
+    width: 120px;
+    padding: 8px 6px;
+    gap: 6px;
   }
   .painting-toolbar .tool-group {
     flex-wrap: wrap;
     justify-content: center;
+    width: 100%;
   }
+
+  /* Tools: 2-wide natural wrap (2×48px = 96px < 108px inner width) ✓ */
   .painting-toolbar .tool-btn { width: 48px; height: 48px; }
+
+  /* Palette-row stacks sizes above swatches in the narrow column */
+  .painting-toolbar .palette-row {
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+  }
+
+  /* Sizes: 2-column grid → first 2 buttons on row 1, third alone on row 2 */
+  .palette-row .sizes {
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
+  .palette-row .sizes .size-btn:first-child {
+    grid-column: auto;  /* cancel portrait full-width span — natural 2-col flow */
+  }
+  .palette-row .sizes .size-btn { width: 100%; height: 40px; }
+
+  /* Colours: transposed to 2 columns × 5 rows */
+  .palette-row .swatches {
+    grid-template-columns: repeat(2, 1fr);
+    width: 100%;
+  }
+  /* Must be declared after .painting-toolbar .swatch to win the specificity tie.
+     height:auto + aspect-ratio:1 beat the fixed height:36px set below. */
+  .palette-row .swatches .swatch { width: 100%; min-width: 0; height: auto; aspect-ratio: 1; }
   .painting-toolbar .swatch { width: 36px; height: 36px; }
-  .painting-toolbar .size-btn,
+
+  /* Sticker section: tray wraps to 2 wide, ⋯ button sits below on its own row */
+  .painting-toolbar .tool-group.stickers {
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .sticker-tray {
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 96px;   /* exactly 2 × 40px button + 1 × 8px gap */
+  }
   .painting-toolbar .sticker-btn { width: 40px; height: 40px; }
+  .sticker-more-btn { width: 80px; height: 36px; font-size: 1.0rem; }
+
+  .emoji-panel {
+    left: 64px;            /* clear the left topbar column */
+    border-radius: 12px 12px 0 0;
+    max-height: 65vh;
+  }
+  .emoji-panel-scroll { padding: 8px 8px 12px; }
+  .emoji-panel .sticker-btn { width: 46px; height: 46px; font-size: 1.7rem; }
 }

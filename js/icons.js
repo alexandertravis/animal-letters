@@ -84,6 +84,18 @@ window.APP = window.APP || {};
       '<path d="M4 12h11a5 5 0 010 10h-1"/>'
     ),
 
+    // Paint splash: central blob with radiating drops
+    splash: icon(
+      '<circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/>' +
+      '<circle cx="12" cy="2.5" r="2" fill="currentColor" stroke="none"/>' +
+      '<circle cx="21" cy="8" r="1.5" fill="currentColor" stroke="none"/>' +
+      '<circle cx="21.5" cy="17" r="2" fill="currentColor" stroke="none"/>' +
+      '<circle cx="13" cy="22" r="1.5" fill="currentColor" stroke="none"/>' +
+      '<circle cx="4" cy="20" r="1.8" fill="currentColor" stroke="none"/>' +
+      '<circle cx="2" cy="11" r="1.5" fill="currentColor" stroke="none"/>' +
+      '<circle cx="6.5" cy="3.5" r="1.2" fill="currentColor" stroke="none"/>'
+    ),
+
     // Trash: lid + bin body (clear all)
     trash: icon(
       '<polyline points="3 6 5 6 21 6"/>' +
