@@ -2591,6 +2591,56 @@ html, body {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+/* Invisi-fill mode toggle + random button row */
+.tpl-picker-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.tpl-mode-row {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+.tpl-mode-btn {
+  flex: 1;
+  padding: 6px 10px;
+  border: 2px solid #ccc;
+  border-radius: 20px;
+  background: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.tpl-mode-btn.active {
+  background: #2980d9;
+  border-color: #2980d9;
+  color: #fff;
+}
+.tpl-mode-btn:not(.active):hover {
+  border-color: #aac8ee;
+  color: #2980d9;
+}
+.tpl-random-btn {
+  padding: 6px 12px;
+  border: 2px solid #ccc;
+  border-radius: 20px;
+  background: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #555;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+.tpl-random-btn:hover {
+  border-color: #f39c12;
+  background: #fff8ee;
+}
 .template-grid {
   display: flex;
   flex-wrap: wrap;

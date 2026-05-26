@@ -8,34 +8,6 @@ window.APP = window.APP || {};
   const SIZES = [8, 16, 30];
   // Full sticker library. The toolbar shows the 5 most recently used;
   // tapping ⋯ opens a panel to browse and pick from all of them.
-  const ALL_STICKERS = [
-    // Faces
-    '😀','😂','😍','🥰','😎','🤩','😴','🥳','😜','🤔',
-    // Pets & common animals
-    '🐶','🐱','🐭','🐰','🦊','🐻','🐼','🐨','🐯','🦁',
-    // Small critters & birds
-    '🐸','🐵','🐔','🐧','🦆','🦉','🦋','🐛','🐝','🐞',
-    // More birds & woodland
-    '🦜','🦩','🦚','🦢','🦅','🦔','🐿️','🦦','🦃','🐓',
-    // Big animals & reptiles
-    '🐘','🦒','🦓','🦏','🦛','🐊','🐢','🦕','🦖','🐆',
-    // Sea creatures
-    '🐬','🐳','🐟','🐠','🐡','🐙','🦑','🦀','🦞','🦈',
-    // Nature & weather
-    '🌸','🌺','🌻','🌹','🌷','🍀','🌈','⭐','🌟','☀️',
-    '🌴','🌵','🍄','🌍','🌊','❄️','🔥','🌙','💫','🌦️',
-    // Fruit
-    '🍎','🍊','🍋','🍇','🍓','🍉','🍑','🍒','🫐','🍌',
-    '🍍','🥭','🍈','🥝','🥥','🍐','🫒','🌶️','🫑','🥒',
-    // Veg & savoury food
-    '🌽','🥕','🥦','🥑','🍅','🫛','🥜','🍕','🍔','🌮',
-    // Sweet food & drinks
-    '🍦','🎂','🍩','🍭','🧁','🍰','🥧','🍪','🍫','🧃',
-    // Hearts & gifts
-    '❤️','🧡','💛','💚','💙','💜','🎈','🎁','🎀','🏆',
-    // Fun & toys
-    '🦄','🧸','🚗','🎵','🎨','⚽','🏀','🎠','🎡','🎪',
-  ];
   const STICKER_CATEGORIES = [
     { id: 'faces',     icon: '😀', label: 'Faces', emoji: [
       '😀','😂','😍','🥰','😎','🤩','😴','🥳','😜','🤔',
@@ -122,6 +94,7 @@ window.APP = window.APP || {};
       template: null,
       pbnDone: new Set(),
       wallPixels: null,   // Uint8Array — barrier pixel positions; checked by floodFill
+      invisi: false,      // invisi-fill mode: walls built but not drawn visibly
       zoom: 1,
       panX: 0,
       panY: 0,
@@ -149,7 +122,13 @@ window.APP = window.APP || {};
         </div>
       </div>
       <div class="paint-template-picker hidden">
-        <p class="pick-label">${APP.t('painting.pickTemplate')}</p>
+        <div class="tpl-picker-header">
+          <div class="tpl-mode-row">
+            <button class="tpl-mode-btn active" data-invisi="false">Normal</button>
+            <button class="tpl-mode-btn" data-invisi="true">Invisi-fill ✨</button>
+          </div>
+          <button class="tpl-random-btn" aria-label="Random template">🎲 Random</button>
+        </div>
         <div class="template-grid">
           ${(APP.PAINTING_TEMPLATES || []).map(tpl => `
             <button class="template-thumb" data-tpl="${tpl.id}" aria-label="${tpl.label}">
@@ -346,6 +325,31 @@ window.APP = window.APP || {};
       } catch (_) {}
     }
 
+    // For image templates in invisi-fill mode: build wall map from the image
+    // without drawing anything on the main canvas.  An offscreen canvas is used
+    // to composite white + image, then walls are extracted from that.
+    function buildWallMapFromImage(img) {
+      const W = canvas.width, H = canvas.height;
+      paint.wallPixels = new Uint8Array(W * H);
+      const { scale, tx, ty } = imageTransform(img);
+      const tmp = document.createElement('canvas');
+      tmp.width = W; tmp.height = H;
+      const tcx = tmp.getContext('2d');
+      tcx.fillStyle = '#ffffff';
+      tcx.fillRect(0, 0, W, H);
+      tcx.save();
+      tcx.setTransform(scale * paint.dpr, 0, 0, scale * paint.dpr, tx * paint.dpr, ty * paint.dpr);
+      tcx.drawImage(img, 0, 0);
+      tcx.restore();
+      try {
+        const data = tcx.getImageData(0, 0, W, H).data;
+        for (let i = 0, len = W * H; i < len; i++) {
+          const r = data[i * 4], g = data[i * 4 + 1], b = data[i * 4 + 2], a = data[i * 4 + 3];
+          if (a > 64 && (r < 160 || g < 160 || b < 160)) paint.wallPixels[i] = 1;
+        }
+      } catch (_) {}
+    }
+
     // ---- Template transforms --------------------------------------------------
     function templateTransform(tpl) {
       // Use fixed canvas dimensions (not stage dims) so templates stay centred
@@ -380,49 +384,54 @@ window.APP = window.APP || {};
         loadImg(tpl.src).then(img => {
           const { scale, tx, ty } = imageTransform(img);
           const t = [scale * paint.dpr, 0, 0, scale * paint.dpr, tx * paint.dpr, ty * paint.dpr];
-          // Overlay: permanent visual layer (lines stay on top of all paint)
           ox.clearRect(0, 0, overlay.width, overlay.height);
-          ox.save(); ox.setTransform(...t); ox.drawImage(img, 0, 0); ox.restore();
-          // Paint layer: flood-fill the ENTIRE canvas white first (identity
-          // transform → physical pixels) so the area outside the image is also
-          // solid white, not transparent. Transparent pixels would act as a
-          // separate fill zone and cause fills to "escape" the image outline.
-          cx.save();
-          cx.setTransform(1, 0, 0, 1, 0, 0);
-          cx.fillStyle = '#ffffff';
-          cx.fillRect(0, 0, canvas.width, canvas.height);
-          cx.restore();
-          // Draw the image with its correct scale/position on top of the white base.
-          cx.save();
-          cx.setTransform(...t);
-          cx.drawImage(img, 0, 0);
-          cx.restore();
-          buildWallMapFromCanvas(); // mark outline pixels as hard walls
+          if (paint.invisi) {
+            // Invisi-fill: build wall map from image without touching the main canvas.
+            // The canvas stays transparent/white so the image is invisible; flood-fill
+            // is still bounded by the wall map derived from the image outlines.
+            cx.save(); cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, canvas.width, canvas.height); cx.restore();
+            buildWallMapFromImage(img);
+          } else {
+            // Normal: image shown on overlay (always on top of paint); paint layer
+            // gets a white base + image so flood-fill can't escape through the
+            // transparent outer area that surrounds the image.
+            ox.save(); ox.setTransform(...t); ox.drawImage(img, 0, 0); ox.restore();
+            cx.save(); cx.setTransform(1, 0, 0, 1, 0, 0); cx.fillStyle = '#ffffff'; cx.fillRect(0, 0, canvas.width, canvas.height); cx.restore();
+            cx.save(); cx.setTransform(...t); cx.drawImage(img, 0, 0); cx.restore();
+            buildWallMapFromCanvas();
+          }
         }).catch(() => {});
         return;
       }
       // Path-based template
       const { scale, tx, ty } = templateTransform(tpl);
       ox.clearRect(0, 0, overlay.width, overlay.height);
-      drawOutlineTo(ox, tpl, scale, tx, ty);
-      // Paint-layer barrier uses 2× lineWidth so strokes overlap at junctions,
-      // preventing flood-fill leaking between adjacent same-coloured regions.
-      cx.save();
-      cx.setTransform(scale * paint.dpr, 0, 0, scale * paint.dpr, tx * paint.dpr, ty * paint.dpr);
-      cx.strokeStyle = '#1a1a1a';
-      cx.lineWidth = (tpl.lineWidth || 6) * 2;
-      cx.lineCap = 'round';
-      cx.lineJoin = 'round';
-      tpl.outline.forEach(d => cx.stroke(new Path2D(d)));
-      cx.restore();
-      buildWallMap(tpl); // mark barrier stroke pixels as hard walls
-      if (tpl.regions && tpl.regions.length) {
-        renderPbnNumbers(tpl, scale, tx, ty);
+      if (paint.invisi) {
+        // Invisi-fill: build the wall map but draw nothing visible.
+        cx.save(); cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, canvas.width, canvas.height); cx.restore();
+        buildWallMap(tpl);
+      } else {
+        // Normal: outline on overlay, 2× barrier on paint layer.
+        drawOutlineTo(ox, tpl, scale, tx, ty);
+        cx.save();
+        cx.setTransform(scale * paint.dpr, 0, 0, scale * paint.dpr, tx * paint.dpr, ty * paint.dpr);
+        cx.strokeStyle = '#1a1a1a';
+        cx.lineWidth = (tpl.lineWidth || 6) * 2;
+        cx.lineCap = 'round';
+        cx.lineJoin = 'round';
+        tpl.outline.forEach(d => cx.stroke(new Path2D(d)));
+        cx.restore();
+        buildWallMap(tpl);
+        if (tpl.regions && tpl.regions.length) {
+          renderPbnNumbers(tpl, scale, tx, ty);
+        }
       }
     }
 
     // Redraw overlay only (used after undo / resize where paint canvas is already correct)
     function redrawOverlay(tpl) {
+      // In invisi-fill mode the overlay is always blank — nothing to redraw.
+      if (paint.invisi) { ox.clearRect(0, 0, overlay.width, overlay.height); return; }
       if (tpl.type === 'image') {
         loadImg(tpl.src).then(img => {
           const { scale, tx, ty } = imageTransform(img);
@@ -444,6 +453,13 @@ window.APP = window.APP || {};
 
     // Redraw paint-layer barrier only (used after clearAll)
     function drawBarrier(tpl) {
+      // In invisi-fill mode the walls are kept in paint.wallPixels (never on the
+      // canvas), so "redrawing the barrier" just means clearing the canvas so the
+      // user's painting is gone but the invisible walls survive.
+      if (paint.invisi) {
+        cx.save(); cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, canvas.width, canvas.height); cx.restore();
+        return;
+      }
       if (tpl.type === 'image') {
         loadImg(tpl.src).then(img => {
           const { scale, tx, ty } = imageTransform(img);
@@ -497,6 +513,22 @@ window.APP = window.APP || {};
       const avgX = coords.reduce((s, p) => s + p.x, 0) / coords.length;
       const avgY = coords.reduce((s, p) => s + p.y, 0) / coords.length;
       return { x: avgX * scale + tx, y: avgY * scale + ty };
+    }
+
+    // ---- Apply template (shared by thumb click and random button) -------------
+    // Clears both canvases, resets PBN state, applies the template in the
+    // current invisi/normal mode, and switches the active tool to fill.
+    function applyTemplate(tpl) {
+      paint.template = tpl;
+      paint.pbnDone.clear();
+      hidePicker();
+      setTimeout(() => {
+        cx.save(); cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, canvas.width, canvas.height); cx.restore();
+        ox.clearRect(0, 0, overlay.width, overlay.height);
+        drawTemplate(tpl);
+      }, 20);
+      paint.tool = 'fill';
+      setActive('[data-tool]', 'data-tool', 'fill');
     }
 
     // ---- Thumbnail rendering --------------------------------------------------
@@ -564,11 +596,19 @@ window.APP = window.APP || {};
     }
     function clearAll() {
       pushHistory();
-      cx.clearRect(0, 0, canvas.width, canvas.height);
+      // DPR-safe clear: use identity transform so the dimensions are in physical pixels.
+      cx.save(); cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, canvas.width, canvas.height); cx.restore();
       if (paint.mode === 'template' && paint.template) {
         paint.pbnDone.clear();
-        drawBarrier(paint.template);
-        redrawOverlay(paint.template);
+        if (paint.invisi) {
+          // Invisi-fill: walls live in paint.wallPixels, not on the canvas.
+          // The clear above already wiped the user's painting; overlay is already
+          // blank; wall map is intentionally preserved so fills still work.
+          ox.clearRect(0, 0, overlay.width, overlay.height);
+        } else {
+          drawBarrier(paint.template);
+          redrawOverlay(paint.template);
+        }
       }
     }
 
@@ -908,6 +948,29 @@ window.APP = window.APP || {};
     });
 
     // ---- Template selection ---------------------------------------------------
+    // Invisi / Normal mode toggle (inside the picker header)
+    wrap.querySelectorAll('.tpl-mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        paint.invisi = btn.getAttribute('data-invisi') === 'true';
+        wrap.querySelectorAll('.tpl-mode-btn').forEach(b =>
+          b.classList.toggle('active', b.getAttribute('data-invisi') === String(paint.invisi)));
+      });
+    });
+
+    // Random template button
+    const randomBtn = wrap.querySelector('.tpl-random-btn');
+    if (randomBtn) {
+      randomBtn.addEventListener('click', () => {
+        const templates = APP.PAINTING_TEMPLATES || [];
+        if (!templates.length) return;
+        const tpl = templates[Math.floor(Math.random() * templates.length)];
+        wrap.querySelectorAll('.template-thumb').forEach(b =>
+          b.classList.toggle('active', b.getAttribute('data-tpl') === tpl.id));
+        applyTemplate(tpl);
+      });
+    }
+
+    // Individual template thumbs
     wrap.querySelectorAll('.template-thumb').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-tpl');
@@ -915,16 +978,7 @@ window.APP = window.APP || {};
         if (!tpl) return;
         wrap.querySelectorAll('.template-thumb').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        paint.template = tpl;
-        paint.pbnDone.clear();
-        hidePicker();
-        setTimeout(() => {
-          cx.clearRect(0, 0, canvas.width, canvas.height);
-          ox.clearRect(0, 0, overlay.width, overlay.height);
-          drawTemplate(tpl);
-        }, 20);
-        paint.tool = 'fill';
-        setActive('[data-tool]', 'data-tool', 'fill');
+        applyTemplate(tpl);
       });
     });
 
