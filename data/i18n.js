@@ -34,6 +34,7 @@ APP.I18N = {
     'landing.progress':   'My Progress',
     'landing.numbers':    'Numbers',
     'landing.painting':   'Painting',
+    'landing.recipes':    'Recipes',
     'landing.settings':   'Settings',
 
     // Painting screen
@@ -49,6 +50,27 @@ APP.I18N = {
     'painting.colourIn':  'Colour-in',
     'painting.pickTemplate': 'Pick a template',
     'painting.pbn':       'Paint by Numbers',
+
+    // Recipes screen
+    'recipes.title':      'Recipes',
+    'recipes.back':       'Back',
+    'recipes.ingredients':'Add the ingredients',
+    'recipes.mix':        'Mix it!',
+    'recipes.stir':       'Stir it round and round',
+    'recipes.stirHint':   'Drag the spoon around in circles',
+    'recipes.cook':       'Time to cook',
+    'recipes.ovenHint':   'Put it in the oven to bake',
+    'recipes.baking':     'Baking…',
+    'recipes.fryHint':    'Drop it into the hot oil',
+    'recipes.frying':     'Frying…',
+    'recipes.panWait':    'Cooking on one side…',
+    'recipes.flipHint':   'Tap to flip!',
+    'recipes.flip':       'Flip!',
+    'recipes.decorate':   'Decorate your treat',
+    'recipes.done':       'All done!',
+    'recipes.finished':   'Yummy!',
+    'recipes.makeAnother':'Make another',
+    'recipes.home':       'Home',
 
     // Progress screen
     'screens.progress.title': 'My Progress',

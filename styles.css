@@ -3098,3 +3098,244 @@ html, body {
   .emoji-panel-scroll { padding: 8px 8px 12px; }
   .emoji-panel .sticker-btn { width: 46px; height: 46px; font-size: 1.7rem; }
 }
+
+/* ──────────────────────────────  Recipes  ────────────────────────────── */
+.recipes {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+.recipes-topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  flex-shrink: 0;
+}
+.recipes-title {
+  flex: 1;
+  margin: 0;
+  font-size: 1.3rem;
+  text-align: center;
+}
+.recipes-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  overflow: hidden;
+  touch-action: none;
+}
+
+/* Pick step — recipe cards */
+.recipe-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  justify-content: center;
+  align-content: center;
+}
+.recipe-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 130px;
+  padding: 20px 12px;
+  border: none;
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.12s;
+}
+.recipe-card:active { transform: scale(0.95); }
+.recipe-card-emoji { font-size: 3.4rem; line-height: 1; }
+.recipe-card-name { font-size: 1.1rem; font-weight: 700; color: var(--ink); }
+
+/* Scene shared layout */
+.recipe-scene {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 0;
+}
+.recipe-scene.done { justify-content: center; }
+
+/* Drop targets (bowl / oven / pot / pan / treat) */
+.recipe-bowl,
+.recipe-mix,
+.recipe-oven,
+.recipe-pot,
+.recipe-pan {
+  position: relative;
+  flex-shrink: 0;
+}
+.recipe-bowl { width: 240px; height: 168px; }
+.recipe-mix  { width: 240px; height: 240px; }
+.recipe-oven { width: 220px; height: 220px; }
+.recipe-pot  { width: 240px; height: 170px; }
+.recipe-pan  { width: 280px; height: 180px; }
+
+/* Tray of draggable items */
+.recipe-tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  max-width: 100%;
+}
+.recipe-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 10px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transition: opacity 0.2s;
+}
+.recipe-item.dragging { cursor: grabbing; z-index: 30; box-shadow: 0 10px 18px rgba(0,0,0,0.25); }
+.recipe-item.used { opacity: 0; pointer-events: none; }
+.recipe-item-emoji { font-size: 2.4rem; line-height: 1; }
+.recipe-item-label { font-size: 0.78rem; font-weight: 600; color: #666; }
+.recipe-item.topping { padding: 8px; }
+
+/* Mix spoon + ring */
+.recipe-spoon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -22px 0 0 -22px;
+  font-size: 2.8rem;
+  pointer-events: none;
+  touch-action: none;
+}
+
+/* Cook carry item (tin / dough ball) */
+.recipe-carry {
+  font-size: 3rem;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.recipe-carry.dragging { cursor: grabbing; z-index: 30; }
+.recipe-carry.frying {
+  position: absolute;
+  top: 26%;
+  left: 50%;
+  margin-left: -24px;
+  animation: recipe-bob 0.6s ease-in-out infinite;
+}
+.recipe-carry.golden { animation: none; }
+@keyframes recipe-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(8px); }
+}
+
+/* Timer ring overlay (sits over the cook scene) */
+.recipe-timer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Pancake flyer */
+.recipe-flyer {
+  position: absolute;
+  top: 32%;
+  left: 50%;
+  margin-left: -28px;
+  font-size: 3.4rem;
+  pointer-events: none;
+}
+.recipe-flyer.flipping { animation: recipe-flip 0.9s ease-in-out; }
+@keyframes recipe-flip {
+  0%   { transform: translateY(0) rotate(0); }
+  50%  { transform: translateY(-90px) rotate(180deg); }
+  100% { transform: translateY(0) rotate(360deg); }
+}
+
+/* Hints */
+.recipe-hint {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #666;
+  text-align: center;
+}
+
+/* Decorate / done treat */
+.recipe-treat {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 200px;
+  height: 200px;
+  flex-shrink: 0;
+}
+.recipe-treat.big { width: 240px; height: 240px; }
+.recipe-treat-emoji { font-size: 7rem; line-height: 1; }
+.recipe-treat.big .recipe-treat-emoji { font-size: 9rem; }
+.recipe-placed {
+  position: absolute;
+  font-size: 1.6rem;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Action buttons */
+.recipe-action {
+  flex-shrink: 0;
+  min-height: 52px;
+  padding: 12px 28px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--muted);
+  color: #777;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.recipe-action.ready,
+.recipe-action:not(:disabled) {
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+.recipe-action:disabled { cursor: not-allowed; box-shadow: none; }
+.recipe-action.secondary { background: var(--accent); color: var(--accent-ink); }
+.recipe-done-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+/* Landscape — compact */
+@media (max-height: 600px) {
+  .recipes-topbar { padding: 4px 10px; }
+  .recipes-title { font-size: 1.1rem; }
+  .recipes-stage { gap: 8px; padding: 6px 12px; }
+  .recipe-card { width: 110px; padding: 12px 10px; }
+  .recipe-card-emoji { font-size: 2.6rem; }
+  .recipe-bowl { width: 180px; height: 126px; }
+  .recipe-mix  { width: 170px; height: 170px; }
+  .recipe-oven { width: 150px; height: 150px; }
+  .recipe-pot  { width: 180px; height: 128px; }
+  .recipe-pan  { width: 210px; height: 135px; }
+  .recipe-item-emoji { font-size: 1.9rem; }
+  .recipe-treat { width: 150px; height: 150px; }
+  .recipe-treat.big { width: 170px; height: 170px; }
+  .recipe-treat-emoji { font-size: 5rem; }
+  .recipe-treat.big .recipe-treat-emoji { font-size: 6.5rem; }
+  .recipe-action { min-height: 42px; padding: 8px 20px; font-size: 1rem; }
+}
