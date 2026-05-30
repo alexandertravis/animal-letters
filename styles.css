@@ -3492,7 +3492,9 @@ html, body {
 }
 
 /* Egg crack animation */
-.egg-top, .egg-bot { position: fixed; pointer-events: none; z-index: 82; }
+.egg-top, .egg-bot {
+  position: fixed; left: 0; top: 0; pointer-events: none; z-index: 82;
+}
 .egg-top {
   width: 40px; height: 24px; background: #f5eedc;
   border-radius: 50% 50% 0 0 / 60% 60% 0 0;
@@ -3504,26 +3506,26 @@ html, body {
   border: 2px solid #e0d4b8;
 }
 .egg-yolk {
-  position: fixed; width: 16px; height: 16px; border-radius: 50%;
+  position: fixed; left: 0; top: 0; width: 16px; height: 16px; border-radius: 50%;
   background: radial-gradient(circle at 38% 35%, #ffd166, #f4a015);
   pointer-events: none; z-index: 82;
 }
 
 /* Milk pour animation */
-.pour-jug { position: fixed; pointer-events: none; z-index: 82; }
+.pour-jug { position: fixed; left: 0; top: 0; pointer-events: none; z-index: 82; }
 .pour-stream-milk {
-  position: fixed; width: 8px; border-radius: 4px;
+  position: fixed; left: 0; top: 0; width: 8px; border-radius: 4px;
   background: rgba(240,248,255,0.92); transform-origin: top center;
   pointer-events: none; z-index: 82;
 }
 .milk-ripple {
-  position: fixed; width: 24px; height: 12px; border-radius: 50%;
+  position: fixed; left: 0; top: 0; width: 24px; height: 12px; border-radius: 50%;
   border: 2px solid rgba(200,220,255,0.7); pointer-events: none; z-index: 82;
 }
 
 /* Butter / sugar chunk animation */
 .butter-chunk {
-  position: fixed; width: 18px; height: 12px; border-radius: 3px;
+  position: fixed; left: 0; top: 0; width: 18px; height: 12px; border-radius: 3px;
   background: linear-gradient(135deg, #f7e175, #e8c940);
   box-shadow: inset -2px -2px 3px rgba(0,0,0,0.12);
   pointer-events: none; z-index: 82;
@@ -3531,11 +3533,11 @@ html, body {
 
 /* Flour / salt sift animation */
 .flour-particle {
-  position: fixed; width: 4px; height: 4px; border-radius: 50%;
+  position: fixed; left: 0; top: 0; width: 4px; height: 4px; border-radius: 50%;
   background: rgba(245,242,235,0.9); pointer-events: none; z-index: 82;
 }
 .sift-cloud {
-  position: fixed; border-radius: 50%;
+  position: fixed; left: 0; top: 0; border-radius: 50%;
   background: radial-gradient(circle, rgba(255,255,255,0.55), transparent);
   pointer-events: none; z-index: 81;
 }
