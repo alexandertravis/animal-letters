@@ -294,17 +294,19 @@ window.APP = window.APP || {};
         });
     }
 
-    // ── Milk pour: jug tilts over bowl, stream falls, ripple at surface ──
+    // ── Milk pour: jug moves above bowl, tips forward, stream falls straight down ──
     function animPour(ing, fromX, fromY, bowlWrap, contents, level, idx, total, onDone) {
       if (!G) { settleBowl(ing, contents, level, idx, total); if (onDone) onDone(); return; }
       var bc = centerOf(bowlWrap);
       var jugW = 48, jugH = 60;
-      // Position jug to the right of bowl centre, above rim
-      var jugTX = bc.x + 20;
-      var jugTY = bc.r.top - jugH * 0.5;
-      // Stream: from jug spout (left side after tilt) down to bowl surface
-      var streamX  = bc.x + 4;
-      var streamTopY  = jugTY + 18;
+      // Jug rests centered above the bowl rim — bottom of jug = 8px above bowl top
+      var jugTX = bc.x - jugW / 2;
+      var jugTY = bc.r.top - jugH - 8;
+      // Stream hangs from jug bottom-center, falls to bowl surface.
+      // Pivot is '50% 100%' (bottom-center stays fixed during tilt), so stream
+      // origin = jug bottom-center regardless of rotation angle.
+      var streamX  = bc.x - 4;       // 4 = half of 8px stream width
+      var streamTopY  = jugTY + jugH; // = bc.r.top - 8
       var streamBotY  = bc.r.top + bc.r.height * 0.3;
       var streamH  = Math.max(streamBotY - streamTopY, 10);
 
@@ -314,15 +316,10 @@ window.APP = window.APP || {};
         '<defs><linearGradient id="jugG2" x1="0" y1="0" x2="0" y2="1">' +
         '<stop offset="0" stop-color="#edf6ff"/><stop offset="1" stop-color="#b8d8f0"/>' +
         '</linearGradient></defs>' +
-        // Body
         '<rect x="4" y="8" width="36" height="44" rx="8" fill="url(#jugG2)" stroke="#7ab0d4" stroke-width="1.5"/>' +
-        // Spout/lip at top-left
         '<path d="M4 12 Q-4 10 -4 17 Q-4 22 4 20" fill="none" stroke="#7ab0d4" stroke-width="2.5" stroke-linecap="round"/>' +
-        // Handle on right
         '<path d="M40 18 Q50 20 50 30 Q50 40 40 42" fill="none" stroke="#7ab0d4" stroke-width="3" stroke-linecap="round"/>' +
-        // Lid rim
         '<rect x="4" y="6" width="36" height="6" rx="3" fill="#cce4f6" stroke="#7ab0d4" stroke-width="1"/>' +
-        // Milk inside
         '<rect x="7" y="26" width="30" height="23" rx="4" fill="rgba(235,248,255,0.75)"/>' +
         '</svg>';
       document.body.appendChild(jug);
@@ -339,16 +336,14 @@ window.APP = window.APP || {};
 
       var tl = gtl();
       tl.to(jug, { x: jugTX, y: jugTY, duration: 0.32, ease: 'power2.out' })
-        // Tilt jug so spout (left side) dips toward bowl
-        .to(jug, { rotation: -100, transformOrigin: '90% 85%', duration: 0.42, ease: 'power2.inOut' })
-        .to(stream, { opacity: 1, scaleY: 1, duration: 0.22, ease: 'power1.out' }, '-=0.18')
+        // Tip jug forward; pivot at bottom-center keeps the pour point anchored
+        .to(jug, { rotation: -28, transformOrigin: '50% 100%', duration: 0.38, ease: 'power2.inOut' })
+        .to(stream, { opacity: 1, scaleY: 1, duration: 0.22, ease: 'power1.out' }, '-=0.15')
         .to(ripple, { opacity: 0.9, scale: 1, duration: 0.15 }, '<0.15')
         .to(ripple, { opacity: 0, scale: 2.8, duration: 0.5, ease: 'power1.out' }, '<')
-        // Hold pour
         .to(jug, { duration: 0.55 })
-        // Tilt back and retract stream
         .to(stream, { scaleY: 0, opacity: 0, duration: 0.18 })
-        .to(jug, { rotation: 0, duration: 0.35, ease: 'power2.inOut' }, '<')
+        .to(jug, { rotation: 0, duration: 0.32, ease: 'power2.inOut' }, '<')
         .to(jug, { opacity: 0, duration: 0.18 })
         .call(function () {
           jug.remove(); stream.remove(); ripple.remove();
@@ -389,14 +384,14 @@ window.APP = window.APP || {};
       });
     }
 
-    // ── Flour/salt sift: cloud puff + cascade of tiny particles ──
+    // ── Flour/salt sift: cloud puff at drop point, particles drift down to bowl ──
     function animSift(ing, fromX, fromY, bowlWrap, contents, level, idx, total, onDone) {
       if (!G) { settleBowl(ing, contents, level, idx, total); if (onDone) onDone(); return; }
       var bc = centerOf(bowlWrap);
-      var sourceX = bc.x, sourceY = bc.r.top - 6;
-      var landY = bc.r.top + bc.r.height * 0.28;
+      // Particles start where the ingredient was dropped, drift down into bowl center
+      var sourceX = fromX, sourceY = fromY - 5;
+      var landX = bc.x, landY = bc.r.top + bc.r.height * 0.28;
 
-      // Cloud puff at source
       var cloud = el('div', 'sift-cloud');
       cloud.style.width = '64px'; cloud.style.height = '32px';
       document.body.appendChild(cloud);
@@ -411,10 +406,10 @@ window.APP = window.APP || {};
             if (S.step !== 'ingredients') return;
             var p = el('div', 'flour-particle');
             document.body.appendChild(p);
-            gset(p, { x: sourceX + (Math.random() - 0.5) * 58 - 2, y: sourceY, opacity: 0.9 });
+            gset(p, { x: sourceX + (Math.random() - 0.5) * 40 - 2, y: sourceY, opacity: 0.9 });
             gto(p, {
+              x: landX + (Math.random() - 0.5) * bc.r.width * 0.35,
               y: landY + (Math.random() - 0.5) * 12,
-              x: '+=' + ((Math.random() - 0.5) * 18),
               opacity: 0,
               duration: 0.55 + Math.random() * 0.5,
               ease: 'power1.in',
