@@ -89,17 +89,37 @@ window.APP = window.APP || {};
     return Math.hypot(x - cx, y - cy) <= rad * (slack || 1.1);
   }
 
+  // Squash-and-stretch: squashes el then springs back.
+  function squash(node, sx, sy) {
+    if (!G) return;
+    G.timeline()
+      .to(node, { scaleX: sx || 1.4, scaleY: sy || 0.55, duration: 0.07, ease: 'none' })
+      .to(node, { scaleX: 1, scaleY: 1, duration: 0.22, ease: 'back.out(2.5)' });
+  }
+
+  // Bowl jiggle — called every time an ingredient settles.
+  function jiggleBowl(bowlWrap) {
+    if (!G) return;
+    G.timeline()
+      .to(bowlWrap, { rotation: 4, duration: 0.08, ease: 'power2.out' })
+      .to(bowlWrap, { rotation: -3, duration: 0.10, ease: 'power2.inOut' })
+      .to(bowlWrap, { rotation: 1.5, duration: 0.08 })
+      .to(bowlWrap, { rotation: 0, duration: 0.10, ease: 'power2.in' });
+  }
+
   // Shared bowl-settle logic: add a blob inside the bowl and raise the batter level.
-  function settleBowl(ing, contents, level, idx, total) {
+  function settleBowl(ing, contents, level, idx, total, bowlWrap) {
     var blob = el('span', 'bowl-bit', ing.emoji);
     var spread = (idx - (total - 1) / 2) / total;
     blob.style.left = (50 + spread * 60) + '%';
     blob.style.bottom = (8 + (idx % 2) * 10) + '%';
     contents.appendChild(blob);
     gset(blob, { scale: 0 });
-    gto(blob, { scale: 1, duration: 0.3, ease: 'back.out(2)' });
+    gto(blob, { scale: 1, duration: 0.3, ease: 'back.out(2)',
+      onComplete: function () { squash(blob, 1.3, 0.7); } });
     var h = 12 + ((idx + 1) / total) * 34;
     gto(level, { height: h + '%', opacity: 0.55 + (idx + 1) / total * 0.35, duration: 0.4, ease: 'power2.out' });
+    if (bowlWrap) jiggleBowl(bowlWrap);
   }
 
   // ── Shared SVG art ──
@@ -153,6 +173,57 @@ window.APP = window.APP || {};
 
     var stage = el('div', 'recipes-stage');
     wrap.appendChild(stage);
+
+    // ── Kitchen background ──
+    var kitchenBg = el('div', 'kitchen-bg');
+    kitchenBg.setAttribute('aria-hidden', 'true');
+    kitchenBg.innerHTML =
+      '<svg viewBox="0 0 800 500" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">' +
+      '<defs>' +
+      '<pattern id="wallTile" x="0" y="0" width="100" height="80" patternUnits="userSpaceOnUse">' +
+      '<rect width="100" height="80" fill="#fff9f0"/>' +
+      '<rect width="50" height="40" fill="#fdeedd"/>' +
+      '<rect x="50" y="40" width="50" height="40" fill="#fdeedd"/>' +
+      '</pattern>' +
+      '</defs>' +
+      // Wall
+      '<rect width="800" height="300" fill="url(#wallTile)"/>' +
+      // Tile grout lines horizontal
+      '<line x1="0" y1="80" x2="800" y2="80" stroke="#e8d8c0" stroke-width="2"/>' +
+      '<line x1="0" y1="160" x2="800" y2="160" stroke="#e8d8c0" stroke-width="2"/>' +
+      '<line x1="0" y1="240" x2="800" y2="240" stroke="#e8d8c0" stroke-width="2"/>' +
+      // Window frame
+      '<rect x="300" y="22" width="200" height="150" rx="10" fill="#cceeff" stroke="#c4843a" stroke-width="7"/>' +
+      '<line x1="400" y1="22" x2="400" y2="172" stroke="#c4843a" stroke-width="4"/>' +
+      '<line x1="300" y1="97" x2="500" y2="97" stroke="#c4843a" stroke-width="4"/>' +
+      // Curtains
+      '<path d="M300 22 Q280 60 292 110 Q282 150 300 172" fill="#f4845a" opacity="0.85"/>' +
+      '<path d="M500 22 Q520 60 508 110 Q518 150 500 172" fill="#f4845a" opacity="0.85"/>' +
+      // Curtain rod
+      '<rect x="285" y="14" width="230" height="12" rx="6" fill="#c4843a"/>' +
+      '<circle cx="285" cy="20" r="8" fill="#d4944a"/>' +
+      '<circle cx="515" cy="20" r="8" fill="#d4944a"/>' +
+      // Left shelf
+      '<rect x="30" y="100" width="150" height="12" rx="4" fill="#c4843a"/>' +
+      '<rect x="30" y="112" width="8" height="50" rx="3" fill="#a86820"/>' +
+      '<rect x="172" y="112" width="8" height="50" rx="3" fill="#a86820"/>' +
+      // Jar on shelf
+      '<rect x="55" y="62" width="34" height="40" rx="6" fill="#a0d8b0" stroke="#68b880" stroke-width="2"/>' +
+      '<rect x="53" y="58" width="38" height="10" rx="4" fill="#68b880"/>' +
+      // Book on shelf
+      '<rect x="108" y="60" width="22" height="42" rx="3" fill="#f4845a"/>' +
+      '<rect x="112" y="60" width="4" height="42" fill="#d4643a" opacity="0.5"/>' +
+      // Green backsplash strip
+      '<rect x="0" y="284" width="800" height="28" fill="#b8dca0"/>' +
+      '<line x1="0" y1="284" x2="800" y2="284" stroke="#98c080" stroke-width="2"/>' +
+      '<line x1="0" y1="312" x2="800" y2="312" stroke="#98c080" stroke-width="2"/>' +
+      // Countertop
+      '<rect x="0" y="312" width="800" height="188" fill="#e8c98a"/>' +
+      '<rect x="0" y="312" width="800" height="14" fill="#d4a85a"/>' +
+      // Countertop highlight
+      '<rect x="0" y="326" width="800" height="4" fill="rgba(255,255,255,0.25)"/>' +
+      '</svg>';
+    stage.appendChild(kitchenBg);
 
     backBtn.addEventListener('click', function () {
       if (G) G.killTweensOf('*');
@@ -254,7 +325,7 @@ window.APP = window.APP || {};
 
     // ── Egg crack: two CSS half-shells separate, yolk drops into bowl ──
     function animCrack(ing, fromX, fromY, bowlWrap, contents, level, idx, total, onDone) {
-      if (!G) { settleBowl(ing, contents, level, idx, total); if (onDone) onDone(); return; }
+      if (!G) { settleBowl(ing, contents, level, idx, total, bowlWrap); if (onDone) onDone(); return; }
       var bc = centerOf(bowlWrap);
       var landX = bc.x;
       var landY = bc.r.top + bc.r.height * 0.12;
@@ -289,14 +360,14 @@ window.APP = window.APP || {};
         .to([top, bot], { opacity: 0, duration: 0.22, y: '-=8' }, '<0.1')
         .call(function () {
           top.remove(); bot.remove(); yolk.remove();
-          settleBowl(ing, contents, level, idx, total);
+          settleBowl(ing, contents, level, idx, total, bowlWrap);
           if (onDone) onDone();
         });
     }
 
     // ── Milk pour: jug moves above bowl, tips forward, stream falls straight down ──
     function animPour(ing, fromX, fromY, bowlWrap, contents, level, idx, total, onDone) {
-      if (!G) { settleBowl(ing, contents, level, idx, total); if (onDone) onDone(); return; }
+      if (!G) { settleBowl(ing, contents, level, idx, total, bowlWrap); if (onDone) onDone(); return; }
       var bc = centerOf(bowlWrap);
       var jugW = 48, jugH = 60;
       // Jug rests centered above the bowl rim — bottom of jug = 8px above bowl top
@@ -347,14 +418,14 @@ window.APP = window.APP || {};
         .to(jug, { opacity: 0, duration: 0.18 })
         .call(function () {
           jug.remove(); stream.remove(); ripple.remove();
-          settleBowl(ing, contents, level, idx, total);
+          settleBowl(ing, contents, level, idx, total, bowlWrap);
           if (onDone) onDone();
         });
     }
 
     // ── Butter/sugar chunks: two small rectangles tumble into bowl ──
     function animChunk(ing, fromX, fromY, bowlWrap, contents, level, idx, total, onDone) {
-      if (!G) { settleBowl(ing, contents, level, idx, total); if (onDone) onDone(); return; }
+      if (!G) { settleBowl(ing, contents, level, idx, total, bowlWrap); if (onDone) onDone(); return; }
       var bc = centerOf(bowlWrap);
       var targetX = bc.x + (Math.random() - 0.5) * bc.r.width * 0.25;
       var targetY = bc.r.top + bc.r.height * 0.3;
@@ -377,16 +448,17 @@ window.APP = window.APP || {};
              chunk.remove();
              done += 1;
              if (done === offsets.length) {
-               settleBowl(ing, contents, level, idx, total);
+               settleBowl(ing, contents, level, idx, total, bowlWrap);
                if (onDone) onDone();
              }
+             squash(chunk, 1.5, 0.45);
            });
       });
     }
 
     // ── Flour/salt sift: cloud puff at drop point, particles drift down to bowl ──
     function animSift(ing, fromX, fromY, bowlWrap, contents, level, idx, total, onDone) {
-      if (!G) { settleBowl(ing, contents, level, idx, total); if (onDone) onDone(); return; }
+      if (!G) { settleBowl(ing, contents, level, idx, total, bowlWrap); if (onDone) onDone(); return; }
       var bc = centerOf(bowlWrap);
       // Particles start where the ingredient was dropped, drift down into bowl center
       var sourceX = fromX, sourceY = fromY - 5;
@@ -421,7 +493,7 @@ window.APP = window.APP || {};
 
       setTimeout(function () {
         if (S.step !== 'ingredients') return;
-        settleBowl(ing, contents, level, idx, total);
+        settleBowl(ing, contents, level, idx, total, bowlWrap);
         if (onDone) onDone();
       }, COUNT * 44 + 300);
     }
@@ -694,20 +766,26 @@ window.APP = window.APP || {};
         onComplete: function () { wrap.remove(); } });
     }
 
-    // Steam puffs rising from inside the oven window during bake.
+    // Organic steam — meanders in lazy S-curves, body-level fixed positioning.
     function spawnSteam(host, ms) {
       if (!G) return;
-      var end = performance.now() + ms;
+      var hostR = host.getBoundingClientRect();
+      var end = Date.now() + ms;
       (function loop() {
-        if (performance.now() > end || S.step !== 'cook') return;
+        if (Date.now() > end || S.step !== 'cook') return;
         var b = el('div', 'steam-puff');
-        b.style.left = (30 + Math.random() * 40) + '%';
-        b.style.bottom = '72%';
-        host.appendChild(b);
-        G.fromTo(b, { y: 0, opacity: 0.75, scale: 0.7 },
-          { y: -28, opacity: 0, scale: 1.3, duration: 0.9 + Math.random() * 0.5, ease: 'power1.out',
-            onComplete: function () { b.remove(); } });
-        setTimeout(loop, 300 + Math.random() * 300);
+        var size = 8 + Math.random() * 9;
+        b.style.width = size + 'px'; b.style.height = size + 'px';
+        var startX = hostR.left + hostR.width * (0.22 + Math.random() * 0.56);
+        var startY = hostR.top + hostR.height * 0.12;
+        document.body.appendChild(b);
+        gset(b, { x: startX, y: startY, opacity: 0.72, scale: 0.6 });
+        var drift = (Math.random() - 0.5) * 32;
+        G.timeline()
+          .to(b, { y: startY - 20, x: startX + drift * 0.35, opacity: 0.88, scale: 1.05, duration: 0.38, ease: 'power1.out' })
+          .to(b, { y: startY - 52, x: startX + drift, opacity: 0, scale: 1.55, duration: 0.68, ease: 'power1.in',
+                   onComplete: function () { b.remove(); } });
+        setTimeout(loop, 280 + Math.random() * 280);
       })();
     }
 
@@ -738,7 +816,11 @@ window.APP = window.APP || {};
         hint.textContent = t('recipes.frying', 'Frying…');
         gset(ball, { position: 'absolute', left: '50%', top: '38%', xPercent: -50, yPercent: -50 });
         ball.style.transform = '';
+        squash(ball, 1.3, 0.6);
         var bob = G ? G.to(ball, { y: 8, duration: 0.5, yoyo: true, repeat: -1, ease: 'sine.inOut' }) : null;
+        // Oil shimmer — pulse opacity on oil ellipse while frying
+        var oilEl = pot.querySelector('.oil');
+        var shimmer = (G && oilEl) ? G.to(oilEl, { opacity: 0.65, duration: 0.38, yoyo: true, repeat: -1, ease: 'sine.inOut' }) : null;
         spawnBubbles(pot, 2400);
         var tl = gtl({ onComplete: function () {
           if (bob) bob.kill();
@@ -755,15 +837,19 @@ window.APP = window.APP || {};
     function spawnBubbles(pot, ms) {
       if (!G) return;
       var end = performance.now() + ms;
+      var count = 0;
       (function loop() {
         if (performance.now() > end || S.step !== 'cook') return;
+        count++;
         var b = el('div', 'fry-bubble');
-        b.style.left = (35 + Math.random() * 30) + '%';
+        var sz = 0.4 + Math.random() * 0.9; // vary sizes
+        b.style.left = (28 + Math.random() * 44) + '%';
         pot.appendChild(b);
-        G.fromTo(b, { y: 0, opacity: 0.8, scale: 0.6 },
-          { y: -34, opacity: 0, scale: 1.1, duration: 0.7 + Math.random() * 0.4, ease: 'power1.out',
+        G.fromTo(b, { y: 0, opacity: 0.85, scale: sz },
+          { y: -(28 + Math.random() * 18), opacity: 0, scale: sz * 1.6,
+            duration: 0.6 + Math.random() * 0.45, ease: 'power1.out',
             onComplete: function () { b.remove(); } });
-        setTimeout(loop, 180 + Math.random() * 180);
+        setTimeout(loop, 150 + Math.random() * 200);
       })();
     }
 
@@ -820,11 +906,33 @@ window.APP = window.APP || {};
             .to(pancake, { rotationX: '+=180', duration: 0.58, ease: 'none' }, '<')
             // Pan swings back level while pancake is in the air
             .to(pan, { rotation: 0, duration: 0.3, ease: 'back.out(1.8)' }, '<0.08')
-            // Pancake lands with bounce
+            // Pancake lands with bounce + squash
             .to(pancake, { y: 0, scaleX: 1, duration: 0.4, ease: 'bounce.out' })
             // Pan small recoil on landing
             .to(pan, { y: -7, duration: 0.1, yoyo: true, repeat: 1, ease: 'power2.out' }, '<')
-            .call(function () { pancake.style.background = pancakeShade(0.85); });
+            .call(function () {
+              pancake.style.background = pancakeShade(0.85);
+              squash(pancake, 1.25, 0.65);
+              // Sizzle steam burst from pan surface
+              var pr = pan.getBoundingClientRect();
+              var cx = pr.left + pr.width * 0.42;
+              var cy = pr.top + pr.height * 0.36;
+              for (var si = 0; si < 6; si++) {
+                (function (si) {
+                  var s = el('div', 'steam-puff');
+                  var sz = 6 + Math.random() * 6;
+                  s.style.width = sz + 'px'; s.style.height = sz + 'px';
+                  document.body.appendChild(s);
+                  var ox = (Math.random() - 0.5) * 70;
+                  var drift = (Math.random() - 0.5) * 24;
+                  gset(s, { x: cx + ox, y: cy, opacity: 0.8, scale: 0.5 });
+                  G.timeline({ delay: si * 0.04 })
+                    .to(s, { y: cy - 20, x: cx + ox + drift * 0.4, opacity: 0.9, scale: 1, duration: 0.28, ease: 'power1.out' })
+                    .to(s, { y: cy - 48, x: cx + ox + drift, opacity: 0, scale: 1.4, duration: 0.5, ease: 'power1.in',
+                             onComplete: function () { s.remove(); } });
+                })(si);
+              }
+            });
         });
       }
     }
