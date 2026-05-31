@@ -34,6 +34,7 @@ APP.I18N = {
     'landing.progress':   'My Progress',
     'landing.numbers':    'Numbers',
     'landing.painting':   'Painting',
+    'landing.puzzles':    'Puzzles',
     'landing.settings':   'Settings',
 
     // Painting screen
