@@ -279,9 +279,34 @@ window.APP = window.APP || {};
     const total = puzzle.closed ? dots.length : dots.length - 1;
     let connected = 0;
     let dragging = false;
+    let showGuides = true;
 
     wrap.innerHTML = '';
-    wrap.appendChild(makeTopbar(puzzle.name, () => renderPicker(wrap, ctx)));
+
+    // Topbar with guide toggle in the right slot
+    const bar = document.createElement('div');
+    bar.className = 'topbar';
+    bar.innerHTML = `
+      <div class="group">
+        <button class="btn icon ghost" id="dots-back" aria-label="Back">${APP.ICONS.home}</button>
+      </div>
+      <div class="group">
+        <span class="screen-title">${puzzle.name}</span>
+      </div>
+      <div class="group">
+        <button class="btn ghost" id="guide-toggle" style="font-size:0.85rem;min-width:0;padding:8px 10px;border-radius:12px;background:var(--accent);color:var(--accent-ink)">
+          ···  Guides
+        </button>
+      </div>
+    `;
+    bar.querySelector('#dots-back').addEventListener('click', () => renderPicker(wrap, ctx));
+    bar.querySelector('#guide-toggle').addEventListener('click', function () {
+      showGuides = !showGuides;
+      guideLines.setAttribute('visibility', showGuides ? 'visible' : 'hidden');
+      this.style.background = showGuides ? 'var(--accent)' : 'transparent';
+      this.style.color = showGuides ? 'var(--accent-ink)' : '#aaa';
+    });
+    wrap.appendChild(bar);
 
     const playBody = document.createElement('div');
     playBody.className = 'dots-play-body';
