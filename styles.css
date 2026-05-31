@@ -3398,3 +3398,505 @@ html, body {
   .pz-gallery--emoji { grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); }
   .pz-gallery-emoji { font-size: 1.4rem; }
 }
+/* ──────────────────────────────  Recipes  ────────────────────────────── */
+.recipes {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+.recipes-topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  flex-shrink: 0;
+}
+.recipes-title {
+  flex: 1;
+  margin: 0;
+  font-size: 1.3rem;
+  text-align: center;
+}
+.recipes-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  overflow: hidden;
+  touch-action: none;
+  position: relative;
+}
+
+/* Kitchen background scene */
+.kitchen-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.kitchen-bg svg { width: 100%; height: 100%; }
+/* All direct children of stage sit above the kitchen bg */
+.recipes-stage > *:not(.kitchen-bg) { position: relative; z-index: 1; }
+
+/* Steam puffs — body-level fixed coords (organic drift) */
+.steam-puff {
+  position: fixed;
+  left: 0;
+  top: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.8);
+  pointer-events: none;
+  z-index: 82;
+}
+
+/* Pick step — recipe cards */
+.recipe-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  justify-content: center;
+  align-content: center;
+}
+.recipe-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 130px;
+  padding: 20px 12px;
+  border: none;
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.12s;
+}
+.recipe-card:active { transform: scale(0.95); }
+.recipe-card-emoji { font-size: 3.4rem; line-height: 1; }
+.recipe-card-name { font-size: 1.1rem; font-weight: 700; color: var(--ink); }
+
+/* Scene shared layout */
+.recipe-scene {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 0;
+}
+.recipe-scene.done { justify-content: center; }
+
+/* Drop targets (bowl / oven / pot / pan / treat) */
+.recipe-bowl,
+.recipe-mix,
+.recipe-oven,
+.recipe-pot,
+.recipe-pan,
+.cook-pour {
+  position: relative;
+  flex-shrink: 0;
+}
+.recipe-bowl { width: 240px; height: 180px; }
+.recipe-mix  { width: 240px; height: 240px; }
+.recipe-oven { width: 220px; height: 220px; perspective: 600px; }
+.recipe-pot  { width: 240px; height: 170px; }
+.recipe-pan  { width: 300px; height: 180px; perspective: 700px; }
+
+/* Bowl contents — fills as ingredients are added */
+.bowl-contents {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  bottom: 12%;
+  top: 42%;
+  overflow: hidden;
+  border-radius: 0 0 50% 50% / 0 0 100% 100%;
+  pointer-events: none;
+}
+.bowl-bit {
+  position: absolute;
+  transform: translate(-50%, 0);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.bowl-level {
+  position: absolute;
+  left: 16%;
+  right: 16%;
+  bottom: 13%;
+  height: 0;
+  border-radius: 0 0 50% 50% / 0 0 100% 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Flying ingredient (animated body-level overlay during drop) */
+.recipe-flier {
+  position: fixed;
+  z-index: 80;
+  font-size: 2.4rem;
+  line-height: 1;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* Tray of draggable items */
+.recipe-tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  max-width: 100%;
+}
+.recipe-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 10px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transition: opacity 0.2s;
+}
+.recipe-item.dragging { cursor: grabbing; z-index: 30; box-shadow: 0 10px 18px rgba(0,0,0,0.25); }
+.recipe-item.used { opacity: 0; pointer-events: none; }
+.recipe-item-emoji { font-size: 2.4rem; line-height: 1; }
+.recipe-item-label { font-size: 0.78rem; font-weight: 600; color: #666; }
+.recipe-item.topping { padding: 8px; }
+
+/* Mix — stacked SVG bowl + ring overlay, batter disc, spoon */
+.recipe-mix .mix-bowl,
+.recipe-mix .mix-ring {
+  position: absolute;
+  inset: 0;
+}
+.mix-batter {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 96px;
+  height: 50px;
+  margin: -25px 0 0 -48px;
+  border-radius: 50%;
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 2;
+}
+.recipe-spoon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -26px 0 0 -16px;
+  font-size: 2.9rem;
+  pointer-events: none;
+  touch-action: none;
+  z-index: 1;
+  will-change: transform;
+}
+
+/* Pour-into-tin scene */
+.cook-pour { width: 300px; height: 230px; }
+.pour-bowl {
+  position: absolute;
+  top: 0;
+  left: 8%;
+  width: 150px;
+  height: 110px;
+  transform-origin: 60% 80%;
+}
+.pour-stream {
+  position: absolute;
+  left: 44%;
+  top: 78px;
+  width: 12px;
+  height: 70px;
+  border-radius: 6px;
+  opacity: 0;
+  transform-origin: top center;
+  transform: scaleY(0.4);
+}
+.cake-tin {
+  position: absolute;
+  right: 6%;
+  bottom: 6%;
+  width: 130px;
+  height: 70px;
+  border-radius: 10px 10px 16px 16px;
+  background: linear-gradient(#d6dbe4, #9aa6b6);
+  overflow: hidden;
+  box-shadow: inset 0 4px 8px rgba(0,0,0,0.2);
+}
+.tin-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0;
+  border-radius: 0 0 14px 14px;
+}
+
+/* Cook carry item (tin / dough ball) */
+.recipe-carry {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  will-change: transform;
+}
+.recipe-carry.dragging { cursor: grabbing; z-index: 30; }
+.cake-carry { width: 130px; height: 72px; }
+.cake-carry .cake-tin { position: static; width: 100%; height: 100%; }
+.dough-ball {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%, #f4e7c8, #e6d09a);
+  box-shadow: inset -3px -4px 6px rgba(0,0,0,0.15);
+}
+.dough-ball.golden {
+  background: radial-gradient(circle at 38% 35%, #e9b863, #b9802f);
+}
+
+/* Oven door (swings open on rotateX) */
+.oven-door {
+  position: absolute;
+  left: 16%;
+  top: 25%;
+  width: 68%;
+  height: 60%;
+  border-radius: 12px;
+  background: linear-gradient(#454d5b, #353c48);
+  border: 3px solid #1b2029;
+  transform-origin: 50% 100%;
+  transform-style: preserve-3d;
+}
+.oven-window {
+  position: absolute;
+  inset: 14% 14% 26%;
+  border-radius: 8px;
+  background: rgba(10,14,20,0.85);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.06);
+}
+.oven-handle {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  bottom: 8%;
+  height: 8px;
+  border-radius: 4px;
+  background: #cdd4df;
+}
+.baked-cake {
+  position: absolute;
+  font-size: 3.4rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* Fry bubbles */
+.fry-bubble {
+  position: absolute;
+  bottom: 38%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255,240,200,0.85);
+  pointer-events: none;
+}
+
+/* Pancake disc that flips inside the pan */
+.pancake {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 120px;
+  height: 54px;
+  margin: -27px 0 0 -60px;
+  border-radius: 50%;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.25);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* Timer ring overlay (sits over the cook scene) */
+.recipe-timer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+}
+
+/* Hints */
+.recipe-hint {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #666;
+  text-align: center;
+}
+
+/* Decorate / done treat */
+.recipe-treat {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 200px;
+  height: 200px;
+  flex-shrink: 0;
+}
+.recipe-treat.big { width: 240px; height: 240px; }
+.recipe-treat-emoji { font-size: 7rem; line-height: 1; }
+.recipe-treat.big .recipe-treat-emoji { font-size: 9rem; }
+.recipe-placed {
+  position: absolute;
+  font-size: 1.6rem;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Action buttons */
+.recipe-action {
+  flex-shrink: 0;
+  min-height: 52px;
+  padding: 12px 28px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--muted);
+  color: #777;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.recipe-action.ready,
+.recipe-action:not(:disabled) {
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+.recipe-action:disabled { cursor: not-allowed; box-shadow: none; }
+.recipe-action.secondary { background: var(--accent); color: var(--accent-ink); }
+.recipe-done-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+/* Landscape — compact */
+@media (max-height: 600px) {
+  .recipes-topbar { padding: 4px 10px; }
+  .recipes-title { font-size: 1.1rem; }
+  .recipes-stage { gap: 8px; padding: 6px 12px; }
+  .recipe-card { width: 110px; padding: 12px 10px; }
+  .recipe-card-emoji { font-size: 2.6rem; }
+  .recipe-bowl { width: 180px; height: 135px; }
+  .recipe-mix  { width: 170px; height: 170px; }
+  .recipe-oven { width: 150px; height: 150px; }
+  .recipe-pot  { width: 180px; height: 128px; }
+  .recipe-pan  { width: 220px; height: 135px; }
+  .cook-pour   { width: 230px; height: 175px; }
+  .pour-bowl   { width: 115px; height: 84px; }
+  .cake-tin    { width: 100px; height: 56px; }
+  .cake-carry  { width: 100px; height: 56px; }
+  .pancake     { width: 96px; height: 44px; margin: -22px 0 0 -48px; }
+  .recipe-item-emoji { font-size: 1.9rem; }
+  .recipe-treat { width: 150px; height: 150px; }
+  .recipe-treat.big { width: 170px; height: 170px; }
+  .recipe-treat-emoji { font-size: 5rem; }
+  .recipe-treat.big .recipe-treat-emoji { font-size: 6.5rem; }
+  .recipe-action { min-height: 42px; padding: 8px 20px; font-size: 1rem; }
+}
+
+/* Egg crack animation */
+.egg-top, .egg-bot {
+  position: fixed; left: 0; top: 0; pointer-events: none; z-index: 82;
+}
+.egg-top {
+  width: 40px; height: 24px; background: #f5eedc;
+  border-radius: 50% 50% 0 0 / 60% 60% 0 0;
+  border: 2px solid #e0d4b8;
+}
+.egg-bot {
+  width: 40px; height: 28px; background: #f5eedc;
+  border-radius: 0 0 50% 50% / 0 0 60% 60%;
+  border: 2px solid #e0d4b8;
+}
+.egg-yolk {
+  position: fixed; left: 0; top: 0; width: 16px; height: 16px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%, #ffd166, #f4a015);
+  pointer-events: none; z-index: 82;
+}
+
+/* Milk pour animation */
+.pour-jug { position: fixed; left: 0; top: 0; pointer-events: none; z-index: 82; }
+.pour-stream-milk {
+  position: fixed; left: 0; top: 0; width: 8px; border-radius: 4px;
+  background: rgba(240,248,255,0.92); transform-origin: top center;
+  pointer-events: none; z-index: 82;
+}
+.milk-ripple {
+  position: fixed; left: 0; top: 0; width: 24px; height: 12px; border-radius: 50%;
+  border: 2px solid rgba(200,220,255,0.7); pointer-events: none; z-index: 82;
+}
+
+/* Butter / sugar chunk animation */
+.butter-chunk {
+  position: fixed; left: 0; top: 0; width: 18px; height: 12px; border-radius: 3px;
+  background: linear-gradient(135deg, #f7e175, #e8c940);
+  box-shadow: inset -2px -2px 3px rgba(0,0,0,0.12);
+  pointer-events: none; z-index: 82;
+}
+
+/* Flour / salt sift animation */
+.flour-particle {
+  position: fixed; left: 0; top: 0; width: 4px; height: 4px; border-radius: 50%;
+  background: rgba(245,242,235,0.9); pointer-events: none; z-index: 82;
+}
+.sift-cloud {
+  position: fixed; left: 0; top: 0; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.55), transparent);
+  pointer-events: none; z-index: 81;
+}
+
+/* Mix spoon SVG */
+.spoon-svg { display: block; }
+
+/* Batter splashes */
+.mix-splash {
+  position: absolute; width: 7px; height: 7px; border-radius: 50%;
+  pointer-events: none; z-index: 3;
+}
+
+/* Steam puffs — size set inline per puff; rule above defines position/z */
+.steam-puff {
+  width: 9px; height: 9px;
+}
+
+/* Oven interior view */
+.oven-inner-view {
+  position: absolute; left: 23%; top: 33%; width: 54%; height: 44%;
+  overflow: hidden; border-radius: 4px;
+  background: rgba(10,14,20,0.7); pointer-events: none;
+}
+.oven-tin-view {
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 60%; height: 80%;
+  background: linear-gradient(#bfc8d4, #8fa0b4);
+  border-radius: 4px 4px 8px 8px; overflow: visible;
+}
+.oven-cake-fill {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 20%; border-radius: 0 0 6px 6px;
+}
+.oven-cake-dome {
+  position: absolute; bottom: 19%; left: -8%; right: -8%;
+  height: 28%; border-radius: 50% 50% 0 0;
+  opacity: 0; transform: scaleY(0); transform-origin: bottom center;
+}
