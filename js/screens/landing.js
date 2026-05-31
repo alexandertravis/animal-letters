@@ -16,6 +16,7 @@ window.APP = window.APP || {};
         <button class="btn secondary" data-act="progress">${APP.t('landing.progress')}</button>
         <button class="btn secondary" data-act="numbers">${APP.t('landing.numbers')}</button>
         <button class="btn secondary" data-act="painting">${APP.t('landing.painting')}</button>
+        <button class="btn secondary" data-act="puzzles">${APP.t('landing.puzzles')}</button>
         <button class="btn ghost" data-act="settings">${APP.t('landing.settings')}</button>
       </div>
     `;
@@ -40,6 +41,7 @@ window.APP = window.APP || {};
     wrap.querySelector('[data-act=progress]').addEventListener('click', () => ctx.go('progress'));
     wrap.querySelector('[data-act=numbers]').addEventListener('click', () => ctx.go('numbers'));
     wrap.querySelector('[data-act=painting]').addEventListener('click', () => ctx.go('painting'));
+    wrap.querySelector('[data-act=puzzles]').addEventListener('click', () => ctx.go('puzzles'));
     wrap.querySelector('[data-act=settings]').addEventListener('click', () => ctx.go('setup'));
   }
 
