@@ -311,6 +311,9 @@ window.APP = window.APP || {};
       svg.appendChild(bgImg);
     }
 
+    const guideLines = document.createElementNS(NS, 'g');
+    svg.appendChild(guideLines);
+
     const doneLines = document.createElementNS(NS, 'g');
     svg.appendChild(doneLines);
 
@@ -327,6 +330,24 @@ window.APP = window.APP || {};
 
     function src() { return dots[connected % dots.length]; }
     function tgt() { return dots[(connected + 1) % dots.length]; }
+
+    function drawGuideLines() {
+      guideLines.innerHTML = '';
+      for (let i = connected; i < total; i++) {
+        const a = dots[i % dots.length];
+        const b = dots[(i + 1) % dots.length];
+        const line = document.createElementNS(NS, 'line');
+        line.setAttribute('x1', a.x);
+        line.setAttribute('y1', a.y);
+        line.setAttribute('x2', b.x);
+        line.setAttribute('y2', b.y);
+        line.setAttribute('stroke', '#ccc');
+        line.setAttribute('stroke-width', '3');
+        line.setAttribute('stroke-dasharray', '6,5');
+        line.setAttribute('stroke-linecap', 'round');
+        guideLines.appendChild(line);
+      }
+    }
 
     function drawDots() {
       dotGroup.innerHTML = '';
@@ -424,6 +445,7 @@ window.APP = window.APP || {};
       }, 700);
     }
 
+    drawGuideLines();
     drawDots();
 
     svg.addEventListener('pointerdown', function (e) {
@@ -451,10 +473,19 @@ window.APP = window.APP || {};
         addDoneLine(src(), tgt());
         if (APP.audio) APP.audio.strokeDone();
         connected++;
-        dragging = false;
-        rubberBand.setAttribute('opacity', '0');
+        drawGuideLines();
         drawDots();
-        if (connected >= total) onComplete();
+        if (connected >= total) {
+          dragging = false;
+          rubberBand.setAttribute('opacity', '0');
+          onComplete();
+        } else {
+          // Flow on — keep dragging from the new source dot
+          rubberBand.setAttribute('x1', src().x);
+          rubberBand.setAttribute('y1', src().y);
+          rubberBand.setAttribute('x2', p.x);
+          rubberBand.setAttribute('y2', p.y);
+        }
       }
     });
 
