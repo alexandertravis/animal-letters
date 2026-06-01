@@ -318,3 +318,40 @@
 - [ ] Difficulty levels (stroke tolerance, draw radius)
 - [ ] Accessibility audit (ARIA labels, keyboard fallback)
 - [ ] Accent strokes for PT locale (acute, circumflex, tilde, cedilla) — see Section 13
+
+## Section 30 — Puzzles Feature (feature/puzzles, 2026-05-31 → merged 2026-06-01)
+- [x] `js/screens/puzzles.js` — new screen, IIFE, `APP.screens.puzzles`
+- [x] `js/vendor/gsap.min.js` — vendored GSAP (shared with recipes)
+- [x] Setup step: mode tabs (Jigsaw / Shapes / Emoji), image gallery (coloring WebPs + animal SVGs), difficulty (4/9/16/25 pieces), hint mode (faint/grey), grid overlay toggle, Start button
+- [x] Jigsaw mode: `buildTabGrid()`, `pieceEdges()`, `buildJigsawPath()` with bezier tabs; outward normal = CW rotation of travel vector `(dy/len, -dx/len)`
+- [x] Square piece canvas: `drawImage` full board shifted so cell (r,c) lands at `(tb,tb)`
+- [x] Shapes mode: `destination-out` compositing cuts circle/square/triangle/hexagon holes; `.pz-hole` inset-shadow divs; shape-clipped pieces
+- [x] Emoji mode: `buildEmojiCanvas()` via `canvas.fillText` + `toDataURL()` — no CORS risk
+- [x] Scatter: bin-pack left gutter; overflow to right gutter
+- [x] Drag: pointer events + `makeDraggable`; `trySnap()` with 38% threshold, GSAP `back.out(1.8)`
+- [x] Done overlay: appended to stage (not board), `z-index:200`, `paddingLeft:boardX`; confetti
+- [x] `data/i18n.js` — `landing.puzzles` key
+- [x] `js/screens/landing.js` — Puzzles button + listener
+- [x] `index.html` — script tags for gsap.min.js + puzzles.js
+- [x] `styles.css` — `/* ── Puzzles ── */` section (`.pz-*` classes, hint CSS, landscape overrides)
+- [x] Merged to main (commit ff6645f → d34c3f9)
+
+## Section 31 — Connect the Dots Feature (claude/branch-status-check-f240A → merged 2026-06-01)
+- [x] `js/screens/dots.js` — Connect the Dots game with authoring tool
+- [x] `data/dotPuzzles.js` — dot puzzle data
+- [x] `data/i18n.js` — `landing.dots: 'Connect the Dots'`
+- [x] `js/screens/landing.js` — Connect the Dots button + listener
+- [x] `index.html` — script tag for dotPuzzles.js + dots.js
+- [x] Flow-on drag (draw line while dragging between dots) + faint guide lines
+- [x] Guide lines toggle button in play view
+- [x] Merged to main (commit d34c3f9)
+- [ ] Review dots.js architecture — no dev docs created for this branch; add context notes if extending
+
+## Section 32 — Branch Cleanup (2026-06-01)
+- [x] Merged feature/painting (was already merged, deleted local + remote)
+- [x] Merged feature/painting-templates (was already merged, deleted local + remote)
+- [x] Merged feature/puzzles → main
+- [x] Merged feature/recipes → main (also via PR #8 on origin)
+- [x] Merged claude/branch-status-check-f240A → main (dot-to-dot)
+- [x] All remote feature branches deleted — only `origin/main` remains
+- [x] Pushed merged main to origin (current HEAD: d34c3f9)

@@ -365,3 +365,25 @@ NEXT STEP: Generate remaining 8 illustrations for Three Little Pigs (pages 4–1
 Blockers: none
 Half-finished: none
 Security flags added: none
+
+## Session End — 2026-06-01
+Git status: clean. Only untracked files are screenshots (.png), `.playwright-cli/`, `assets/fonts/Playwrite_GB_S_Guides/` (do not commit). No staged/modified tracked files.
+
+## Decisions Log — 2026-06-01
+2026-06-01 — Decision: Puzzles and Recipes merged to main directly (no PR); dot-to-dot branch was a remote-only branch (claude/branch-status-check-f240A) merged via conflict resolution.
+2026-06-01 — Decision: GSAP vendored at `js/vendor/gsap.min.js` is shared between puzzles.js and recipes.js — single copy, one script tag in index.html.
+2026-06-01 — Decision: Done overlay in puzzles appended to `.pz-stage` (not `.pz-board`) with `z-index:200` and `paddingLeft:boardX` so it appears above locked pieces (which are also children of stage at z-index:5).
+2026-06-01 — Decision: GSAP `killAll` unavailable in vendored build — use `G.killTweensOf('*')` instead.
+
+## Session Summary — 2026-06-01
+Completed:
+- Puzzles feature built and merged to main: jigsaw (bezier tabs), shapes (destination-out compositing), emoji (canvas fillText), 4 difficulties, faint/grey hints, grid overlay, confetti done screen
+- Dot-to-dot feature merged from claude/branch-status-check-f240A: Connect the Dots game, authoring tool, faint guide lines, toggle
+- All feature branches deleted (local + remote); only origin/main remains
+- Landing page confirmed: Painting, Puzzles, Recipes, Connect the Dots all present and wired
+- Recipes dev docs archived to dev/done/recipes/
+
+NEXT STEP: Review `js/screens/dots.js` architecture (no dev docs exist for that branch) — read the file and add an architecture note to animal-letters-context.md before extending the feature. Then consider adding remaining story illustrations (Three Little Pigs pages 4–11).
+Blockers: none
+Half-finished: none
+Security flags added: none
