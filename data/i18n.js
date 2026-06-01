@@ -36,6 +36,7 @@ APP.I18N = {
     'landing.painting':   'Painting',
     'landing.puzzles':    'Puzzles',
     'landing.recipes':    'Recipes',
+    'landing.dots':       'Connect the Dots',
     'landing.settings':   'Settings',
 
     // Painting screen
