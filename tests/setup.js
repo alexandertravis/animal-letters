@@ -43,6 +43,7 @@ beforeEach(() => {
   global.APP.state.completedAnimals = new Set();
   global.APP.state.animalCompletionCounts = {};
   global.APP.state.consecutiveFoundCount = 0;
+  global.APP.state.letterMastery = {};
 
   // Reset settings to defaults.
   global.APP.state.settings = {

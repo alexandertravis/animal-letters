@@ -3,6 +3,7 @@ window.APP = window.APP || {};
 (function (APP) {
 
   let confettiCleanup = null;
+  let _advanceTimer = null;
 
   // Inline speakLetter fallback (removed once feature/phonics merges)
   function speakLetter(char, locale) {
@@ -233,7 +234,8 @@ window.APP = window.APP || {};
           tile.classList.add('correct');
           if (APP.audio) APP.audio.letterDone();
           confettiCleanup = APP.launchConfetti({ count: 40, duration: 1200 });
-          setTimeout(function () {
+          _advanceTimer = setTimeout(function () {
+            _advanceTimer = null;
             APP.advanceLetter();
             if (APP.state.screen === 'complete') {
               ctx.go('complete');
@@ -259,15 +261,18 @@ window.APP = window.APP || {};
 
     // Wire top bar buttons
     bar.querySelector('[data-act=home]').addEventListener('click', function () {
+      if (_advanceTimer) { clearTimeout(_advanceTimer); _advanceTimer = null; }
       ctx.go('landing');
     });
     bar.querySelector('[data-act=settings]').addEventListener('click', function () {
+      if (_advanceTimer) { clearTimeout(_advanceTimer); _advanceTimer = null; }
       ctx.go('setup');
     });
     bar.querySelector('[data-act=speak]').addEventListener('click', function () {
       speakLetter(target, locale);
     });
     bar.querySelector('[data-act=skip]').addEventListener('click', function () {
+      if (_advanceTimer) { clearTimeout(_advanceTimer); _advanceTimer = null; }
       APP.skipAnimal();
       ctx.go(APP.state.screen === 'landing' ? 'landing' : 'findletter');
     });

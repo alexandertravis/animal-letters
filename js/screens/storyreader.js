@@ -14,7 +14,8 @@ window.APP = window.APP || {};
     // Spread 0: title page  (left = cover colour, right = title + cover image)
     // Spreads 1..N: story pages  (left = text, right = image)
     // Spread N+1: outro  (left = "The End", right = cover colour)
-    const coverImg = 'assets/images/cartoon/' + story.requirements[0].animalId + '.svg';
+    const coverImg = 'assets/images/cartoon/' +
+      ((story.requirements && story.requirements[0] && story.requirements[0].animalId) || 'cat') + '.svg';
 
     // Pre-fetch all story images as soon as the reader opens so the resource
     // (disk → HTTP cache) is ready before any panel needs it.  The primary

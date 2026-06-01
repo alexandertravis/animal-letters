@@ -227,6 +227,7 @@ window.APP = window.APP || {};
 
     backBtn.addEventListener('click', function () {
       if (G) G.killTweensOf('*');
+      cleanBodyEls();
       if (S.step !== 'pick') setStep('pick');
       else {
         var prev = APP.state.previousScreen;
@@ -234,10 +235,23 @@ window.APP = window.APP || {};
       }
     });
 
+    function cleanBodyEls() {
+      [
+        'egg-top', 'egg-bot', 'egg-yolk',
+        'pour-jug', 'pour-stream-milk', 'milk-ripple',
+        'butter-chunk', 'sift-cloud', 'flour-particle',
+        'recipe-flier', 'steam-puff',
+      ].forEach(function (cls) {
+        document.querySelectorAll('.' + cls).forEach(function (el) { el.remove(); });
+      });
+    }
+
     function setStep(step) {
       if (G) G.killTweensOf('*');
+      cleanBodyEls();
       S.step = step;
       stage.innerHTML = '';
+      stage.appendChild(kitchenBg);
       if (step === 'pick') stepPick();
       else if (step === 'ingredients') stepIngredients();
       else if (step === 'mix') stepMix();

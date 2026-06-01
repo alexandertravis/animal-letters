@@ -43,6 +43,13 @@
 - [ ] **Fry — oil shimmer**: animate the oil ellipse (subtle opacity pulse or
   small scale oscillation) while frying to reinforce the "hot oil" feeling. (deferred)
 
+## Section 5b — Visual Quality Upgrade via Lottie Extraction (next session)
+- [ ] Fix `setStep()` kitchen-bg bug: add `stage.appendChild(kitchenBg)` after `stage.innerHTML = ''`
+- [ ] Replace `bowlSvg()` with Lottie bowl paths in `translate(120,4) scale(0.8,0.9)` transform group (7 shapes: shadow, 2 interior fills, body+teal stroke, right shadow, rim band+teal, rim face+dark outline)
+- [ ] Replace `animPour` jug HTML with Lottie measuring jug SVG (`viewBox="-130 -185 275 220"` 100×80px); update `jugW=100, jugH=78, transformOrigin='50% 97%'`
+- [ ] Replace `animCrack` egg-top/egg-bot CSS divs with inline SVG using Lottie jagged crack paths; update GSAP offsets (top: `x-25,y-30`; bot: `x-25,y-2`)
+- [ ] Update CSS: `.egg-top` → `width:50px height:37px` (no border-radius), `.egg-bot` → `width:50px height:42px`, `.egg-yolk` → `#ffca63` highlight
+
 ## Section 6 — More Recipes (Phase 3, future)
 - [ ] Muffin — `cookType: 'oven'`, muffin tray (12-cup tin SVG) instead of
   single cake tin; toppings are sprinkles/chocolate chips

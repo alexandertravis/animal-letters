@@ -229,7 +229,7 @@ window.APP = window.APP || {};
       var backBtn = document.createElement('button');
       backBtn.className = 'btn icon';
       backBtn.innerHTML = (APP.ICONS && APP.ICONS.back) || '&#8592;';
-      backBtn.addEventListener('click', function () { ctx.go('landing'); });
+      backBtn.addEventListener('click', function () { if (G) G.killTweensOf('*'); ctx.go('landing'); });
       var title = document.createElement('h1');
       title.textContent = 'Puzzles';
       topbar.appendChild(backBtn);

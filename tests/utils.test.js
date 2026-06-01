@@ -7,7 +7,7 @@
  * Modules are loaded by tests/setup.js. Tests read from global.APP.
  */
 
-import { DOT_STROKE_PATH, NORMAL_STROKE_PATH } from './fixtures.js';
+import { DOT_STROKE_PATH, NORMAL_STROKE_PATH, makeAnimal } from './fixtures.js';
 
 // ---------------------------------------------------------------------------
 // APP.caseOf
@@ -390,5 +390,120 @@ describe('APP.animalStars', () => {
     const animal = makeAnimalFor('cat');
     APP.state.animalCompletionCounts['cat'] = 99;
     expect(APP.animalStars(animal)).toBe(3);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// APP.animalId
+// ---------------------------------------------------------------------------
+describe('APP.animalId', () => {
+  it('extracts the filename stem from the cartoon image path', () => {
+    const animal = makeAnimal({ images: { cartoon: 'assets/images/cartoon/dog.svg' } });
+    expect(APP.animalId(animal)).toBe('dog');
+  });
+
+  it('returns the same id for two animals that share an image file', () => {
+    const en = makeAnimal({ name: 'DOG',  images: { cartoon: 'assets/images/cartoon/dog.svg' } });
+    const pt = makeAnimal({ name: 'GATO', images: { cartoon: 'assets/images/cartoon/dog.svg' } });
+    expect(APP.animalId(en)).toBe(APP.animalId(pt));
+  });
+
+  it('handles nested path segments correctly', () => {
+    const animal = makeAnimal({ images: { cartoon: 'assets/images/cartoon/rabbit.svg' } });
+    expect(APP.animalId(animal)).toBe('rabbit');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// APP.starsHtml
+// ---------------------------------------------------------------------------
+describe('APP.starsHtml', () => {
+  it('returns empty stars when filled=0 and total=0 (defaults total to 3)', () => {
+    const html = APP.starsHtml(0, 0);
+    expect(html).toContain('star-empty');
+    expect(html).not.toContain('star-filled');
+  });
+
+  it('produces the correct number of star spans for all filled', () => {
+    const html = APP.starsHtml(3, 3);
+    const fullCount = (html.match(/star-full/g) || []).length;
+    const emptyCount = (html.match(/star-empty/g) || []).length;
+    expect(fullCount).toBe(3);
+    expect(emptyCount).toBe(0);
+  });
+
+  it('produces the correct number of star spans for none filled', () => {
+    const html = APP.starsHtml(0, 3);
+    const fullCount = (html.match(/star-full/g) || []).length;
+    const emptyCount = (html.match(/star-empty/g) || []).length;
+    expect(fullCount).toBe(0);
+    expect(emptyCount).toBe(3);
+  });
+
+  it('produces the correct split for partially filled (2 of 3)', () => {
+    const html = APP.starsHtml(2, 3);
+    const fullCount = (html.match(/star-full/g) || []).length;
+    const emptyCount = (html.match(/star-empty/g) || []).length;
+    expect(fullCount).toBe(2);
+    expect(emptyCount).toBe(1);
+  });
+
+  it('defaults total to 3 when omitted', () => {
+    const html = APP.starsHtml(1);
+    const fullCount = (html.match(/star-full/g) || []).length;
+    const emptyCount = (html.match(/star-empty/g) || []).length;
+    expect(fullCount).toBe(1);
+    expect(emptyCount).toBe(2);
+  });
+
+  it('uses the ★ glyph (U+2605) for both full and empty stars', () => {
+    const html = APP.starsHtml(1, 2);
+    const starChars = (html.match(/★/g) || []).length;
+    expect(starChars).toBe(2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// APP.getUnlockedStories
+// ---------------------------------------------------------------------------
+describe('APP.getUnlockedStories', () => {
+  afterEach(() => { delete APP.STORIES; });
+
+  it('returns an empty array when APP.STORIES is undefined', () => {
+    delete APP.STORIES;
+    expect(APP.getUnlockedStories()).toEqual([]);
+  });
+
+  it('returns an empty array when APP.STORIES is empty', () => {
+    APP.STORIES = [];
+    expect(APP.getUnlockedStories()).toEqual([]);
+  });
+
+  it('returns only stories whose requirements are met', () => {
+    APP.state.animalCompletionCounts = { cat: 2 };
+    APP.STORIES = [
+      { id: 'locked',   requirements: [{ animalId: 'cat', minCount: 5 }], pages: [] },
+      { id: 'unlocked', requirements: [{ animalId: 'cat', minCount: 1 }], pages: [] },
+    ];
+    const result = APP.getUnlockedStories();
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe('unlocked');
+  });
+
+  it('returns a story with empty requirements (vacuously unlocked)', () => {
+    APP.STORIES = [{ id: 'free', requirements: [], pages: [] }];
+    const result = APP.getUnlockedStories();
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe('free');
+  });
+
+  it('returns all stories when all requirements are met', () => {
+    APP.state.animalCompletionCounts = { cat: 5, dog: 3 };
+    APP.STORIES = [
+      { id: 'a', requirements: [{ animalId: 'cat', minCount: 5 }], pages: [] },
+      { id: 'b', requirements: [{ animalId: 'dog', minCount: 3 }], pages: [] },
+    ];
+    const result = APP.getUnlockedStories();
+    expect(result).toHaveLength(2);
   });
 });

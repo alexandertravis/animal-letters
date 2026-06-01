@@ -2,6 +2,7 @@ window.APP = window.APP || {};
 
 (function (APP) {
   let activeTracer = null;
+  let _advanceTimer = null;
 
   // Calculate tile dimensions so all letters fit in one row regardless of name length.
   // Available width = viewport width minus strip horizontal padding (16px each side).
@@ -100,15 +101,18 @@ window.APP = window.APP || {};
 
     // Wire bar buttons
     bar.querySelector('[data-act=home]').addEventListener('click', () => {
+      if (_advanceTimer) { clearTimeout(_advanceTimer); _advanceTimer = null; }
       if (activeTracer) { activeTracer.destroy(); activeTracer = null; }
       ctx.go('landing');
     });
     bar.querySelector('[data-act=settings]').addEventListener('click', () => {
+      if (_advanceTimer) { clearTimeout(_advanceTimer); _advanceTimer = null; }
       if (activeTracer) { activeTracer.destroy(); activeTracer = null; }
       ctx.go('setup');
     });
     bar.querySelector('[data-act=restart]').addEventListener('click', () => mountCurrentLetter(stage, ctx));
     bar.querySelector('[data-act=skip]').addEventListener('click', () => {
+      if (_advanceTimer) { clearTimeout(_advanceTimer); _advanceTimer = null; }
       if (activeTracer) { activeTracer.destroy(); activeTracer = null; }
       APP.skipAnimal();
       // skipAnimal picks a new animal (no complete screen) or falls back to landing.
@@ -137,6 +141,7 @@ window.APP = window.APP || {};
   }
 
   function mountCurrentLetter(stage, ctx) {
+    if (_advanceTimer) { clearTimeout(_advanceTimer); _advanceTimer = null; }
     if (activeTracer) { activeTracer.destroy(); activeTracer = null; }
     const animal = APP.state.currentAnimal;
     // APP.caseOf applied to the full name ensures the per-character case (including
@@ -169,7 +174,8 @@ window.APP = window.APP || {};
         // Without the delay the new screen cancels the utterance mid-word.
         APP.audio.speakLetter(completedChar, APP.state.settings.locale);
         const delay = (APP.TRACER_CONFIG && APP.TRACER_CONFIG.PHONICS_ADVANCE_DELAY) || 700;
-        setTimeout(() => {
+        _advanceTimer = setTimeout(() => {
+          _advanceTimer = null;
           if (APP.state.screen === 'complete') {
             ctx.go('complete');
           } else {

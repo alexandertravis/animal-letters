@@ -479,3 +479,110 @@ describe('APP.clearProgress — error resilience', () => {
     expect(APP.state.consecutiveFoundCount).toBe(0);
   });
 });
+
+// ---------------------------------------------------------------------------
+// APP.activeTheme / APP.activeBookSkin
+// ---------------------------------------------------------------------------
+describe('APP.activeTheme', () => {
+  it('returns the storybook theme object when libraryTheme is "storybook"', () => {
+    APP.state.libraryTheme = 'storybook';
+    const theme = APP.activeTheme();
+    expect(theme).toBeDefined();
+    expect(theme.shelf).toBe('skin-storybook');
+    expect(theme.book).toBe('watercolour');
+  });
+
+  it('returns the walnut theme object when libraryTheme is "walnut"', () => {
+    APP.state.libraryTheme = 'walnut';
+    const theme = APP.activeTheme();
+    expect(theme.shelf).toBe('skin-walnut');
+    expect(theme.book).toBe('classic');
+  });
+
+  it('returns the basic theme object when libraryTheme is "basic"', () => {
+    APP.state.libraryTheme = 'basic';
+    const theme = APP.activeTheme();
+    expect(theme.shelf).toBe('skin-basic');
+    expect(theme.book).toBe('basic');
+  });
+
+  it('falls back to the default theme when libraryTheme is an unrecognised key', () => {
+    APP.state.libraryTheme = 'nonexistent';
+    const theme = APP.activeTheme();
+    // Falls back to APP.DEFAULT_LIBRARY_THEME ("storybook").
+    expect(theme.shelf).toBe('skin-storybook');
+  });
+});
+
+describe('APP.activeBookSkin', () => {
+  it('returns "watercolour" for the storybook theme', () => {
+    APP.state.libraryTheme = 'storybook';
+    expect(APP.activeBookSkin()).toBe('watercolour');
+  });
+
+  it('returns "classic" for the walnut theme', () => {
+    APP.state.libraryTheme = 'walnut';
+    expect(APP.activeBookSkin()).toBe('classic');
+  });
+
+  it('returns "basic" for the basic theme', () => {
+    APP.state.libraryTheme = 'basic';
+    expect(APP.activeBookSkin()).toBe('basic');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// APP.recordLetterTrace
+// ---------------------------------------------------------------------------
+describe('APP.recordLetterTrace', () => {
+  it('creates a new entry with attempts=1 and bestStars equal to the provided stars on first call', () => {
+    const ls = mockLocalStorage();
+    vi.stubGlobal('localStorage', ls);
+
+    APP.recordLetterTrace('A', 2);
+
+    expect(APP.state.letterMastery['A']).toEqual({ attempts: 1, bestStars: 2 });
+  });
+
+  it('increments attempts on each subsequent call for the same character', () => {
+    const ls = mockLocalStorage();
+    vi.stubGlobal('localStorage', ls);
+
+    APP.recordLetterTrace('B', 1);
+    APP.recordLetterTrace('B', 1);
+    APP.recordLetterTrace('B', 1);
+
+    expect(APP.state.letterMastery['B'].attempts).toBe(3);
+  });
+
+  it('updates bestStars when a higher star score is achieved', () => {
+    const ls = mockLocalStorage();
+    vi.stubGlobal('localStorage', ls);
+
+    APP.recordLetterTrace('C', 1);
+    APP.recordLetterTrace('C', 3);
+
+    expect(APP.state.letterMastery['C'].bestStars).toBe(3);
+  });
+
+  it('does NOT decrease bestStars when a lower score is achieved later', () => {
+    const ls = mockLocalStorage();
+    vi.stubGlobal('localStorage', ls);
+
+    APP.recordLetterTrace('D', 3);
+    APP.recordLetterTrace('D', 1);
+
+    expect(APP.state.letterMastery['D'].bestStars).toBe(3);
+  });
+
+  it('tracks uppercase and lowercase as separate entries', () => {
+    const ls = mockLocalStorage();
+    vi.stubGlobal('localStorage', ls);
+
+    APP.recordLetterTrace('E', 2);
+    APP.recordLetterTrace('e', 3);
+
+    expect(APP.state.letterMastery['E']).toEqual({ attempts: 1, bestStars: 2 });
+    expect(APP.state.letterMastery['e']).toEqual({ attempts: 1, bestStars: 3 });
+  });
+});

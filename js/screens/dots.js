@@ -192,10 +192,12 @@ window.APP = window.APP || {};
   // ── Utilities ────────────────────────────────────────────────────────────────
 
   function clientToSvg(svg, clientX, clientY) {
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return { x: 0, y: 0 };
     const pt = svg.createSVGPoint();
     pt.x = clientX;
     pt.y = clientY;
-    return pt.matrixTransform(svg.getScreenCTM().inverse());
+    return pt.matrixTransform(ctm.inverse());
   }
 
   function dist(a, b) {
@@ -207,7 +209,7 @@ window.APP = window.APP || {};
     bar.className = 'topbar';
     bar.innerHTML = `
       <div class="group">
-        <button class="btn icon ghost" aria-label="Back">${APP.ICONS.home}</button>
+        <button class="btn icon ghost" aria-label="Back">${APP.ICONS.back}</button>
       </div>
       <div class="group">
         <span class="screen-title">${title}</span>
@@ -529,7 +531,11 @@ window.APP = window.APP || {};
 
   function renderAuthor(wrap, ctx) {
     wrap.innerHTML = '';
-    wrap.appendChild(makeTopbar('Create Puzzle', () => renderPicker(wrap, ctx)));
+    let _resizeObs = null;
+    wrap.appendChild(makeTopbar('Create Puzzle', () => {
+      if (_resizeObs) { _resizeObs.disconnect(); _resizeObs = null; }
+      renderPicker(wrap, ctx);
+    }));
 
     const authorBody = document.createElement('div');
     authorBody.className = 'dots-author-body';
@@ -678,8 +684,8 @@ window.APP = window.APP || {};
       renderPlay(wrap, ctx, puzzle);
     });
 
-    const resizeObs = new ResizeObserver(function () { syncLabels(); });
-    resizeObs.observe(canvas);
+    _resizeObs = new ResizeObserver(function () { syncLabels(); });
+    _resizeObs.observe(canvas);
 
     redrawCanvas();
     updateButtons();

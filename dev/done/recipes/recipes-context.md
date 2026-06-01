@@ -139,3 +139,35 @@ NEXT STEP: Phase 3 (more recipes) is future/optional — start with Muffin recip
 Blockers: none
 Half-finished: none — fry oil shimmer deferred by design (marked with [ ] in tasks.md)
 Security flags added: none
+
+## Session Summary — 2026-06-01 (session 3 — visual quality exploration)
+
+Explored upgrading visual quality using paths extracted from two Lottie-exported animated SVGs
+(provided by user, located in Downloads). Decided on this approach over AI-generated WebP images
+because the SVG paths animate with GSAP identically to existing art — no new pipeline needed.
+
+**Lottie file analysis:**
+
+File 1 (`82d7185c-1153-11ee-b7f1-1bc16f35848b.svg`) — cooking ingredient animation:
+- **Measuring jug** (Shape Layer 8): body `M92,-178L-82.5,-178...`, left spout triangle, right handle arc, yellow fill `#ffbb54`/`#f9a72c`, teal stroke `#00b494`, measurement lines + thermometer window. viewBox approach: `-130 -185 275 220` at 100×80px.
+- **Bowl** (Shape Layer 5, 4 paths): white outer body with `#00b494` teal stroke-5, cream interior `#fff8f0`/`#f0e6d8`, right shadow `#e0e0e0`, rim face path (white U-shape with `#424242` outline). Transform group: `translate(120,4) scale(0.8,0.9)` maps Lottie coords → `0 0 240 180` viewBox.
+- **Egg top half** (Shape Layer 14): `M-19,-73.5C-102.198,-71.742,...L-84,43.5L-33,10.5L-9.5,32.5L24,4L62.5,21...Z` — organic oval with real jagged crack line at bottom. Fill `#ffd085`, stroke `#8c8c8c` stroke-8. viewBox: `-108 -78 176 130` at 50×37px.
+- **Egg bottom half** (Shape Layer 16): `M22,-4L-7.25,21...L-93,28.25...Z` — matching jagged top edge, fill `#ffd085`. viewBox: `-97 -8 162 134` at 50×42px.
+- **Gold star burst** (Shape Layers 22–31): shared path `M65,-55C65,-55,63.5,14,-1.5,14...Z`. Colors `#ffc664`/`#ffd964`/`#ffc000`. Usable for celebration effects.
+- **Pancake stack** (Layers 18–21): ellipses `ry=27.5 rx=49`, cream `#eddec0`/`#e2e0dd`, white stroke-13.
+
+File 2 (`a6309fa0-1151-11ee-b271-bb42fb1b548d.svg`) — 554 paths, different palette (purples, pinks, greens). Named layers: `bowlrose/kitchencooking`, `container02/kitchen1`, `star/kitchencooking`. Colors: `#863576`, `#f06363`, `#ffd687`, `#6abc45`. Lower priority — likely a dessert scene rather than baking ingredients.
+
+**Bugs found this session:**
+- `setStep()` calls `stage.innerHTML = ''` which wipes the kitchen-bg on every step change. Fix: re-append `kitchenBg` after clearing — `stage.appendChild(kitchenBg)` inside `setStep()`. Code change was reverted with rest of session work; needs re-applying.
+
+**Code changes attempted but reverted this session:**
+- `bowlSvg()` rewritten with Lottie paths in transform group
+- `animPour` jug replaced with Lottie measuring jug SVG (jugW=100, jugH=78, transformOrigin `50% 97%`)
+- `animCrack` egg-top/egg-bot replaced with inline SVG using Lottie crack paths
+- CSS `.egg-top`/`.egg-bot` updated to SVG containers (no border-radius)
+
+NEXT STEP (visual quality): Re-apply the Lottie path extractions above — start with jug (highest impact), then bowl, then egg crack paths. Fix `setStep` kitchen-bg bug simultaneously.
+Blockers: none
+Half-finished: none committed
+Security flags: none
