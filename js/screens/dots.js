@@ -280,6 +280,7 @@ window.APP = window.APP || {};
     let connected = 0;
     let dragging = false;
     let showGuides = true;
+    let showImage = true;
 
     wrap.innerHTML = '';
 
@@ -294,6 +295,7 @@ window.APP = window.APP || {};
         <span class="screen-title">${puzzle.name}</span>
       </div>
       <div class="group">
+        ${puzzle.image ? `<button class="btn ghost" id="image-toggle" style="font-size:0.85rem;min-width:0;padding:8px 10px;border-radius:12px;background:var(--accent);color:var(--accent-ink)">🖼 Image</button>` : ''}
         <button class="btn ghost" id="guide-toggle" style="font-size:0.85rem;min-width:0;padding:8px 10px;border-radius:12px;background:var(--accent);color:var(--accent-ink)">
           ···  Guides
         </button>
@@ -306,6 +308,14 @@ window.APP = window.APP || {};
       this.style.background = showGuides ? 'var(--accent)' : 'transparent';
       this.style.color = showGuides ? 'var(--accent-ink)' : '#aaa';
     });
+    if (puzzle.image) {
+      bar.querySelector('#image-toggle').addEventListener('click', function () {
+        showImage = !showImage;
+        if (bgImg) bgImg.setAttribute('opacity', showImage ? '0.2' : '0');
+        this.style.background = showImage ? 'var(--accent)' : 'transparent';
+        this.style.color = showImage ? 'var(--accent-ink)' : '#aaa';
+      });
+    }
     wrap.appendChild(bar);
 
     const playBody = document.createElement('div');
