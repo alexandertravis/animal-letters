@@ -28,6 +28,32 @@ window.APP = window.APP || {};
     { id: 'space-rabbit', label: 'Space Rabbit', src: 'assets/images/coloring/space-rabbit.webp' },
   ];
 
+  var STORIES = [
+    { id: 'three-pigs-1', label: 'Three Little Pigs I',   src: 'assets/images/story/three-pigs/page-01.webp' },
+    { id: 'three-pigs-2', label: 'Three Little Pigs II',  src: 'assets/images/story/three-pigs/page-02.webp' },
+    { id: 'three-pigs-3', label: 'Three Little Pigs III', src: 'assets/images/story/three-pigs/page-03.webp' },
+    { id: 'lion-mouse-1', label: 'Lion & Mouse I',         src: 'assets/images/story/lion-mouse/page-01.webp' },
+    { id: 'lion-mouse-2', label: 'Lion & Mouse II',        src: 'assets/images/story/lion-mouse/page-02.webp' },
+    { id: 'lion-mouse-3', label: 'Lion & Mouse III',       src: 'assets/images/story/lion-mouse/page-03.webp' },
+    { id: 'lion-mouse-4', label: 'Lion & Mouse IV',        src: 'assets/images/story/lion-mouse/page-04.webp' },
+  ];
+
+  var ALL_IMAGES = COLORING.concat(STORIES);
+
+  var SETTINGS_KEY = 'pz_settings_v1';
+  function loadSettings() {
+    try { var s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null'); if (s) return s; } catch(_){}
+    return null;
+  }
+  function saveSettings(cfg) {
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ mode: cfg.mode, rows: cfg.rows, cols: cfg.cols, hintMode: cfg.hintMode, showGrid: cfg.showGrid, imageSrc: cfg.imageSrc })); } catch(_){}
+  }
+  function pickRandomImage(exclude) {
+    var pool = exclude ? ALL_IMAGES.filter(function(i) { return i.src !== exclude; }) : ALL_IMAGES;
+    if (!pool.length) pool = ALL_IMAGES;
+    return pool[Math.floor(Math.random() * pool.length)].src;
+  }
+
   var EMOJI_LIST = [
     '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯',
     '🦁','🐮','🐷','🐸','🐵','🦋','🌈','🍕','🎂','⭐',
@@ -211,6 +237,18 @@ window.APP = window.APP || {};
       cellW: 0,  cellH: 0,
     };
 
+    // Apply saved settings (or keep defaults)
+    var _saved = loadSettings();
+    if (_saved) {
+      if (_saved.mode)     S.mode     = _saved.mode;
+      if (_saved.rows)     S.rows     = _saved.rows;
+      if (_saved.cols)     S.cols     = _saved.cols;
+      if (_saved.hintMode) S.hintMode = _saved.hintMode;
+      if (_saved.showGrid != null) S.showGrid = _saved.showGrid;
+      if (_saved.imageSrc) S.imageSrc = _saved.imageSrc;
+    }
+    if (!S.imageSrc) { S.imageSrc = pickRandomImage(); }
+
     var wrap = document.createElement('div');
     wrap.className = 'pz-screen';
     root.appendChild(wrap);
@@ -229,11 +267,22 @@ window.APP = window.APP || {};
       var backBtn = document.createElement('button');
       backBtn.className = 'btn icon';
       backBtn.innerHTML = (APP.ICONS && APP.ICONS.back) || '&#8592;';
-      backBtn.addEventListener('click', function () { if (G) G.killTweensOf('*'); ctx.go('landing'); });
+      if (step === 'play') {
+        backBtn.addEventListener('click', function () { if (G) G.killTweensOf('*'); setStep('setup'); });
+      } else {
+        backBtn.addEventListener('click', function () { if (G) G.killTweensOf('*'); ctx.go('landing'); });
+      }
       var title = document.createElement('h1');
       title.textContent = 'Puzzles';
       topbar.appendChild(backBtn);
       topbar.appendChild(title);
+      if (step === 'play') {
+        var topNextBtn = document.createElement('button');
+        topNextBtn.className = 'btn secondary pz-next-btn';
+        topNextBtn.textContent = 'Next ▶';
+        topNextBtn.addEventListener('click', function () { playNext(); });
+        topbar.appendChild(topNextBtn);
+      }
       wrap.appendChild(topbar);
 
       var stage = document.createElement('div');
@@ -286,14 +335,26 @@ window.APP = window.APP || {};
       // ── Gallery ──────────────────────────────────────────────────────────
       var galleryField = makeField('Pick an Image');
       var galleryLabel = galleryField.querySelector('label');
+      var galleryArrow = document.createElement('span');
+      galleryArrow.textContent = ' ▼';
+      galleryArrow.style.fontWeight = 'normal';
+      galleryLabel.style.cssText += ';cursor:pointer;display:flex;justify-content:space-between;align-items:center;';
+      galleryLabel.appendChild(galleryArrow);
+      var galleryOpen = true;
       var gallery = document.createElement('div');
       galleryField.appendChild(gallery);
       inner.appendChild(galleryField);
+      galleryLabel.addEventListener('click', function () {
+        galleryOpen = !galleryOpen;
+        gallery.style.display = galleryOpen ? '' : 'none';
+        galleryArrow.textContent = galleryOpen ? ' ▼' : ' ▶';
+      });
 
       function renderGallery() {
         gallery.innerHTML = '';
         if (S.mode === 'emoji') {
           galleryLabel.textContent = 'Pick an Emoji';
+          galleryLabel.appendChild(galleryArrow);
           gallery.className = 'pz-gallery--emoji';
           EMOJI_LIST.forEach(function (emoji) {
             var key = 'emoji:' + emoji;
@@ -310,6 +371,7 @@ window.APP = window.APP || {};
           });
         } else {
           galleryLabel.textContent = 'Pick an Image';
+          galleryLabel.appendChild(galleryArrow);
           gallery.className = 'pz-gallery';
 
           function makeSection(label, items) {
@@ -342,6 +404,7 @@ window.APP = window.APP || {};
           }
 
           makeSection('Coloring', COLORING);
+          makeSection('Story Books', STORIES);
           makeSection('Animals', (APP.ANIMALS || []).map(function (a) {
             return { src: a.images.cartoon, label: a.displayName };
           }));
@@ -424,7 +487,13 @@ window.APP = window.APP || {};
     }
 
     // ── Image loading bridge ─────────────────────────────────────────────────
+    function playNext() {
+      S.imageSrc = pickRandomImage(S.imageSrc);
+      startPuzzle();
+    }
+
     function startPuzzle() {
+      saveSettings(S);
       if (S.imageSrc.startsWith('emoji:')) {
         buildEmojiCanvas(S.imageSrc.slice(6), function (img) {
           S.srcImg = img; setStep('play');
@@ -758,12 +827,18 @@ window.APP = window.APP || {};
       var overlay = document.createElement('div');
       overlay.className = 'pz-done-overlay';
       overlay.style.zIndex = '200';
-      // Shift content center rightward to align with the board (not the full stage incl. gutter)
-      overlay.style.paddingLeft = S.boardX + 'px';
+
+      // Completed image above the message
+      if (S.srcImg) {
+        var doneImg = document.createElement('img');
+        doneImg.className = 'pz-done-img';
+        doneImg.src = S.srcImg.src;
+        overlay.appendChild(doneImg);
+      }
 
       var msg = document.createElement('div');
       msg.className = 'pz-done-title';
-      msg.textContent = '🎉 Puzzle Complete!';
+      msg.textContent = '🎉 Hooray!';
       overlay.appendChild(msg);
 
       var actions = document.createElement('div');
@@ -772,20 +847,26 @@ window.APP = window.APP || {};
       var againBtn = document.createElement('button');
       againBtn.className = 'btn';
       againBtn.textContent = 'Play Again';
-      againBtn.addEventListener('click', function () { setStep('setup'); });
+      againBtn.addEventListener('click', function () { startPuzzle(); });
 
-      var homeBtn = document.createElement('button');
-      homeBtn.className = 'btn secondary';
-      homeBtn.textContent = 'Home';
-      homeBtn.addEventListener('click', function () { ctx.go('landing'); });
+      var nextBtn2 = document.createElement('button');
+      nextBtn2.className = 'btn secondary';
+      nextBtn2.textContent = 'Next ▶';
+      nextBtn2.addEventListener('click', function () { playNext(); });
+
+      var optBtn = document.createElement('button');
+      optBtn.className = 'btn ghost';
+      optBtn.textContent = 'Options';
+      optBtn.addEventListener('click', function () { setStep('setup'); });
 
       actions.appendChild(againBtn);
-      actions.appendChild(homeBtn);
+      actions.appendChild(nextBtn2);
+      actions.appendChild(optBtn);
       overlay.appendChild(actions);
       stage.appendChild(overlay);
     }
 
-    setStep('setup');
+    startPuzzle();
   }
 
   APP.screens      = APP.screens || {};

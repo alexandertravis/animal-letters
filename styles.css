@@ -3385,6 +3385,16 @@ html, body {
   flex-wrap: wrap;
   justify-content: center;
 }
+.pz-done-img {
+  max-width: min(280px, 65vw);
+  max-height: 180px;
+  border-radius: 10px;
+  object-fit: contain;
+  box-shadow: 0 4px 18px rgba(0,24,88,0.22);
+}
+.pz-next-btn {
+  margin-left: auto;
+}
 
 /* ── Landscape overrides ── */
 @media (max-height: 500px) {
