@@ -18,18 +18,18 @@ window.APP = window.APP || {};
     wrap.className = 'gallery';
 
     // Header
-    const header = document.createElement('div');
-    header.className = 'gallery-header';
-    header.innerHTML = `
-      <button class="btn icon ghost" aria-label="Back">${APP.ICONS.back}</button>
-      <h2>${APP.t('landing.myAnimals')}</h2>
-      <span class="gallery-count">${doneCount}&thinsp;/&thinsp;${total}</span>
-    `;
-    header.querySelector('button').addEventListener('click', () => {
-      const prev = APP.state.previousScreen;
-      ctx.go(prev && prev !== 'gallery' ? prev : 'landing');
+    const countBadge = document.createElement('span');
+    countBadge.className = 'gallery-count';
+    countBadge.textContent = doneCount + ' / ' + total;
+
+    const topbar = APP.ui.topbar({
+      ctx: ctx,
+      title: APP.t('landing.myAnimals'),
+      home: true,
+      back: true,
+      right: [countBadge]
     });
-    wrap.appendChild(header);
+    wrap.appendChild(topbar);
 
     // Grid
     const grid = document.createElement('div');

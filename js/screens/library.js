@@ -138,19 +138,8 @@ window.APP = window.APP || {};
     const wrap = el('div', { class:'library' });
 
     // ── Topbar: back + title + theme switcher ────────────────────────────
-    const topbar = el('div', { class:'topbar' });
-
-    const leftGroup = el('div', { class:'group' });
-    leftGroup.appendChild(el('button', {
-      class:'btn icon ghost', 'aria-label':'Back', html: APP.ICONS.back,
-      on: { click: () => ctx.go('landing') }
-    }));
-    topbar.appendChild(leftGroup);
-
-    topbar.appendChild(el('h2', null, APP.t('library.title')));
-
     const themeSelect = el('select', {
-      class:'locale-select library-theme-select', 'aria-label':'Theme',
+      class:'tb-select library-theme-select', 'aria-label':'Theme',
       on: { change: (e) => { APP.setState({ libraryTheme: e.target.value }); render(root, ctx); } }
     });
     Object.keys(THEMES).forEach(key => {
@@ -158,9 +147,14 @@ window.APP = window.APP || {};
       if (key === themeKey) opt.selected = true;
       themeSelect.appendChild(opt);
     });
-    topbar.appendChild(themeSelect);
 
-    wrap.appendChild(topbar);
+    wrap.appendChild(APP.ui.topbar({
+      ctx: ctx,
+      title: APP.t('library.title'),
+      home: true,
+      back: true,
+      right: [themeSelect]
+    }));
 
     // ── Body — bookshelf fills the area below the header ──────────────────
     const body = el('div', { class:'library-body' });

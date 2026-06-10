@@ -113,20 +113,39 @@ window.APP = window.APP || {};
     let canvasH = 0;
     let baseZoom = 1, basePanX = 0, basePanY = 0;
 
+    // Build mode toggle and action buttons for the topbar right group
+    const paintModeToggle = document.createElement('div');
+    paintModeToggle.className = 'paint-mode-toggle';
+    paintModeToggle.innerHTML = `
+      <button class="paint-mode-btn active" data-mode="free">${APP.t('painting.draw')}</button>
+      <button class="paint-mode-btn" data-mode="template">${APP.t('painting.colourIn')}</button>
+    `;
+
+    const undoBtn = document.createElement('button');
+    undoBtn.className = 'btn icon ghost';
+    undoBtn.setAttribute('data-act', 'undo');
+    undoBtn.setAttribute('aria-label', APP.t('painting.undo'));
+    undoBtn.innerHTML = APP.ICONS.undo;
+
+    const clearBtn = document.createElement('button');
+    clearBtn.className = 'btn icon ghost';
+    clearBtn.setAttribute('data-act', 'clear');
+    clearBtn.setAttribute('aria-label', APP.t('painting.clear'));
+    clearBtn.innerHTML = APP.ICONS.trash;
+
     const wrap = document.createElement('div');
     wrap.className = 'painting';
-    wrap.innerHTML = `
-      <div class="painting-topbar">
-        <button class="btn icon ghost" data-act="back" aria-label="Back">${APP.ICONS.back}</button>
-        <div class="paint-mode-toggle">
-          <button class="paint-mode-btn active" data-mode="free">${APP.t('painting.draw')}</button>
-          <button class="paint-mode-btn" data-mode="template">${APP.t('painting.colourIn')}</button>
-        </div>
-        <div class="painting-topbar-actions">
-          <button class="btn icon ghost" data-act="undo" aria-label="${APP.t('painting.undo')}">${APP.ICONS.undo}</button>
-          <button class="btn icon ghost" data-act="clear" aria-label="${APP.t('painting.clear')}">${APP.ICONS.trash}</button>
-        </div>
-      </div>
+
+    // Insert standard topbar before the rest of the painting UI
+    wrap.appendChild(APP.ui.topbar({
+      ctx: ctx,
+      title: '',
+      home: true,
+      back: true,
+      right: [paintModeToggle, undoBtn, clearBtn]
+    }));
+
+    wrap.insertAdjacentHTML('beforeend', `
       <div class="paint-template-picker hidden">
         <div class="tpl-picker-header">
           <div class="tpl-invisi-slider" role="switch" aria-checked="false" tabindex="0">
@@ -171,7 +190,7 @@ window.APP = window.APP || {};
           <button class="sticker-more-btn" aria-label="More stickers">⋯</button>
         </div>
       </div>
-    `;
+    `);
     root.appendChild(wrap);
 
     // Emoji panel — appended separately so it overlays the toolbar.
@@ -1116,14 +1135,8 @@ window.APP = window.APP || {};
       emojiPanel.classList.toggle('hidden');
     });
 
-    wrap.querySelector('[data-act=undo]').addEventListener('click', undo);
-    wrap.querySelector('[data-act=clear]').addEventListener('click', clearAll);
-    wrap.querySelector('[data-act=back]').addEventListener('click', () => {
-      if (resizeHandler) { window.removeEventListener('resize', resizeHandler); resizeHandler = null; }
-      if (orientationHandler) { window.removeEventListener('orientationchange', orientationHandler); orientationHandler = null; }
-      const prev = APP.state.previousScreen;
-      ctx.go(prev && prev !== 'painting' ? prev : 'landing');
-    });
+    undoBtn.addEventListener('click', undo);
+    clearBtn.addEventListener('click', clearAll);
 
     setActive('[data-tool]', 'data-tool', paint.tool);
     renderSwatches();  // populates .swatches and sets initial active ring

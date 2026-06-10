@@ -59,34 +59,26 @@ window.APP = window.APP || {};
     let phase     = 'closed';   // 'closed' | 'opening' | 'open' | 'closing'
     let turning   = false;       // true while a page-turn animation is in flight
 
+    // ── Standard topbar ──────────────────────────────────────────────────────
+    root.appendChild(APP.ui.topbar({
+      ctx: ctx,
+      title: APP.storyText ? APP.storyText(story.title) : (story.title || ''),
+      home: true,
+      back: 'library'
+    }));
+
     // ── Scene overlay ────────────────────────────────────────────────────────
     const scene = document.createElement('div');
     scene.className = 'reader-scene';
 
-    // ── Floating controls (close + page counter) ─────────────────────────────
+    // ── Floating controls (page counter) ─────────────────────────────────────
     const controls = document.createElement('div');
     controls.className = 'reader-controls';
-
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'btn icon ghost reader-close-btn';
-    closeBtn.setAttribute('aria-label', 'Close book');
-    closeBtn.textContent = '✕';
-    closeBtn.addEventListener('click', function () {
-      // If the book hasn't been opened yet, is collapsed, or is already mid-close,
-      // skip any pending animation and return to library immediately.
-      if (phase === 'closed' || phase === 'closing-to-cover' || phase === 'closing') {
-        destroyed = true;
-        ctx.go('library');
-        return;
-      }
-      closeBook();
-    });
 
     const pageCounter = document.createElement('span');
     pageCounter.className = 'reader-page-count';
     pageCounter.style.opacity = '0';   // hidden on title/outro spreads
 
-    controls.appendChild(closeBtn);
     controls.appendChild(pageCounter);
     scene.appendChild(controls);
 

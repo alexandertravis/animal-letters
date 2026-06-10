@@ -27,17 +27,12 @@ window.APP = window.APP || {};
     wrap.className = 'progress-screen';
 
     // Top bar
-    const bar = document.createElement('div');
-    bar.className = 'topbar';
-    bar.innerHTML = `
-      <div class="group">
-        <button class="btn icon ghost" data-act="home" aria-label="Home">${APP.ICONS.home}</button>
-      </div>
-      <div class="group">
-        <span style="font-weight:700;font-size:1.1rem">${APP.t ? APP.t('screens.progress.title') : 'My Progress'}</span>
-      </div>
-    `;
-    wrap.appendChild(bar);
+    wrap.appendChild(APP.ui.topbar({
+      ctx: ctx,
+      title: APP.t ? APP.t('screens.progress.title') : 'My Progress',
+      home: true,
+      back: true
+    }));
 
     // Grid
     const grid = document.createElement('div');
@@ -78,9 +73,6 @@ window.APP = window.APP || {};
     wrap.appendChild(grid);
     root.appendChild(wrap);
 
-    bar.querySelector('[data-act=home]').addEventListener('click', function () {
-      ctx.go('landing');
-    });
   }
 
   APP.screens = APP.screens || {};

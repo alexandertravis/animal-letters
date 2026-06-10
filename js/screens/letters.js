@@ -322,30 +322,34 @@ window.APP = window.APP || {};
       wrap.className = 'letters-screen';
 
       // ── Header ──
-      const header = document.createElement('div');
-      header.className = 'letters-header';
-      header.innerHTML = `
-        <button class="btn icon ghost" id="ltr-back" aria-label="Back">${APP.ICONS.back}</button>
-        <h2>Letter Patterns</h2>
-        <div class="ltr-controls">
-          <div class="toggle-group">
-            <button data-case="upper" class="${caseMode === 'upper' ? 'on' : ''}">ABC</button>
-            <button data-case="lower" class="${caseMode === 'lower' ? 'on' : ''}">abc</button>
-            <button data-case="digits" class="${caseMode === 'digits' ? 'on' : ''}">123</button>
-          </div>
-          <div class="toggle-group">
-            <button data-view="overview"  class="${viewMode === 'overview'  ? 'on' : ''}">Overview</button>
-            <button data-view="stages"    class="${viewMode === 'stages'    ? 'on' : ''}">Stages</button>
-            <button data-view="practice"  class="${viewMode === 'practice'  ? 'on' : ''}">Practice</button>
-          </div>
-        </div>
+      const caseToggle = document.createElement('div');
+      caseToggle.className = 'toggle-group';
+      caseToggle.innerHTML = `
+        <button data-case="upper" class="${caseMode === 'upper' ? 'on' : ''}">ABC</button>
+        <button data-case="lower" class="${caseMode === 'lower' ? 'on' : ''}">abc</button>
+        <button data-case="digits" class="${caseMode === 'digits' ? 'on' : ''}">123</button>
       `;
-      header.querySelector('#ltr-back').addEventListener('click', () => ctx.go('setup'));
-      header.querySelectorAll('[data-case]').forEach(b =>
+      caseToggle.querySelectorAll('[data-case]').forEach(b =>
         b.addEventListener('click', () => { caseMode = b.dataset.case; draw(); }));
-      header.querySelectorAll('[data-view]').forEach(b =>
+
+      const viewToggle = document.createElement('div');
+      viewToggle.className = 'toggle-group';
+      viewToggle.innerHTML = `
+        <button data-view="overview"  class="${viewMode === 'overview'  ? 'on' : ''}">Overview</button>
+        <button data-view="stages"    class="${viewMode === 'stages'    ? 'on' : ''}">Stages</button>
+        <button data-view="practice"  class="${viewMode === 'practice'  ? 'on' : ''}">Practice</button>
+      `;
+      viewToggle.querySelectorAll('[data-view]').forEach(b =>
         b.addEventListener('click', () => { viewMode = b.dataset.view; draw(); }));
-      wrap.appendChild(header);
+
+      const topbar = APP.ui.topbar({
+        ctx: ctx,
+        title: APP.t ? APP.t('setup.letterPatterns') : 'Letter Patterns',
+        home: true,
+        back: 'setup',
+        right: [caseToggle, viewToggle]
+      });
+      wrap.appendChild(topbar);
 
       // ── Body ──
       const body = document.createElement('div');
