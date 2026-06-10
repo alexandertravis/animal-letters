@@ -24,5 +24,6 @@
   // fonts.ready resolves immediately on repeat loads when the font is cached.
   // Load the persisted language before the first screen renders.
   APP.loadLocale();
+  APP.settings.load();
   document.fonts.ready.then(() => route());
 })(window.APP);
