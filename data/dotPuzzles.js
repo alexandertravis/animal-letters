@@ -114,4 +114,69 @@ APP.DOT_PUZZLES = [
       { x: 75,  y: 68  },
     ]
   },
+  {
+    id: 'crown',
+    name: 'Crown',
+    viewBox: '0 0 200 200',
+    closed: true,
+    image: null,
+    dots: [
+      { x: 20,  y: 175 },
+      { x: 55,  y: 70  },
+      { x: 85,  y: 115 },
+      { x: 100, y: 40  },
+      { x: 115, y: 115 },
+      { x: 145, y: 70  },
+      { x: 180, y: 175 },
+    ]
+  },
+  {
+    id: 'tree',
+    name: 'Tree',
+    viewBox: '0 0 200 200',
+    closed: true,
+    image: null,
+    dots: [
+      { x: 100, y: 15  },
+      { x: 160, y: 130 },
+      { x: 125, y: 130 },
+      { x: 125, y: 188 },
+      { x: 75,  y: 188 },
+      { x: 75,  y: 130 },
+      { x: 40,  y: 130 },
+    ]
+  },
+  {
+    id: 'arrow',
+    name: 'Arrow',
+    viewBox: '0 0 200 200',
+    closed: true,
+    image: null,
+    dots: [
+      { x: 188, y: 100 },
+      { x: 120, y: 30  },
+      { x: 120, y: 72  },
+      { x: 12,  y: 72  },
+      { x: 12,  y: 128 },
+      { x: 120, y: 128 },
+      { x: 120, y: 170 },
+    ]
+  },
+  {
+    id: 'moon',
+    name: 'Moon',
+    viewBox: '0 0 200 200',
+    closed: true,
+    image: null,
+    dots: [
+      { x: 115, y: 20  },
+      { x: 170, y: 50  },
+      { x: 185, y: 100 },
+      { x: 170, y: 150 },
+      { x: 115, y: 180 },
+      { x: 100, y: 155 },
+      { x: 90,  y: 100 },
+      { x: 100, y: 45  },
+    ]
+  },
 ];
