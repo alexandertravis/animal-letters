@@ -27,6 +27,15 @@ window.APP = window.APP || {};
     var r = node.getBoundingClientRect();
     return { x: r.left + r.width / 2, y: r.top + r.height / 2, r: r };
   }
+  // Position `node` at fraction (fx, fy) of `anchorEl`'s bounding rect using
+  // position:fixed coordinates — works at any viewport size.
+  // fx=0 → left edge, fx=1 → right edge; fy=0 → top, fy=1 → bottom.
+  function anchorFixed(node, anchorEl, fx, fy) {
+    var r = anchorEl.getBoundingClientRect();
+    node.style.position = 'fixed';
+    node.style.left = (r.left + r.width  * fx) + 'px';
+    node.style.top  = (r.top  + r.height * fy) + 'px';
+  }
   // GSAP guards — if the lib failed to load, fire onComplete so logic still flows.
   function gto(target, vars) {
     if (G) return G.to(target, vars);
@@ -163,16 +172,67 @@ window.APP = window.APP || {};
 
     var S = { recipe: null, step: 'pick', placed: [] };
 
-    var topbar = el('div', 'recipes-topbar');
-    var backBtn = el('button', 'btn icon', (APP.ICONS && APP.ICONS.back) || '←');
-    backBtn.setAttribute('aria-label', t('recipes.back', 'Back'));
-    var title = el('h1', 'recipes-title');
-    topbar.appendChild(backBtn);
-    topbar.appendChild(title);
-    wrap.appendChild(topbar);
+    // ── Topbar ──
+    var topbarEl, title, backBtn;
+    if (APP.ui && APP.ui.topbar) {
+      topbarEl = APP.ui.topbar({ ctx: ctx, title: t('recipes.title', 'Recipes'), home: true, back: true });
+      wrap.appendChild(topbarEl);
+      title = topbarEl.querySelector('h1, .topbar-title') || topbarEl;
+      backBtn = null; // APP.ui.topbar handles back navigation
+    } else {
+      topbarEl = el('div', 'recipes-topbar');
+      backBtn = el('button', 'btn icon', (APP.ICONS && APP.ICONS.back) || '←');
+      backBtn.setAttribute('aria-label', t('recipes.back', 'Back'));
+      title = el('h1', 'recipes-title');
+      topbarEl.appendChild(backBtn);
+      topbarEl.appendChild(title);
+      wrap.appendChild(topbarEl);
+    }
 
     var stage = el('div', 'recipes-stage');
     wrap.appendChild(stage);
+
+    // Safe title setter — works whether title is a real h1 or a fallback container.
+    function setTitle(text) {
+      if (title && typeof title.textContent !== 'undefined') title.textContent = text;
+    }
+
+    // ── Re-anchor registry: tracks { node, anchorEl, fx, fy } pairs for any
+    //    in-flight body-level fixed elements so resize can reposition them.
+    //    GSAP positions elements via CSS transform (x/y), so on resize we use
+    //    G.set() to update their coordinates from fresh getBoundingClientRect(). ──
+    var _anchored = [];
+    function trackAnchor(node, anchorEl, fx, fy) {
+      _anchored.push({ node: node, anchorEl: anchorEl, fx: fx, fy: fy });
+    }
+    function untrackNode(node) {
+      _anchored = _anchored.filter(function (a) { return a.node !== node; });
+    }
+    function reanchorAll() {
+      _anchored = _anchored.filter(function (a) { return !!a.node.parentNode; });
+      _anchored.forEach(function (a) {
+        var r = a.anchorEl.getBoundingClientRect();
+        var newLeft = r.left + r.width  * a.fx;
+        var newTop  = r.top  + r.height * a.fy;
+        // Update GSAP's x/y (which are offsets from the element's CSS left/top=0).
+        if (G) G.set(a.node, { x: newLeft, y: newTop });
+        else { a.node.style.left = newLeft + 'px'; a.node.style.top = newTop + 'px'; }
+      });
+    }
+    // Observe body for size changes (covers both window resize and layout reflow).
+    var _resizeObs = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      _resizeObs = new ResizeObserver(reanchorAll);
+      _resizeObs.observe(document.body);
+    } else {
+      window.addEventListener('resize', reanchorAll);
+    }
+    // Wrap ctx.go so we always clean up the resize watcher before navigating away.
+    var _goOrig = ctx.go.bind(ctx);
+    ctx.go = function (screen) {
+      cleanupResizeWatcher();
+      _goOrig(screen);
+    };
 
     // ── Kitchen background ──
     var kitchenBg = el('div', 'kitchen-bg');
@@ -225,15 +285,17 @@ window.APP = window.APP || {};
       '</svg>';
     stage.appendChild(kitchenBg);
 
-    backBtn.addEventListener('click', function () {
-      if (G) G.killTweensOf('*');
-      cleanBodyEls();
-      if (S.step !== 'pick') setStep('pick');
-      else {
-        var prev = APP.state.previousScreen;
-        ctx.go(prev && prev !== 'recipes' ? prev : 'landing');
-      }
-    });
+    if (backBtn) {
+      backBtn.addEventListener('click', function () {
+        if (G) G.killTweensOf('*');
+        cleanBodyEls();
+        if (S.step !== 'pick') setStep('pick');
+        else {
+          var prev = APP.state && APP.state.previousScreen;
+          ctx.go(prev && prev !== 'recipes' ? prev : 'landing');
+        }
+      });
+    }
 
     function cleanBodyEls() {
       [
@@ -242,8 +304,15 @@ window.APP = window.APP || {};
         'butter-chunk', 'sift-cloud', 'flour-particle',
         'recipe-flier', 'steam-puff',
       ].forEach(function (cls) {
-        document.querySelectorAll('.' + cls).forEach(function (el) { el.remove(); });
+        document.querySelectorAll('.' + cls).forEach(function (node) { node.remove(); });
       });
+      // Clear the re-anchor registry since all body-level elements are gone.
+      _anchored = [];
+    }
+    // Tear down the resize observer/listener when leaving the screen.
+    function cleanupResizeWatcher() {
+      if (_resizeObs) { _resizeObs.disconnect(); _resizeObs = null; }
+      else window.removeEventListener('resize', reanchorAll);
     }
 
     function setStep(step) {
@@ -262,7 +331,7 @@ window.APP = window.APP || {};
 
     // ───────────────────────── Pick ─────────────────────────
     function stepPick() {
-      title.textContent = t('recipes.title', 'Recipes');
+      setTitle(t('recipes.title', 'Recipes'));
       var grid = el('div', 'recipe-cards');
       (APP.RECIPES || []).forEach(function (recipe, i) {
         var card = el('button', 'recipe-card',
@@ -280,7 +349,7 @@ window.APP = window.APP || {};
 
     // ──────────────────────── Ingredients ────────────────────────
     function stepIngredients() {
-      title.textContent = t('recipes.ingredients', 'Add the ingredients');
+      setTitle(t('recipes.ingredients', 'Add the ingredients'));
       var recipe = S.recipe;
       var scene = el('div', 'recipe-scene');
 
@@ -384,16 +453,17 @@ window.APP = window.APP || {};
       if (!G) { settleBowl(ing, contents, level, idx, total, bowlWrap); if (onDone) onDone(); return; }
       var bc = centerOf(bowlWrap);
       var jugW = 48, jugH = 60;
-      // Jug rests centered above the bowl rim — bottom of jug = 8px above bowl top
-      var jugTX = bc.x - jugW / 2;
-      var jugTY = bc.r.top - jugH - 8;
-      // Stream hangs from jug bottom-center, falls to bowl surface.
-      // Pivot is '50% 100%' (bottom-center stays fixed during tilt), so stream
-      // origin = jug bottom-center regardless of rotation angle.
-      var streamX  = bc.x - 4;       // 4 = half of 8px stream width
-      var streamTopY  = jugTY + jugH; // = bc.r.top - 8
-      var streamBotY  = bc.r.top + bc.r.height * 0.3;
-      var streamH  = Math.max(streamBotY - streamTopY, 10);
+      // Jug target: top-center of bowl (fy=0 → bowl rim), offset up by jug height.
+      // Use anchorFixed fractions so position scales with bowl size at any viewport.
+      var bowlR = bowlWrap.getBoundingClientRect();
+      var jugTX = bowlR.left + bowlR.width * 0.5 - jugW / 2;  // horizontally centred over bowl
+      var jugTY = bowlR.top - jugH * 1.08;                     // jug bottom sits ~8% above bowl rim
+      // Stream: hangs from near the jug spout (fx=0.45 of jug, fy=0.9 — near bottom),
+      // falls down to bowl surface (fy=0.3 of bowl).
+      var streamTopY  = jugTY + jugH * 0.9;
+      var streamBotY  = bowlR.top + bowlR.height * 0.3;
+      var streamX     = jugTX + jugW * 0.45;
+      var streamH     = Math.max(streamBotY - streamTopY, 10);
 
       var jug = el('div', 'pour-jug');
       jug.innerHTML =
@@ -407,17 +477,26 @@ window.APP = window.APP || {};
         '<rect x="4" y="6" width="36" height="6" rx="3" fill="#cce4f6" stroke="#7ab0d4" stroke-width="1"/>' +
         '<rect x="7" y="26" width="30" height="23" rx="4" fill="rgba(235,248,255,0.75)"/>' +
         '</svg>';
+      jug.style.position = 'fixed';
       document.body.appendChild(jug);
       gset(jug, { x: fromX - jugW / 2, y: fromY - jugH / 2 });
+      // Track jug so resize re-anchors it to bowl top-center.
+      trackAnchor(jug, bowlWrap, 0.5, 0);
 
       var stream = el('div', 'pour-stream-milk');
       stream.style.height = streamH + 'px';
+      stream.style.position = 'fixed';
       document.body.appendChild(stream);
       gset(stream, { x: streamX, y: streamTopY, scaleY: 0, opacity: 0 });
+      // Track stream near jug spout (fraction 0.45, 0.9 of jug).
+      trackAnchor(stream, bowlWrap, 0.45, 0);
 
       var ripple = el('div', 'milk-ripple');
+      ripple.style.position = 'fixed';
       document.body.appendChild(ripple);
       gset(ripple, { x: streamX - 12, y: streamBotY - 6, opacity: 0, scale: 0.3 });
+      // Track ripple at bowl surface (fraction 0.45, 0.3 of bowl).
+      trackAnchor(ripple, bowlWrap, 0.45, 0.3);
 
       var tl = gtl();
       tl.to(jug, { x: jugTX, y: jugTY, duration: 0.32, ease: 'power2.out' })
@@ -431,6 +510,7 @@ window.APP = window.APP || {};
         .to(jug, { rotation: 0, duration: 0.32, ease: 'power2.inOut' }, '<')
         .to(jug, { opacity: 0, duration: 0.18 })
         .call(function () {
+          untrackNode(jug); untrackNode(stream); untrackNode(ripple);
           jug.remove(); stream.remove(); ripple.remove();
           settleBowl(ing, contents, level, idx, total, bowlWrap);
           if (onDone) onDone();
@@ -541,7 +621,7 @@ window.APP = window.APP || {};
 
     // ──────────────────────────── Mix ────────────────────────────
     function stepMix() {
-      title.textContent = t('recipes.stir', 'Stir it round and round');
+      setTitle(t('recipes.stir', 'Stir it round and round'));
       var recipe = S.recipe;
       var scene = el('div', 'recipe-scene');
 
@@ -648,7 +728,7 @@ window.APP = window.APP || {};
 
     // ──────────────────────────── Cook ────────────────────────────
     function stepCook() {
-      title.textContent = t('recipes.cook', 'Time to cook');
+      setTitle(t('recipes.cook', 'Time to cook'));
       var type = S.recipe.cookType;
       if (type === 'pan') cookPan();
       else if (type === 'fry') cookFry();
@@ -927,10 +1007,10 @@ window.APP = window.APP || {};
             .call(function () {
               pancake.style.background = pancakeShade(0.85);
               squash(pancake, 1.25, 0.65);
-              // Sizzle steam burst from pan surface
+              // Sizzle steam burst from above pan centre — anchorFixed-style fractions.
               var pr = pan.getBoundingClientRect();
               var cx = pr.left + pr.width * 0.42;
-              var cy = pr.top + pr.height * 0.36;
+              var cy = pr.top + pr.height * 0.15;
               for (var si = 0; si < 6; si++) {
                 (function (si) {
                   var s = el('div', 'steam-puff');
@@ -953,7 +1033,7 @@ window.APP = window.APP || {};
 
     // ─────────────────────────── Decorate ───────────────────────────
     function stepDecorate() {
-      title.textContent = t('recipes.decorate', 'Decorate your treat');
+      setTitle(t('recipes.decorate', 'Decorate your treat'));
       var recipe = S.recipe;
       var scene = el('div', 'recipe-scene');
 
@@ -999,7 +1079,7 @@ window.APP = window.APP || {};
 
     // ───────────────────────────── Done ─────────────────────────────
     function stepDone() {
-      title.textContent = t('recipes.finished', 'Yummy!');
+      setTitle(t('recipes.finished', 'Yummy!'));
       var recipe = S.recipe;
       var scene = el('div', 'recipe-scene done');
 
