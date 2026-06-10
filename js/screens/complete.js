@@ -12,15 +12,18 @@ window.APP = window.APP || {};
 
     const imgSrc = animal.images[APP.state.settings.depiction] || animal.images.cartoon;
 
-    // Top bar — matches game screen layout
-    const bar = document.createElement('div');
-    bar.className = 'topbar';
-    bar.innerHTML = `
-      <div class="group">
-        <button class="btn icon ghost" data-act="home" aria-label="Home">${APP.ICONS.home}</button>
-        <button class="btn icon ghost" data-act="settings" aria-label="Settings">${APP.ICONS.settings}</button>
-      </div>
-    `;
+    // Lazy cleanup reference — confettiHandles populated below, but the function
+    // is safe to call before that point (no-op on empty array).
+    const confettiHandles = [];
+    function cleanup() {
+      confettiHandles.forEach(function(h) { h(); });
+      APP.audio.stopFile();
+    }
+    // Wrap ctx so topbar home button also triggers cleanup before navigating.
+    const wrappedCtx = { go: function(screen) { cleanup(); ctx.go(screen); } };
+
+    // Top bar — home only, no back during complete screen
+    const bar = APP.ui.topbar({ ctx: wrappedCtx, title: '', home: true, back: false });
     wrap.appendChild(bar);
 
     const body = document.createElement('div');
@@ -62,11 +65,10 @@ window.APP = window.APP || {};
     // Collect all confetti cleanup handles. Stacking multiple animations on
     // "Great Job!" replay clicks is intentional — each canvas is independent.
     // All are cancelled together when the user navigates away.
-    const confettiHandles = [APP.launchConfetti({ count: 140, duration: 4000 })];
+    confettiHandles.push(APP.launchConfetti({ count: 140, duration: 4000 }));
 
     function navigate(fn) {
-      confettiHandles.forEach(h => h());
-      APP.audio.stopFile();
+      cleanup();
       fn();
     }
 
@@ -79,11 +81,6 @@ window.APP = window.APP || {};
         navigate(() => APP.goToStory(story, ctx));
       });
     }
-
-    bar.querySelector('[data-act=home]').addEventListener('click', () =>
-      navigate(() => ctx.go('landing')));
-    bar.querySelector('[data-act=settings]').addEventListener('click', () =>
-      navigate(() => ctx.go('setup')));
 
     const imgBox = wrap.querySelector('#animalImg');
 

@@ -30,7 +30,10 @@ window.APP = window.APP || {};
     const available = Math.min(window.innerWidth, 760) - 32;
     const gap = 6;
     const naturalW = 56;
-    const tileW = Math.min(naturalW, Math.floor((available - (name.length - 1) * gap) / name.length));
+    // In landscape (short viewport) use smaller tiles
+    const isLandscape = APP.ui ? APP.ui.isShortLandscape() : window.innerHeight < 600;
+    const maxW = isLandscape ? 40 : naturalW;
+    const tileW = Math.min(maxW, Math.floor((available - (name.length - 1) * gap) / name.length));
     const tileH = Math.round(tileW * (72 / 56));
     const fontSize = ((tileW / naturalW) * 2.4).toFixed(2) + 'rem';
     const reveal = APP.state.settings.revealMode;
@@ -186,17 +189,45 @@ window.APP = window.APP || {};
     const target = APP.caseOf(animal.name)[APP.state.letterIndex];
     const locale = APP.state.settings.locale || 'en';
 
-    const bar = document.createElement('div');
-    bar.className = 'topbar';
-    bar.innerHTML =
-      '<div class="group">' +
-        '<button class="btn icon ghost" data-act="home" aria-label="Home">' + APP.ICONS.home + '</button>' +
-        '<button class="btn icon ghost" data-act="settings" aria-label="Settings">' + APP.ICONS.settings + '</button>' +
-      '</div>' +
-      '<div class="group">' +
-        '<button class="btn ghost" data-act="speak" aria-label="Repeat">🔊</button>' +
-        '<button class="btn ghost" data-act="skip">' + APP.t('game.skip') + '</button>' +
-      '</div>';
+    // SFX mute toggle button
+    const sfxBtn = document.createElement('button');
+    sfxBtn.className = 'btn icon ghost';
+    sfxBtn.innerHTML = APP.state.settings.sfxMuted ? APP.ICONS.volumeOff : APP.ICONS.volumeOn;
+    sfxBtn.setAttribute('aria-label', APP.state.settings.sfxMuted ? 'Unmute' : 'Mute');
+    sfxBtn.addEventListener('click', function() {
+      const nowMuted = !APP.state.settings.sfxMuted;
+      APP.settings.update({ sfxMuted: nowMuted });
+      sfxBtn.innerHTML = nowMuted ? APP.ICONS.volumeOff : APP.ICONS.volumeOn;
+      sfxBtn.setAttribute('aria-label', nowMuted ? 'Unmute' : 'Mute');
+      if (APP.audio.sfx && APP.audio.sfx.setMuted) APP.audio.sfx.setMuted(nowMuted);
+    });
+
+    // Speak button
+    const speakBtn = document.createElement('button');
+    speakBtn.className = 'btn icon ghost';
+    speakBtn.innerHTML = APP.ICONS.volumeOn;
+    speakBtn.setAttribute('aria-label', 'Repeat');
+    speakBtn.addEventListener('click', function() {
+      speakLetter(target, locale);
+    });
+
+    // Skip button
+    const skipBtn = document.createElement('button');
+    skipBtn.className = 'btn ghost';
+    skipBtn.textContent = APP.t('game.skip');
+    skipBtn.addEventListener('click', function() {
+      if (_advanceTimer) { clearTimeout(_advanceTimer); _advanceTimer = null; }
+      APP.skipAnimal();
+      ctx.go(APP.state.screen === 'landing' ? 'landing' : 'findletter');
+    });
+
+    const bar = APP.ui.topbar({
+      ctx: ctx,
+      title: '',
+      home: true,
+      back: false,
+      right: [sfxBtn, speakBtn, skipBtn]
+    });
     wrap.appendChild(bar);
 
     // Stage — find prompt + choice grid
@@ -258,24 +289,6 @@ window.APP = window.APP || {};
     wrap.appendChild(buildStrip(animal));
 
     root.appendChild(wrap);
-
-    // Wire top bar buttons
-    bar.querySelector('[data-act=home]').addEventListener('click', function () {
-      if (_advanceTimer) { clearTimeout(_advanceTimer); _advanceTimer = null; }
-      ctx.go('landing');
-    });
-    bar.querySelector('[data-act=settings]').addEventListener('click', function () {
-      if (_advanceTimer) { clearTimeout(_advanceTimer); _advanceTimer = null; }
-      ctx.go('setup');
-    });
-    bar.querySelector('[data-act=speak]').addEventListener('click', function () {
-      speakLetter(target, locale);
-    });
-    bar.querySelector('[data-act=skip]').addEventListener('click', function () {
-      if (_advanceTimer) { clearTimeout(_advanceTimer); _advanceTimer = null; }
-      APP.skipAnimal();
-      ctx.go(APP.state.screen === 'landing' ? 'landing' : 'findletter');
-    });
 
     // Announce target letter on mount
     speakLetter(target, locale);

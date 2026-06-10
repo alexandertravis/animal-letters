@@ -179,10 +179,19 @@ window.APP = window.APP || {};
         sliderRow.className = 'volume-row';
         var slider = document.createElement('input');
         slider.type = 'range';
-        slider.min = field.min !== undefined ? field.min : 0;
-        slider.max = field.max !== undefined ? field.max : 100;
+        var sMin = field.min !== undefined ? field.min : 0;
+        var sMax = field.max !== undefined ? field.max : 100;
+        slider.min = sMin;
+        slider.max = sMax;
         slider.step = field.step || 1;
-        slider.value = vals[field.key] !== undefined ? vals[field.key] * (field.max || 100) : 50;
+        // If stored value is already within [min,max], use it directly (integer range
+        // sliders). Otherwise treat it as a 0-1 fraction and scale up (legacy vol sliders).
+        var rawInit = vals[field.key];
+        if (rawInit !== undefined) {
+          slider.value = (rawInit >= sMin && rawInit <= sMax) ? rawInit : rawInit * sMax;
+        } else {
+          slider.value = (sMin + sMax) / 2;
+        }
         slider.className = 'vol-slider';
         slider.addEventListener('input', function () {
           var raw = parseFloat(slider.value);
