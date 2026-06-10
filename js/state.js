@@ -12,9 +12,14 @@ window.APP = window.APP || {};
     depiction: "cartoon",  // "cartoon" | "realistic"
     revealMode: "faint",   // "faint" | "hidden"
     gameMode: "trace",     // "trace" | "find"
-    volume: 0.7,           // 0–1
-    lastVolume: 0.7,       // last non-zero volume; restored when un-muting from 0
-    muted: false,
+    volume: 0.7,           // 0–1 (legacy alias for sfxVol)
+    lastVolume: 0.7,       // last non-zero volume; restored when un-muting from 0 (legacy alias for lastSfxVol)
+    muted: false,          // (legacy alias for sfxMuted)
+    sfxVol: 0.7,           // 0–1 — SFX/speech volume
+    sfxMuted: false,       // SFX mute state
+    lastSfxVol: 0.7,       // last non-zero SFX volume
+    bgMusicVol: 0.6,       // 0–1 — background music volume
+    bgMusicEnabled: true,  // background music on/off
     locale: "en",          // "en" | "pt" | … — overwritten by APP.loadLocale() on boot
     phonics: true,         // speak letter name aloud after each trace
   };
