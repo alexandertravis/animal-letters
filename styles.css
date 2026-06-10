@@ -2977,7 +2977,7 @@ html, body {
   margin-bottom: 4px;
 }
 
-@media (max-height: 600px) {
+@media (orientation: landscape) {
   .painting {
     flex-direction: row;
   }
@@ -3097,6 +3097,31 @@ html, body {
   }
   .emoji-panel-scroll { padding: 8px 8px 12px; }
   .emoji-panel .sticker-btn { width: 46px; height: 46px; font-size: 1.7rem; }
+}
+
+/* Painting: tablet/desktop landscape — wider toolbar, larger touch targets */
+@media (orientation: landscape) and (min-height: 650px) {
+  .painting-toolbar { width: 130px; }
+  .painting-toolbar .tool-btn { width: 52px; height: 52px; }
+  .palette-row .sizes .size-btn { width: 100%; height: 44px; }
+  .painting-toolbar .swatch { width: 40px; height: 40px; }
+  .palette-row .swatches .swatch { width: 100%; min-width: 0; height: auto; aspect-ratio: 1; }
+  .painting-toolbar .sticker-btn { width: 44px; height: 44px; }
+  .sticker-tray { width: 104px; }     /* 2 × 44px + 16px gap */
+  .sticker-more-btn { width: 92px; height: 38px; }
+  .paint-template-picker { right: 130px; }
+}
+
+/* Painting: tablet portrait — 2-row toolbar (tools + palette share row 1) */
+@media (min-width: 768px) and (orientation: portrait) {
+  .painting-toolbar .palette-row {
+    flex: 1;                 /* was 1 0 100% — no longer forces its own row */
+  }
+  .painting-toolbar .tool-btn { width: 50px; height: 50px; }
+  .palette-row .swatches {
+    grid-template-columns: repeat(5, 44px);
+    flex: 0 0 auto;
+  }
 }
 
 /* ── Puzzles ─────────────────────────────────────────────────────────────── */

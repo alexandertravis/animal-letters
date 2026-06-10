@@ -539,18 +539,29 @@ window.APP = window.APP || {};
         var ah = S.srcImg.naturalHeight || 200;
         var aspect = aw / ah;
 
-        // Reserve left gutter (~28% or max 130px) for scattered pieces
-        var gutter  = Math.min(sw * 0.28, 130);
-        var availW  = sw - gutter - 8;
-        var availH  = sh - 16;
-
+        // Portrait: board fills top 62%, pieces scatter below.
+        // Landscape: left gutter with board on the right.
         var bW, bH;
-        if (availW / availH > aspect) { bH = availH; bW = bH * aspect; }
-        else                           { bW = availW; bH = bW / aspect; }
-        bW = Math.floor(bW); bH = Math.floor(bH);
-
-        S.boardX = Math.floor(gutter + (availW - bW) / 2);
-        S.boardY = Math.floor((sh - bH) / 2);
+        if (sh > sw) {
+          // Portrait
+          var topH = Math.floor(sh * 0.62);
+          var pW = sw - 12, pH = topH - 12;
+          if (pW / pH > aspect) { bH = pH; bW = Math.round(bH * aspect); }
+          else                   { bW = pW; bH = Math.round(bW / aspect); }
+          bW = Math.floor(bW); bH = Math.floor(bH);
+          S.boardX = Math.floor((sw - bW) / 2);
+          S.boardY = Math.floor((topH - bH) / 2);
+        } else {
+          // Landscape
+          var gutter  = Math.min(sw * 0.28, 160);
+          var availW  = sw - gutter - 8;
+          var availH  = sh - 16;
+          if (availW / availH > aspect) { bH = availH; bW = Math.round(bH * aspect); }
+          else                           { bW = availW; bH = Math.round(bW / aspect); }
+          bW = Math.floor(bW); bH = Math.floor(bH);
+          S.boardX = Math.floor(gutter + (availW - bW) / 2);
+          S.boardY = Math.floor((sh - bH) / 2);
+        }
         S.boardW = bW; S.boardH = bH;
         S.cellW  = bW / S.cols;
         S.cellH  = bH / S.rows;
@@ -723,26 +734,35 @@ window.APP = window.APP || {};
       return piece;
     }
 
-    // ── Scatter pieces into left gutter ────────────────────────────────────
+    // ── Scatter pieces ─────────────────────────────────────────────────────
     function scatterPieces(sw, sh) {
+      var order = S.pieces.slice().sort(function () { return Math.random() - 0.5; });
+
+      if (sh > sw) {
+        // Portrait: random scatter in the strip below the board
+        var stripY = S.boardY + S.boardH + 8;
+        order.forEach(function (piece) {
+          var px = Math.random() * Math.max(0, sw - piece.tabW);
+          var py = stripY + Math.random() * Math.max(0, sh - stripY - piece.tabH);
+          piece.node.style.left = Math.round(Math.max(0, px)) + 'px';
+          piece.node.style.top  = Math.round(Math.max(stripY, py)) + 'px';
+        });
+        return;
+      }
+
+      // Landscape: columnar scatter in left gutter, overflow to right
       var gutterW = S.boardX - 4;
       var cols    = Math.max(1, Math.floor(gutterW / (S.cellW * 0.75 + 4)));
       var colW    = gutterW / cols;
       var colY    = [];
       for (var i = 0; i < cols; i++) colY.push(6);
 
-      // Shuffle order
-      var order = S.pieces.slice().sort(function () { return Math.random() - 0.5; });
-
       order.forEach(function (piece) {
-        // Shortest column
         var mc = 0;
         for (var i2 = 1; i2 < cols; i2++) { if (colY[i2] < colY[mc]) mc = i2; }
-
         var px = mc * colW + (Math.random() - 0.5) * 6;
         var py = colY[mc];
 
-        // Overflow → right gutter
         if (py + piece.tabH > sh - 4) {
           var rg = S.boardX + S.boardW + 8;
           px = rg + Math.random() * Math.max(0, sw - rg - piece.tabW - 8);
@@ -751,7 +771,6 @@ window.APP = window.APP || {};
 
         px = Math.max(0, Math.min(px, sw - piece.tabW));
         py = Math.max(0, Math.min(py, sh - piece.tabH));
-
         piece.node.style.left = Math.round(px) + 'px';
         piece.node.style.top  = Math.round(py) + 'px';
         colY[mc] += piece.tabH + 4;

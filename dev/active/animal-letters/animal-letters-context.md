@@ -387,3 +387,62 @@ NEXT STEP: Review `js/screens/dots.js` architecture (no dev docs exist for that 
 Blockers: none
 Half-finished: none
 Security flags added: none
+
+---
+
+## Connect the Dots Feature (`js/screens/dots.js`) — Architecture Notes (2026-06-10)
+
+### Key files
+| File | Role |
+|---|---|
+| `js/screens/dots.js` | Single-file screen IIFE. Injects its own `<style>` tag on first render. |
+| `data/dotPuzzles.js` | Sets `APP.DOT_PUZZLES[]`. Built-in puzzles. Author tool pushes custom entries at runtime (session-only). |
+
+### Internal architecture
+The screen has three sub-views, all rendered into a single `.dots-screen` wrapper div (replacing its `innerHTML`):
+
+1. **`renderPicker(wrap, ctx)`** — scrollable grid of `.dots-card` tiles, one per `APP.DOT_PUZZLES` entry, plus a "Create your own" card. Clicking a card calls `renderPlay`; clicking Create calls `renderAuthor`. Preview SVGs are generated inline with a faint polyline and numbered dot circles.
+
+2. **`renderPlay(wrap, ctx, puzzle)`** — the game. Layered SVG groups in z-order:
+   - `bgImg` (optional faint background image, opacity 0.2 during play, 1.0 on complete)
+   - `guideLines` group — remaining connections as dashed grey lines (toggle via "Guides" button)
+   - `doneLines` group — completed connections as solid blue lines
+   - `rubberBand` — single dashed line from current source dot to pointer position (opacity 0 when not dragging)
+   - `dotGroup` — all dots re-rendered on each state change (active = large + pulsing ring, future = medium grey, done = small blue)
+
+   **Interaction**: single pointer drag. `pointerdown` near the source dot (`HIT = 28` SVG units) starts drag + pointer capture. `pointermove` updates rubber band and snaps when pointer is within `HIT` of the target. On snap: draw done line, increment `connected`, redraw guide + dots. **Flow-on**: rubber band reanchors to new source immediately — child doesn't lift finger between dots. `pointerup` / `pointercancel` cancels drag.
+
+3. **`renderAuthor(wrap, ctx)`** — authoring tool. 400×400 `<canvas>` (fixed internal size, CSS-scaled). `pointerdown` on canvas places a dot; coordinates are halved (`/2`) to normalise to the 200×200 viewBox. Numbered labels are `position:absolute` divs in the canvas wrapper, synced via `syncLabels()` on click + `ResizeObserver`. Upload via `FileReader` → `drawImage`. "Save & Play" pushes to `APP.DOT_PUZZLES` and immediately calls `renderPlay`.
+
+### Puzzle data format
+```js
+{
+  id: 'unique-id',       // string
+  name: 'Display Name',  // shown in card + topbar
+  viewBox: '0 0 200 200', // always 200×200 for built-in puzzles
+  closed: true,          // true = last dot connects back to first
+  image: null,           // null or data-URL (set by author tool for image-backed puzzles)
+  dots: [{ x, y }, ...]  // in connection order, viewBox coordinates
+}
+```
+
+### Cleanup / lifecycle
+- No explicit `destroy()` — event listeners live on elements that are removed when `wrap.innerHTML = ''`.
+- **One exception**: `renderAuthor` creates a `ResizeObserver` (`_resizeObs`) that must be manually disconnected. It's stored as a local closure variable and disconnected on the back button click. This pattern must be preserved if `renderAuthor` is extended.
+- `injectStyles()` is idempotent (checks for `#dots-css`).
+
+### Constraints & Gotchas
+- **`clientToSvg()` in dots.js is a local copy** of the same helper in `tracer.js`. If coordinate mapping logic needs changing, update both.
+- **Author canvas is fixed 400×400** internally (not DPR-aware). This is deliberate — the canvas is only used for layout reference, not final art. Coordinates are halved to 200×200, so `canvas.width/height` must stay at 400 for the normalisation to hold.
+- **Custom puzzles are session-only**: `APP.DOT_PUZZLES.push(puzzle)` adds to the runtime array only. On page reload, only the built-in puzzles in `data/dotPuzzles.js` survive.
+- **`puzzle.image` on built-in puzzles is `null`**: only author-created puzzles carry a data-URL image. The `bgImg` SVG `<image>` element is only created when `puzzle.image` is truthy.
+
+## Session Summary — 2026-06-10
+Completed:
+1. Reviewed dots.js architecture — notes added above.
+2. Added 4 new built-in dot puzzles to `data/dotPuzzles.js`: Crown, Tree, Arrow, Moon.
+3. Merged iPad portrait/landscape optimisation (puzzle + painting) from claude/continue-task-gmhwx0 to main.
+NEXT STEP: Consider adding remaining story illustrations (Three Little Pigs pages 4–11, then other stories). No active code tasks.
+Blockers: none
+Half-finished: none
+Security flags added: none

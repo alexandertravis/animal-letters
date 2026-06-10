@@ -345,7 +345,8 @@
 - [x] Flow-on drag (draw line while dragging between dots) + faint guide lines
 - [x] Guide lines toggle button in play view
 - [x] Merged to main (commit d34c3f9)
-- [ ] Review dots.js architecture — no dev docs created for this branch; add context notes if extending
+- [x] Review dots.js architecture — notes added to animal-letters-context.md (2026-06-10)
+- [x] Add 4 new built-in dot puzzles: Crown, Tree, Arrow, Moon (`data/dotPuzzles.js`)
 
 ## Section 32 — Branch Cleanup (2026-06-01)
 - [x] Merged feature/painting (was already merged, deleted local + remote)
