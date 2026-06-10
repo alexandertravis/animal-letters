@@ -1,13 +1,13 @@
 window.APP = window.APP || {};
 (function(APP) {
   var BUILDINGS = {
-    school: '<svg viewBox="0 0 120 110"><rect x="15" y="40" width="90" height="65" fill="#ffd166"/><polygon points="60,5 10,45 110,45" fill="#ef476f"/><rect x="45" y="60" width="30" height="45" fill="#073b4c"/><rect x="20" y="50" width="18" height="18" fill="#a8d8f0"/><rect x="82" y="50" width="18" height="18" fill="#a8d8f0"/><text x="60" y="30" text-anchor="middle" font-size="12">🏫</text></svg>',
-    library: '<svg viewBox="0 0 120 110"><rect x="10" y="45" width="100" height="60" fill="#c9b99a"/><polygon points="60,8 5,50 115,50" fill="#8b6f47"/><rect x="40" y="65" width="40" height="40" fill="#4a3728"/><rect x="15" y="55" width="20" height="20" rx="10" fill="#a8d8f0"/><rect x="85" y="55" width="20" height="20" rx="10" fill="#a8d8f0"/><text x="60" y="32" text-anchor="middle" font-size="12">📚</text></svg>',
-    kitchen: '<svg viewBox="0 0 120 110"><rect x="20" y="40" width="80" height="65" fill="#ffeaa7"/><polygon points="60,5 15,45 105,45" fill="#e17055"/><rect x="45" y="60" width="30" height="45" fill="#6c5ce7"/><rect x="22" y="50" width="15" height="15" fill="#a8d8f0"/><rect x="83" y="50" width="15" height="15" fill="#a8d8f0"/><rect x="50" y="25" width="8" height="20" fill="#636e72"/><text x="60" y="18" text-anchor="middle" font-size="12">🍳</text></svg>',
-    art: '<svg viewBox="0 0 120 110"><rect x="10" y="50" width="100" height="55" fill="#fd79a8"/><polygon points="60,10 5,55 115,55" fill="#e84393"/><rect x="45" y="70" width="30" height="35" fill="#2d3436"/><rect x="15" y="58" width="22" height="25" fill="#a8d8f0"/><rect x="83" y="58" width="22" height="25" fill="#a8d8f0"/><text x="60" y="38" text-anchor="middle" font-size="12">🎨</text></svg>',
-    games: '<svg viewBox="0 0 120 110"><rect x="15" y="45" width="90" height="60" fill="#a29bfe"/><rect x="5" y="30" width="25" height="35" fill="#6c5ce7"/><rect x="90" y="30" width="25" height="35" fill="#6c5ce7"/><polygon points="15,30 0,15 30,15" fill="#6c5ce7"/><polygon points="105,30 90,15 120,15" fill="#6c5ce7"/><rect x="42" y="60" width="36" height="45" fill="#2d3436"/><text x="60" y="40" text-anchor="middle" font-size="12">🎲</text></svg>',
-    music: '<svg viewBox="0 0 120 110"><rect x="20" y="50" width="80" height="55" fill="#fdcb6e"/><polygon points="60,15 18,55 102,55" fill="#e17055"/><rect x="47" y="70" width="26" height="35" fill="#2d3436"/><rect x="22" y="60" width="16" height="16" fill="#a8d8f0"/><rect x="82" y="60" width="16" height="16" fill="#a8d8f0"/><text x="60" y="42" text-anchor="middle" font-size="14">🎵</text></svg>',
-    park: '<svg viewBox="0 0 120 110"><rect x="0" y="70" width="120" height="40" fill="#55efc4"/><ellipse cx="60" cy="55" rx="55" ry="40" fill="#00b894"/><ellipse cx="60" cy="55" rx="40" ry="28" fill="#55efc4"/><rect x="25" y="80" width="8" height="25" fill="#636e72"/><ellipse cx="29" cy="75" rx="12" ry="14" fill="#00b894"/><rect x="87" y="80" width="8" height="25" fill="#636e72"/><ellipse cx="91" cy="75" rx="12" ry="14" fill="#00b894"/><text x="60" y="62" text-anchor="middle" font-size="14">🦁</text></svg>',
+    school: '<svg viewBox="0 0 120 110"><rect x="15" y="40" width="90" height="65" fill="#ffd166"/><polygon points="60,5 10,45 110,45" fill="#ef476f"/><rect x="20" y="50" width="18" height="18" fill="#a8d8f0"/><rect x="82" y="50" width="18" height="18" fill="#a8d8f0"/><text x="60" y="78" text-anchor="middle" dominant-baseline="middle" font-size="34">🏫</text></svg>',
+    library: '<svg viewBox="0 0 120 110"><rect x="10" y="45" width="100" height="60" fill="#c9b99a"/><polygon points="60,8 5,50 115,50" fill="#8b6f47"/><rect x="15" y="55" width="20" height="20" rx="10" fill="#a8d8f0"/><rect x="85" y="55" width="20" height="20" rx="10" fill="#a8d8f0"/><text x="60" y="82" text-anchor="middle" dominant-baseline="middle" font-size="34">📚</text></svg>',
+    kitchen: '<svg viewBox="0 0 120 110"><rect x="20" y="40" width="80" height="65" fill="#ffeaa7"/><polygon points="60,5 15,45 105,45" fill="#e17055"/><rect x="22" y="50" width="15" height="15" fill="#a8d8f0"/><rect x="83" y="50" width="15" height="15" fill="#a8d8f0"/><rect x="50" y="25" width="8" height="20" fill="#636e72"/><text x="60" y="80" text-anchor="middle" dominant-baseline="middle" font-size="34">🍳</text></svg>',
+    art: '<svg viewBox="0 0 120 110"><rect x="10" y="50" width="100" height="55" fill="#fd79a8"/><polygon points="60,10 5,55 115,55" fill="#e84393"/><rect x="15" y="58" width="22" height="25" fill="#a8d8f0"/><rect x="83" y="58" width="22" height="25" fill="#a8d8f0"/><text x="60" y="84" text-anchor="middle" dominant-baseline="middle" font-size="34">🎨</text></svg>',
+    games: '<svg viewBox="0 0 120 110"><rect x="15" y="45" width="90" height="60" fill="#a29bfe"/><rect x="5" y="30" width="25" height="35" fill="#6c5ce7"/><rect x="90" y="30" width="25" height="35" fill="#6c5ce7"/><polygon points="15,30 0,15 30,15" fill="#6c5ce7"/><polygon points="105,30 90,15 120,15" fill="#6c5ce7"/><text x="60" y="80" text-anchor="middle" dominant-baseline="middle" font-size="34">🎲</text></svg>',
+    music: '<svg viewBox="0 0 120 110"><rect x="20" y="50" width="80" height="55" fill="#fdcb6e"/><polygon points="60,15 18,55 102,55" fill="#e17055"/><rect x="22" y="60" width="16" height="16" fill="#a8d8f0"/><rect x="82" y="60" width="16" height="16" fill="#a8d8f0"/><text x="60" y="84" text-anchor="middle" dominant-baseline="middle" font-size="34">🎵</text></svg>',
+    park: '<svg viewBox="0 0 120 110"><rect x="0" y="70" width="120" height="40" fill="#55efc4"/><ellipse cx="60" cy="55" rx="55" ry="40" fill="#00b894"/><ellipse cx="60" cy="55" rx="40" ry="28" fill="#55efc4"/><rect x="25" y="80" width="8" height="25" fill="#636e72"/><ellipse cx="29" cy="75" rx="12" ry="14" fill="#00b894"/><rect x="87" y="80" width="8" height="25" fill="#636e72"/><ellipse cx="91" cy="75" rx="12" ry="14" fill="#00b894"/><text x="60" y="55" text-anchor="middle" dominant-baseline="middle" font-size="34">🦁</text></svg>',
   };
 
   function render(root, ctx) {
@@ -17,11 +17,12 @@ window.APP = window.APP || {};
       var style = document.createElement('style');
       style.id = 'map-css';
       style.textContent = [
-        '.map-screen{position:relative;width:100%;min-height:100vh;background:linear-gradient(180deg,#87ceeb 0%,#c8f0c8 70%,#7ec850 100%);overflow:hidden;}',
+        '.map-screen{position:relative;width:100%;min-height:100vh;background:linear-gradient(180deg,#87ceeb 0%,#c8f0c8 70%,#7ec850 100%);overflow:hidden;display:flex;flex-direction:column;align-items:center;}',
         '.map-bg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}',
-        '.map-grid{position:relative;display:grid;grid-template-columns:repeat(2,1fr);gap:16px;padding:60px 16px 16px;max-width:600px;margin:0 auto;}',
+        '.map-title{position:relative;text-align:center;font-size:clamp(1.4rem,5vw,2.2rem);font-weight:800;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.35);margin:0;padding:14px 56px 4px;}',
+        '.map-grid{position:relative;display:grid;grid-template-columns:repeat(2,1fr);gap:16px;padding:8px 16px 16px;width:100%;max-width:600px;box-sizing:border-box;margin:0 auto;}',
         '@media(min-width:768px){.map-grid{grid-template-columns:repeat(3,1fr);}}',
-        '@media(orientation:landscape) and (max-height:520px){.map-grid{grid-template-columns:repeat(4,1fr);padding-top:48px;}}',
+        '@media(orientation:landscape) and (max-height:520px){.map-grid{grid-template-columns:repeat(4,1fr);padding-top:8px;}.map-title{font-size:1.3rem;padding:6px 56px 2px;}}',
         '.map-building{background:rgba(255,255,255,.35);border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px;border-radius:16px;transition:transform .15s,box-shadow .15s;box-shadow:0 2px 8px rgba(0,0,0,.15);}',
         '.map-building:hover{transform:translateY(-3px);box-shadow:0 6px 16px rgba(0,0,0,.2);}',
         '.map-building:active{transform:scale(.95);}',
@@ -54,6 +55,12 @@ window.APP = window.APP || {};
       '<ellipse cx="320" cy="215" rx="30" ry="22" fill="#a8e06e"/>',
     ].join('');
     wrap.appendChild(bgSvg);
+
+    // Title heading
+    var titleEl = document.createElement('h1');
+    titleEl.className = 'map-title';
+    titleEl.textContent = APP.t('map.title') || 'Animal Letters';
+    wrap.appendChild(titleEl);
 
     // Building buttons grid
     var grid = document.createElement('div');
