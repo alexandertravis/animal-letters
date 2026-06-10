@@ -12,9 +12,14 @@ window.APP = window.APP || {};
     depiction: "cartoon",  // "cartoon" | "realistic"
     revealMode: "faint",   // "faint" | "hidden"
     gameMode: "trace",     // "trace" | "find"
-    volume: 0.7,           // 0–1
-    lastVolume: 0.7,       // last non-zero volume; restored when un-muting from 0
-    muted: false,
+    volume: 0.7,           // 0–1 (legacy alias for sfxVol)
+    lastVolume: 0.7,       // last non-zero volume; restored when un-muting from 0 (legacy alias for lastSfxVol)
+    muted: false,          // (legacy alias for sfxMuted)
+    sfxVol: 0.7,           // 0–1 — SFX/speech volume
+    sfxMuted: false,       // SFX mute state
+    lastSfxVol: 0.7,       // last non-zero SFX volume
+    bgMusicVol: 0.6,       // 0–1 — background music volume
+    bgMusicEnabled: true,  // background music on/off
     locale: "en",          // "en" | "pt" | … — overwritten by APP.loadLocale() on boot
     phonics: true,         // speak letter name aloud after each trace
   };
@@ -68,7 +73,8 @@ window.APP = window.APP || {};
   }
 
   APP.state = {
-    screen: "landing",     // "landing" | "setup" | "game" | "complete" | "gallery"
+    screen: "map",         // "map" | "landing" | "setup" | "game" | "complete" | "gallery"
+    currentLocation: null, // active location id (set before navigating to 'location' screen)
     settings: { ...DEFAULT_SETTINGS },
     currentAnimal: null,   // { name, displayName, images, audio }
     letterIndex: 0,        // index into currentAnimal.name
@@ -246,7 +252,7 @@ window.APP = window.APP || {};
       APP.state.completedLetters = [];
     } else {
       // No eligible animals left — go home rather than loop forever.
-      APP.state.screen = "landing";
+      APP.state.screen = "map";
     }
   };
 
@@ -267,7 +273,7 @@ window.APP = window.APP || {};
   };
 
   APP.goHome = function () {
-    APP.state.screen = "landing";
+    APP.state.screen = "map";
   };
 
   // Load letter mastery from localStorage on startup (mirrors the inline _saved

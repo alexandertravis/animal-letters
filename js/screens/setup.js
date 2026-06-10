@@ -9,30 +9,9 @@ window.APP = window.APP || {};
       `linear-gradient(to right, #a78bfa ${pct}%, #e0e0e0 ${pct}%)`;
   }
 
-  function seg(name, options, current, onPick) {
-    const wrap = document.createElement('div');
-    wrap.className = 'seg';
-    options.forEach(opt => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.textContent = opt.label;
-      if (opt.value === current) b.classList.add('on');
-      b.addEventListener('click', () => onPick(opt.value));
-      wrap.appendChild(b);
-    });
-    return wrap;
-  }
-
   function render(root, ctx) {
     root.innerHTML = '';
     const s = APP.state.settings;
-
-    // Derive min/max from the active locale's animal list so the slider always
-    // reflects what's really available — no magic numbers that drift out of sync.
-    const animalList  = APP.animals ? APP.animals.eligibleAll() : APP.ANIMALS;
-    const nameLengths = animalList.map(a => a.name.length);
-    const minLen = Math.min(...nameLengths);
-    const maxLen = Math.max(...nameLengths);
 
     // .setup is full-width so the scrollbar reaches the screen edge.
     // .setup-inner is the centred content column.
@@ -42,15 +21,13 @@ window.APP = window.APP || {};
     const inner = document.createElement('div');
     inner.className = 'setup-inner';
 
-    // Topbar: home icon + title
-    const topbar = document.createElement('div');
-    topbar.className = 'setup-topbar';
-    topbar.innerHTML = `
-      <button class="btn icon ghost" id="setup-home" aria-label="Home">${APP.ICONS.home}</button>
-      <h2>${APP.t('setup.title')}</h2>
-    `;
-    topbar.querySelector('#setup-home').addEventListener('click', () => ctx.go('landing'));
-    inner.appendChild(topbar);
+    // Standard topbar: home + back, title "Parent Corner"
+    inner.appendChild(APP.ui.topbar({
+      ctx: ctx,
+      title: APP.t('setup.parents'),
+      home: true,
+      back: true
+    }));
 
     // Language selector — dropdown at the top with flag emoji
     const f0 = document.createElement('div');
@@ -81,137 +58,137 @@ window.APP = window.APP || {};
     f0.appendChild(select);
     inner.appendChild(f0);
 
-    // Max name length
-    const f1 = document.createElement('div');
-    f1.className = 'field';
-    f1.innerHTML = `
-      <label>${APP.t('setup.nameLength', { n: `<span class="lengthValue">${s.maxLength}</span>` })}</label>
-      <input type="range" min="${minLen}" max="${maxLen}" step="1" value="${s.maxLength}"/>
-    `;
-    const range = f1.querySelector('input');
-    const lengthValue = f1.querySelector('.lengthValue');
-    fillRange(range);
-    range.addEventListener('input', () => {
-      const v = range.valueAsNumber;
-      APP.settings.update({ maxLength: v });
-      const lv = f1.querySelector('.lengthValue');
-      if (lv) lv.textContent = v;
-      fillRange(range);
+    // ── Background Music section ─────────────────────────────────────────────
+    const musicSection = document.createElement('div');
+    musicSection.className = 'field';
+
+    const musicLabelRow = document.createElement('div');
+    musicLabelRow.className = 'volume-row';
+    const musicLabel = document.createElement('label');
+    musicLabel.textContent = APP.t('setup.music');
+
+    const musicToggle = document.createElement('input');
+    musicToggle.type = 'checkbox';
+    musicToggle.checked = s.bgMusicEnabled !== false;
+    musicToggle.setAttribute('aria-label', APP.t('setup.music'));
+
+    musicLabelRow.appendChild(musicLabel);
+    musicLabelRow.appendChild(musicToggle);
+    musicSection.appendChild(musicLabelRow);
+
+    // Volume slider for bgMusicVol
+    const musicVolRow = document.createElement('div');
+    musicVolRow.className = 'field';
+    musicVolRow.style.display = s.bgMusicEnabled !== false ? '' : 'none';
+    const musicVolLabel = document.createElement('label');
+    musicVolLabel.textContent = APP.t('audio.bgMusic');
+    const musicVolInput = document.createElement('input');
+    musicVolInput.type = 'range';
+    musicVolInput.min = '0';
+    musicVolInput.max = '1';
+    musicVolInput.step = '0.05';
+    musicVolInput.value = String(s.bgMusicVol != null ? s.bgMusicVol : 0.6);
+    fillRange(musicVolInput);
+    musicVolInput.addEventListener('input', function() {
+      fillRange(musicVolInput);
+      const v = parseFloat(musicVolInput.value);
+      APP.settings.update({ bgMusicVol: v });
+      if (APP.audio.music) APP.audio.music.setVol(v);
     });
-    inner.appendChild(f1);
+    musicVolRow.appendChild(musicVolLabel);
+    musicVolRow.appendChild(musicVolInput);
+    musicSection.appendChild(musicVolRow);
 
-    // Letter case
-    const f2 = document.createElement('div');
-    f2.className = 'field';
-    f2.innerHTML = `<label>${APP.t('setup.letterStyle')}</label>`;
-    f2.appendChild(seg('case', [
-      { value: 'upper',  label: APP.t('setup.case.upper') },
-      { value: 'proper', label: APP.t('setup.case.proper') },
-      { value: 'lower',  label: APP.t('setup.case.lower') }
-    ], s.letterCase, v => { APP.settings.update({ letterCase: v }); render(root, ctx); }));
-    inner.appendChild(f2);
+    musicToggle.addEventListener('change', function() {
+      const enabled = musicToggle.checked;
+      APP.settings.update({ bgMusicEnabled: enabled });
+      if (APP.audio.music) APP.audio.music.setEnabled(enabled);
+      musicVolRow.style.display = enabled ? '' : 'none';
+    });
 
-    // Depiction
-    const f3 = document.createElement('div');
-    f3.className = 'field';
-    f3.innerHTML = `<label>${APP.t('setup.pictures')}</label>`;
-    f3.appendChild(seg('depict', [
-      { value: 'cartoon',  label: APP.t('setup.cartoon') },
-      { value: 'realistic', label: APP.t('setup.realistic') }
-    ], s.depiction, v => { APP.settings.update({ depiction: v }); render(root, ctx); }));
-    inner.appendChild(f3);
+    inner.appendChild(musicSection);
 
-    // Reveal mode
-    const f4 = document.createElement('div');
-    f4.className = 'field';
-    f4.innerHTML = `<label>${APP.t('setup.reveal')}</label>`;
-    f4.appendChild(seg('reveal', [
-      { value: 'faint',  label: APP.t('setup.faint') },
-      { value: 'hidden', label: APP.t('setup.hidden') }
-    ], s.revealMode, v => { APP.settings.update({ revealMode: v }); render(root, ctx); }));
-    inner.appendChild(f4);
+    // ── Sound Effects section ────────────────────────────────────────────────
+    const sfxSection = document.createElement('div');
+    sfxSection.className = 'field';
 
-    // Phonics
-    const f4b = document.createElement('div');
-    f4b.className = 'field';
-    f4b.innerHTML = `<label>${APP.t('settings.phonics')}</label>`;
-    f4b.appendChild(seg('phonics', [
-      { value: true,  label: APP.t('settings.on') },
-      { value: false, label: APP.t('settings.off') }
-    ], s.phonics, function (v) { APP.settings.update({ phonics: v }); render(root, ctx); }));
-    inner.appendChild(f4b);
+    const sfxLabelRow = document.createElement('div');
+    sfxLabelRow.className = 'volume-row';
+    const sfxLabel = document.createElement('label');
+    sfxLabel.textContent = APP.t('setup.sfx');
+
+    const sfxMuteToggle = document.createElement('input');
+    sfxMuteToggle.type = 'checkbox';
+    sfxMuteToggle.checked = s.sfxMuted === true;
+    sfxMuteToggle.setAttribute('aria-label', APP.t('setup.sfx'));
+
+    sfxLabelRow.appendChild(sfxLabel);
+    sfxLabelRow.appendChild(sfxMuteToggle);
+    sfxSection.appendChild(sfxLabelRow);
+
+    // Volume slider for sfxVol
+    const sfxVolRow = document.createElement('div');
+    sfxVolRow.className = 'field';
+    const sfxVolLabel = document.createElement('label');
+    sfxVolLabel.textContent = APP.t('audio.sfx');
+    const sfxVolInput = document.createElement('input');
+    sfxVolInput.type = 'range';
+    sfxVolInput.min = '0';
+    sfxVolInput.max = '1';
+    sfxVolInput.step = '0.05';
+    sfxVolInput.value = String(s.sfxVol != null ? s.sfxVol : 0.7);
+    fillRange(sfxVolInput);
+
+    // Debounce the preview tone so rapid dragging doesn't stack up.
+    let sfxPreviewTimer = null;
+    sfxVolInput.addEventListener('input', function() {
+      fillRange(sfxVolInput);
+      const v = parseFloat(sfxVolInput.value);
+      APP.settings.update({ sfxVol: v });
+      if (APP.audio.sfx) APP.audio.sfx.setVol(v);
+      clearTimeout(sfxPreviewTimer);
+      sfxPreviewTimer = setTimeout(function() { APP.audio.strokeDone(); }, 80);
+    });
+    sfxVolRow.appendChild(sfxVolLabel);
+    sfxVolRow.appendChild(sfxVolInput);
+    sfxSection.appendChild(sfxVolRow);
+
+    sfxMuteToggle.addEventListener('change', function() {
+      const muted = sfxMuteToggle.checked;
+      APP.settings.update({ sfxMuted: muted });
+      if (APP.audio.sfx) APP.audio.sfx.setMuted(muted);
+      // Play a preview tone so the user hears the result of un-muting.
+      if (!muted) APP.audio.strokeDone();
+    });
+
+    inner.appendChild(sfxSection);
 
     // Game Mode
     const fMode = document.createElement('div');
     fMode.className = 'field';
     fMode.innerHTML = `<label>${APP.t('settings.gameMode')}</label>`;
-    fMode.appendChild(seg('gameMode', [
+    const modeRow = document.createElement('div');
+    modeRow.className = 'seg';
+    [
       { value: 'trace', label: APP.t('settings.gameMode.trace') },
       { value: 'find',  label: APP.t('settings.gameMode.find')  }
-    ], s.gameMode || 'trace', function (v) { APP.settings.update({ gameMode: v }); render(root, ctx); }));
+    ].forEach(function(opt) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = opt.label;
+      if ((s.gameMode || 'trace') === opt.value) b.classList.add('on');
+      b.addEventListener('click', function() {
+        APP.settings.update({ gameMode: opt.value });
+        render(root, ctx);
+      });
+      modeRow.appendChild(b);
+    });
+    fMode.appendChild(modeRow);
     inner.appendChild(fMode);
 
-    // Volume
-    const f5 = document.createElement('div');
-    f5.className = 'field';
-    f5.innerHTML = `<label>${APP.t('setup.volume')}</label>`;
-
-    const volRow = document.createElement('div');
-    volRow.className = 'volume-row';
-
-    const muteBtn = document.createElement('button');
-    muteBtn.type = 'button';
-    muteBtn.className = 'btn icon ghost mute-btn';
-    muteBtn.setAttribute('aria-label', 'Toggle mute');
-
-    const volSlider = document.createElement('input');
-    volSlider.type  = 'range';
-    volSlider.min   = '0';
-    volSlider.max   = '100';
-    volSlider.step  = '1';
-    volSlider.value = String(Math.round(s.volume * 100));
-    fillRange(volSlider);
-
-    function refreshMuteBtn() {
-      const muted = APP.state.settings.muted || APP.state.settings.volume < 0.01;
-      muteBtn.innerHTML = muted ? APP.ICONS.volumeOff : APP.ICONS.volumeOn;
-      volRow.classList.toggle('muted', muted);
-    }
-    refreshMuteBtn();
-
-    muteBtn.addEventListener('click', () => {
-      APP.audio.setMuted(!APP.state.settings.muted);
-      refreshMuteBtn();
-      // Play a preview tone so the user hears the result of un-muting.
-      if (!APP.state.settings.muted) APP.audio.strokeDone();
-    });
-
-    // Debounce the preview tone slightly so rapid dragging doesn't stack up.
-    let volPreviewTimer = null;
-    volSlider.addEventListener('input', () => {
-      const v = volSlider.valueAsNumber / 100;
-      APP.audio.setVolume(v);
-      refreshMuteBtn();
-      fillRange(volSlider);
-      clearTimeout(volPreviewTimer);
-      volPreviewTimer = setTimeout(() => APP.audio.strokeDone(), 80);
-    });
-
-    volRow.appendChild(muteBtn);
-    volRow.appendChild(volSlider);
-    f5.appendChild(volRow);
-    inner.appendChild(f5);
-
-    // Actions
+    // Actions — New Game button
     const actions = document.createElement('div');
     actions.className = 'actions';
-    const back = document.createElement('button');
-    back.className = 'btn secondary';
-    back.textContent = APP.t('setup.back');
-    back.addEventListener('click', () => {
-      const prev = APP.state.previousScreen;
-      ctx.go(prev && prev !== 'setup' ? prev : 'landing');
-    });
     const start = document.createElement('button');
     start.className = 'btn';
     start.textContent = APP.t('setup.newGame');
@@ -225,7 +202,6 @@ window.APP = window.APP || {};
       const mode = APP.state.settings.gameMode || 'trace';
       ctx.go(mode === 'find' ? 'findletter' : 'game');
     });
-    actions.appendChild(back);
     actions.appendChild(start);
     inner.appendChild(actions);
 

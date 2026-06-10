@@ -107,3 +107,76 @@ All game sounds are synthesised via the Web Audio API — no sound files are req
 - `sessionExists` — enables the "Continue" button on the landing screen
 
 Settings are lost on page refresh by design.
+
+## Phase 1 Overhaul — New Architecture
+
+### APP.store (`js/store.js`)
+Thin localStorage wrapper. Loads before state.js.
+- `APP.store.get(key, fallback)` — parse JSON, return fallback on miss/error
+- `APP.store.set(key, value)` — stringify + store
+- `APP.store.remove(key)` — remove item
+
+### APP.settings (`js/settings.js`)
+Replaces the old one-liner. Persists to localStorage and keeps backward-compat aliases.
+- `APP.settings.load()` — merge al.global + al.game.letters into APP.state.settings (call on boot, after APP.loadLocale())
+- `APP.settings.update(patch)` — mutate state + persist; syncs legacy aliases (volume↔sfxVol, muted↔sfxMuted, lastVolume↔lastSfxVol)
+- `APP.settings.get()` — returns APP.state.settings
+- `APP.settings.game(gameId, defaults)` — load per-game settings from al.game.<gameId>
+- `APP.settings.saveGame(gameId, obj)` — persist per-game settings
+- `APP.settings.updateGame(gameId, patch, defaults)` — merge + persist per-game settings
+
+localStorage keys:
+- `al.global` — sfxVol, sfxMuted, lastSfxVol, bgMusicVol, bgMusicEnabled
+- `al.game.letters` — maxLength, letterCase, depiction, revealMode, phonics
+- `al.game.<gameId>` — arbitrary per-game settings object
+
+### APP.ui (`js/ui.js`)
+Shared UI components. Loads after icons.js and i18n.js.
+- `APP.ui.topbar(opts)` — returns `.std-topbar` div. opts: `{ ctx, title, home, back, onRestart, settings, right[] }`
+  - `back` can be `true` (smart back), `false` (hidden), a screen name string, or a callback function
+  - `settings` gear: `{ gameId, title, schema, onChange }` — opens settingsPanel modal
+- `APP.ui.settingsPanel(opts)` — modal with declarative schema. opts: `{ title, schema, values, onChange, onClose }`
+  - Schema field types: `'segmented'`, `'toggle'`, `'slider'`, `'select'`
+- `APP.ui.bigButton(opts)` — `.bigbtn` with art + label. opts: `{ art, label, className, onClick }`
+- `APP.ui.defaultBackTarget(screen)` — smart back: previousScreen → owning location → map/landing
+- `APP.ui.isShortLandscape()` — true when landscape + height ≤ 520px
+- `APP.ui.confirm(msg)` — wrapper for window.confirm
+
+### APP.audio — SFX / Music split (`js/audio.js`)
+SFX and music now use independent gain nodes (`sfxMaster`, `bgMaster`).
+
+`APP.audio.sfx` namespace (mirrors top-level methods + new ones):
+- `.strokeDone()`, `.letterDone()`, `.wordDone()`, `.playComplete(src)`, `.stopFile()`
+- `.click()` — 660 Hz UI click
+- `.wrong()` — descending sawtooth
+- `.pop()` — ascending triangle
+- `.setVol(v)`, `.setMuted(b)`
+
+`APP.audio.music` namespace:
+- `.play(trackId)` — start a background music track (trackIds: map, school, library, kitchen, games, park, default)
+- `.stop()` — stop current track
+- `.setVol(v)` — set bgMusicVol + update bgMaster gain
+- `.setEnabled(b)` — toggle background music
+
+`APP.audio.tone` and `APP.audio.master()` exposed for instrument screens.
+
+### APP.LOCATIONS + APP.locationOf (`data/locations.js`)
+Location registry. Loads after data/dotPuzzles.js.
+- `APP.LOCATIONS` — array of location descriptors with `{ id, labelKey, direct, bgTrack, games[] }`
+- `APP.locationOf(screenName)` — returns owning location id or null
+
+### CSS conventions
+- New screens use injected `<style id="<screen>-css">` tags inside their render() function
+- Shared Phase 1 styles live in the bounded section at the bottom of `styles.css` (see `/* ════ SHARED UI — PHASE 1 OVERHAUL ════ */`)
+- `.painting` uses CSS custom properties `--paint-topbar-w` and `--paint-rail-w` instead of hardcoded px values
+
+### Canonical breakpoints
+- Short landscape: `(orientation: landscape) and (max-height: 520px)`
+- Tablet portrait: `(min-width: 768px) and (orientation: portrait)`
+- Tablet landscape: `(orientation: landscape) and (min-height: 650px)`
+
+### How to add a new language
+1. Add a `{ code, label, flag }` entry to `APP.I18N.LOCALES` in `data/i18n.js`
+2. Add a full locale translation object in `data/i18n.js` (copy `en` block, translate values, keep keys identical)
+3. Add a `data/animals-XX.js` file with that language's animal list
+4. No other code changes needed — language selector renders from LOCALES automatically

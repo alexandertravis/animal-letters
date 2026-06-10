@@ -41,12 +41,26 @@ window.APP = window.APP || {};
   var ALL_IMAGES = COLORING.concat(STORIES);
 
   var SETTINGS_KEY = 'pz_settings_v1';
+  var PZ_DEFAULTS = { mode: 'jigsaw', rows: 3, cols: 3, hintMode: 'faint', showGrid: false, imageSrc: null };
+
   function loadSettings() {
+    // Try APP.settings.game first (Phase 1 infrastructure)
+    if (APP.settings && APP.settings.game) {
+      var gs = APP.settings.game('puzzles', PZ_DEFAULTS);
+      if (gs && Object.keys(gs).length > 0) return gs;
+    }
+    // Fallback: legacy localStorage key
     try { var s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null'); if (s) return s; } catch(_){}
     return null;
   }
   function saveSettings(cfg) {
-    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ mode: cfg.mode, rows: cfg.rows, cols: cfg.cols, hintMode: cfg.hintMode, showGrid: cfg.showGrid, imageSrc: cfg.imageSrc })); } catch(_){}
+    var toSave = { mode: cfg.mode, rows: cfg.rows, cols: cfg.cols, hintMode: cfg.hintMode, showGrid: cfg.showGrid, imageSrc: cfg.imageSrc };
+    // Persist via APP.settings if available
+    if (APP.settings && APP.settings.saveGame) {
+      APP.settings.saveGame('puzzles', toSave);
+    } else {
+      try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(toSave)); } catch(_){}
+    }
   }
   function pickRandomImage(exclude) {
     var pool = exclude ? ALL_IMAGES.filter(function(i) { return i.src !== exclude; }) : ALL_IMAGES;
@@ -222,6 +236,18 @@ window.APP = window.APP || {};
     if (G) G.killTweensOf('*');
     root.innerHTML = '';
 
+    // ── Settings migration: pz_settings_v1 → APP.settings ──────────────────
+    var legacy = APP.store ? APP.store.get(SETTINGS_KEY, null) : null;
+    if (!legacy) {
+      // Also check raw localStorage for the old key
+      try { legacy = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null'); } catch(_){}
+    }
+    if (legacy) {
+      if (APP.settings) APP.settings.saveGame('puzzles', legacy);
+      if (APP.store) APP.store.remove(SETTINGS_KEY);
+      try { localStorage.removeItem(SETTINGS_KEY); } catch(_){}
+    }
+
     var S = {
       mode: 'jigsaw',
       imageSrc: null,
@@ -255,35 +281,90 @@ window.APP = window.APP || {};
 
     var confettiCleanup = null;
 
+    // Advanced settings schema for the gear button
+    var advancedSchema = [
+      {
+        key: 'hintMode',
+        label: (APP.t && APP.t('puzzles.hintMode')) || 'Background Hint',
+        type: 'segmented',
+        options: [
+          { value: 'faint', label: (APP.t && APP.t('puzzles.hintFaint')) || 'Faint' },
+          { value: 'grey',  label: (APP.t && APP.t('puzzles.hintGrey'))  || 'Grey'  },
+        ]
+      },
+      {
+        key: 'showGrid',
+        label: (APP.t && APP.t('puzzles.showGrid')) || 'Show Grid',
+        type: 'toggle'
+      },
+    ];
+
+    function onSettingsChange(key, val, all) {
+      if (key === 'hintMode') S.hintMode = val;
+      if (key === 'showGrid') S.showGrid = val;
+      saveSettings(S);
+    }
+
     // ── Step router ──────────────────────────────────────────────────────────
     function setStep(step) {
       if (confettiCleanup) { confettiCleanup(); confettiCleanup = null; }
       if (G) G.killTweensOf('*');
       wrap.innerHTML = '';
 
-      // Topbar (always shown)
-      var topbar = document.createElement('div');
-      topbar.className = 'pz-topbar';
-      var backBtn = document.createElement('button');
-      backBtn.className = 'btn icon';
-      backBtn.innerHTML = (APP.ICONS && APP.ICONS.back) || '&#8592;';
-      if (step === 'play') {
-        backBtn.addEventListener('click', function () { if (G) G.killTweensOf('*'); setStep('setup'); });
+      // Standard topbar
+      var topbarEl;
+      if (APP.ui && APP.ui.topbar) {
+        if (step === 'play') {
+          var nextBtn = document.createElement('button');
+          nextBtn.className = 'btn secondary pz-next-btn';
+          nextBtn.textContent = (APP.t && APP.t('puzzles.next')) || 'Next ▶';
+          nextBtn.addEventListener('click', function () { playNext(); });
+          topbarEl = APP.ui.topbar({
+            ctx: ctx,
+            title: (APP.t && APP.t('puzzles.title')) || 'Puzzles',
+            home: true,
+            back: function () { if (G) G.killTweensOf('*'); setStep('setup'); },
+            right: [nextBtn]
+          });
+        } else {
+          topbarEl = APP.ui.topbar({
+            ctx: ctx,
+            title: (APP.t && APP.t('puzzles.title')) || 'Puzzles',
+            home: true,
+            back: true,
+            settings: {
+              gameId: 'puzzles',
+              title: (APP.t && APP.t('puzzles.settings')) || 'Puzzle Settings',
+              schema: advancedSchema,
+              onChange: onSettingsChange
+            }
+          });
+        }
       } else {
-        backBtn.addEventListener('click', function () { if (G) G.killTweensOf('*'); ctx.go('landing'); });
+        // Fallback topbar without APP.ui
+        topbarEl = document.createElement('div');
+        topbarEl.className = 'pz-topbar';
+        var backBtn = document.createElement('button');
+        backBtn.className = 'btn icon';
+        backBtn.innerHTML = (APP.ICONS && APP.ICONS.back) || '&#8592;';
+        if (step === 'play') {
+          backBtn.addEventListener('click', function () { if (G) G.killTweensOf('*'); setStep('setup'); });
+        } else {
+          backBtn.addEventListener('click', function () { if (G) G.killTweensOf('*'); ctx.go('landing'); });
+        }
+        var titleEl = document.createElement('h1');
+        titleEl.textContent = (APP.t && APP.t('puzzles.title')) || 'Puzzles';
+        topbarEl.appendChild(backBtn);
+        topbarEl.appendChild(titleEl);
+        if (step === 'play') {
+          var topNextBtn2 = document.createElement('button');
+          topNextBtn2.className = 'btn secondary pz-next-btn';
+          topNextBtn2.textContent = 'Next ▶';
+          topNextBtn2.addEventListener('click', function () { playNext(); });
+          topbarEl.appendChild(topNextBtn2);
+        }
       }
-      var title = document.createElement('h1');
-      title.textContent = 'Puzzles';
-      topbar.appendChild(backBtn);
-      topbar.appendChild(title);
-      if (step === 'play') {
-        var topNextBtn = document.createElement('button');
-        topNextBtn.className = 'btn secondary pz-next-btn';
-        topNextBtn.textContent = 'Next ▶';
-        topNextBtn.addEventListener('click', function () { playNext(); });
-        topbar.appendChild(topNextBtn);
-      }
-      wrap.appendChild(topbar);
+      wrap.appendChild(topbarEl);
 
       var stage = document.createElement('div');
       stage.className = 'pz-stage';
@@ -294,7 +375,7 @@ window.APP = window.APP || {};
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // SETUP STEP
+    // SETUP STEP — compact layout for small phones
     // ═══════════════════════════════════════════════════════════════════════
     function stepSetup(stage) {
       var setup = document.createElement('div');
@@ -306,13 +387,13 @@ window.APP = window.APP || {};
       setup.appendChild(inner);
 
       // ── Mode tabs ────────────────────────────────────────────────────────
-      var modeField = makeField('Mode');
+      var modeField = makeField((APP.t && APP.t('puzzles.mode')) || 'Mode');
       var tabs = document.createElement('div');
       tabs.className = 'pz-tabs';
       [
-        { id: 'jigsaw', label: '🧩 Jigsaw' },
-        { id: 'shapes', label: '🔷 Shapes' },
-        { id: 'emoji',  label: '😀 Emoji'  },
+        { id: 'jigsaw', label: '🧩 ' + ((APP.t && APP.t('puzzles.modeJigsaw')) || 'Jigsaw') },
+        { id: 'shapes', label: '🔷 ' + ((APP.t && APP.t('puzzles.modeShapes')) || 'Shapes') },
+        { id: 'emoji',  label: '😀 ' + ((APP.t && APP.t('puzzles.modeEmoji'))  || 'Emoji')  },
       ].forEach(function (m) {
         var btn = document.createElement('button');
         btn.className = 'pz-tab' + (S.mode === m.id ? ' active' : '');
@@ -332,29 +413,22 @@ window.APP = window.APP || {};
       modeField.appendChild(tabs);
       inner.appendChild(modeField);
 
-      // ── Gallery ──────────────────────────────────────────────────────────
-      var galleryField = makeField('Pick an Image');
-      var galleryLabel = galleryField.querySelector('label');
-      var galleryArrow = document.createElement('span');
-      galleryArrow.textContent = ' ▼';
-      galleryArrow.style.fontWeight = 'normal';
-      galleryLabel.style.cssText += ';cursor:pointer;display:flex;justify-content:space-between;align-items:center;';
-      galleryLabel.appendChild(galleryArrow);
-      var galleryOpen = true;
+      // ── Gallery (compact grid) ───────────────────────────────────────────
+      var galleryWrap = document.createElement('div');
+      galleryWrap.className = 'pz-gallery-wrap';
+      inner.appendChild(galleryWrap);
+
       var gallery = document.createElement('div');
-      galleryField.appendChild(gallery);
-      inner.appendChild(galleryField);
-      galleryLabel.addEventListener('click', function () {
-        galleryOpen = !galleryOpen;
-        gallery.style.display = galleryOpen ? '' : 'none';
-        galleryArrow.textContent = galleryOpen ? ' ▼' : ' ▶';
-      });
+      galleryWrap.appendChild(gallery);
+
+      var galleryLabel;  // used inside renderGallery for emoji/image label swap
+      var galleryArrow;  // keep reference for toggle
 
       function renderGallery() {
-        gallery.innerHTML = '';
+        galleryWrap.innerHTML = '';
+        gallery = document.createElement('div');
+
         if (S.mode === 'emoji') {
-          galleryLabel.textContent = 'Pick an Emoji';
-          galleryLabel.appendChild(galleryArrow);
           gallery.className = 'pz-gallery--emoji';
           EMOJI_LIST.forEach(function (emoji) {
             var key = 'emoji:' + emoji;
@@ -370,13 +444,13 @@ window.APP = window.APP || {};
             gallery.appendChild(btn);
           });
         } else {
-          galleryLabel.textContent = 'Pick an Image';
-          galleryLabel.appendChild(galleryArrow);
           gallery.className = 'pz-gallery';
+          gallery.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;';
 
           function makeSection(label, items) {
             var sec = document.createElement('div');
             sec.className = 'pz-gallery-section';
+            sec.style.gridColumn = '1 / -1';
             var lbl = document.createElement('div');
             lbl.className = 'pz-gallery-label';
             lbl.textContent = label;
@@ -393,7 +467,7 @@ window.APP = window.APP || {};
               btn.appendChild(img);
               btn.addEventListener('click', function () {
                 S.imageSrc = item.src;
-                document.querySelectorAll('.pz-gallery-item').forEach(function (b) { b.classList.remove('active'); });
+                gallery.querySelectorAll('.pz-gallery-item').forEach(function (b) { b.classList.remove('active'); });
                 btn.classList.add('active');
                 checkStart();
               });
@@ -403,18 +477,19 @@ window.APP = window.APP || {};
             gallery.appendChild(sec);
           }
 
-          makeSection('Coloring', COLORING);
-          makeSection('Story Books', STORIES);
-          makeSection('Animals', (APP.ANIMALS || []).map(function (a) {
+          makeSection((APP.t && APP.t('puzzles.coloring')) || 'Coloring', COLORING);
+          makeSection((APP.t && APP.t('puzzles.stories'))  || 'Story Books', STORIES);
+          makeSection((APP.t && APP.t('puzzles.animals'))  || 'Animals', (APP.ANIMALS || []).map(function (a) {
             return { src: a.images.cartoon, label: a.displayName };
           }));
         }
+        galleryWrap.appendChild(gallery);
       }
 
       renderGallery();
 
-      // ── Difficulty ───────────────────────────────────────────────────────
-      var diffField = makeField('Pieces');
+      // ── Difficulty / pieces row ──────────────────────────────────────────
+      var diffField = makeField((APP.t && APP.t('puzzles.pieces')) || 'Pieces');
       var seg = document.createElement('div');
       seg.className = 'pz-seg';
       [
@@ -425,7 +500,7 @@ window.APP = window.APP || {};
       ].forEach(function (d) {
         var btn = document.createElement('button');
         btn.className = 'pz-seg-btn' + (S.rows === d.r ? ' active' : '');
-        btn.textContent = d.label + ' pieces';
+        btn.textContent = d.label + ' ' + ((APP.t && APP.t('puzzles.piecesUnit')) || 'pieces');
         btn.addEventListener('click', function () {
           S.rows = d.r; S.cols = d.c;
           seg.querySelectorAll('.pz-seg-btn').forEach(function (b) { b.classList.remove('active'); });
@@ -436,40 +511,10 @@ window.APP = window.APP || {};
       diffField.appendChild(seg);
       inner.appendChild(diffField);
 
-      // ── Hint options ─────────────────────────────────────────────────────
-      var hintField = makeField('Background Hint');
-      var hintRow = document.createElement('div');
-      hintRow.className = 'pz-hint-row';
-      [
-        { id: 'faint', label: '👻 Faint' },
-        { id: 'grey',  label: '🔲 Grey'  },
-      ].forEach(function (h) {
-        var btn = document.createElement('button');
-        btn.className = 'pz-seg-btn' + (S.hintMode === h.id ? ' active' : '');
-        btn.textContent = h.label;
-        btn.addEventListener('click', function () {
-          S.hintMode = h.id;
-          hintRow.querySelectorAll('.pz-seg-btn').forEach(function (b) { b.classList.remove('active'); });
-          btn.classList.add('active');
-        });
-        hintRow.appendChild(btn);
-      });
-      var gridToggle = document.createElement('label');
-      gridToggle.className = 'pz-grid-toggle';
-      var gridCheck = document.createElement('input');
-      gridCheck.type = 'checkbox';
-      gridCheck.checked = S.showGrid;
-      gridCheck.addEventListener('change', function () { S.showGrid = gridCheck.checked; });
-      gridToggle.appendChild(gridCheck);
-      gridToggle.appendChild(document.createTextNode(' Grid'));
-      hintRow.appendChild(gridToggle);
-      hintField.appendChild(hintRow);
-      inner.appendChild(hintField);
-
-      // ── Start button ─────────────────────────────────────────────────────
+      // ── Play button ──────────────────────────────────────────────────────
       var startBtn = document.createElement('button');
       startBtn.className = 'btn pz-start-btn';
-      startBtn.textContent = 'Start Puzzle ▶';
+      startBtn.textContent = (APP.t && APP.t('puzzles.start')) || 'Play ▶';
       startBtn.disabled = !S.imageSrc;
       startBtn.addEventListener('click', function () { if (S.imageSrc) startPuzzle(); });
       inner.appendChild(startBtn);

@@ -356,3 +356,44 @@
 - [x] Merged claude/branch-status-check-f240A → main (dot-to-dot)
 - [x] All remote feature branches deleted — only `origin/main` remains
 - [x] Pushed merged main to origin (current HEAD: d34c3f9)
+
+## Section 33 — Phase 1 Overhaul: Shared Infrastructure (branch: claude/continue-task-gmhwx0)
+- [x] `js/store.js` — APP.store localStorage wrapper (Step 1)
+- [x] `js/settings.js` rework — persistent al.global + al.game.letters, per-game registry, sfxVol/bgMusicVol/bgMusicEnabled (Step 2)
+- [x] `js/state.js` — DEFAULT_SETTINGS gains sfxVol, sfxMuted, lastSfxVol, bgMusicVol, bgMusicEnabled (Step 2)
+- [x] `js/audio.js` rework — sfxMaster/bgMaster split; APP.audio.sfx (click/wrong/pop/tone2); APP.audio.music (play/stop/setVol/setEnabled, 6 tracks); backward compat (Step 3)
+- [x] `js/ui.js` — APP.ui.topbar, settingsPanel, bigButton, defaultBackTarget, isShortLandscape (Step 4)
+- [x] `styles.css` — Phase 1 bounded CSS section (std-topbar, bigbtn, ui-modal, map-screen, loc-screen); painting CSS vars (Step 5)
+- [x] `data/i18n.js` — ~80 new keys in all 6 locales (en/pt/fr/es/de/it): ui.*, map.*, loc.*, school.*, audio.*, puzzles.*, dots.*, game.tictactoe.*, game.memory.*, game.maze.*, game.shapes.*, game.colours.*, game.washing.*, game.music.*, colour.* (Step 6)
+- [x] `data/locations.js` — APP.LOCATIONS registry + APP.locationOf() (Step 7)
+- [x] 9 stub screens: map, location, tictactoe, memory, maze, shapes, colours, washing, music (Step 8)
+- [x] `index.html` — store.js before state.js; ui.js after icons.js; locations.js; all new screen stubs (Step 9)
+- [x] `js/main.js` — APP.settings.load() on boot (Step 10)
+- [x] `CLAUDE.md` — Phase 1 architecture section (Step 11)
+- [x] `tests/store.test.js` + `tests/settings.test.js` — 15 new tests; all 166 pass (Step 12)
+
+## Section 34 — Phase 1b: Topbar Migration + New Game Screens (branch: claude/continue-task-gmhwx0)
+- [x] Migrate 8 screens to `APP.ui.topbar`: gallery, progress, letters, numbers, devanimals, library, storyreader, painting (Phase 1b-ii)
+- [x] Migrate game, findletter, complete to `APP.ui.topbar`; repurpose setup as "Parent Corner" with Music + SFX controls (Phase 1b-i)
+- [x] `js/screens/tictactoe.js` — Tic Tac Toe game (vs. computer, difficulty levels)
+- [x] `js/screens/memory.js` — Memory/concentration card-matching game
+- [x] `js/screens/maze.js` — Maze navigation game with SVG path drawing
+- [x] `js/screens/shapes.js` — Shape-tracing / recognition game
+- [x] `js/screens/colours.js` — Colour-matching / learning game
+- [x] `js/screens/washing.js` — Clothes-sorting / washing game
+- [x] `js/screens/music.js` — Instrument / music game
+- [x] `fix(recipes)`: anchor animations to live `getBoundingClientRect` so layout adapts to any viewport
+- [x] Dots: add difficulty levels, adaptive metrics (viewBox, dot radius, hit radius), compact setup panel
+- [x] Puzzles: adapt to adaptive metrics in setup
+
+## Section 35 — Phase 2: Map Home Screen + Location Sub-Menus (branch: claude/continue-task-gmhwx0)
+- [x] `js/screens/map.js` — illustrated village map home screen; `APP.screens.map`
+- [x] `js/screens/location.js` — generic location sub-menu screen; `APP.screens.location`
+- [x] `data/locations.js` — `APP.LOCATIONS` registry with location descriptors (`id`, `labelKey`, `direct`, `bgTrack`, `games[]`); `APP.locationOf(screenName)` helper
+- [x] `js/state.js` — default screen set to `'map'`; `APP.goHome` → `'map'`
+
+## Section 36 — Phase 3: Integration + Cleanup (2026-06-10)
+- [x] Dead CSS sweep — removed `.gallery-header`, `.setup-topbar`, `.painting-topbar`, `.painting-topbar-actions` rules (all migrated to `std-topbar`); `.recipes-topbar`, `.pz-setup*` kept (still in use)
+- [x] `index.html` script order verified and fixed: added `js/store.js` (before state.js), `js/ui.js` (after icons.js), all 7 missing game screens (tictactoe, memory, maze, shapes, colours, washing, music)
+- [x] `js/main.js` — `APP.settings.load()` call confirmed present after `APP.loadLocale()`
+- [x] Dev docs updated — Phase 2 tasks marked complete; Phase 3 session summary added; context.md current state updated

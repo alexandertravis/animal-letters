@@ -1,0 +1,300 @@
+window.APP = window.APP || {};
+(function (APP) {
+
+  // ── Pure game logic ─────────────────────────────────────────────────────────
+
+  var LINES = [
+    [0,1,2],[3,4,5],[6,7,8], // rows
+    [0,3,6],[1,4,7],[2,5,8], // cols
+    [0,4,8],[2,4,6]          // diagonals
+  ];
+
+  function checkWinner(board) {
+    for (var i = 0; i < LINES.length; i++) {
+      var a = LINES[i][0], b = LINES[i][1], c = LINES[i][2];
+      if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+        return board[a];
+      }
+    }
+    return null;
+  }
+
+  function isFull(board) {
+    return board.every(function (cell) { return cell !== ''; });
+  }
+
+  // Returns index (0-8) of best move for robot ('R'), player is 'P'.
+  function robotMove(board) {
+    // 1) Try to win
+    var win = findWinning(board, 'R');
+    if (win !== -1) return win;
+    // 2) Block player
+    var block = findWinning(board, 'P');
+    if (block !== -1) return block;
+    // 3) Centre
+    if (board[4] === '') return 4;
+    // 4) Corners
+    var corners = [0, 2, 6, 8];
+    for (var i = 0; i < corners.length; i++) {
+      if (board[corners[i]] === '') return corners[i];
+    }
+    // 5) Sides
+    var sides = [1, 3, 5, 7];
+    for (var j = 0; j < sides.length; j++) {
+      if (board[sides[j]] === '') return sides[j];
+    }
+    return -1;
+  }
+
+  function findWinning(board, mark) {
+    for (var i = 0; i < LINES.length; i++) {
+      var a = LINES[i][0], b = LINES[i][1], c = LINES[i][2];
+      var cells = [board[a], board[b], board[c]];
+      var myCount = cells.filter(function (v) { return v === mark; }).length;
+      var emptyCount = cells.filter(function (v) { return v === ''; }).length;
+      if (myCount === 2 && emptyCount === 1) {
+        if (board[a] === '') return a;
+        if (board[b] === '') return b;
+        return c;
+      }
+    }
+    return -1;
+  }
+
+  // ── Styles ──────────────────────────────────────────────────────────────────
+
+  function injectStyles() {
+    if (document.getElementById('tictactoe-css')) return;
+    var s = document.createElement('style');
+    s.id = 'tictactoe-css';
+    s.textContent = [
+      '.ttt-screen { flex:1; display:flex; flex-direction:column; min-height:0; }',
+      '.ttt-body { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:16px; }',
+      '.ttt-status { font-size:1.2rem; font-weight:600; color:var(--accent,#e67e22); min-height:1.8em; text-align:center; }',
+      '.ttt-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; width:min(300px,80vw); }',
+      '.ttt-cell { aspect-ratio:1; font-size:2.8rem; border:3px solid #ccc; border-radius:12px; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s,transform 0.1s; -webkit-tap-highlight-color:transparent; }',
+      '.ttt-cell:not(:disabled):hover { background:#f5f5f5; transform:scale(1.04); }',
+      '.ttt-cell:disabled { cursor:default; }',
+      '.ttt-cell.winner { background:#fff9c4; border-color:#f9c74f; }',
+      '.ttt-result { display:flex; flex-direction:column; align-items:center; gap:12px; }',
+      '.ttt-result-msg { font-size:1.5rem; font-weight:700; text-align:center; }',
+    ].join('\n');
+    document.head.appendChild(s);
+  }
+
+  // ── Render ──────────────────────────────────────────────────────────────────
+
+  function render(root, ctx) {
+    injectStyles();
+
+    var T = APP.t || function (k) { return k; };
+    var settings = (APP.settings && APP.settings.game)
+      ? APP.settings.game('tictactoe', { opponent: 'robot', first: 'player' })
+      : { opponent: 'robot', first: 'player' };
+
+    var board = ['','','','','','','','',''];
+    var currentTurn = settings.first === 'robot' ? 'R' : 'P';
+    var gameOver = false;
+
+    function saveSettings(patch) {
+      if (APP.settings && APP.settings.updateGame) {
+        APP.settings.updateGame('tictactoe', patch, { opponent: 'robot', first: 'player' });
+      }
+    }
+
+    function doRender() {
+      root.innerHTML = '';
+      var screen = document.createElement('div');
+      screen.className = 'ttt-screen';
+
+      // ── Topbar ──────────────────────────────────────────────────────────────
+      var topbar = APP.ui.topbar({
+        ctx: ctx,
+        title: T('game.tictactoe.title') || 'Noughts & Crosses',
+        home: true,
+        back: true,
+        onRestart: function () {
+          board = ['','','','','','','','',''];
+          currentTurn = (settings.first === 'robot') ? 'R' : 'P';
+          gameOver = false;
+          doRender();
+          if (settings.opponent === 'robot' && currentTurn === 'R') {
+            scheduleRobot();
+          }
+        },
+        settings: {
+          gameId: 'tictactoe',
+          title: T('ui.settings') || 'Settings',
+          schema: [
+            {
+              key: 'opponent',
+              label: T('game.tictactoe.opponent') || 'Play against',
+              type: 'segmented',
+              options: [
+                { value: 'robot', label: T('game.tictactoe.robot') || 'Robot' },
+                { value: 'friend', label: T('game.tictactoe.friend') || 'Friend' }
+              ]
+            },
+            {
+              key: 'first',
+              label: T('game.tictactoe.first') || 'Who goes first',
+              type: 'segmented',
+              options: [
+                { value: 'player', label: 'Player 1' },
+                { value: 'robot',  label: settings.opponent === 'friend' ? 'Player 2' : (T('game.tictactoe.robot') || 'Robot') }
+              ]
+            }
+          ],
+          onChange: function (key, val, all) {
+            settings = all;
+            saveSettings(all);
+          }
+        }
+      });
+      screen.appendChild(topbar);
+
+      // ── Body ────────────────────────────────────────────────────────────────
+      var body = document.createElement('div');
+      body.className = 'ttt-body';
+
+      // Status text
+      var statusEl = document.createElement('div');
+      statusEl.className = 'ttt-status';
+      body.appendChild(statusEl);
+
+      // Grid
+      var grid = document.createElement('div');
+      grid.className = 'ttt-grid';
+
+      var cellEls = [];
+      for (var i = 0; i < 9; i++) {
+        (function (idx) {
+          var cell = document.createElement('button');
+          cell.className = 'ttt-cell';
+          cell.textContent = board[idx] === 'P' ? '🐱' : board[idx] === 'R' ? '🐶' : '';
+          cell.disabled = board[idx] !== '' || gameOver;
+          cell.addEventListener('click', function () {
+            if (gameOver || board[idx] !== '') return;
+            if (settings.opponent === 'robot' && currentTurn === 'R') return;
+            if (APP.audio && APP.audio.sfx) APP.audio.sfx.click();
+            board[idx] = currentTurn;
+            var w = checkWinner(board);
+            if (w || isFull(board)) {
+              gameOver = true;
+              doRender();
+              if (w && APP.audio && APP.audio.sfx) APP.audio.sfx.pop();
+              return;
+            }
+            currentTurn = currentTurn === 'P' ? 'R' : 'P';
+            doRender();
+            if (settings.opponent === 'robot' && currentTurn === 'R') {
+              scheduleRobot();
+            }
+          });
+          grid.appendChild(cell);
+          cellEls.push(cell);
+        })(i);
+      }
+
+      // Highlight winning line
+      var winner = checkWinner(board);
+      if (winner) {
+        for (var li = 0; li < LINES.length; li++) {
+          var a = LINES[li][0], b = LINES[li][1], c = LINES[li][2];
+          if (board[a] === winner && board[b] === winner && board[c] === winner) {
+            cellEls[a].classList.add('winner');
+            cellEls[b].classList.add('winner');
+            cellEls[c].classList.add('winner');
+          }
+        }
+      }
+
+      body.appendChild(grid);
+
+      // Result or status
+      if (gameOver) {
+        var resultDiv = document.createElement('div');
+        resultDiv.className = 'ttt-result';
+        var msg = document.createElement('div');
+        msg.className = 'ttt-result-msg';
+        if (winner === 'P') {
+          msg.textContent = settings.opponent === 'friend'
+            ? '🐱 ' + (T('game.tictactoe.youWin') || 'You win!')
+            : (T('game.tictactoe.youWin') || 'You win!');
+        } else if (winner === 'R') {
+          msg.textContent = settings.opponent === 'friend'
+            ? '🐶 ' + (T('game.tictactoe.youWin') || 'You win!')
+            : (T('game.tictactoe.robotWins') || 'Good try — robot wins!');
+        } else {
+          msg.textContent = T('game.tictactoe.draw') || "It's a draw!";
+        }
+        resultDiv.appendChild(msg);
+
+        var againBtn = document.createElement('button');
+        againBtn.className = 'btn';
+        againBtn.textContent = T('ui.playAgain') || 'Play again';
+        againBtn.addEventListener('click', function () {
+          board = ['','','','','','','','',''];
+          currentTurn = (settings.first === 'robot') ? 'R' : 'P';
+          gameOver = false;
+          doRender();
+          if (settings.opponent === 'robot' && currentTurn === 'R') {
+            scheduleRobot();
+          }
+        });
+        resultDiv.appendChild(againBtn);
+        body.appendChild(resultDiv);
+        statusEl.textContent = '';
+      } else {
+        if (settings.opponent === 'robot') {
+          statusEl.textContent = currentTurn === 'P'
+            ? (T('game.tictactoe.yourTurn') || 'Your turn!')
+            : (T('game.tictactoe.robotThinking') || 'Thinking...');
+        } else {
+          statusEl.textContent = currentTurn === 'P'
+            ? (T('game.tictactoe.yourTurn') || 'Your turn!')
+            : (T('game.tictactoe.friendTurn') || "Friend's turn");
+        }
+      }
+
+      screen.appendChild(body);
+      root.appendChild(screen);
+    }
+
+    function scheduleRobot() {
+      setTimeout(function () {
+        if (gameOver) return;
+        var idx = robotMove(board);
+        if (idx === -1) return;
+        if (APP.audio && APP.audio.sfx) APP.audio.sfx.click();
+        board[idx] = 'R';
+        var w = checkWinner(board);
+        if (w || isFull(board)) {
+          gameOver = true;
+          doRender();
+          if (w && APP.audio && APP.audio.sfx) APP.audio.sfx.pop();
+          return;
+        }
+        currentTurn = 'P';
+        doRender();
+      }, 500);
+    }
+
+    doRender();
+
+    if (settings.opponent === 'robot' && currentTurn === 'R') {
+      scheduleRobot();
+    }
+  }
+
+  // ── Exports ─────────────────────────────────────────────────────────────────
+  APP.screens = APP.screens || {};
+  APP.screens.tictactoe = { render: render };
+
+  // Expose pure functions for unit tests
+  APP.tictactoe = {
+    robotMove: robotMove,
+    checkWinner: checkWinner
+  };
+
+})(window.APP);

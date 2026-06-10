@@ -1,7 +1,30 @@
 window.APP = window.APP || {};
 
 (function (APP) {
-  const HIT = 28; // snap radius in SVG units
+
+  // ── Adaptive dot metrics ─────────────────────────────────────────────────────
+  // Computes dot sizes based on minimum inter-dot distance in the puzzle.
+  function dotMetrics(dots) {
+    var minDist = Infinity;
+    for (var i = 0; i < dots.length - 1; i++) {
+      var dx = dots[i+1].x - dots[i].x, dy = dots[i+1].y - dots[i].y;
+      var d = Math.sqrt(dx*dx + dy*dy);
+      if (d < minDist) minDist = d;
+    }
+    if (dots.length > 1) {
+      var dx0 = dots[0].x - dots[dots.length-1].x, dy0 = dots[0].y - dots[dots.length-1].y;
+      var d0 = Math.sqrt(dx0*dx0 + dy0*dy0);
+      if (d0 < minDist) minDist = d0;
+    }
+    if (!isFinite(minDist) || minDist <= 0) minDist = 30;
+    return {
+      r:       Math.max(3.5, Math.min(6,   minDist * 0.28)),
+      rNext:   Math.max(5,   Math.min(11,  minDist * 0.40)),
+      rActive: Math.max(6,   Math.min(13,  minDist * 0.45)),
+      hit:     Math.max(12,  Math.min(28,  minDist * 0.50)),
+      label:   Math.max(6,   Math.min(8.5, minDist * 0.30))
+    };
+  }
 
   // ── Styles ──────────────────────────────────────────────────────────────────
 
@@ -58,6 +81,17 @@ window.APP = window.APP || {};
         color: var(--ink);
       }
       .dots-card .card-count { font-size: 0.8rem; color: #888; }
+      /* Difficulty section headings in picker */
+      .dots-difficulty-heading {
+        grid-column: 1 / -1;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #888;
+        padding: 6px 0 2px;
+        margin: 0;
+      }
       .dots-card.create-card {
         border: 3px dashed var(--muted);
         background: transparent;
@@ -204,22 +238,6 @@ window.APP = window.APP || {};
     return Math.hypot(a.x - b.x, a.y - b.y);
   }
 
-  function makeTopbar(title, onBack) {
-    const bar = document.createElement('div');
-    bar.className = 'topbar';
-    bar.innerHTML = `
-      <div class="group">
-        <button class="btn icon ghost" aria-label="Back">${APP.ICONS.back}</button>
-      </div>
-      <div class="group">
-        <span class="screen-title">${title}</span>
-      </div>
-      <div class="group" style="width:56px"></div>
-    `;
-    bar.querySelector('.btn.icon').addEventListener('click', onBack);
-    return bar;
-  }
-
   // ── Picker ───────────────────────────────────────────────────────────────────
 
   function previewSvg(puzzle) {
@@ -243,12 +261,38 @@ window.APP = window.APP || {};
 
   function renderPicker(wrap, ctx) {
     wrap.innerHTML = '';
-    wrap.appendChild(makeTopbar('Connect the Dots', () => ctx.go('landing')));
+
+    // Standard topbar
+    if (APP.ui && APP.ui.topbar) {
+      wrap.appendChild(APP.ui.topbar({
+        ctx: ctx,
+        title: (APP.t && APP.t('dots.title')) || 'Dot-to-Dot',
+        home: true,
+        back: true
+      }));
+    } else {
+      const bar = document.createElement('div');
+      bar.className = 'topbar';
+      bar.innerHTML = `<div class="group"><span class="screen-title">${(APP.t && APP.t('dots.title')) || 'Dot-to-Dot'}</span></div>`;
+      wrap.appendChild(bar);
+    }
 
     const body = document.createElement('div');
     body.className = 'dots-picker-body';
 
-    (APP.DOT_PUZZLES || []).forEach(puzzle => {
+    // Group puzzles by difficulty; missing difficulty defaults to 'easy'
+    const allPuzzles = APP.DOT_PUZZLES || [];
+    const easyPuzzles  = allPuzzles.filter(p => (p.difficulty || 'easy') === 'easy');
+    const trickyPuzzles = allPuzzles.filter(p => p.difficulty === 'tricky');
+
+    function addSectionHeading(label) {
+      const h = document.createElement('div');
+      h.className = 'dots-difficulty-heading';
+      h.textContent = label;
+      body.appendChild(h);
+    }
+
+    function addPuzzleCard(puzzle) {
       const card = document.createElement('div');
       card.className = 'dots-card';
       card.innerHTML = `
@@ -258,7 +302,16 @@ window.APP = window.APP || {};
       `;
       card.addEventListener('click', () => renderPlay(wrap, ctx, puzzle));
       body.appendChild(card);
-    });
+    }
+
+    if (easyPuzzles.length > 0) {
+      addSectionHeading((APP.t && APP.t('dots.easy')) || 'Easy');
+      easyPuzzles.forEach(addPuzzleCard);
+    }
+    if (trickyPuzzles.length > 0) {
+      addSectionHeading((APP.t && APP.t('dots.tricky')) || 'Tricky');
+      trickyPuzzles.forEach(addPuzzleCard);
+    }
 
     const createCard = document.createElement('div');
     createCard.className = 'dots-card create-card';
@@ -279,36 +332,49 @@ window.APP = window.APP || {};
     const vb = puzzle.viewBox || '0 0 200 200';
     const dots = puzzle.dots;
     const total = puzzle.closed ? dots.length : dots.length - 1;
+    const metrics = dotMetrics(dots);
     let connected = 0;
     let dragging = false;
     let showGuides = true;
 
     wrap.innerHTML = '';
 
-    // Topbar with guide toggle in the right slot
-    const bar = document.createElement('div');
-    bar.className = 'topbar';
-    bar.innerHTML = `
-      <div class="group">
-        <button class="btn icon ghost" id="dots-back" aria-label="Back">${APP.ICONS.home}</button>
-      </div>
-      <div class="group">
-        <span class="screen-title">${puzzle.name}</span>
-      </div>
-      <div class="group">
-        <button class="btn ghost" id="guide-toggle" style="font-size:0.85rem;min-width:0;padding:8px 10px;border-radius:12px;background:var(--accent);color:var(--accent-ink)">
-          ···  Guides
-        </button>
-      </div>
-    `;
-    bar.querySelector('#dots-back').addEventListener('click', () => renderPicker(wrap, ctx));
-    bar.querySelector('#guide-toggle').addEventListener('click', function () {
+    // Guide toggle button for the topbar right slot
+    const guideToggleBtn = document.createElement('button');
+    guideToggleBtn.className = 'btn ghost';
+    guideToggleBtn.style.cssText = 'font-size:0.85rem;min-width:0;padding:8px 10px;border-radius:12px;background:var(--accent);color:var(--accent-ink)';
+    guideToggleBtn.textContent = '··· Guides';
+    guideToggleBtn.addEventListener('click', function () {
       showGuides = !showGuides;
       guideLines.setAttribute('visibility', showGuides ? 'visible' : 'hidden');
       this.style.background = showGuides ? 'var(--accent)' : 'transparent';
       this.style.color = showGuides ? 'var(--accent-ink)' : '#aaa';
     });
-    wrap.appendChild(bar);
+
+    // Standard topbar with guide toggle in right slot
+    if (APP.ui && APP.ui.topbar) {
+      wrap.appendChild(APP.ui.topbar({
+        ctx: ctx,
+        title: puzzle.name,
+        home: false,
+        back: function () { renderPicker(wrap, ctx); },
+        right: [guideToggleBtn]
+      }));
+    } else {
+      const bar = document.createElement('div');
+      bar.className = 'topbar';
+      const backBtn = document.createElement('button');
+      backBtn.className = 'btn icon ghost';
+      backBtn.innerHTML = (APP.ICONS && APP.ICONS.back) || '&#8592;';
+      backBtn.addEventListener('click', () => renderPicker(wrap, ctx));
+      bar.appendChild(backBtn);
+      const titleEl = document.createElement('span');
+      titleEl.className = 'screen-title';
+      titleEl.textContent = puzzle.name;
+      bar.appendChild(titleEl);
+      bar.appendChild(guideToggleBtn);
+      wrap.appendChild(bar);
+    }
 
     const playBody = document.createElement('div');
     playBody.className = 'dots-play-body';
@@ -391,7 +457,7 @@ window.APP = window.APP || {};
           const pulse = document.createElementNS(NS, 'circle');
           pulse.setAttribute('cx', d.x);
           pulse.setAttribute('cy', d.y);
-          pulse.setAttribute('r', '20');
+          pulse.setAttribute('r', String(metrics.rActive + 7));
           pulse.setAttribute('fill', 'none');
           pulse.setAttribute('stroke', 'var(--primary)');
           pulse.setAttribute('stroke-width', '3');
@@ -399,10 +465,12 @@ window.APP = window.APP || {};
           g.appendChild(pulse);
         }
 
+        // r: used dot (small), rActive: active dot, rNext: next target dot, else r
+        const dotR = isUsed ? metrics.r : isActive ? metrics.rActive : metrics.rNext;
         const circle = document.createElementNS(NS, 'circle');
         circle.setAttribute('cx', d.x);
         circle.setAttribute('cy', d.y);
-        circle.setAttribute('r', isUsed ? '6' : isActive ? '13' : '11');
+        circle.setAttribute('r', String(dotR));
         circle.setAttribute('fill',
           isUsed ? 'var(--letter-done)' :
           isActive ? 'var(--primary)' :
@@ -420,7 +488,7 @@ window.APP = window.APP || {};
           label.setAttribute('y', d.y);
           label.setAttribute('text-anchor', 'middle');
           label.setAttribute('dominant-baseline', 'central');
-          label.setAttribute('font-size', '8.5');
+          label.setAttribute('font-size', String(metrics.label));
           label.setAttribute('font-weight', '700');
           label.setAttribute('fill', isActive ? '#fff' : 'var(--ink)');
           label.setAttribute('font-family', 'system-ui, sans-serif');
@@ -479,7 +547,7 @@ window.APP = window.APP || {};
       if (connected >= total) return;
       if (APP.audio && APP.audio._wake) APP.audio._wake();
       const p = clientToSvg(svg, e.clientX, e.clientY);
-      if (dist(p, src()) <= HIT) {
+      if (dist(p, src()) <= metrics.hit) {
         dragging = true;
         svg.setPointerCapture(e.pointerId);
         rubberBand.setAttribute('x1', src().x);
@@ -496,7 +564,7 @@ window.APP = window.APP || {};
       rubberBand.setAttribute('x2', p.x);
       rubberBand.setAttribute('y2', p.y);
 
-      if (dist(p, tgt()) <= HIT) {
+      if (dist(p, tgt()) <= metrics.hit) {
         addDoneLine(src(), tgt());
         if (APP.audio) APP.audio.strokeDone();
         connected++;
@@ -532,10 +600,31 @@ window.APP = window.APP || {};
   function renderAuthor(wrap, ctx) {
     wrap.innerHTML = '';
     let _resizeObs = null;
-    wrap.appendChild(makeTopbar('Create Puzzle', () => {
+    const onBack = function () {
       if (_resizeObs) { _resizeObs.disconnect(); _resizeObs = null; }
       renderPicker(wrap, ctx);
-    }));
+    };
+    if (APP.ui && APP.ui.topbar) {
+      wrap.appendChild(APP.ui.topbar({
+        ctx: ctx,
+        title: (APP.t && APP.t('dots.createTitle')) || 'Create Puzzle',
+        home: false,
+        back: onBack
+      }));
+    } else {
+      const bar = document.createElement('div');
+      bar.className = 'topbar';
+      const backBtn = document.createElement('button');
+      backBtn.className = 'btn icon ghost';
+      backBtn.innerHTML = (APP.ICONS && APP.ICONS.back) || '&#8592;';
+      backBtn.addEventListener('click', onBack);
+      bar.appendChild(backBtn);
+      const titleEl = document.createElement('span');
+      titleEl.className = 'screen-title';
+      titleEl.textContent = (APP.t && APP.t('dots.createTitle')) || 'Create Puzzle';
+      bar.appendChild(titleEl);
+      wrap.appendChild(bar);
+    }
 
     const authorBody = document.createElement('div');
     authorBody.className = 'dots-author-body';

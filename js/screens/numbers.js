@@ -15,22 +15,12 @@ window.APP = window.APP || {};
     wrap.className = 'numbers-screen';
 
     // ── Top bar ──
-    const bar = document.createElement('div');
-    bar.className = 'topbar';
-    bar.innerHTML = `
-      <div class="group">
-        <button class="btn icon ghost" data-act="home" aria-label="Home">${APP.ICONS.home}</button>
-      </div>
-      <div class="group">
-        <span class="screen-title">${APP.t('landing.numbers')}</span>
-      </div>
-    `;
-    wrap.appendChild(bar);
-
-    bar.querySelector('[data-act=home]').addEventListener('click', () => {
-      if (practiceTracer) { practiceTracer.destroy(); practiceTracer = null; }
-      ctx.go('landing');
-    });
+    wrap.appendChild(APP.ui.topbar({
+      ctx: ctx,
+      title: APP.t('landing.numbers'),
+      home: true,
+      back: true
+    }));
 
     // ── Body ──
     const body = document.createElement('div');

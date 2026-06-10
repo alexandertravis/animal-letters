@@ -19,21 +19,6 @@ window.APP = window.APP || {};
     wrap.className = 'devanimals';
 
     // ── Header ──────────────────────────────────────────────────────────────
-    const header = document.createElement('div');
-    header.className = 'devanimals-header';
-
-    const backBtn = document.createElement('button');
-    backBtn.className = 'btn icon ghost';
-    backBtn.setAttribute('aria-label', 'Back');
-    backBtn.innerHTML = APP.ICONS.back;
-    backBtn.addEventListener('click', () => {
-      if (testTracer) { testTracer.destroy(); testTracer = null; }
-      ctx.go('setup');
-    });
-
-    const title = document.createElement('h2');
-    title.textContent = 'Animal Review';
-
     // Toggle: Review | Test | Counts
     const toggleGrp = document.createElement('div');
     toggleGrp.className = 'toggle-group';
@@ -51,16 +36,18 @@ window.APP = window.APP || {};
       toggleGrp.appendChild(btn);
     });
 
-    const count = document.createElement('span');
-    count.className = 'devanimals-count';
     const _allAnimals = APP.animals ? APP.animals.eligibleAll() : APP.ANIMALS;
-    count.textContent = `${_allAnimals.length} animals`;
+    const countBadge = document.createElement('span');
+    countBadge.className = 'devanimals-count';
+    countBadge.textContent = _allAnimals.length + ' animals';
 
-    header.appendChild(backBtn);
-    header.appendChild(title);
-    header.appendChild(toggleGrp);
-    header.appendChild(count);
-    wrap.appendChild(header);
+    wrap.appendChild(APP.ui.topbar({
+      ctx: ctx,
+      title: 'Animal Review',
+      home: true,
+      back: 'setup',
+      right: [toggleGrp, countBadge]
+    }));
 
     // ── Body (swapped on toggle) ─────────────────────────────────────────────
     function draw() {
