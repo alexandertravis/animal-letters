@@ -231,7 +231,7 @@ describe('APP.skipAnimal', () => {
     expect(APP.state.currentAnimal.name).not.toBe(originalName);
   });
 
-  it('sets screen to "landing" when no eligible animals remain', () => {
+  it('sets screen to "map" when no eligible animals remain', () => {
     // Replace ANIMALS with an empty array so pickRandom returns null.
     APP.ANIMALS = [];
     const original = makeAnimal({ name: 'CAT', displayName: 'Cat' });
@@ -239,7 +239,7 @@ describe('APP.skipAnimal', () => {
 
     APP.skipAnimal();
 
-    expect(APP.state.screen).toBe('landing');
+    expect(APP.state.screen).toBe('map');
   });
 
   it('resets letterIndex to 0 and completedLetters to [] on skip', () => {
@@ -291,12 +291,12 @@ describe('APP.startGame — screen', () => {
 // APP.goHome
 // ---------------------------------------------------------------------------
 describe('APP.goHome', () => {
-  it('sets screen to "landing" regardless of current screen', () => {
+  it('sets screen to "map" regardless of current screen', () => {
     APP.state.screen = 'complete';
 
     APP.goHome();
 
-    expect(APP.state.screen).toBe('landing');
+    expect(APP.state.screen).toBe('map');
   });
 });
 
@@ -339,7 +339,7 @@ describe('APP.setState', () => {
 
     expect(APP.state.currentPage).toBe(0);
     expect(APP.state.libraryTheme).toBe('walnut'); // untouched
-    expect(APP.state.screen).toBe('landing');       // untouched
+    expect(APP.state.screen).toBe('landing');      // untouched — beforeEach resets to 'landing'
   });
 
   it('applies multiple keys from the patch in one call', () => {
