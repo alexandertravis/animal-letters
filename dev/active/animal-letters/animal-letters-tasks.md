@@ -356,3 +356,18 @@
 - [x] Merged claude/branch-status-check-f240A → main (dot-to-dot)
 - [x] All remote feature branches deleted — only `origin/main` remains
 - [x] Pushed merged main to origin (current HEAD: d34c3f9)
+
+## Section 33 — Phase 1 Overhaul: Shared Infrastructure (branch: claude/continue-task-gmhwx0)
+- [x] `js/store.js` — APP.store localStorage wrapper (Step 1)
+- [x] `js/settings.js` rework — persistent al.global + al.game.letters, per-game registry, sfxVol/bgMusicVol/bgMusicEnabled (Step 2)
+- [x] `js/state.js` — DEFAULT_SETTINGS gains sfxVol, sfxMuted, lastSfxVol, bgMusicVol, bgMusicEnabled (Step 2)
+- [x] `js/audio.js` rework — sfxMaster/bgMaster split; APP.audio.sfx (click/wrong/pop/tone2); APP.audio.music (play/stop/setVol/setEnabled, 6 tracks); backward compat (Step 3)
+- [x] `js/ui.js` — APP.ui.topbar, settingsPanel, bigButton, defaultBackTarget, isShortLandscape (Step 4)
+- [x] `styles.css` — Phase 1 bounded CSS section (std-topbar, bigbtn, ui-modal, map-screen, loc-screen); painting CSS vars (Step 5)
+- [x] `data/i18n.js` — ~80 new keys in all 6 locales (en/pt/fr/es/de/it): ui.*, map.*, loc.*, school.*, audio.*, puzzles.*, dots.*, game.tictactoe.*, game.memory.*, game.maze.*, game.shapes.*, game.colours.*, game.washing.*, game.music.*, colour.* (Step 6)
+- [x] `data/locations.js` — APP.LOCATIONS registry + APP.locationOf() (Step 7)
+- [x] 9 stub screens: map, location, tictactoe, memory, maze, shapes, colours, washing, music (Step 8)
+- [x] `index.html` — store.js before state.js; ui.js after icons.js; locations.js; all new screen stubs (Step 9)
+- [x] `js/main.js` — APP.settings.load() on boot (Step 10)
+- [x] `CLAUDE.md` — Phase 1 architecture section (Step 11)
+- [x] `tests/store.test.js` + `tests/settings.test.js` — 15 new tests; all 166 pass (Step 12)

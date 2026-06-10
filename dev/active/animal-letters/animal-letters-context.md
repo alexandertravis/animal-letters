@@ -446,3 +446,23 @@ NEXT STEP: Consider adding remaining story illustrations (Three Little Pigs page
 Blockers: none
 Half-finished: none
 Security flags added: none
+
+## Session Summary — Phase 1 Overhaul (2026-06-10)
+Completed all 12 steps of Phase 1 shared infrastructure:
+1. `js/store.js` — APP.store localStorage wrapper (get/set/remove with JSON + error handling)
+2. `js/settings.js` rework — persistent settings (al.global, al.game.letters), per-game registry, sfxVol/sfxMuted/bgMusicVol/bgMusicEnabled keys, legacy alias sync
+3. `js/audio.js` rework — split sfxMaster/bgMaster gain nodes; APP.audio.sfx namespace (click/wrong/pop + tone2 ramp); APP.audio.music namespace (play/stop/setVol/setEnabled with 6 WebAudio background tracks); backward compat preserved
+4. `js/ui.js` — APP.ui.topbar (std-topbar grid, smart back), APP.ui.settingsPanel (declarative modal), APP.ui.bigButton, APP.ui.defaultBackTarget, APP.ui.isShortLandscape
+5. `styles.css` — bounded Phase 1 section appended; painting refactored to --paint-topbar-w / --paint-rail-w CSS vars
+6. `data/i18n.js` — ~80 new keys in all 6 locales (en/pt/fr/es/de/it)
+7. `data/locations.js` — APP.LOCATIONS registry + APP.locationOf()
+8. 9 stub screens — map, location, tictactoe, memory, maze, shapes, colours, washing, music
+9. `index.html` — store.js before state.js; ui.js after icons.js; all new scripts added
+10. `js/main.js` — APP.settings.load() called on boot
+11. `CLAUDE.md` — Phase 1 architecture section added
+12. Tests — store.test.js (3) + settings.test.js (12) = 15 new tests; all 166 tests pass
+
+NEXT STEP: Phase 2 — implement real map screen, location sub-menu, and connect landing to map as default.
+Blockers: none
+Half-finished: none
+Security flags added: none
