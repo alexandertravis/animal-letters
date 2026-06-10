@@ -345,8 +345,7 @@
 - [x] Flow-on drag (draw line while dragging between dots) + faint guide lines
 - [x] Guide lines toggle button in play view
 - [x] Merged to main (commit d34c3f9)
-- [x] Review dots.js architecture — notes added to animal-letters-context.md (2026-06-10)
-- [x] Add 4 new built-in dot puzzles: Crown, Tree, Arrow, Moon (`data/dotPuzzles.js`)
+- [ ] Review dots.js architecture — no dev docs created for this branch; add context notes if extending
 
 ## Section 32 — Branch Cleanup (2026-06-01)
 - [x] Merged feature/painting (was already merged, deleted local + remote)
@@ -357,59 +356,14 @@
 - [x] All remote feature branches deleted — only `origin/main` remains
 - [x] Pushed merged main to origin (current HEAD: d34c3f9)
 
-## Section 33 — Phase 1 Overhaul: Shared Infrastructure (branch: claude/continue-task-gmhwx0)
-- [x] `js/store.js` — APP.store localStorage wrapper (Step 1)
-- [x] `js/settings.js` rework — persistent al.global + al.game.letters, per-game registry, sfxVol/bgMusicVol/bgMusicEnabled (Step 2)
-- [x] `js/state.js` — DEFAULT_SETTINGS gains sfxVol, sfxMuted, lastSfxVol, bgMusicVol, bgMusicEnabled (Step 2)
-- [x] `js/audio.js` rework — sfxMaster/bgMaster split; APP.audio.sfx (click/wrong/pop/tone2); APP.audio.music (play/stop/setVol/setEnabled, 6 tracks); backward compat (Step 3)
-- [x] `js/ui.js` — APP.ui.topbar, settingsPanel, bigButton, defaultBackTarget, isShortLandscape (Step 4)
-- [x] `styles.css` — Phase 1 bounded CSS section (std-topbar, bigbtn, ui-modal, map-screen, loc-screen); painting CSS vars (Step 5)
-- [x] `data/i18n.js` — ~80 new keys in all 6 locales (en/pt/fr/es/de/it): ui.*, map.*, loc.*, school.*, audio.*, puzzles.*, dots.*, game.tictactoe.*, game.memory.*, game.maze.*, game.shapes.*, game.colours.*, game.washing.*, game.music.*, colour.* (Step 6)
-- [x] `data/locations.js` — APP.LOCATIONS registry + APP.locationOf() (Step 7)
-- [x] 9 stub screens: map, location, tictactoe, memory, maze, shapes, colours, washing, music (Step 8)
-- [x] `index.html` — store.js before state.js; ui.js after icons.js; locations.js; all new screen stubs (Step 9)
-- [x] `js/main.js` — APP.settings.load() on boot (Step 10)
-- [x] `CLAUDE.md` — Phase 1 architecture section (Step 11)
-- [x] `tests/store.test.js` + `tests/settings.test.js` — 15 new tests; all 166 pass (Step 12)
-
-## Section 34 — Phase 1b: Topbar Migration + New Game Screens (branch: claude/continue-task-gmhwx0)
-- [x] Migrate 8 screens to `APP.ui.topbar`: gallery, progress, letters, numbers, devanimals, library, storyreader, painting (Phase 1b-ii)
-- [x] Migrate game, findletter, complete to `APP.ui.topbar`; repurpose setup as "Parent Corner" with Music + SFX controls (Phase 1b-i)
-- [x] `js/screens/tictactoe.js` — Tic Tac Toe game (vs. computer, difficulty levels)
-- [x] `js/screens/memory.js` — Memory/concentration card-matching game
-- [x] `js/screens/maze.js` — Maze navigation game with SVG path drawing
-- [x] `js/screens/shapes.js` — Shape-tracing / recognition game
-- [x] `js/screens/colours.js` — Colour-matching / learning game
-- [x] `js/screens/washing.js` — Clothes-sorting / washing game
-- [x] `js/screens/music.js` — Instrument / music game
-- [x] `fix(recipes)`: anchor animations to live `getBoundingClientRect` so layout adapts to any viewport
-- [x] Dots: add difficulty levels, adaptive metrics (viewBox, dot radius, hit radius), compact setup panel
-- [x] Puzzles: adapt to adaptive metrics in setup
-
-## Section 35 — Phase 2: Map Home Screen + Location Sub-Menus (branch: claude/continue-task-gmhwx0)
-- [x] `js/screens/map.js` — illustrated village map home screen; `APP.screens.map`
-- [x] `js/screens/location.js` — generic location sub-menu screen; `APP.screens.location`
-- [x] `data/locations.js` — `APP.LOCATIONS` registry with location descriptors (`id`, `labelKey`, `direct`, `bgTrack`, `games[]`); `APP.locationOf(screenName)` helper
-- [x] `js/state.js` — default screen set to `'map'`; `APP.goHome` → `'map'`
-
-## Section 36 — Phase 3: Integration + Cleanup (2026-06-10)
-- [x] Dead CSS sweep — removed `.gallery-header`, `.setup-topbar`, `.painting-topbar`, `.painting-topbar-actions` rules (all migrated to `std-topbar`); `.recipes-topbar`, `.pz-setup*` kept (still in use)
-- [x] `index.html` script order verified and fixed: added `js/store.js` (before state.js), `js/ui.js` (after icons.js), all 7 missing game screens (tictactoe, memory, maze, shapes, colours, washing, music)
-- [x] `js/main.js` — `APP.settings.load()` call confirmed present after `APP.loadLocale()`
-- [x] Dev docs updated — Phase 2 tasks marked complete; Phase 3 session summary added; context.md current state updated
-
-## Section 37 — Merge to main + Dev Doc Completion (2026-06-10)
-- [x] Branch `claude/continue-task-gmhwx0` merged to `main` via merge commit `31f2321`
-- [x] All 193 tests passing (`npm test` — vitest + jsdom): 15 store/settings, 30 tictactoe, 30 maze, 103 dots, 15 settings; existing tracer/letterData suites untouched
-- [x] `dev/active/animal-letters/animal-letters-context.md` — Key Files table replaced with full Phase 1 architecture; screen table entry points corrected (Shapes/Colours/Washing → Games Room; Music → Music Shed direct; Painting → Art Studio direct; Gallery → Animal Park direct); stale NEXT STEP removed; session end + summary added
-- [x] `dev/active/animal-letters/animal-letters-tasks.md` — this section added; no outstanding Phase 1–3 tasks
-
-## Section 11b — Future / Nice-to-Have (carried forward)
-- [ ] Story illustrations: Three Little Pigs pages 4–11 + remaining 7 stories
-- [ ] Per-page `frame` variants in `data/stories/*.js` (Phase 3 deferred)
-- [ ] Real cartoon SVG artwork for all animals
-- [ ] Real animal audio MP3s for all animals
-- [ ] Additional animals (target: full A–Z first-letter coverage)
-- [ ] Accessibility audit (ARIA labels, keyboard fallback for all new games)
-- [ ] Add new language: create `APP.I18N.LOCALES` entry + translation object in `data/i18n.js` + `data/animals-XX.js`
-- [ ] Wave 2 games (need authored scenes): spot-the-difference, find-missing-object, shadow matching, Simon-says, balloon-pop counting
+## Section 33 — Codebase Review & Bug Fixes (main, 2026-06-01)
+- [x] **game.js** — cancel pending `_advanceTimer` setTimeout on Home/Settings/Skip before navigation
+- [x] **findletter.js** — cancel pending `_advanceTimer` 600ms setTimeout on Home/Settings/Skip
+- [x] **storyreader.js** — guard `story.requirements[0].animalId` access; falls back to `'cat'` if undefined
+- [x] **recipes.js** — re-append `kitchenBg` after `stage.innerHTML = ''` in `setStep()`; add `cleanBodyEls()` to remove orphaned body-appended animation elements on Back/step-change
+- [x] **puzzles.js** — kill GSAP tweens (`G.killTweensOf('*')`) on Back before navigation
+- [x] **dots.js** — null-check `getScreenCTM()` in `clientToSvg`; fix Back topbar icon (`home` → `back`); disconnect ResizeObserver in `renderAuthor` before navigating away
+- [x] **tests/setup.js** — reset `APP.state.letterMastery = {}` in `beforeEach`
+- [x] **tests/state.test.js** — add 17 new tests: `APP.activeTheme`, `APP.activeBookSkin`, `APP.recordLetterTrace`
+- [x] **tests/utils.test.js** — add 9 new tests: `APP.animalId`, `APP.starsHtml`, `APP.getUnlockedStories`
+- [x] All 151 tests passing; committed `46a37c5` and pushed to main

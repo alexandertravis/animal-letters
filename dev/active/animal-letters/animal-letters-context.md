@@ -2,64 +2,27 @@
 
 ## Key Files
 
-### Core infrastructure
 | File | Role |
 |---|---|
 | `index.html` | Entry point. Script load order is strictly enforced — do not reorder tags. |
-| `styles.css` | Global layout, colours (CSS vars), animations. Phase 1 overhaul section at bottom (`.std-topbar`, `.bigbtn`, `.ui-modal`, map/location CSS). |
-| `CLAUDE.md` | Architecture reference committed to repo. Keep in sync with actual code. |
+| `styles.css` | All layout, colours (CSS vars), animations. Guide animation via `@keyframes marching`. |
+| `data/animals.js` | Sets `window.APP.ANIMALS[]`. 25 animals, 3–6 letter names. Edit here to add animals. |
+| `js/state.js` | Central state object. `APP.startGame()`, `APP.advanceLetter()`, `APP.skipAnimal()`. `completedAnimals` is a `Set` populated only on full word completion. |
+| `js/audio.js` | Web Audio API synthesiser. `_wake()` on first gesture, `strokeDone()`, `letterDone()`, `wordDone()`, `playComplete(src)`. |
+| `js/letterData.js` | 52 glyphs (A–Z, a–z). Each: `{ viewBox, strokes: [{ d }] }`. Hand-authored SVG paths. |
+| `js/tracer.js` | Core mechanic. Mounts 5-layer SVG, samples checkpoints, handles pointer events. Constants: `STROKE_WIDTH=48`, `INK_WIDTH=44`, `TOLERANCE=32`, `DRAW_RADIUS=52`, `CHECKPOINTS_PER_STROKE=18`. |
+| `js/animals.js` | `APP.animals.pickRandom(maxLength, exclude)` — picks a random animal whose name length ≤ maxLength. |
+| `js/settings.js` | In-memory settings, no persistence. |
 | `js/main.js` | Screen router. Reads `APP.state.screen`, calls `APP.screens[name].render(root, ctx)`. |
-| `js/state.js` | Central state: `APP.startGame()`, `APP.advanceLetter()`, `APP.skipAnimal()`. Default screen = `'map'`. `APP.goHome` → `'map'`. |
-| `js/store.js` | `APP.store.get(key,fb)` / `.set(key,val)` / `.remove(key)` — JSON + try/catch localStorage wrapper. |
-| `js/settings.js` | `APP.settings.load/update/get/game/saveGame/updateGame`. Persists to `al.global` (sfxVol/sfxMuted/bgMusicVol/bgMusicEnabled) and `al.game.<id>`. Legacy aliases: `volume↔sfxVol`, `muted↔sfxMuted`. |
-| `js/audio.js` | Web Audio synth. `APP.audio.sfx.*` (strokeDone/letterDone/wordDone/playComplete/click/wrong/pop + setVol/setMuted). `APP.audio.music.*` (play/stop/setVol/setEnabled). `APP.audio.master()` → sfxMaster GainNode. |
-| `js/ui.js` | `APP.ui.topbar(opts)` (.std-topbar, smart back), `.settingsPanel(opts)` (modal from schema), `.bigButton(opts)`, `.isShortLandscape()`, `.defaultBackTarget()`. |
-| `js/icons.js` | `APP.ICONS` SVG icon system (currentColor, used by all button elements). |
-
-### Data
-| File | Role |
-|---|---|
-| `data/animals.js` | `APP.ANIMALS[]`. 25 animals, 3–6 letter names. |
-| `data/animals-pt.js` | Portuguese locale animal list. |
-| `data/i18n.js` | `APP.I18N`, `APP.t(key,vars)`, `APP.setLocale()`. 6 locales (en/pt/fr/es/de/it). ~200+ keys. |
-| `data/locations.js` | `APP.LOCATIONS[]` (7 locations) + `APP.locationOf(screenName)`. Each location: `{id, labelKey, bgTrack, direct, games[]}`. |
-| `data/stories.js` | 8 unlockable story definitions. |
-| `data/dotPuzzles.js` | `APP.DOT_PUZZLES[]` — built-in dot-to-dot puzzles (easy + tricky difficulty). |
-
-### Game engine
-| File | Role |
-|---|---|
-| `js/letterData.js` | 52 glyphs (A–Z, a–z) + 22 accented chars. `APP.GUIDE_CONFIG`, `APP.getLetterYTransform(char)`. |
-| `js/tracer.js` | 5-layer SVG stack, checkpoint sampling, pointer events. Constants: `STROKE_WIDTH=48`, `TOLERANCE=32`, `DRAW_RADIUS=52`. |
-| `js/animals.js` | `APP.animals.pickRandom(maxLength, exclude)`, `eligibleAll()`. |
-
-### Screens
-| File | Role |
-|---|---|
-| `js/screens/map.js` | Village map home screen. 7 building buttons. Calls `APP.audio.music.play('map')`. |
-| `js/screens/location.js` | Generic location sub-menu. Renders bigButton grid from `APP.LOCATIONS`. |
-| `js/screens/game.js` | Letter-tracing game. Gear → letter settings. |
-| `js/screens/findletter.js` | Find the Letter — tap the right letter from 4 choices. |
-| `js/screens/complete.js` | Hooray screen, star badge, story unlock banner. |
-| `js/screens/gallery.js` | Animal gallery. Locked/unlocked tiles. |
-| `js/screens/setup.js` | Parent Corner (Settings). Music + SFX sliders. Locale picker. |
-| `js/screens/progress.js` | Letter mastery progress tracker. |
-| `js/screens/letters.js` | Letter Patterns review. |
-| `js/screens/numbers.js` | Numbers screen. |
-| `js/screens/library.js` | Story library bookshelf. |
-| `js/screens/storyreader.js` | Book animation reader (3D leaf flip). |
-| `js/screens/painting.js` | Paint canvas (brush/eraser/fill/sticker/undo). |
-| `js/screens/recipes.js` | Interactive recipes with animated cooking steps. |
-| `js/screens/puzzles.js` | Jigsaw/shapes/emoji puzzle modes. |
-| `js/screens/dots.js` | Connect-the-dots with authoring tool. |
-| `js/screens/tictactoe.js` | Tic-Tac-Toe (🐱 vs 🐶). `APP.tictactoe.checkWinner/robotMove`. |
-| `js/screens/memory.js` | Memory pairs (3D flip). |
-| `js/screens/maze.js` | SVG maze. `APP.maze.generateMaze(N, seed)` via seeded LCG. |
-| `js/screens/shapes.js` | Shape Sorter — drag shapes to matching holes. |
-| `js/screens/colours.js` | Colour Sort — drag objects to colour baskets. |
-| `js/screens/washing.js` | Washing Reveal — scrub mud canvas via destination-out. |
-| `js/screens/music.js` | Music Shed — keyboard / drums / shakers. Stops background music. |
-| `js/screens/devanimals.js` | Dev tool: Animal Review + Counts tabs. |
+| `js/screens/landing.js` | Landing screen. New Game / Continue / My Animals / Settings buttons. |
+| `js/screens/setup.js` | Setup screen. Max length slider, case/depiction/reveal toggles, Start button. |
+| `js/screens/game.js` | Game screen. Mounts tracer, builds name strip, handles letter advance and completion. |
+| `js/screens/complete.js` | Complete screen. Shows animal image, fires `playComplete()`, Next / Gallery / Home. |
+| `js/screens/gallery.js` | Gallery screen. Fixed 140px tile grid. Locked: underscores + greyed peek-of-head. Unlocked: full centred image + display name. |
+| `assets/images/cartoon/` | 25 SVG placeholder files (simple shapes, no real art). |
+| `assets/images/realistic/` | Empty — user supplies real images. |
+| `assets/audio/` | Empty — user supplies real MP3s. Missing audio is silently skipped. |
+| `CLAUDE.md` | Architecture reference committed to repo. Keep in sync with actual code. |
 
 ## Decisions Log
 
@@ -427,149 +390,21 @@ Security flags added: none
 
 ---
 
-## Connect the Dots Feature (`js/screens/dots.js`) — Architecture Notes (2026-06-10)
+## Constraints & Gotchas (navigation safety — added 2026-06-01)
+- **Timer cancellation pattern**: Any screen that fires a `setTimeout` after user interaction must store the timer ID in a module-scoped `let _advanceTimer = null;` and cancel it before every `ctx.go(...)` call. Failure allows the callback to fire on the wrong screen. Pattern used in: `game.js`, `findletter.js`.
+- **GSAP cleanup before navigation**: Screens using GSAP must call `G.killTweensOf('*')` before `ctx.go(...)`. Failure leaves tweens running against detached DOM nodes. Pattern used in: `puzzles.js`, `recipes.js`.
+- **Body-appended animation elements**: `recipes.js` appends elements directly to `document.body` for absolute-positioned GSAP animations. These must be removed via `cleanBodyEls()` before any navigation and at the start of `setStep()`, because `killTweensOf('*')` cancels tweens without firing their `onComplete` cleanup callbacks.
+- **ResizeObserver disconnect**: Any ResizeObserver created inside a render function must be disconnected before navigating away. Store the reference in a local `let _resizeObs = null;` and call `_resizeObs.disconnect()` in all exit paths. Pattern used in: `dots.js` `renderAuthor`.
+- **`getScreenCTM()` can return null**: On unmounted or detached SVGs, `getScreenCTM()` returns `null`. Always null-check before calling `.inverse()`. Fixed in `dots.js` `clientToSvg`.
+- **`storyreader.js` requirements guard**: `story.requirements` may be undefined (no-prereq stories). Always guard: `story.requirements && story.requirements[0] && story.requirements[0].animalId`.
 
-### Key files
-| File | Role |
-|---|---|
-| `js/screens/dots.js` | Single-file screen IIFE. Injects its own `<style>` tag on first render. |
-| `data/dotPuzzles.js` | Sets `APP.DOT_PUZZLES[]`. Built-in puzzles. Author tool pushes custom entries at runtime (session-only). |
-
-### Internal architecture
-The screen has three sub-views, all rendered into a single `.dots-screen` wrapper div (replacing its `innerHTML`):
-
-1. **`renderPicker(wrap, ctx)`** — scrollable grid of `.dots-card` tiles, one per `APP.DOT_PUZZLES` entry, plus a "Create your own" card. Clicking a card calls `renderPlay`; clicking Create calls `renderAuthor`. Preview SVGs are generated inline with a faint polyline and numbered dot circles.
-
-2. **`renderPlay(wrap, ctx, puzzle)`** — the game. Layered SVG groups in z-order:
-   - `bgImg` (optional faint background image, opacity 0.2 during play, 1.0 on complete)
-   - `guideLines` group — remaining connections as dashed grey lines (toggle via "Guides" button)
-   - `doneLines` group — completed connections as solid blue lines
-   - `rubberBand` — single dashed line from current source dot to pointer position (opacity 0 when not dragging)
-   - `dotGroup` — all dots re-rendered on each state change (active = large + pulsing ring, future = medium grey, done = small blue)
-
-   **Interaction**: single pointer drag. `pointerdown` near the source dot (`HIT = 28` SVG units) starts drag + pointer capture. `pointermove` updates rubber band and snaps when pointer is within `HIT` of the target. On snap: draw done line, increment `connected`, redraw guide + dots. **Flow-on**: rubber band reanchors to new source immediately — child doesn't lift finger between dots. `pointerup` / `pointercancel` cancels drag.
-
-3. **`renderAuthor(wrap, ctx)`** — authoring tool. 400×400 `<canvas>` (fixed internal size, CSS-scaled). `pointerdown` on canvas places a dot; coordinates are halved (`/2`) to normalise to the 200×200 viewBox. Numbered labels are `position:absolute` divs in the canvas wrapper, synced via `syncLabels()` on click + `ResizeObserver`. Upload via `FileReader` → `drawImage`. "Save & Play" pushes to `APP.DOT_PUZZLES` and immediately calls `renderPlay`.
-
-### Puzzle data format
-```js
-{
-  id: 'unique-id',       // string
-  name: 'Display Name',  // shown in card + topbar
-  viewBox: '0 0 200 200', // always 200×200 for built-in puzzles
-  closed: true,          // true = last dot connects back to first
-  image: null,           // null or data-URL (set by author tool for image-backed puzzles)
-  dots: [{ x, y }, ...]  // in connection order, viewBox coordinates
-}
-```
-
-### Cleanup / lifecycle
-- No explicit `destroy()` — event listeners live on elements that are removed when `wrap.innerHTML = ''`.
-- **One exception**: `renderAuthor` creates a `ResizeObserver` (`_resizeObs`) that must be manually disconnected. It's stored as a local closure variable and disconnected on the back button click. This pattern must be preserved if `renderAuthor` is extended.
-- `injectStyles()` is idempotent (checks for `#dots-css`).
-
-### Constraints & Gotchas
-- **`clientToSvg()` in dots.js is a local copy** of the same helper in `tracer.js`. If coordinate mapping logic needs changing, update both.
-- **Author canvas is fixed 400×400** internally (not DPR-aware). This is deliberate — the canvas is only used for layout reference, not final art. Coordinates are halved to 200×200, so `canvas.width/height` must stay at 400 for the normalisation to hold.
-- **Custom puzzles are session-only**: `APP.DOT_PUZZLES.push(puzzle)` adds to the runtime array only. On page reload, only the built-in puzzles in `data/dotPuzzles.js` survive.
-- **`puzzle.image` on built-in puzzles is `null`**: only author-created puzzles carry a data-URL image. The `bgImg` SVG `<image>` element is only created when `puzzle.image` is truthy.
-
-## Session Summary — 2026-06-10
-Completed:
-1. Reviewed dots.js architecture — notes added above.
-2. Added 4 new built-in dot puzzles to `data/dotPuzzles.js`: Crown, Tree, Arrow, Moon.
-3. Merged iPad portrait/landscape optimisation (puzzle + painting) from claude/continue-task-gmhwx0 to main.
-NEXT STEP: Consider adding remaining story illustrations (Three Little Pigs pages 4–11, then other stories). No active code tasks.
-Blockers: none
-Half-finished: none
-Security flags added: none
-
-## Session Summary — Phase 1 Overhaul (2026-06-10)
-Completed all 12 steps of Phase 1 shared infrastructure:
-1. `js/store.js` — APP.store localStorage wrapper (get/set/remove with JSON + error handling)
-2. `js/settings.js` rework — persistent settings (al.global, al.game.letters), per-game registry, sfxVol/sfxMuted/bgMusicVol/bgMusicEnabled keys, legacy alias sync
-3. `js/audio.js` rework — split sfxMaster/bgMaster gain nodes; APP.audio.sfx namespace (click/wrong/pop + tone2 ramp); APP.audio.music namespace (play/stop/setVol/setEnabled with 6 WebAudio background tracks); backward compat preserved
-4. `js/ui.js` — APP.ui.topbar (std-topbar grid, smart back), APP.ui.settingsPanel (declarative modal), APP.ui.bigButton, APP.ui.defaultBackTarget, APP.ui.isShortLandscape
-5. `styles.css` — bounded Phase 1 section appended; painting refactored to --paint-topbar-w / --paint-rail-w CSS vars
-6. `data/i18n.js` — ~80 new keys in all 6 locales (en/pt/fr/es/de/it)
-7. `data/locations.js` — APP.LOCATIONS registry + APP.locationOf()
-8. 9 stub screens — map, location, tictactoe, memory, maze, shapes, colours, washing, music
-9. `index.html` — store.js before state.js; ui.js after icons.js; all new scripts added
-10. `js/main.js` — APP.settings.load() called on boot
-11. `CLAUDE.md` — Phase 1 architecture section added
-12. Tests — store.test.js (3) + settings.test.js (12) = 15 new tests; all 166 tests pass
-
-## Session Summary — Phase 1b + Phase 2 + Phase 3 (2026-06-10)
-
-### Phase 1b: Topbar Migration + New Game Screens
-- All screens migrated to `APP.ui.topbar` (std-topbar): gallery, progress, letters, numbers, devanimals, library, storyreader, painting, game, findletter, complete
-- `js/screens/setup.js` repurposed as "Parent Corner" with Music + SFX sliders/toggles using `APP.ui.settingsPanel`
-- New game screens implemented: `tictactoe.js`, `memory.js`, `maze.js`, `shapes.js`, `colours.js`, `washing.js`, `music.js`
-- Recipes animation fix: positions anchored to live `getBoundingClientRect`
-- Dots: difficulty levels + adaptive metrics (viewBox, dot/hit radius); compact setup panel
-
-### Phase 2: Map Home Screen + Location Sub-Menus
-- `js/screens/map.js` — illustrated village map replacing the landing screen as default home
-- `js/screens/location.js` — generic location sub-menu with `APP.ui.bigButton` game tiles
-- `data/locations.js` — `APP.LOCATIONS` registry with 5 locations; `APP.locationOf()` helper
-- `js/state.js` — default screen set to `'map'`; `APP.goHome → 'map'`
-
-### Phase 3: Integration + Cleanup (2026-06-10)
-- Dead CSS sweep: removed `.gallery-header`, `.setup-topbar`, `.painting-topbar`, `.painting-topbar-actions` (all migrated); kept `.recipes-topbar`, `.pz-setup*` (still active)
-- `index.html` script order fixed: added `js/store.js` (before state.js), `js/ui.js` (after icons.js), 7 new game screen tags (tictactoe through music)
-- `js/main.js` — `APP.settings.load()` confirmed present after `APP.loadLocale()`
-
-## Current State (as of 2026-06-10 Phase 3 complete)
-
-### Screens
-| Screen | File | Entry point |
-|---|---|---|
-| Village map | `js/screens/map.js` | Default home (`APP.state.screen = 'map'`) |
-| Location sub-menu | `js/screens/location.js` | Map building tiles (multi-game locations) |
-| Animal Letters game | `js/screens/game.js` | Map → School |
-| Find the Letter | `js/screens/findletter.js` | Map → School |
-| Letter Patterns | `js/screens/letters.js` | Map → School |
-| Numbers | `js/screens/numbers.js` | Map → School |
-| Story Library | `js/screens/library.js` | Map → Library (direct) |
-| Story Reader | `js/screens/storyreader.js` | Library screen |
-| Recipes | `js/screens/recipes.js` | Map → Kitchen (direct) |
-| Painting | `js/screens/painting.js` | Map → Art Studio (direct) |
-| Puzzles | `js/screens/puzzles.js` | Map → Games Room |
-| Connect the Dots | `js/screens/dots.js` | Map → Games Room |
-| Tic Tac Toe | `js/screens/tictactoe.js` | Map → Games Room |
-| Memory | `js/screens/memory.js` | Map → Games Room |
-| Maze | `js/screens/maze.js` | Map → Games Room |
-| Shapes | `js/screens/shapes.js` | Map → Games Room |
-| Colours | `js/screens/colours.js` | Map → Games Room |
-| Washing | `js/screens/washing.js` | Map → Games Room |
-| Music | `js/screens/music.js` | Map → Music Shed (direct) |
-| Gallery | `js/screens/gallery.js` | Map → Animal Park (direct) or complete screen |
-| Progress | `js/screens/progress.js` | Map gear |
-| Parent Corner (settings) | `js/screens/setup.js` | Map gear |
-| Dev Animals | `js/screens/devanimals.js` | Parent Corner dev tools |
-
-### New APIs
-- `APP.store` — localStorage wrapper (`js/store.js`)
-- `APP.settings.load()` / `.update()` / `.get()` / `.game()` / `.saveGame()` / `.updateGame()` (`js/settings.js`)
-- `APP.ui.topbar()` / `.settingsPanel()` / `.bigButton()` / `.defaultBackTarget()` / `.isShortLandscape()` (`js/ui.js`)
-- `APP.audio.sfx.*` / `APP.audio.music.*` — SFX + music split (`js/audio.js`)
-- `APP.LOCATIONS[]` / `APP.locationOf()` (`data/locations.js`)
-
-## Session End — 2026-06-10 (Phase 1–3 complete, merged to main)
-Git status: clean. Branch `claude/continue-task-gmhwx0` fully merged to `main` (merge commit `31f2321`). Working tree clean on `main`. All 193 tests passing (`npm test`).
-
-## Session Summary — Phase 1–3 Overhaul (2026-06-10, final)
-All phases completed and merged to main in one session.
-
-**Phase 1 — Shared infrastructure**: `APP.store`, settings rework (persistent al.global/al.game.letters), audio split (sfxMaster/bgMaster; `APP.audio.sfx.*` + `APP.audio.music.*` with 6 synth ambient tracks), `APP.ui.topbar/settingsPanel/bigButton`, Phase 1 styles.css section (std-topbar/bigbtn/ui-modal/map/loc), ~80 i18n keys in 6 locales, `APP.LOCATIONS` registry, 9 stub screens, index.html wiring, `APP.settings.load()` on boot, CLAUDE.md updated, 15 new tests.
-
-**Phase 1b — Topbar migration + new games**: All existing screens migrated to `APP.ui.topbar`. `setup.js` repurposed as Parent Corner (music/SFX sliders + locale picker). 7 new game screens fully implemented: tictactoe (AI: win→block→centre→corner→side), memory (3D flip, stars), maze (recursive backtracker, seeded LCG), shapes (drag-to-hole), colours (drag-to-basket + speechSynthesis), washing (destination-out mud canvas), music (keyboard/drums/shakers). Recipes animation anchored to live `getBoundingClientRect`. Dots adaptive metrics + difficulty levels.
-
-**Phase 2 — Map home**: `map.js` illustrated village map (7 building buttons, continue badge, background music). `location.js` generic sub-menu. `state.js` default screen → `'map'`.
-
-**Phase 3 — Cleanup**: Dead CSS swept. Script order in index.html verified. All merged to main.
-
-NEXT STEP: No active code tasks. Optional follow-ups: add story illustrations (Three Little Pigs pages 4–11 + remaining stories); Phase 3 per-page `frame` variants in stories.js; accessibility audit; add more animals or languages.
+## Session Summary — 2026-06-01 (codebase review)
+Completed (Section 33):
+1. Full bug review across all screen files — 6 bugs fixed in `game.js`, `findletter.js`, `storyreader.js`, `recipes.js`, `puzzles.js`, `dots.js`.
+2. Added 26 new unit tests (state.test.js + utils.test.js) covering: `APP.activeTheme`, `APP.activeBookSkin`, `APP.recordLetterTrace`, `APP.animalId`, `APP.starsHtml`, `APP.getUnlockedStories`.
+3. Total tests: 151 (all passing).
+4. Commit `46a37c5` pushed to main (origin ahead at `46a37c5`).
+NEXT STEP: No active work items. Optional: story illustrations (Three Little Pigs pages 4–11); dots.js architecture notes; dead-CSS cleanup.
 Blockers: none
 Half-finished: none
 Security flags added: none
