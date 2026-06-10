@@ -397,3 +397,19 @@
 - [x] `index.html` script order verified and fixed: added `js/store.js` (before state.js), `js/ui.js` (after icons.js), all 7 missing game screens (tictactoe, memory, maze, shapes, colours, washing, music)
 - [x] `js/main.js` — `APP.settings.load()` call confirmed present after `APP.loadLocale()`
 - [x] Dev docs updated — Phase 2 tasks marked complete; Phase 3 session summary added; context.md current state updated
+
+## Section 37 — Merge to main + Dev Doc Completion (2026-06-10)
+- [x] Branch `claude/continue-task-gmhwx0` merged to `main` via merge commit `31f2321`
+- [x] All 193 tests passing (`npm test` — vitest + jsdom): 15 store/settings, 30 tictactoe, 30 maze, 103 dots, 15 settings; existing tracer/letterData suites untouched
+- [x] `dev/active/animal-letters/animal-letters-context.md` — Key Files table replaced with full Phase 1 architecture; screen table entry points corrected (Shapes/Colours/Washing → Games Room; Music → Music Shed direct; Painting → Art Studio direct; Gallery → Animal Park direct); stale NEXT STEP removed; session end + summary added
+- [x] `dev/active/animal-letters/animal-letters-tasks.md` — this section added; no outstanding Phase 1–3 tasks
+
+## Section 11b — Future / Nice-to-Have (carried forward)
+- [ ] Story illustrations: Three Little Pigs pages 4–11 + remaining 7 stories
+- [ ] Per-page `frame` variants in `data/stories/*.js` (Phase 3 deferred)
+- [ ] Real cartoon SVG artwork for all animals
+- [ ] Real animal audio MP3s for all animals
+- [ ] Additional animals (target: full A–Z first-letter coverage)
+- [ ] Accessibility audit (ARIA labels, keyboard fallback for all new games)
+- [ ] Add new language: create `APP.I18N.LOCALES` entry + translation object in `data/i18n.js` + `data/animals-XX.js`
+- [ ] Wave 2 games (need authored scenes): spot-the-difference, find-missing-object, shadow matching, Simon-says, balloon-pop counting
