@@ -163,48 +163,6 @@ window.APP = window.APP || {};
 
     inner.appendChild(sfxSection);
 
-    // Game Mode
-    const fMode = document.createElement('div');
-    fMode.className = 'field';
-    fMode.innerHTML = `<label>${APP.t('settings.gameMode')}</label>`;
-    const modeRow = document.createElement('div');
-    modeRow.className = 'seg';
-    [
-      { value: 'trace', label: APP.t('settings.gameMode.trace') },
-      { value: 'find',  label: APP.t('settings.gameMode.find')  }
-    ].forEach(function(opt) {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.textContent = opt.label;
-      if ((s.gameMode || 'trace') === opt.value) b.classList.add('on');
-      b.addEventListener('click', function() {
-        APP.settings.update({ gameMode: opt.value });
-        render(root, ctx);
-      });
-      modeRow.appendChild(b);
-    });
-    fMode.appendChild(modeRow);
-    inner.appendChild(fMode);
-
-    // Actions — New Game button
-    const actions = document.createElement('div');
-    actions.className = 'actions';
-    const start = document.createElement('button');
-    start.className = 'btn';
-    start.textContent = APP.t('setup.newGame');
-    start.addEventListener('click', () => {
-      const animal = APP.animals.pickRandom(APP.state.settings.maxLength, APP.state.currentAnimal);
-      if (!animal) {
-        alert(APP.t('setup.noAnimals'));
-        return;
-      }
-      APP.startGame(animal);
-      const mode = APP.state.settings.gameMode || 'trace';
-      ctx.go(mode === 'find' ? 'findletter' : 'game');
-    });
-    actions.appendChild(start);
-    inner.appendChild(actions);
-
     // Progress reset
     const resetField = document.createElement('div');
     resetField.className = 'field';
