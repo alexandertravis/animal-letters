@@ -462,7 +462,62 @@ Completed all 12 steps of Phase 1 shared infrastructure:
 11. `CLAUDE.md` — Phase 1 architecture section added
 12. Tests — store.test.js (3) + settings.test.js (12) = 15 new tests; all 166 tests pass
 
-NEXT STEP: Phase 2 — implement real map screen, location sub-menu, and connect landing to map as default.
+## Session Summary — Phase 1b + Phase 2 + Phase 3 (2026-06-10)
+
+### Phase 1b: Topbar Migration + New Game Screens
+- All screens migrated to `APP.ui.topbar` (std-topbar): gallery, progress, letters, numbers, devanimals, library, storyreader, painting, game, findletter, complete
+- `js/screens/setup.js` repurposed as "Parent Corner" with Music + SFX sliders/toggles using `APP.ui.settingsPanel`
+- New game screens implemented: `tictactoe.js`, `memory.js`, `maze.js`, `shapes.js`, `colours.js`, `washing.js`, `music.js`
+- Recipes animation fix: positions anchored to live `getBoundingClientRect`
+- Dots: difficulty levels + adaptive metrics (viewBox, dot/hit radius); compact setup panel
+
+### Phase 2: Map Home Screen + Location Sub-Menus
+- `js/screens/map.js` — illustrated village map replacing the landing screen as default home
+- `js/screens/location.js` — generic location sub-menu with `APP.ui.bigButton` game tiles
+- `data/locations.js` — `APP.LOCATIONS` registry with 5 locations; `APP.locationOf()` helper
+- `js/state.js` — default screen set to `'map'`; `APP.goHome → 'map'`
+
+### Phase 3: Integration + Cleanup (2026-06-10)
+- Dead CSS sweep: removed `.gallery-header`, `.setup-topbar`, `.painting-topbar`, `.painting-topbar-actions` (all migrated); kept `.recipes-topbar`, `.pz-setup*` (still active)
+- `index.html` script order fixed: added `js/store.js` (before state.js), `js/ui.js` (after icons.js), 7 new game screen tags (tictactoe through music)
+- `js/main.js` — `APP.settings.load()` confirmed present after `APP.loadLocale()`
+
+## Current State (as of 2026-06-10 Phase 3 complete)
+
+### Screens
+| Screen | File | Entry point |
+|---|---|---|
+| Village map | `js/screens/map.js` | Default home (`APP.state.screen = 'map'`) |
+| Location sub-menu | `js/screens/location.js` | All 5 location tiles |
+| Animal Letters game | `js/screens/game.js` | From map → School |
+| Parent Corner (settings) | `js/screens/setup.js` | From map |
+| Gallery | `js/screens/gallery.js` | From complete screen |
+| Progress | `js/screens/progress.js` | From map |
+| Letter Patterns | `js/screens/letters.js` | From map → School |
+| Numbers | `js/screens/numbers.js` | From map → School |
+| Find the Letter | `js/screens/findletter.js` | From map → School |
+| Story Library | `js/screens/library.js` | From map → Library |
+| Story Reader | `js/screens/storyreader.js` | From library |
+| Painting | `js/screens/painting.js` | From map → Park |
+| Puzzles | `js/screens/puzzles.js` | From map → Games |
+| Connect the Dots | `js/screens/dots.js` | From map → Games |
+| Recipes | `js/screens/recipes.js` | From map → Kitchen |
+| Tic Tac Toe | `js/screens/tictactoe.js` | From map → Games |
+| Memory | `js/screens/memory.js` | From map → Games |
+| Maze | `js/screens/maze.js` | From map → Games |
+| Shapes | `js/screens/shapes.js` | From map → School |
+| Colours | `js/screens/colours.js` | From map → School |
+| Washing | `js/screens/washing.js` | From map → Kitchen |
+| Music | `js/screens/music.js` | From map → Park |
+
+### New APIs
+- `APP.store` — localStorage wrapper (`js/store.js`)
+- `APP.settings.load()` / `.update()` / `.get()` / `.game()` / `.saveGame()` / `.updateGame()` (`js/settings.js`)
+- `APP.ui.topbar()` / `.settingsPanel()` / `.bigButton()` / `.defaultBackTarget()` / `.isShortLandscape()` (`js/ui.js`)
+- `APP.audio.sfx.*` / `APP.audio.music.*` — SFX + music split (`js/audio.js`)
+- `APP.LOCATIONS[]` / `APP.locationOf()` (`data/locations.js`)
+
+NEXT STEP: Flesh out stub screens with real game logic. All infrastructure is in place.
 Blockers: none
 Half-finished: none
 Security flags added: none

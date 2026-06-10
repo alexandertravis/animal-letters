@@ -444,14 +444,7 @@ html, body {
   flex-direction: column;
   overflow: hidden;
 }
-.gallery-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px 8px;
-  flex-shrink: 0;
-}
-.gallery-header h2 { margin: 0; flex: 1; }
+/* .gallery-header removed — replaced by std-topbar (Phase 1 overhaul) */
 .gallery-count {
   font-size: 1.1rem;
   font-weight: 800;
@@ -555,13 +548,8 @@ html, body {
   filter: grayscale(1) brightness(0.52);
 }
 
-/* ---------- Setup — topbar & dev tools ---------- */
-.setup-topbar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.setup-topbar h2 { margin: 0; }
+/* .setup-topbar removed — replaced by std-topbar (Phase 1 overhaul) */
+/* ---------- Setup — dev tools ---------- */
 .setup-dev-tools { opacity: 0.8; }
 
 /* ---------- Toggle-group control (segmented control style) ---------- */
@@ -2528,23 +2516,7 @@ html, body {
   --paint-topbar-w: 64px;
   --paint-rail-w: 120px;
 }
-.painting-topbar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  flex-shrink: 0;
-}
-.painting-topbar h2 {
-  flex: 1;
-  margin: 0;
-  font-size: 1.3rem;
-  text-align: center;
-}
-.painting-topbar-actions {
-  display: flex;
-  gap: 6px;
-}
+/* .painting-topbar / .painting-topbar-actions removed — replaced by std-topbar (Phase 1 overhaul) */
 
 /* Mode toggle */
 .paint-mode-toggle {
@@ -2983,11 +2955,7 @@ html, body {
   .painting {
     flex-direction: row;
   }
-  .painting-topbar {
-    flex-direction: column;
-    width: 64px;
-    padding: 8px 6px;
-  }
+  /* .painting-topbar removed — replaced by std-topbar */
   .paint-mode-toggle {
     flex-direction: column;
     max-width: 52px;
@@ -2999,9 +2967,7 @@ html, body {
     font-size: 0.7rem;
     border-radius: 16px;
   }
-  .painting-topbar-actions {
-    flex-direction: column;
-  }
+  /* .painting-topbar-actions removed — replaced by std-topbar */
   .paint-template-picker {
     position: absolute;
     top: 0;
