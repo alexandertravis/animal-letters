@@ -55,6 +55,11 @@ window.APP = window.APP || {};
       '<line x1="19" y1="4" x2="19" y2="20"/>'
     ),
 
+    // Solid right-pointing triangle (continue / play)
+    play: icon(
+      '<polygon points="5 3 19 12 5 21" fill="currentColor" stroke="none"/>'
+    ),
+
     // Paintbrush: handle + bristle head
     brush: icon(
       '<path d="M14 4l6 6-7.5 7.5a3 3 0 01-1.6.83l-4.6.92.92-4.6a3 3 0 01.83-1.6z"/>' +

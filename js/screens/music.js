@@ -21,7 +21,7 @@ window.APP = window.APP || {};
       '.music-tabs{display:flex;border-bottom:2px solid #e0e0e0;}',
       '.music-tab{flex:1;padding:12px;background:none;border:none;font-size:1rem;font-weight:700;cursor:pointer;opacity:.6;}',
       '.music-tab.active{opacity:1;border-bottom:3px solid #a78bfa;margin-bottom:-2px;}',
-      '.music-content{flex:1;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;}',
+      '.music-content{flex:1;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:24px;}',
       '.piano-wrap{position:relative;height:160px;width:min(500px,90vw);}',
       '.piano-white{position:absolute;bottom:0;border:2px solid #999;border-radius:0 0 6px 6px;background:#fff;cursor:pointer;}',
       '.piano-white:active,.piano-white.pressed{background:#e8e0ff;}',
@@ -31,7 +31,7 @@ window.APP = window.APP || {};
       '.drum-pad{height:100px;border:none;border-radius:16px;font-size:1.2rem;font-weight:800;cursor:pointer;color:#fff;box-shadow:0 4px 0 rgba(0,0,0,.3);}',
       '.drum-pad:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.3);}',
       '.shaker-grid{display:flex;gap:24px;flex-wrap:wrap;justify-content:center;}',
-      '.shaker-btn{width:110px;height:110px;border-radius:50%;border:none;font-size:2rem;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.2);}',
+      '.shaker-btn{width:130px;height:130px;border-radius:50%;border:none;font-size:0.9rem;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.2);display:flex;flex-direction:column;align-items:center;justify-content:center;}',
       '.shaker-btn:active{transform:scale(.95);}',
       '@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-15deg)}75%{transform:rotate(15deg)}}',
       '.wiggle{animation:wiggle .3s ease;}',
@@ -44,6 +44,14 @@ window.APP = window.APP || {};
       '.drum-kit-wrap{display:flex;justify-content:center;align-items:center;width:100%;padding:8px;}',
       '.drum-kit-svg{width:min(340px,92vw);height:auto;}',
       '.drum-part{cursor:pointer;}',
+      '@media (orientation:portrait){.song-select-row{order:-1;}}',
+      '@media (orientation:landscape) and (max-height:520px){',
+        '.music-content{flex-direction:row;align-items:stretch;padding:8px 12px;gap:12px;padding-top:8px;}',
+        '.piano-wrap{flex:1;min-width:0;height:min(140px,35vh);}',
+        '.song-select-row{flex-direction:column;align-items:stretch;width:160px;flex-shrink:0;overflow-y:auto;padding:0;gap:4px;order:0;}',
+        '.song-btn{font-size:0.75rem;padding:6px 8px;text-align:left;}',
+        '.song-stop-btn{position:sticky;top:0;z-index:2;}',
+      '}',
     ].join('');
     document.head.appendChild(s);
   }
@@ -294,8 +302,8 @@ window.APP = window.APP || {};
       songRow.appendChild(b);
     });
 
-    content.appendChild(songRow);
     content.appendChild(pianoWrap);
+    content.appendChild(songRow);
   }
 
   function buildDrums(content) {
@@ -363,8 +371,11 @@ window.APP = window.APP || {};
       btn.className = 'shaker-btn';
       btn.style.background = shaker.color;
       btn.style.color = '#fff';
-      btn.textContent = shaker.label;
       btn.style.fontWeight = '700';
+      var shakerEmoji = shaker.label.split(' ')[0];
+      var shakerName  = shaker.label.split(' ').slice(1).join(' ');
+      btn.innerHTML = '<div style="font-size:2.4rem;line-height:1.2">' + shakerEmoji + '</div>' +
+                      '<div style="font-size:0.75rem;margin-top:4px">' + shakerName + '</div>';
       btn.addEventListener('pointerdown', function (e) {
         e.preventDefault();
         if (APP.audio && APP.audio._wake) try { APP.audio._wake(); } catch(ex){}

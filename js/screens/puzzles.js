@@ -316,8 +316,10 @@ window.APP = window.APP || {};
       if (APP.ui && APP.ui.topbar) {
         if (step === 'play') {
           var nextBtn = document.createElement('button');
-          nextBtn.className = 'btn secondary pz-next-btn';
-          nextBtn.textContent = (APP.t && APP.t('puzzles.next')) || 'Next ▶';
+          nextBtn.className = 'btn icon ghost pz-next-btn';
+          nextBtn.innerHTML = APP.ICONS && APP.ICONS.skip ? APP.ICONS.skip : '&#9654;';
+          nextBtn.setAttribute('aria-label', (APP.t && APP.t('puzzles.next')) || 'Next');
+          nextBtn.title = (APP.t && APP.t('puzzles.next')) || 'Next';
           nextBtn.addEventListener('click', function () { playNext(); });
           topbarEl = APP.ui.topbar({
             ctx: ctx,
@@ -364,8 +366,10 @@ window.APP = window.APP || {};
         topbarEl.appendChild(titleEl);
         if (step === 'play') {
           var topNextBtn2 = document.createElement('button');
-          topNextBtn2.className = 'btn secondary pz-next-btn';
-          topNextBtn2.textContent = 'Next ▶';
+          topNextBtn2.className = 'btn icon ghost pz-next-btn';
+          topNextBtn2.innerHTML = APP.ICONS && APP.ICONS.skip ? APP.ICONS.skip : '&#9654;';
+          topNextBtn2.setAttribute('aria-label', (APP.t && APP.t('puzzles.next')) || 'Next');
+          topNextBtn2.title = (APP.t && APP.t('puzzles.next')) || 'Next';
           topNextBtn2.addEventListener('click', function () { playNext(); });
           topbarEl.appendChild(topNextBtn2);
         }

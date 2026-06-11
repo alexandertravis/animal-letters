@@ -66,6 +66,9 @@ window.APP = window.APP || {};
       home: true,
       back: 'library'
     }));
+    // Lift topbar above the fixed reader-scene overlay (z-index:20)
+    var _tb = root.querySelector('.std-topbar');
+    if (_tb) { _tb.style.position = 'relative'; _tb.style.zIndex = '30'; }
 
     // ── Scene overlay ────────────────────────────────────────────────────────
     const scene = document.createElement('div');

@@ -19,7 +19,6 @@ window.APP = window.APP || {};
       style.textContent = [
         '.map-screen{position:relative;width:100%;min-height:100vh;background:linear-gradient(180deg,#87ceeb 0%,#c8f0c8 70%,#7ec850 100%);overflow:hidden;display:flex;flex-direction:column;align-items:center;}',
         '.map-bg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}',
-        '.map-title{position:relative;text-align:center;font-size:clamp(1.4rem,5vw,2.2rem);font-weight:800;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.35);margin:0;padding:14px 56px 4px;}',
         '.map-grid{position:relative;display:grid;grid-template-columns:repeat(2,1fr);gap:16px;padding:8px 16px 16px;width:100%;max-width:600px;box-sizing:border-box;margin:0 auto;}',
         '@media(min-width:768px){.map-grid{grid-template-columns:repeat(3,1fr);}}',
         '@media(orientation:landscape) and (max-height:520px){.map-grid{grid-template-columns:repeat(4,1fr);padding-top:8px;}.map-title{font-size:1.3rem;padding:6px 56px 2px;}}',
@@ -28,8 +27,6 @@ window.APP = window.APP || {};
         '.map-building:active{transform:scale(.95);}',
         '.map-building svg{width:100%;max-width:110px;height:auto;filter:drop-shadow(0 2px 4px rgba(0,0,0,.2));}',
         '.map-building-label{font-size:.8rem;font-weight:700;color:#1a3a1a;text-shadow:0 1px 2px rgba(255,255,255,.8);text-align:center;}',
-        '.map-continue{position:absolute;top:10px;left:10px;z-index:10;}',
-        '.map-gear{position:absolute;top:10px;right:10px;z-index:10;}',
       ].join('');
       document.head.appendChild(style);
     }
@@ -56,11 +53,36 @@ window.APP = window.APP || {};
     ].join('');
     wrap.appendChild(bgSvg);
 
-    // Title heading
-    var titleEl = document.createElement('h1');
-    titleEl.className = 'map-title';
-    titleEl.textContent = APP.t('map.title') || 'Animal Letters';
-    wrap.appendChild(titleEl);
+    // Topbar with settings gear + optional continue button
+    var topbarRight = [];
+    if (APP.state.sessionExists) {
+      var contTarget = APP.state.screen === 'map' ? 'game' : APP.state.screen;
+      var contBtn = document.createElement('button');
+      contBtn.className = 'btn icon ghost';
+      contBtn.innerHTML = APP.ICONS ? APP.ICONS.play : '&#9654;';
+      contBtn.setAttribute('aria-label', APP.t('landing.continue') || 'Continue');
+      contBtn.title = APP.t('landing.continue') || 'Continue';
+      (function(target) {
+        contBtn.addEventListener('click', function() { ctx.go(target); });
+      })(contTarget);
+      topbarRight.push(contBtn);
+    }
+    var settingsBtn = document.createElement('button');
+    settingsBtn.className = 'btn icon ghost';
+    settingsBtn.innerHTML = APP.ICONS ? APP.ICONS.settings : '&#9881;';
+    settingsBtn.setAttribute('aria-label', APP.t('ui.settings') || 'Settings');
+    settingsBtn.addEventListener('click', function() { ctx.go('setup'); });
+    topbarRight.push(settingsBtn);
+    var mapTopbar = APP.ui.topbar({
+      ctx: ctx,
+      title: APP.t('map.title') || 'Animal Letters',
+      home: false,
+      back: false,
+      right: topbarRight
+    });
+    mapTopbar.style.position = 'relative';
+    mapTopbar.style.zIndex = '1';
+    wrap.appendChild(mapTopbar);
 
     // Building buttons grid
     var grid = document.createElement('div');
@@ -89,24 +111,6 @@ window.APP = window.APP || {};
     });
 
     wrap.appendChild(grid);
-
-    // Continue badge
-    if (APP.state.sessionExists) {
-      var continueBtn = document.createElement('button');
-      continueBtn.className = 'btn primary map-continue';
-      continueBtn.textContent = APP.t('landing.continue') || 'Continue';
-      continueBtn.addEventListener('click', function() {
-        ctx.go(APP.state.screen === 'map' ? 'game' : APP.state.screen);
-      });
-      wrap.appendChild(continueBtn);
-    }
-
-    // Parent Corner gear button
-    var gearBtn = document.createElement('button');
-    gearBtn.className = 'btn icon ghost map-gear';
-    gearBtn.innerHTML = APP.ICONS ? APP.ICONS.settings : '⚙️';
-    gearBtn.addEventListener('click', function() { ctx.go('setup'); });
-    wrap.appendChild(gearBtn);
 
     root.appendChild(wrap);
   }

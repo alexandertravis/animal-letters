@@ -125,6 +125,7 @@ APP.I18N = {
     // Story Library
     'landing.library':          'Story Library',
     'library.title':            'Story Library',
+    'library.theme':            'Library Theme',
     'library.achievements':     'Your Achievements',
     'library.books':            'Stories',
     'library.noAchievements':   'Complete animal combinations to unlock stories!',
@@ -308,6 +309,7 @@ APP.I18N = {
     // Story Library
     'landing.library':            'Biblioteca de Histórias',
     'library.title':              'Biblioteca de Histórias',
+    'library.theme':              'Tema da Biblioteca',
     'library.achievements':       'As Suas Conquistas',
     'library.books':              'Histórias',
     'library.noAchievements':     'Complete combinações de animais para desbloquear histórias!',
@@ -491,6 +493,7 @@ APP.I18N = {
     // Story Library
     'landing.library':            'Bibliothèque de contes',
     'library.title':              'Bibliothèque de contes',
+    'library.theme':              'Thème de la bibliothèque',
     'library.achievements':       'Vos succès',
     'library.books':              'Histoires',
     'library.noAchievements':     'Complétez des combinaisons d\'animaux pour débloquer des histoires !',
@@ -674,6 +677,7 @@ APP.I18N = {
     // Story Library
     'landing.library':            'Biblioteca de cuentos',
     'library.title':              'Biblioteca de cuentos',
+    'library.theme':              'Tema de la biblioteca',
     'library.achievements':       'Tus logros',
     'library.books':              'Historias',
     'library.noAchievements':     '¡Completa combinaciones de animales para desbloquear historias!',
@@ -857,6 +861,7 @@ APP.I18N = {
     // Story Library
     'landing.library':            'Geschichtenbibliothek',
     'library.title':              'Geschichtenbibliothek',
+    'library.theme':              'Bibliotheksthema',
     'library.achievements':       'Deine Erfolge',
     'library.books':              'Geschichten',
     'library.noAchievements':     'Schließe Tierkombinationen ab, um Geschichten freizuschalten!',
@@ -1040,6 +1045,7 @@ APP.I18N = {
     // Story Library
     'landing.library':            'Biblioteca di storie',
     'library.title':              'Biblioteca di storie',
+    'library.theme':              'Tema della biblioteca',
     'library.achievements':       'I tuoi traguardi',
     'library.books':              'Storie',
     'library.noAchievements':     'Completa combinazioni di animali per sbloccare le storie!',

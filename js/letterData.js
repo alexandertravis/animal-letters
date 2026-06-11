@@ -851,4 +851,5 @@ window.APP = window.APP || {};
       lower:  { y: 230, dash: '7 7',  expand:  1 },  // descender   — shifts down to stroke bottom edge
     }
   };
+
 })(window.APP);

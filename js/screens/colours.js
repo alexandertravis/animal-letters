@@ -10,15 +10,15 @@ window.APP = window.APP || {};
     { id: 'purple', hex: '#9b59b6', label: 'colour.purple' },
   ];
 
-  // Each colour maps to an emoji that is naturally that colour, so the object
-  // the child drags visually matches the basket colour.
+  // Each colour maps to an array of naturally-coloured emoji so objects vary
+  // across rounds while still visually matching the basket colour.
   var COLOUR_EMOJI = {
-    red:    '🍎',  // apple
-    blue:   '🫐',  // blueberries
-    yellow: '🍋',  // lemon
-    green:  '🥦',  // broccoli
-    orange: '🍊',  // orange
-    purple: '🍇',  // grapes
+    red:    ['🍎', '🌹', '🍓', '❤️', '🍅'],
+    blue:   ['🫐', '💙', '🐳', '🧢', '💎'],
+    yellow: ['🍋', '⭐', '🌻', '🌕', '🍌'],
+    green:  ['🥦', '🌿', '🍀', '🌱', '🥝'],
+    orange: ['🍊', '🎃', '🥕', '🦊', '🌅'],
+    purple: ['🍇', '🔮', '💜', '🪻', '🫛'],
   };
 
   var DEFAULTS = { numColours: 3 };
@@ -68,12 +68,18 @@ window.APP = window.APP || {};
     var activeColours = COLOURS.slice(0, numColours);
 
     // One object per colour (round-robin), doubling up when there are few
-    // colours so there's more to sort. Emoji always matches the colour.
+    // colours so there's more to sort. Pick a random emoji per colour per round.
     var total = numColours <= 3 ? numColours * 2 : numColours;
     var shuffledObjects = [];
+    var usedEmoji = {};
     for (var k = 0; k < total; k++) {
       var c = activeColours[k % numColours];
-      shuffledObjects.push({ id: 'obj' + k, emoji: COLOUR_EMOJI[c.id] || '⬤', colourId: c.id });
+      var pool = COLOUR_EMOJI[c.id] || ['⬤'];
+      var available = pool.filter(function(e) { return !usedEmoji[e]; });
+      if (!available.length) available = pool;
+      var picked = available[Math.floor(Math.random() * available.length)];
+      usedEmoji[picked] = true;
+      shuffledObjects.push({ id: 'obj' + k, emoji: picked, colourId: c.id });
     }
 
     var sorted = new Array(shuffledObjects.length).fill(false);
