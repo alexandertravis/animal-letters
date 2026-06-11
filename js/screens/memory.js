@@ -55,8 +55,8 @@ window.APP = window.APP || {};
       '.memory-card.matched .memory-card-inner { transform:rotateY(180deg); }',
       '.memory-card-front,',
       '.memory-card-back { position:absolute; inset:0; border-radius:10px; display:flex; align-items:center; justify-content:center; backface-visibility:hidden; -webkit-backface-visibility:hidden; }',
-      '.memory-card-front { background:#6c63ff; font-size:1.4rem; color:#fff; font-weight:700; border:3px solid rgba(255,255,255,0.3); }',
-      '.memory-card-back { background:#fff; border:3px solid #ddd; font-size:1.6rem; transform:rotateY(180deg); }',
+      '.memory-card-front { background:#6c63ff; font-size:2.2rem; color:#fff; font-weight:700; border:3px solid rgba(255,255,255,0.3); }',
+      '.memory-card-back { background:#fff; border:3px solid #ddd; font-size:clamp(2rem,9vw,3.4rem); transform:rotateY(180deg); }',
       '.memory-card.matched .memory-card-back { background:#e8f5e9; border-color:#81c784; }',
       '.mem-result { display:flex; flex-direction:column; align-items:center; gap:12px; padding:24px; }',
       '.mem-stars { font-size:2.5rem; letter-spacing:4px; }',
@@ -177,8 +177,15 @@ window.APP = window.APP || {};
         infoEl.textContent = (T('game.memory.moves') || 'Moves') + ': ' + moves;
         body.appendChild(infoEl);
 
+        // Responsive column count: portrait gets fewer columns (taller grid),
+        // landscape gets more columns (wider grid). Even layouts per pair count.
+        var layout = { 6: { p: 3, l: 6 }, 8: { p: 4, l: 8 }, 12: { p: 4, l: 6 } };
+        var lo = layout[settings.pairs] || { p: 4, l: 6 };
+        var cols = (window.innerHeight >= window.innerWidth) ? lo.p : lo.l;
         var gridEl = document.createElement('div');
-        gridEl.className = 'mem-grid mem-grid-' + settings.pairs;
+        gridEl.className = 'mem-grid';
+        gridEl.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+        gridEl.style.maxWidth = 'min(95vw, ' + (cols * 108) + 'px)';
         body.appendChild(gridEl);
 
         deck.forEach(function (card, idx) {
