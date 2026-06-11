@@ -69,9 +69,9 @@ window.APP = window.APP || {};
     s.id = 'tictactoe-css';
     s.textContent = [
       '.ttt-screen { flex:1; display:flex; flex-direction:column; min-height:0; }',
-      '.ttt-body { flex:1; display:flex; flex-direction:column; align-items:center; padding:12px 16px; }',
-      '.ttt-top { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; }',
-      '.ttt-footer { min-height:96px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; }',
+      '.ttt-body { flex:1; display:flex; flex-direction:column; align-items:center; padding:12px 16px 0; position:relative; min-height:0; }',
+      '.ttt-top { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding-bottom:148px; min-height:0; }',
+      '.ttt-footer { position:absolute; bottom:12px; left:0; right:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; }',
       '.ttt-status { font-size:1.2rem; font-weight:600; color:var(--accent,#e67e22); text-align:center; }',
       '.ttt-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; width:min(300px,80vw); }',
       '.ttt-cell { aspect-ratio:1; font-size:2.8rem; border:3px solid #ccc; border-radius:12px; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s,transform 0.1s; -webkit-tap-highlight-color:transparent; }',

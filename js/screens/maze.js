@@ -426,13 +426,24 @@ window.APP = window.APP || {};
           if (!dragStart || gameOver) return;
           var src = e.touches ? e.touches[0] : e;
 
-          // Float player emoji towards pointer (clamped within ±1 cell)
+          // Float player emoji towards pointer — wall-aware, clamped to CELL/2 in open directions
           var svgPt = clientToSvgCoord(e);
           if (svgPt) {
             var cellCx = MARGIN + playerCol * CELL + CELL / 2;
             var cellCy = MARGIN + playerRow * CELL + CELL / 2;
-            playerText.setAttribute('x', Math.max(cellCx - CELL, Math.min(cellCx + CELL, svgPt.x)));
-            playerText.setAttribute('y', Math.max(cellCy - CELL, Math.min(cellCy + CELL, svgPt.y)));
+            var mc = maze[playerRow][playerCol];
+            var rdx = svgPt.x - cellCx;
+            var rdy = svgPt.y - cellCy;
+            var px = cellCx, py = cellCy;
+            if (Math.abs(rdx) >= Math.abs(rdy)) {
+              if      (rdx > 0 && !mc.right) px = cellCx + Math.min(rdx,  CELL / 2);
+              else if (rdx < 0 && !mc.left)  px = cellCx + Math.max(rdx, -CELL / 2);
+            } else {
+              if      (rdy > 0 && !mc.bottom) py = cellCy + Math.min(rdy,  CELL / 2);
+              else if (rdy < 0 && !mc.top)    py = cellCy + Math.max(rdy, -CELL / 2);
+            }
+            playerText.setAttribute('x', px);
+            playerText.setAttribute('y', py);
           }
 
           var dx = src.clientX - dragStart.x;

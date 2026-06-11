@@ -295,7 +295,7 @@ window.APP = window.APP || {};
         options: [
           { value: 'jigsaw', label: (APP.t && APP.t('puzzles.modeJigsaw')) || 'Jigsaw' },
           { value: 'shapes', label: (APP.t && APP.t('puzzles.modeShapes')) || 'Shapes' },
-          { value: 'emoji',  label: (APP.t && APP.t('puzzles.modeEmoji'))  || 'Emoji'  },
+          { value: 'emoji',  label: (APP.t && APP.t('puzzles.modeEmoji'))  || 'Squares' },
         ]
       },
       {
@@ -335,9 +335,13 @@ window.APP = window.APP || {};
 
     function onSettingsChange(key, val) {
       if (key === 'hints') {
-        S.hintMode = val; saveSettings(S); applyHintLive();
+        var newHint = val;
+        if (S.mode === 'shapes' && newHint === 'none') newHint = 'grey';
+        S.hintMode = newHint; saveSettings(S); applyHintLive();
       } else if (key === 'showGrid') {
-        S.showGrid = val; saveSettings(S); applyHintLive();
+        S.showGrid = val; saveSettings(S);
+        var gridEl = wrap.querySelector('.pz-board-grid');
+        if (gridEl || !S.showGrid) { applyHintLive(); } else { setStep('play'); }
       } else if (key === 'difficulty') {
         S.rows = parseInt(val, 10) || 3; S.cols = S.rows; saveSettings(S); setStep('play');
       } else if (key === 'mode') {
@@ -356,7 +360,7 @@ window.APP = window.APP || {};
       wrap.innerHTML = '';
 
       // Standard topbar
-      var topbarEl;
+      var topbarEl; var goBtn = null;
       if (APP.ui && APP.ui.topbar) {
         if (step === 'play') {
           var nextBtn = document.createElement('button');
@@ -385,11 +389,20 @@ window.APP = window.APP || {};
             }
           });
         } else if (step === 'picker') {
+          goBtn = document.createElement('button');
+          goBtn.className = 'btn success';
+          goBtn.style.cssText = 'min-width:56px;font-weight:700;';
+          goBtn.textContent = (APP.t && APP.t('ui.go')) || 'Go';
+          goBtn.disabled = !S.imageSrc;
+          goBtn.addEventListener('click', function () {
+            if (S.imageSrc) { saveSettings(S); startPuzzle(); }
+          });
           topbarEl = APP.ui.topbar({
             ctx: ctx,
             title: (APP.t && APP.t('puzzles.pickImage')) || 'Pick Image',
             home: true,
             back: function () { setStep('play'); },
+            right: [goBtn]
           });
         } else {
           topbarEl = APP.ui.topbar({
@@ -439,7 +452,7 @@ window.APP = window.APP || {};
 
       if (step === 'setup') { stepSetup(stage); }
       else if (step === 'play') { stepPlay(stage); }
-      else if (step === 'picker') { stepPicker(stage); }
+      else if (step === 'picker') { stepPicker(stage, goBtn); }
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -600,7 +613,7 @@ window.APP = window.APP || {};
     }
 
     // ── Image picker step ────────────────────────────────────────────────────
-    function stepPicker(stage) {
+    function stepPicker(stage, goBtn) {
       var pickerDiv = document.createElement('div');
       pickerDiv.className = 'pz-setup';
       stage.appendChild(pickerDiv);
@@ -637,16 +650,6 @@ window.APP = window.APP || {};
       galleryWrap.className = 'pz-gallery-wrap';
       inner.appendChild(galleryWrap);
 
-      // Confirm button (disabled until selection)
-      var confirmBtn = document.createElement('button');
-      confirmBtn.className = 'btn pz-start-btn';
-      confirmBtn.textContent = (APP.t && APP.t('puzzles.pickImage')) || 'Use this image';
-      confirmBtn.disabled = !S.imageSrc;
-      confirmBtn.addEventListener('click', function () {
-        if (S.imageSrc) { saveSettings(S); startPuzzle(); }
-      });
-      inner.appendChild(confirmBtn);
-
       function renderPickerGallery() {
         galleryWrap.innerHTML = '';
         var gallery = document.createElement('div');
@@ -662,7 +665,7 @@ window.APP = window.APP || {};
               S.imageSrc = key;
               gallery.querySelectorAll('.pz-gallery-emoji').forEach(function (b) { b.classList.remove('active'); });
               btn.classList.add('active');
-              confirmBtn.disabled = false;
+              if (goBtn) goBtn.disabled = false;
             });
             gallery.appendChild(btn);
           });
@@ -691,7 +694,7 @@ window.APP = window.APP || {};
                 S.imageSrc = item.src;
                 gallery.querySelectorAll('.pz-gallery-item').forEach(function (b) { b.classList.remove('active'); });
                 btn.classList.add('active');
-                confirmBtn.disabled = false;
+                if (goBtn) goBtn.disabled = false;
               });
               grid.appendChild(btn);
             });
@@ -800,6 +803,12 @@ window.APP = window.APP || {};
         board.style.height = S.boardH + 'px';
         stage.appendChild(board);
 
+        // ── Build tab grid first (needed for jigsaw grid overlay) ─────────
+        if (S.mode === 'jigsaw') {
+          S.tabGrid = buildTabGrid(S.rows, S.cols);
+        }
+        S.totalPieces = S.rows * S.cols;
+
         // ── Hint canvas ────────────────────────────────────────────────────
         if (S.mode === 'shapes') {
           buildShapesBoard(board);
@@ -811,30 +820,40 @@ window.APP = window.APP || {};
           board.appendChild(hc);
         }
 
-        // ── Optional grid overlay ──────────────────────────────────────────
-        if (S.showGrid) {
+        // ── Optional grid overlay (shapes mode handled inside buildShapesBoard)
+        if (S.showGrid && S.mode !== 'shapes') {
           var gc = document.createElement('canvas');
           gc.className = 'pz-board-grid';
           gc.width = bW; gc.height = bH;
           var gx = gc.getContext('2d');
-          gx.strokeStyle = 'rgba(0,0,0,0.15)';
-          gx.lineWidth = 1;
-          for (var ci = 1; ci < S.cols; ci++) {
-            var x = Math.round(ci * S.cellW);
-            gx.beginPath(); gx.moveTo(x, 0); gx.lineTo(x, bH); gx.stroke();
-          }
-          for (var ri = 1; ri < S.rows; ri++) {
-            var y = Math.round(ri * S.cellH);
-            gx.beginPath(); gx.moveTo(0, y); gx.lineTo(bW, y); gx.stroke();
+          if (S.mode === 'jigsaw') {
+            var tb_g = Math.max(8, Math.round(Math.min(S.cellW, S.cellH) * 0.25));
+            gx.strokeStyle = 'rgba(0,0,0,0.18)';
+            gx.lineWidth = 1.5;
+            for (var rgr = 0; rgr < S.rows; rgr++) {
+              for (var cgr = 0; cgr < S.cols; cgr++) {
+                var gedges = pieceEdges(S.tabGrid, rgr, cgr, S.rows, S.cols);
+                gx.save();
+                gx.translate(cgr * S.cellW - tb_g, rgr * S.cellH - tb_g);
+                buildJigsawPath(gx, Math.round(S.cellW), Math.round(S.cellH), tb_g, gedges);
+                gx.stroke();
+                gx.restore();
+              }
+            }
+          } else {
+            gx.strokeStyle = 'rgba(0,0,0,0.15)';
+            gx.lineWidth = 1;
+            for (var ci = 1; ci < S.cols; ci++) {
+              var x = Math.round(ci * S.cellW);
+              gx.beginPath(); gx.moveTo(x, 0); gx.lineTo(x, bH); gx.stroke();
+            }
+            for (var ri = 1; ri < S.rows; ri++) {
+              var y = Math.round(ri * S.cellH);
+              gx.beginPath(); gx.moveTo(0, y); gx.lineTo(bW, y); gx.stroke();
+            }
           }
           board.appendChild(gc);
         }
-
-        // ── Generate pieces ────────────────────────────────────────────────
-        if (S.mode === 'jigsaw') {
-          S.tabGrid = buildTabGrid(S.rows, S.cols);
-        }
-        S.totalPieces = S.rows * S.cols;
 
         for (var row = 0; row < S.rows; row++) {
           for (var col = 0; col < S.cols; col++) {
@@ -878,18 +897,28 @@ window.APP = window.APP || {};
       cx.globalCompositeOperation = 'source-over';
       board.appendChild(hc);
 
-      // Hole shadow divs (visual depth)
-      for (var r2 = 0; r2 < S.rows; r2++) {
-        for (var c2 = 0; c2 < S.cols; c2++) {
-          var hole = document.createElement('div');
-          var sh2 = SHAPES[(r2 * S.cols + c2) % SHAPES.length];
-          hole.className = 'pz-hole pz-hole--' + sh2;
-          hole.style.left   = Math.round(c2 * S.cellW) + 'px';
-          hole.style.top    = Math.round(r2 * S.cellH) + 'px';
-          hole.style.width  = Math.round(S.cellW) + 'px';
-          hole.style.height = Math.round(S.cellH) + 'px';
-          board.appendChild(hole);
+      // ── Optional shape-outline grid overlay ───────────────────────────────
+      if (S.showGrid) {
+        var gc = document.createElement('canvas');
+        gc.className = 'pz-board-grid';
+        gc.width = S.boardW; gc.height = S.boardH;
+        var gx = gc.getContext('2d');
+        gx.strokeStyle = 'rgba(0,0,0,0.22)';
+        gx.lineWidth = 2;
+        for (var r2 = 0; r2 < S.rows; r2++) {
+          for (var c2 = 0; c2 < S.cols; c2++) {
+            var sh2 = SHAPES[(r2 * S.cols + c2) % SHAPES.length];
+            var gx2 = c2 * S.cellW + S.cellW / 2;
+            var gy2 = r2 * S.cellH + S.cellH / 2;
+            var hr2 = Math.min(S.cellW, S.cellH) * 0.42;
+            gx.save();
+            gx.translate(gx2, gy2);
+            drawShapePathAt(gx, sh2, hr2);
+            gx.stroke();
+            gx.restore();
+          }
         }
+        board.appendChild(gc);
       }
     }
 
