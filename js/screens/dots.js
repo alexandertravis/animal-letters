@@ -259,8 +259,20 @@ window.APP = window.APP || {};
     </svg>`;
   }
 
+  // Merge saved custom puzzles into the in-memory list (once each by id).
+  function loadCustomPuzzles() {
+    if (!APP.store || !APP.DOT_PUZZLES) return;
+    var saved = APP.store.get('customDotPuzzles', []) || [];
+    saved.forEach(function (p) {
+      if (p && p.id && !APP.DOT_PUZZLES.some(function (x) { return x.id === p.id; })) {
+        APP.DOT_PUZZLES.push(p);
+      }
+    });
+  }
+
   function renderPicker(wrap, ctx) {
     wrap.innerHTML = '';
+    loadCustomPuzzles();
 
     // Standard topbar
     if (APP.ui && APP.ui.topbar) {
@@ -322,6 +334,45 @@ window.APP = window.APP || {};
     `;
     createCard.addEventListener('click', () => renderAuthor(wrap, ctx));
     body.appendChild(createCard);
+
+    // Import puzzles from a JSON file
+    const importCard = document.createElement('label');
+    importCard.className = 'dots-card create-card';
+    importCard.style.cursor = 'pointer';
+    importCard.innerHTML = `
+      <div style="font-size:2.4rem;color:var(--muted)">📥</div>
+      <span class="card-name">Import puzzles</span>
+      <span class="card-count">Load a .json file</span>
+    `;
+    const importInput = document.createElement('input');
+    importInput.type = 'file';
+    importInput.accept = '.json,application/json';
+    importInput.style.display = 'none';
+    importInput.addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        try {
+          const puzzles = JSON.parse(ev.target.result);
+          if (!Array.isArray(puzzles)) throw new Error('not an array');
+          const stored = (APP.store && APP.store.get('customDotPuzzles', [])) || [];
+          puzzles.forEach(function (p) {
+            if (p && p.id && p.dots && !stored.some(function (x) { return x.id === p.id; })) {
+              stored.push(p);
+              if (!APP.DOT_PUZZLES.some(function (x) { return x.id === p.id; })) APP.DOT_PUZZLES.push(p);
+            }
+          });
+          if (APP.store) APP.store.set('customDotPuzzles', stored);
+          renderPicker(wrap, ctx);
+        } catch (ex) {
+          alert('That file is not a valid puzzle export.');
+        }
+      };
+      reader.readAsText(file);
+    });
+    importCard.appendChild(importInput);
+    body.appendChild(importCard);
 
     wrap.appendChild(body);
   }
@@ -639,6 +690,7 @@ window.APP = window.APP || {};
         <button class="btn secondary" id="author-closed">Closed ✓</button>
         <input type="text" class="author-name-input" id="author-name" placeholder="Puzzle name" value="My Puzzle"/>
         <button class="btn" id="author-save" disabled>▶ Save &amp; Play</button>
+        <button class="btn secondary" id="author-export">⬇ Export</button>
       </div>
       <div class="author-canvas-wrap" id="author-canvas-wrap">
         <canvas id="author-canvas" width="400" height="400"></canvas>
@@ -770,7 +822,25 @@ window.APP = window.APP || {};
         dots: normalized
       };
       APP.DOT_PUZZLES.push(puzzle);
+      // Persist so the custom puzzle survives a page reload.
+      if (APP.store) {
+        var storedSave = APP.store.get('customDotPuzzles', []) || [];
+        storedSave.push(puzzle);
+        APP.store.set('customDotPuzzles', storedSave);
+      }
       renderPlay(wrap, ctx, puzzle);
+    });
+
+    authorBody.querySelector('#author-export').addEventListener('click', function () {
+      var all = (APP.store && APP.store.get('customDotPuzzles', [])) || [];
+      if (!all.length) { alert('No saved puzzles to export yet.'); return; }
+      var blob = new Blob([JSON.stringify(all, null, 2)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'dot-puzzles.json';
+      a.click();
+      URL.revokeObjectURL(url);
     });
 
     _resizeObs = new ResizeObserver(function () { syncLabels(); });
