@@ -186,6 +186,15 @@ window.APP = window.APP || {};
         nextBtn.textContent = T('game.maze.next') || 'Next maze';
         nextBtn.addEventListener('click', function () { startNew(settings.size); });
         resultDiv.appendChild(nextBtn);
+
+        var greatJobBtn = document.createElement('button');
+        greatJobBtn.className = 'btn success';
+        greatJobBtn.textContent = T('complete.greatJob') || 'Great Job! 🎉';
+        greatJobBtn.addEventListener('click', function () {
+          if (APP.audio && APP.audio.sfx) APP.audio.sfx.pop();
+          if (APP.launchConfetti) APP.launchConfetti({ count: 120, duration: 3500 });
+        });
+        resultDiv.appendChild(greatJobBtn);
         body.appendChild(resultDiv);
       } else {
         var wrap = document.createElement('div');
@@ -416,6 +425,16 @@ window.APP = window.APP || {};
         function onPointerMove(e) {
           if (!dragStart || gameOver) return;
           var src = e.touches ? e.touches[0] : e;
+
+          // Float player emoji towards pointer (clamped within ±1 cell)
+          var svgPt = clientToSvgCoord(e);
+          if (svgPt) {
+            var cellCx = MARGIN + playerCol * CELL + CELL / 2;
+            var cellCy = MARGIN + playerRow * CELL + CELL / 2;
+            playerText.setAttribute('x', Math.max(cellCx - CELL, Math.min(cellCx + CELL, svgPt.x)));
+            playerText.setAttribute('y', Math.max(cellCy - CELL, Math.min(cellCy + CELL, svgPt.y)));
+          }
+
           var dx = src.clientX - dragStart.x;
           var dy = src.clientY - dragStart.y;
           if (Math.abs(dx) < MIN_DRAG && Math.abs(dy) < MIN_DRAG) return;
@@ -430,7 +449,14 @@ window.APP = window.APP || {};
           e.preventDefault();
         }
 
-        function onPointerUp() { dragStart = null; }
+        function onPointerUp() {
+          // Snap back to exact cell centre on release
+          if (playerText) {
+            playerText.setAttribute('x', MARGIN + playerCol * CELL + CELL / 2);
+            playerText.setAttribute('y', MARGIN + playerRow * CELL + CELL / 2);
+          }
+          dragStart = null;
+        }
 
         svg.addEventListener('pointerdown', onPointerDown);
         svg.addEventListener('pointermove', onPointerMove);

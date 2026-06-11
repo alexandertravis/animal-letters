@@ -54,7 +54,12 @@ window.APP = window.APP || {};
     return null;
   }
   function saveSettings(cfg) {
-    var toSave = { mode: cfg.mode, rows: cfg.rows, cols: cfg.cols, hintMode: cfg.hintMode, showGrid: cfg.showGrid, imageSrc: cfg.imageSrc };
+    var toSave = {
+      mode: cfg.mode, rows: cfg.rows, cols: cfg.cols,
+      hintMode: cfg.hintMode, showGrid: cfg.showGrid, imageSrc: cfg.imageSrc,
+      difficulty: cfg.rows,   // gear panel alias for rows/cols
+      hints: cfg.hintMode     // gear panel alias for hintMode
+    };
     // Persist via APP.settings if available
     if (APP.settings && APP.settings.saveGame) {
       APP.settings.saveGame('puzzles', toSave);
@@ -284,12 +289,34 @@ window.APP = window.APP || {};
     // Advanced settings schema for the gear button
     var advancedSchema = [
       {
-        key: 'hintMode',
-        label: (APP.t && APP.t('puzzles.hintMode')) || 'Background Hint',
+        key: 'mode',
+        label: (APP.t && APP.t('puzzles.mode')) || 'Type',
+        type: 'segmented',
+        options: [
+          { value: 'jigsaw', label: (APP.t && APP.t('puzzles.modeJigsaw')) || 'Jigsaw' },
+          { value: 'shapes', label: (APP.t && APP.t('puzzles.modeShapes')) || 'Shapes' },
+          { value: 'emoji',  label: (APP.t && APP.t('puzzles.modeEmoji'))  || 'Emoji'  },
+        ]
+      },
+      {
+        key: 'difficulty',
+        label: (APP.t && APP.t('puzzles.difficulty')) || 'Size',
+        type: 'segmented',
+        options: [
+          { value: 2, label: '2\xd72' },
+          { value: 3, label: '3\xd73' },
+          { value: 4, label: '4\xd74' },
+          { value: 5, label: '5\xd75' },
+        ]
+      },
+      {
+        key: 'hints',
+        label: (APP.t && APP.t('puzzles.hintMode')) || 'Hint',
         type: 'segmented',
         options: [
           { value: 'faint', label: (APP.t && APP.t('puzzles.hintFaint')) || 'Faint' },
           { value: 'grey',  label: (APP.t && APP.t('puzzles.hintGrey'))  || 'Grey'  },
+          { value: 'none',  label: (APP.t && APP.t('puzzles.hintNone'))  || 'None'  },
         ]
       },
       {
@@ -299,10 +326,27 @@ window.APP = window.APP || {};
       },
     ];
 
-    function onSettingsChange(key, val, all) {
-      if (key === 'hintMode') S.hintMode = val;
-      if (key === 'showGrid') S.showGrid = val;
-      saveSettings(S);
+    function applyHintLive() {
+      var hintEl = wrap.querySelector('.pz-board-hint');
+      if (hintEl) hintEl.className = 'pz-board-hint hint-' + S.hintMode;
+      var gridEl = wrap.querySelector('.pz-board-grid');
+      if (gridEl) gridEl.style.display = S.showGrid ? '' : 'none';
+    }
+
+    function onSettingsChange(key, val) {
+      if (key === 'hints') {
+        S.hintMode = val; saveSettings(S); applyHintLive();
+      } else if (key === 'showGrid') {
+        S.showGrid = val; saveSettings(S); applyHintLive();
+      } else if (key === 'difficulty') {
+        S.rows = parseInt(val, 10) || 3; S.cols = S.rows; saveSettings(S); setStep('play');
+      } else if (key === 'mode') {
+        S.mode = val;
+        if (val === 'emoji' && S.imageSrc && !S.imageSrc.startsWith('emoji:')) S.imageSrc = null;
+        if (val !== 'emoji' && S.imageSrc && S.imageSrc.startsWith('emoji:')) S.imageSrc = null;
+        if (!S.imageSrc) S.imageSrc = pickRandomImage();
+        saveSettings(S); setStep('play');
+      }
     }
 
     // ── Step router ──────────────────────────────────────────────────────────
@@ -321,18 +365,31 @@ window.APP = window.APP || {};
           nextBtn.setAttribute('aria-label', (APP.t && APP.t('puzzles.next')) || 'Next');
           nextBtn.title = (APP.t && APP.t('puzzles.next')) || 'Next';
           nextBtn.addEventListener('click', function () { playNext(); });
+          var pickerBtn = document.createElement('button');
+          pickerBtn.className = 'btn icon ghost';
+          pickerBtn.textContent = '🖼';
+          pickerBtn.setAttribute('aria-label', (APP.t && APP.t('puzzles.pickImage')) || 'Pick image');
+          pickerBtn.title = (APP.t && APP.t('puzzles.pickImage')) || 'Pick image';
+          pickerBtn.addEventListener('click', function () { setStep('picker'); });
           topbarEl = APP.ui.topbar({
             ctx: ctx,
             title: (APP.t && APP.t('puzzles.title')) || 'Puzzles',
             home: true,
             back: function () { if (G) G.killTweensOf('*'); ctx.go(APP.ui && APP.ui.defaultBackTarget ? APP.ui.defaultBackTarget('puzzles') : (APP.screens && APP.screens.map ? 'map' : 'landing')); },
-            right: [nextBtn],
+            right: [pickerBtn, nextBtn],
             settings: {
               gameId: 'puzzles',
               title: (APP.t && APP.t('puzzles.settings')) || 'Puzzle Settings',
               schema: advancedSchema,
               onChange: onSettingsChange
             }
+          });
+        } else if (step === 'picker') {
+          topbarEl = APP.ui.topbar({
+            ctx: ctx,
+            title: (APP.t && APP.t('puzzles.pickImage')) || 'Pick Image',
+            home: true,
+            back: function () { setStep('play'); },
           });
         } else {
           topbarEl = APP.ui.topbar({
@@ -382,6 +439,7 @@ window.APP = window.APP || {};
 
       if (step === 'setup') { stepSetup(stage); }
       else if (step === 'play') { stepPlay(stage); }
+      else if (step === 'picker') { stepPicker(stage); }
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -539,6 +597,118 @@ window.APP = window.APP || {};
       lbl.textContent = labelText;
       f.appendChild(lbl);
       return f;
+    }
+
+    // ── Image picker step ────────────────────────────────────────────────────
+    function stepPicker(stage) {
+      var pickerDiv = document.createElement('div');
+      pickerDiv.className = 'pz-setup';
+      stage.appendChild(pickerDiv);
+
+      var inner = document.createElement('div');
+      inner.className = 'pz-setup-inner';
+      pickerDiv.appendChild(inner);
+
+      // Mode tabs (emoji vs image galleries)
+      var pickerMode = S.imageSrc && S.imageSrc.startsWith('emoji:') ? 'emoji' : (S.mode === 'emoji' ? 'emoji' : 'image');
+      var tabs = document.createElement('div');
+      tabs.className = 'pz-tabs';
+      [
+        { id: 'image', label: '🖼 ' + ((APP.t && APP.t('puzzles.coloring')) || 'Images') },
+        { id: 'emoji', label: '😀 ' + ((APP.t && APP.t('puzzles.modeEmoji')) || 'Emoji') },
+      ].forEach(function (m) {
+        var btn = document.createElement('button');
+        btn.className = 'pz-tab' + (pickerMode === m.id ? ' active' : '');
+        btn.textContent = m.label;
+        btn.addEventListener('click', function () {
+          pickerMode = m.id;
+          tabs.querySelectorAll('.pz-tab').forEach(function (b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          renderPickerGallery();
+        });
+        tabs.appendChild(btn);
+      });
+      var tabField = makeField('');
+      tabField.appendChild(tabs);
+      inner.appendChild(tabField);
+
+      // Gallery
+      var galleryWrap = document.createElement('div');
+      galleryWrap.className = 'pz-gallery-wrap';
+      inner.appendChild(galleryWrap);
+
+      // Confirm button (disabled until selection)
+      var confirmBtn = document.createElement('button');
+      confirmBtn.className = 'btn pz-start-btn';
+      confirmBtn.textContent = (APP.t && APP.t('puzzles.pickImage')) || 'Use this image';
+      confirmBtn.disabled = !S.imageSrc;
+      confirmBtn.addEventListener('click', function () {
+        if (S.imageSrc) { saveSettings(S); startPuzzle(); }
+      });
+      inner.appendChild(confirmBtn);
+
+      function renderPickerGallery() {
+        galleryWrap.innerHTML = '';
+        var gallery = document.createElement('div');
+
+        if (pickerMode === 'emoji') {
+          gallery.className = 'pz-gallery--emoji';
+          EMOJI_LIST.forEach(function (emoji) {
+            var key = 'emoji:' + emoji;
+            var btn = document.createElement('button');
+            btn.className = 'pz-gallery-emoji' + (S.imageSrc === key ? ' active' : '');
+            btn.textContent = emoji;
+            btn.addEventListener('click', function () {
+              S.imageSrc = key;
+              gallery.querySelectorAll('.pz-gallery-emoji').forEach(function (b) { b.classList.remove('active'); });
+              btn.classList.add('active');
+              confirmBtn.disabled = false;
+            });
+            gallery.appendChild(btn);
+          });
+        } else {
+          gallery.className = 'pz-gallery';
+          gallery.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;';
+
+          function makeSection(label, items) {
+            var sec = document.createElement('div');
+            sec.className = 'pz-gallery-section';
+            sec.style.gridColumn = '1 / -1';
+            var lbl = document.createElement('div');
+            lbl.className = 'pz-gallery-label';
+            lbl.textContent = label;
+            sec.appendChild(lbl);
+            var grid = document.createElement('div');
+            grid.className = 'pz-gallery-grid';
+            items.forEach(function (item) {
+              var btn = document.createElement('button');
+              btn.className = 'pz-gallery-item' + (S.imageSrc === item.src ? ' active' : '');
+              btn.title = item.label;
+              var img = document.createElement('img');
+              img.src = item.src; img.alt = item.label;
+              btn.appendChild(img);
+              btn.addEventListener('click', function () {
+                S.imageSrc = item.src;
+                gallery.querySelectorAll('.pz-gallery-item').forEach(function (b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                confirmBtn.disabled = false;
+              });
+              grid.appendChild(btn);
+            });
+            sec.appendChild(grid);
+            gallery.appendChild(sec);
+          }
+
+          makeSection((APP.t && APP.t('puzzles.coloring')) || 'Colouring', COLORING);
+          makeSection((APP.t && APP.t('puzzles.stories'))  || 'Story Books', STORIES);
+          makeSection((APP.t && APP.t('puzzles.animals'))  || 'Animals', (APP.ANIMALS || []).map(function (a) {
+            return { src: a.images.cartoon, label: a.displayName };
+          }));
+        }
+        galleryWrap.appendChild(gallery);
+      }
+
+      renderPickerGallery();
     }
 
     // ── Image loading bridge ─────────────────────────────────────────────────
@@ -920,22 +1090,26 @@ window.APP = window.APP || {};
 
       var againBtn = document.createElement('button');
       againBtn.className = 'btn';
-      againBtn.textContent = 'Play Again';
+      againBtn.textContent = (APP.t && APP.t('puzzles.playAgain')) || 'Play Again';
       againBtn.addEventListener('click', function () { startPuzzle(); });
 
       var nextBtn2 = document.createElement('button');
       nextBtn2.className = 'btn secondary';
-      nextBtn2.textContent = 'Next ▶';
+      nextBtn2.textContent = (APP.t && APP.t('puzzles.next')) || 'Next';
       nextBtn2.addEventListener('click', function () { playNext(); });
 
-      var optBtn = document.createElement('button');
-      optBtn.className = 'btn ghost';
-      optBtn.textContent = 'Options';
-      optBtn.addEventListener('click', function () { setStep('setup'); });
+      var greatJobBtn = document.createElement('button');
+      greatJobBtn.className = 'btn success';
+      greatJobBtn.textContent = (APP.t && APP.t('complete.greatJob')) || 'Great Job! 🎉';
+      greatJobBtn.addEventListener('click', function () {
+        if (APP.audio && APP.audio.sfx) APP.audio.sfx.pop();
+        if (confettiCleanup) { confettiCleanup(); confettiCleanup = null; }
+        confettiCleanup = APP.launchConfetti ? APP.launchConfetti({ count: 120, duration: 3500 }) : null;
+      });
 
       actions.appendChild(againBtn);
       actions.appendChild(nextBtn2);
-      actions.appendChild(optBtn);
+      actions.appendChild(greatJobBtn);
       overlay.appendChild(actions);
       stage.appendChild(overlay);
     }

@@ -69,8 +69,10 @@ window.APP = window.APP || {};
     s.id = 'tictactoe-css';
     s.textContent = [
       '.ttt-screen { flex:1; display:flex; flex-direction:column; min-height:0; }',
-      '.ttt-body { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:16px; }',
-      '.ttt-status { font-size:1.2rem; font-weight:600; color:var(--accent,#e67e22); min-height:1.8em; text-align:center; }',
+      '.ttt-body { flex:1; display:flex; flex-direction:column; align-items:center; padding:12px 16px; }',
+      '.ttt-top { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; }',
+      '.ttt-footer { min-height:96px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; }',
+      '.ttt-status { font-size:1.2rem; font-weight:600; color:var(--accent,#e67e22); text-align:center; }',
       '.ttt-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; width:min(300px,80vw); }',
       '.ttt-cell { aspect-ratio:1; font-size:2.8rem; border:3px solid #ccc; border-radius:12px; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s,transform 0.1s; -webkit-tap-highlight-color:transparent; }',
       '.ttt-cell:not(:disabled):hover { background:#f5f5f5; transform:scale(1.04); }',
@@ -191,10 +193,8 @@ window.APP = window.APP || {};
       var body = document.createElement('div');
       body.className = 'ttt-body';
 
-      // Status text
-      var statusEl = document.createElement('div');
-      statusEl.className = 'ttt-status';
-      body.appendChild(statusEl);
+      var topZone = document.createElement('div');
+      topZone.className = 'ttt-top';
 
       // Win tally (player 1 — draws — player 2/robot)
       var tallyEl = document.createElement('div');
@@ -203,7 +203,7 @@ window.APP = window.APP || {};
         '<div class="tcol"><span class="ticon">' + p1Icon + '</span><span class="tscore">' + tally.P + '</span></div>' +
         '<div class="tcol"><span class="ticon">🤝</span><span class="tscore">' + tally.draw + '</span></div>' +
         '<div class="tcol"><span class="ticon">' + p2Icon + '</span><span class="tscore">' + tally.R + '</span></div>';
-      body.appendChild(tallyEl);
+      topZone.appendChild(tallyEl);
 
       // Grid
       var grid = document.createElement('div');
@@ -226,6 +226,7 @@ window.APP = window.APP || {};
               gameOver = true;
               doRender();
               if (w && APP.audio && APP.audio.sfx) APP.audio.sfx.pop();
+              if (w === 'P' && APP.launchConfetti) APP.launchConfetti({ count: 100, duration: 3000 });
               return;
             }
             currentTurn = currentTurn === 'P' ? 'R' : 'P';
@@ -251,9 +252,13 @@ window.APP = window.APP || {};
         }
       }
 
-      body.appendChild(grid);
+      topZone.appendChild(grid);
+      body.appendChild(topZone);
 
-      // Result or status
+      // Fixed-height footer: shows status during play, result+buttons when game over
+      var footer = document.createElement('div');
+      footer.className = 'ttt-footer';
+
       if (gameOver) {
         var resultDiv = document.createElement('div');
         resultDiv.className = 'ttt-result';
@@ -286,9 +291,23 @@ window.APP = window.APP || {};
           }
         });
         resultDiv.appendChild(againBtn);
-        body.appendChild(resultDiv);
-        statusEl.textContent = '';
+
+        // Great Job button only on player win
+        if (winner === 'P') {
+          var greatJobBtn = document.createElement('button');
+          greatJobBtn.className = 'btn success';
+          greatJobBtn.textContent = T('complete.greatJob') || 'Great Job! 🎉';
+          greatJobBtn.addEventListener('click', function () {
+            if (APP.audio && APP.audio.sfx) APP.audio.sfx.pop();
+            if (APP.launchConfetti) APP.launchConfetti({ count: 100, duration: 3000 });
+          });
+          resultDiv.appendChild(greatJobBtn);
+        }
+
+        footer.appendChild(resultDiv);
       } else {
+        var statusEl = document.createElement('div');
+        statusEl.className = 'ttt-status';
         if (settings.opponent === 'robot') {
           statusEl.textContent = currentTurn === 'P'
             ? (T('game.tictactoe.yourTurn') || 'Your turn!')
@@ -298,8 +317,10 @@ window.APP = window.APP || {};
             ? p1Icon + ' Player 1\'s turn'
             : p2Icon + ' Player 2\'s turn';
         }
+        footer.appendChild(statusEl);
       }
 
+      body.appendChild(footer);
       screen.appendChild(body);
       root.appendChild(screen);
     }

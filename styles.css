@@ -3348,6 +3348,7 @@ input, textarea, [contenteditable] {
 }
 .pz-board-hint.hint-faint { opacity: 0.18; }
 .pz-board-hint.hint-grey  { filter: grayscale(1) brightness(0.45); }
+.pz-board-hint.hint-none  { opacity: 0; }
 
 .pz-board-grid {
   position: absolute;

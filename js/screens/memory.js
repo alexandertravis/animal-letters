@@ -170,6 +170,15 @@ window.APP = window.APP || {};
         againBtn.addEventListener('click', function () { startNew(); });
         resultDiv.appendChild(againBtn);
 
+        var greatJobBtn = document.createElement('button');
+        greatJobBtn.className = 'btn success';
+        greatJobBtn.textContent = T('complete.greatJob') || 'Great Job! 🎉';
+        greatJobBtn.addEventListener('click', function () {
+          if (APP.audio && APP.audio.sfx) APP.audio.sfx.pop();
+          if (APP.launchConfetti) APP.launchConfetti({ count: 120, duration: 3500 });
+        });
+        resultDiv.appendChild(greatJobBtn);
+
         body.appendChild(resultDiv);
       } else {
         var infoEl = document.createElement('div');
@@ -236,7 +245,11 @@ window.APP = window.APP || {};
                 gridEl.querySelectorAll('.memory-card')[si].classList.add('matched');
                 if (matchedCount === settings.pairs) {
                   gameOver = true;
-                  setTimeout(function () { doRender(); }, 600);
+                  setTimeout(function () {
+                    if (APP.launchConfetti) APP.launchConfetti({ count: 120, duration: 3500 });
+                    if (APP.audio && APP.audio.sfx) APP.audio.sfx.pop();
+                    doRender();
+                  }, 600);
                 }
               } else {
                 // No match

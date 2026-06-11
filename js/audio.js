@@ -36,7 +36,7 @@ window.APP = window.APP || {};
       bgMaster = a.createGain();
       bgMaster.connect(a.destination);
       var s = APP.state && APP.state.settings;
-      var enabled = s ? s.bgMusicEnabled : true;
+      var enabled = !s || s.bgMusicEnabled !== false;
       var vol = s ? (s.bgMusicVol != null ? s.bgMusicVol : 0.3) : 0.3;
       bgMaster.gain.value = enabled ? vol : 0;
     }
@@ -153,7 +153,7 @@ window.APP = window.APP || {};
           var s = APP.state && APP.state.settings;
           if (s && bgMaster) {
             var vol = s.bgMusicVol != null ? s.bgMusicVol : 0.3;
-            bgMaster.gain.value = s.bgMusicEnabled ? vol : 0;
+            bgMaster.gain.value = s.bgMusicEnabled !== false ? vol : 0;
           }
         }, 500);
       } catch (_) {}
@@ -386,7 +386,7 @@ window.APP = window.APP || {};
   APP.audio.music = {
     play: function (trackId) {
       var s = APP.state && APP.state.settings;
-      if (s && !s.bgMusicEnabled) return;
+      if (s && s.bgMusicEnabled === false) return;
       var file = MUSIC_FILES[trackId] || MUSIC_FILES['default'];
       // Already playing the same file — leave it running.
       if (bgAudio && bgAudio._trackId === trackId && !bgAudio.paused) return;
@@ -421,7 +421,7 @@ window.APP = window.APP || {};
       if (APP.settings) APP.settings.update({ bgMusicVol: v });
       else if (APP.state) APP.state.settings.bgMusicVol = v;
       var s = APP.state && APP.state.settings;
-      var enabled = s ? s.bgMusicEnabled : true;
+      var enabled = !s || s.bgMusicEnabled !== false;
       if (bgAudio) bgAudio.volume = enabled ? v : 0;
       if (bgMaster && ac) {
         bgMaster.gain.setTargetAtTime(enabled ? v : 0, getAC().currentTime, 0.1);
@@ -431,7 +431,7 @@ window.APP = window.APP || {};
       if (APP.settings) APP.settings.update({ bgMusicEnabled: b });
       else if (APP.state) APP.state.settings.bgMusicEnabled = b;
       var s = APP.state && APP.state.settings;
-      var vol = s ? (s.bgMusicVol != null ? s.bgMusicVol : 0.6) : 0.6;
+      var vol = s ? (s.bgMusicVol != null ? s.bgMusicVol : 0.3) : 0.3;
       // Keep the file element alive but silence it when disabled, so re-enabling
       // is instant without needing a fresh user gesture to restart playback.
       if (bgAudio) bgAudio.volume = b ? vol : 0;

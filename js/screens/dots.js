@@ -581,6 +581,14 @@ window.APP = window.APP || {};
           <button class="btn" id="play-again">Play again</button>
           <button class="btn secondary" id="choose-another">Choose another</button>
         `;
+        var greatJobBtn = document.createElement('button');
+        greatJobBtn.className = 'btn success';
+        greatJobBtn.textContent = (APP.t && APP.t('complete.greatJob')) || 'Great Job! 🎉';
+        greatJobBtn.addEventListener('click', function () {
+          if (APP.audio && APP.audio.sfx) APP.audio.sfx.pop();
+          if (APP.launchConfetti) APP.launchConfetti({ count: 120, duration: 3500 });
+        });
+        overlay.appendChild(greatJobBtn);
         stage.appendChild(overlay);
         overlay.querySelector('#play-again').addEventListener('click', function () {
           renderPlay(wrap, ctx, puzzle);

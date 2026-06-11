@@ -245,7 +245,12 @@ APP.I18N = {
     'game.music.maracas': 'Maracas',
     'game.music.claves': 'Claves',
     'loc.numbers': 'Numbers',
-    'puzzles.next': 'Next',
+    'puzzles.next':      'Next',
+    'puzzles.hintMode':  'Hint',
+    'puzzles.settings':  'Puzzle Settings',
+    'puzzles.coloring':  'Colouring',
+    'puzzles.stories':   'Story Books',
+    'puzzles.animals':   'Animals',
   },
 
   pt: {
@@ -429,7 +434,12 @@ APP.I18N = {
     'game.music.maracas': 'Maracas',
     'game.music.claves': 'Clavas',
     'loc.numbers': 'Números',
-    'puzzles.next': 'Próximo',
+    'puzzles.next':      'Próximo',
+    'puzzles.hintMode':  'Dica',
+    'puzzles.settings':  'Definições do puzzle',
+    'puzzles.coloring':  'Colorir',
+    'puzzles.stories':   'Livros de histórias',
+    'puzzles.animals':   'Animais',
   },
 
   fr: {
@@ -613,7 +623,12 @@ APP.I18N = {
     'game.music.maracas': 'Maracas',
     'game.music.claves': 'Claves',
     'loc.numbers': 'Chiffres',
-    'puzzles.next': 'Suivant',
+    'puzzles.next':      'Suivant',
+    'puzzles.hintMode':  'Indice',
+    'puzzles.settings':  'Réglages du puzzle',
+    'puzzles.coloring':  'Coloriage',
+    'puzzles.stories':   'Livres',
+    'puzzles.animals':   'Animaux',
   },
 
   es: {
@@ -797,7 +812,12 @@ APP.I18N = {
     'game.music.maracas': 'Maracas',
     'game.music.claves': 'Claves',
     'loc.numbers': 'Números',
-    'puzzles.next': 'Siguiente',
+    'puzzles.next':      'Siguiente',
+    'puzzles.hintMode':  'Pista',
+    'puzzles.settings':  'Ajustes del puzzle',
+    'puzzles.coloring':  'Colorear',
+    'puzzles.stories':   'Libros de cuentos',
+    'puzzles.animals':   'Animales',
   },
 
   de: {
@@ -981,7 +1001,12 @@ APP.I18N = {
     'game.music.maracas': 'Maracas',
     'game.music.claves': 'Klanghölzer',
     'loc.numbers': 'Zahlen',
-    'puzzles.next': 'Weiter',
+    'puzzles.next':      'Weiter',
+    'puzzles.hintMode':  'Hinweis',
+    'puzzles.settings':  'Puzzle-Einstellungen',
+    'puzzles.coloring':  'Ausmalbilder',
+    'puzzles.stories':   'Geschichtenbücher',
+    'puzzles.animals':   'Tiere',
   },
 
   it: {
@@ -1165,6 +1190,11 @@ APP.I18N = {
     'game.music.maracas': 'Maracas',
     'game.music.claves': 'Claves',
     'loc.numbers': 'Numeri',
-    'puzzles.next': 'Prossimo',
+    'puzzles.next':      'Prossimo',
+    'puzzles.hintMode':  'Suggerimento',
+    'puzzles.settings':  'Impostazioni puzzle',
+    'puzzles.coloring':  'Colorare',
+    'puzzles.stories':   'Libri',
+    'puzzles.animals':   'Animali',
   },
 };
