@@ -10,7 +10,38 @@ window.APP = window.APP || {};
     { id: 'hexagon',  path: 'M30,5 L55,17 L55,43 L30,55 L5,43 L5,17 Z', color: '#1abc9c' },
   ];
 
-  var DEFAULTS = { count: 4, colourHints: true };
+  var COLOURS = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c'];
+
+  var DEFAULTS = { count: 4, colourHints: true, difficulty: 'shapes' };
+
+  // Build the list of target items for the chosen difficulty. Each item maps to
+  // one hole at the same index; matching is by index, so distinct items are all
+  // that's required. size is a multiplier (1 = default).
+  function buildItems(difficulty, count) {
+    var items = [];
+    var i;
+    if (difficulty === 'colour') {
+      // One shape type, many colours — child must match colour.
+      var base = SHAPES[0];
+      for (i = 0; i < count; i++) {
+        items.push({ path: base.path, color: COLOURS[i % COLOURS.length], size: 1 });
+      }
+    } else if (difficulty === 'sizeColour') {
+      // Alternate two shapes, vary both size and colour.
+      var sizes = [0.7, 1.0, 1.3];
+      for (i = 0; i < count; i++) {
+        var sh = SHAPES[i % 2];
+        items.push({ path: sh.path, color: COLOURS[i % COLOURS.length], size: sizes[i % sizes.length] });
+      }
+    } else {
+      // 'shapes' — distinct shapes, each its own colour.
+      for (i = 0; i < count; i++) {
+        var s = SHAPES[i % SHAPES.length];
+        items.push({ path: s.path, color: s.color, size: 1 });
+      }
+    }
+    return items;
+  }
 
   function injectStyles() {
     if (document.getElementById('shapes-css')) return;
@@ -55,8 +86,13 @@ window.APP = window.APP || {};
     var settings = APP.settings.game('shapes', DEFAULTS);
     var count = settings.count || DEFAULTS.count;
     var colourHints = settings.colourHints !== undefined ? settings.colourHints : DEFAULTS.colourHints;
+    var difficulty = settings.difficulty || DEFAULTS.difficulty;
 
-    var activeShapes = SHAPES.slice(0, count);
+    var activeShapes = buildItems(difficulty, count);
+    // Colour/size modes need coloured holes to be solvable; otherwise the holes
+    // are coloured only when the colour-hints toggle is on.
+    var holeColoured = colourHints || difficulty !== 'shapes';
+    var pieceColoured = colourHints || difficulty !== 'shapes';
     // Track which holes are filled
     var filled = new Array(count).fill(false);
     var holeEls = [];
@@ -80,6 +116,14 @@ window.APP = window.APP || {};
             type: 'segmented', key: 'count', label: APP.t('game.shapes.count') || 'Shapes',
             options: [{ value: 3, label: '3' }, { value: 4, label: '4' }, { value: 6, label: '6' }]
           },
+          {
+            type: 'segmented', key: 'difficulty', label: APP.t('game.shapes.difficulty') || 'Difficulty',
+            options: [
+              { value: 'shapes',     label: 'Shapes' },
+              { value: 'colour',     label: 'Colours' },
+              { value: 'sizeColour', label: 'Size + colour' }
+            ]
+          },
           { type: 'toggle', key: 'colourHints', label: APP.t('game.shapes.hints') || 'Colour hints' }
         ],
         onChange: function (key, val, all) {
@@ -96,11 +140,20 @@ window.APP = window.APP || {};
     var board = document.createElement('div');
     board.className = 'shapes-board';
     activeShapes.forEach(function (shape, i) {
+      var sz = shape.size || 1;
       var hole = document.createElement('div');
       hole.className = 'shape-hole';
       hole.dataset.index = i;
-      // Show grey ghost of the shape outline in the hole
-      var ghost = makeSvg(shape.path, '#ccc', 56);
+      hole.style.width = Math.round(80 * sz) + 'px';
+      hole.style.height = Math.round(80 * sz) + 'px';
+      // Ghost of the shape outline — coloured (low-opacity) when hints are on.
+      var ghostColor = holeColoured ? shape.color : '#ccc';
+      var ghost = makeSvg(shape.path, ghostColor, Math.round(56 * sz));
+      if (holeColoured) {
+        ghost.style.opacity = '0.45';
+        hole.style.borderColor = shape.color;
+        hole.style.background = shape.color + '22';  // ~13% tint
+      }
       hole.appendChild(ghost);
       holeEls.push(hole);
       board.appendChild(hole);
@@ -117,11 +170,14 @@ window.APP = window.APP || {};
 
     order.forEach(function (shapeIndex) {
       var shape = activeShapes[shapeIndex];
+      var sz = shape.size || 1;
       var piece = document.createElement('div');
       piece.className = 'shape-piece';
       piece.dataset.shapeIndex = shapeIndex;
-      var color = colourHints ? shape.color : '#555';
-      piece.appendChild(makeSvg(shape.path, color, 52));
+      piece.style.width = Math.round(72 * sz) + 'px';
+      piece.style.height = Math.round(72 * sz) + 'px';
+      var color = pieceColoured ? shape.color : '#555';
+      piece.appendChild(makeSvg(shape.path, color, Math.round(52 * sz)));
       pieceEls.push(piece);
       tray.appendChild(piece);
     });
@@ -138,8 +194,11 @@ window.APP = window.APP || {};
       var clone = document.createElement('div');
       clone.className = 'shape-clone';
       var shape = activeShapes[shapeIndex];
-      var color = colourHints ? shape.color : '#555';
-      clone.appendChild(makeSvg(shape.path, color, 52));
+      var sz = shape.size || 1;
+      clone.style.width = Math.round(72 * sz) + 'px';
+      clone.style.height = Math.round(72 * sz) + 'px';
+      var color = pieceColoured ? shape.color : '#555';
+      clone.appendChild(makeSvg(shape.path, color, Math.round(52 * sz)));
       clone.style.left = (clientX - 36) + 'px';
       clone.style.top  = (clientY - 36) + 'px';
       document.body.appendChild(clone);
@@ -172,7 +231,8 @@ window.APP = window.APP || {};
           filled[i] = true;
           var shape = activeShapes[i];
           holeEls[i].innerHTML = '';
-          holeEls[i].appendChild(makeSvg(shape.path, shape.color, 60));
+          holeEls[i].style.background = '#e8ffe8';
+          holeEls[i].appendChild(makeSvg(shape.path, shape.color, Math.round(60 * (shape.size || 1))));
           holeEls[i].classList.add('filled');
           d.pieceEl.classList.add('placed');
           if (APP.audio && APP.audio.sfx) try { APP.audio.sfx.pop(); } catch(e){}
