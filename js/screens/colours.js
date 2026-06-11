@@ -10,14 +10,16 @@ window.APP = window.APP || {};
     { id: 'purple', hex: '#9b59b6', label: 'colour.purple' },
   ];
 
-  var OBJECTS = [
-    { id: 'balloon', emoji: '🎈' },
-    { id: 'flower',  emoji: '🌸' },
-    { id: 'fish',    emoji: '🐟' },
-    { id: 'sock',    emoji: '🧦' },
-    { id: 'car',     emoji: '🚗' },
-    { id: 'star',    emoji: '⭐' },
-  ];
+  // Each colour maps to an emoji that is naturally that colour, so the object
+  // the child drags visually matches the basket colour.
+  var COLOUR_EMOJI = {
+    red:    '🍎',  // apple
+    blue:   '🫐',  // blueberries
+    yellow: '🍋',  // lemon
+    green:  '🥦',  // broccoli
+    orange: '🍊',  // orange
+    purple: '🍇',  // grapes
+  };
 
   var DEFAULTS = { numColours: 3 };
 
@@ -27,14 +29,14 @@ window.APP = window.APP || {};
     s.id = 'colours-css';
     s.textContent = [
       '.colours-screen{display:flex;flex-direction:column;min-height:100vh;}',
-      '.colours-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:16px;gap:16px;}',
-      '.colours-objects{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;padding:16px;}',
+      '.colours-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:16px;gap:20px;overflow-y:auto;}',
+      '.colours-objects{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;padding:8px;width:100%;box-sizing:border-box;}',
       '.colour-object{width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;cursor:grab;user-select:none;touch-action:none;box-shadow:0 2px 8px rgba(0,0,0,.2);transition:box-shadow 0.15s;}',
       '.colour-object:active{cursor:grabbing;box-shadow:0 8px 24px rgba(0,0,0,.3);}',
       '.colour-object.sorted{opacity:0;pointer-events:none;}',
       '.colour-clone{position:fixed;pointer-events:none;z-index:999;width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;box-shadow:0 8px 24px rgba(0,0,0,.3);}',
-      '.colours-baskets{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:8px;}',
-      '.colour-basket{width:80px;min-height:80px;border-radius:16px;border:3px dashed rgba(0,0,0,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px;font-size:0.75rem;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.4);}',
+      '.colours-baskets{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:8px;width:100%;box-sizing:border-box;}',
+      '.colour-basket{flex:0 0 auto;width:72px;min-width:64px;min-height:72px;border-radius:16px;border:3px dashed rgba(0,0,0,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px;font-size:0.72rem;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.4);box-sizing:border-box;}',
       '.colour-basket.has-item{border-style:solid;}',
       '@keyframes colours-shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}',
       '.colours-shake{animation:colours-shake .35s ease;}',
@@ -65,11 +67,14 @@ window.APP = window.APP || {};
 
     var activeColours = COLOURS.slice(0, numColours);
 
-    // Assign each object a random colour from active colours
-    var shuffledObjects = OBJECTS.slice(0, Math.max(numColours, 3)).map(function (obj) {
-      var colourIdx = Math.floor(Math.random() * numColours);
-      return { id: obj.id, emoji: obj.emoji, colourId: activeColours[colourIdx].id };
-    });
+    // One object per colour (round-robin), doubling up when there are few
+    // colours so there's more to sort. Emoji always matches the colour.
+    var total = numColours <= 3 ? numColours * 2 : numColours;
+    var shuffledObjects = [];
+    for (var k = 0; k < total; k++) {
+      var c = activeColours[k % numColours];
+      shuffledObjects.push({ id: 'obj' + k, emoji: COLOUR_EMOJI[c.id] || '⬤', colourId: c.id });
+    }
 
     var sorted = new Array(shuffledObjects.length).fill(false);
     var basketEls = [];
