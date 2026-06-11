@@ -141,7 +141,9 @@ window.APP = window.APP || {};
               options: [
                 { value: 6,  label: '6×6'   },
                 { value: 8,  label: '8×8'   },
-                { value: 10, label: '10×10' }
+                { value: 10, label: '10×10' },
+                { value: 12, label: '12×12' },
+                { value: 14, label: '14×14' }
               ]
             }
           ],
@@ -250,16 +252,16 @@ window.APP = window.APP || {};
         trailEl.setAttribute('points', trailPts);
         trailEl.setAttribute('fill', 'none');
         trailEl.setAttribute('stroke', '#a78bfa');
-        trailEl.setAttribute('stroke-width', '4');
+        trailEl.setAttribute('stroke-width', '8');
         trailEl.setAttribute('stroke-linecap', 'round');
         trailEl.setAttribute('stroke-linejoin', 'round');
-        trailEl.setAttribute('opacity', '0.6');
+        trailEl.setAttribute('opacity', '0.85');
         svg.appendChild(trailEl);
 
         // Goal emoji
         var goalText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         goalText.setAttribute('x', MARGIN + (N-1)*CELL + CELL/2);
-        goalText.setAttribute('y', MARGIN + (N-1)*CELL + CELL/2 + 10);
+        goalText.setAttribute('y', MARGIN + (N-1)*CELL + CELL/2);
         goalText.setAttribute('text-anchor', 'middle');
         goalText.setAttribute('dominant-baseline', 'middle');
         goalText.setAttribute('font-size', Math.floor(CELL * 0.65));
@@ -269,7 +271,7 @@ window.APP = window.APP || {};
         // Player emoji
         var playerText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         playerText.setAttribute('x', MARGIN + playerCol * CELL + CELL/2);
-        playerText.setAttribute('y', MARGIN + playerRow * CELL + CELL/2 + 10);
+        playerText.setAttribute('y', MARGIN + playerRow * CELL + CELL/2);
         playerText.setAttribute('text-anchor', 'middle');
         playerText.setAttribute('dominant-baseline', 'middle');
         playerText.setAttribute('font-size', Math.floor(CELL * 0.65));
@@ -281,7 +283,7 @@ window.APP = window.APP || {};
 
         // ── Drag / swipe input ───────────────────────────────────────────────
         var dragStart = null;
-        var MIN_DRAG = 20; // px in screen coords
+        var MIN_DRAG = 16; // px in screen coords per cell-step
 
         function clientToSvgCoord(e) {
           var ctm = svg.getScreenCTM();
@@ -294,7 +296,7 @@ window.APP = window.APP || {};
         }
 
         function tryMove(dRow, dCol) {
-          if (gameOver) return;
+          if (gameOver) return false;
           var cell = maze[playerRow][playerCol];
           var canMove = false;
           if (dRow === -1 && !cell.top)    canMove = true;
@@ -304,7 +306,7 @@ window.APP = window.APP || {};
 
           if (!canMove) {
             if (APP.audio && APP.audio.sfx) APP.audio.sfx.wrong();
-            return;
+            return false;
           }
 
           playerRow += dRow;
@@ -315,7 +317,7 @@ window.APP = window.APP || {};
 
           // Update player emoji position
           playerText.setAttribute('x', MARGIN + playerCol * CELL + CELL/2);
-          playerText.setAttribute('y', MARGIN + playerRow * CELL + CELL/2 + 10);
+          playerText.setAttribute('y', MARGIN + playerRow * CELL + CELL/2);
 
           // Update trail
           var newPts = trail.map(function (pt) {
@@ -329,35 +331,43 @@ window.APP = window.APP || {};
             if (APP.launchConfetti) APP.launchConfetti();
             setTimeout(function () { doRender(); }, 400);
           }
+          return true;
         }
 
+        // Continuous drag: keep moving through cells as the pointer travels,
+        // re-anchoring after each step so one long swipe walks several cells.
         function onPointerDown(e) {
           var src = e.touches ? e.touches[0] : e;
           dragStart = { x: src.clientX, y: src.clientY };
-          e.preventDefault();
-        }
-
-        function onPointerUp(e) {
-          if (!dragStart) return;
-          var src = e.changedTouches ? e.changedTouches[0] : e;
-          var dx = src.clientX - dragStart.x;
-          var dy = src.clientY - dragStart.y;
-          dragStart = null;
-
-          if (Math.abs(dx) < MIN_DRAG && Math.abs(dy) < MIN_DRAG) return;
-
-          if (Math.abs(dx) >= Math.abs(dy)) {
-            tryMove(0, dx > 0 ? 1 : -1);
-          } else {
-            tryMove(dy > 0 ? 1 : -1, 0);
+          if (svg.setPointerCapture && e.pointerId != null) {
+            try { svg.setPointerCapture(e.pointerId); } catch (_) {}
           }
           e.preventDefault();
         }
 
-        svg.addEventListener('mousedown', onPointerDown);
-        svg.addEventListener('mouseup', onPointerUp);
-        svg.addEventListener('touchstart', onPointerDown, { passive: false });
-        svg.addEventListener('touchend', onPointerUp, { passive: false });
+        function onPointerMove(e) {
+          if (!dragStart || gameOver) return;
+          var src = e.touches ? e.touches[0] : e;
+          var dx = src.clientX - dragStart.x;
+          var dy = src.clientY - dragStart.y;
+          if (Math.abs(dx) < MIN_DRAG && Math.abs(dy) < MIN_DRAG) return;
+          var moved;
+          if (Math.abs(dx) >= Math.abs(dy)) {
+            moved = tryMove(0, dx > 0 ? 1 : -1);
+          } else {
+            moved = tryMove(dy > 0 ? 1 : -1, 0);
+          }
+          // Re-anchor so the next cell-step needs a fresh drag delta.
+          if (moved) dragStart = { x: src.clientX, y: src.clientY };
+          e.preventDefault();
+        }
+
+        function onPointerUp() { dragStart = null; }
+
+        svg.addEventListener('pointerdown', onPointerDown);
+        svg.addEventListener('pointermove', onPointerMove);
+        svg.addEventListener('pointerup', onPointerUp);
+        svg.addEventListener('pointercancel', onPointerUp);
 
         // Arrow key support
         function onKeyDown(e) {
