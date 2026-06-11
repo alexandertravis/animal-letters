@@ -53,35 +53,36 @@ window.APP = window.APP || {};
     ].join('');
     wrap.appendChild(bgSvg);
 
-    // Topbar with settings gear + optional continue button
-    var topbarRight = [];
-    if (APP.state.sessionExists) {
-      var contTarget = APP.state.screen === 'map' ? 'game' : APP.state.screen;
-      var contBtn = document.createElement('button');
-      contBtn.className = 'btn icon ghost';
-      contBtn.innerHTML = APP.ICONS ? APP.ICONS.play : '&#9654;';
-      contBtn.setAttribute('aria-label', APP.t('landing.continue') || 'Continue');
-      contBtn.title = APP.t('landing.continue') || 'Continue';
-      (function(target) {
-        contBtn.addEventListener('click', function() { ctx.go(target); });
-      })(contTarget);
-      topbarRight.push(contBtn);
-    }
+    // Settings gear always on the far right; continue button on the left when a session exists
     var settingsBtn = document.createElement('button');
     settingsBtn.className = 'btn icon ghost';
     settingsBtn.innerHTML = APP.ICONS ? APP.ICONS.settings : '&#9881;';
     settingsBtn.setAttribute('aria-label', APP.t('ui.settings') || 'Settings');
     settingsBtn.addEventListener('click', function() { ctx.go('setup'); });
-    topbarRight.push(settingsBtn);
+
     var mapTopbar = APP.ui.topbar({
       ctx: ctx,
       title: APP.t('map.title') || 'Animal Letters',
       home: false,
       back: false,
-      right: topbarRight
+      right: [settingsBtn]
     });
     mapTopbar.style.position = 'relative';
     mapTopbar.style.zIndex = '1';
+
+    // Inject continue button into the left slot if a session exists
+    if (APP.state.sessionExists) {
+      var contTarget = 'game';
+      var contBtn = document.createElement('button');
+      contBtn.className = 'btn icon ghost';
+      contBtn.innerHTML = APP.ICONS ? APP.ICONS.play : '&#9654;';
+      contBtn.setAttribute('aria-label', APP.t('landing.continue') || 'Continue');
+      contBtn.title = APP.t('landing.continue') || 'Continue';
+      contBtn.addEventListener('click', function() { ctx.go(contTarget); });
+      var tbLeft = mapTopbar.querySelector('.tb-left');
+      if (tbLeft) tbLeft.appendChild(contBtn);
+    }
+
     wrap.appendChild(mapTopbar);
 
     // Building buttons grid

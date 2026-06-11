@@ -322,13 +322,16 @@ window.APP = window.APP || {};
       }
     },
 
-    // Apply current SFX volume + mute to the sfxMaster gain node (if it exists).
+    // Apply current SFX volume + mute to the sfxMaster gain node.
+    // Calls getMaster() lazily so it works even before the first tone plays.
     _applyGain: function () {
-      if (!sfxMaster || !ac) return;
-      var s = APP.state.settings;
-      var muted = s.sfxMuted || s.muted;
-      var vol = s.sfxVol != null ? s.sfxVol : (s.volume || 0.7);
-      sfxMaster.gain.setTargetAtTime(muted ? 0 : vol, ac.currentTime, 0.015);
+      try {
+        var master = getMaster();
+        var s = APP.state.settings;
+        var muted = s.sfxMuted || s.muted;
+        var vol = s.sfxVol != null ? s.sfxVol : (s.volume || 0.7);
+        master.gain.setTargetAtTime(muted ? 0 : vol, ac.currentTime, 0.015);
+      } catch (_) {}
     },
 
     // Wake / resume the AudioContext during a user gesture so later sounds fire instantly.

@@ -35,9 +35,9 @@ window.APP = window.APP || {};
       '.shaker-btn:active{transform:scale(.95);}',
       '@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-15deg)}75%{transform:rotate(15deg)}}',
       '.wiggle{animation:wiggle .3s ease;}',
-      '.song-select-row{display:flex;flex-wrap:nowrap;gap:6px;justify-content:flex-start;padding:6px 0 14px;overflow-x:auto;-webkit-overflow-scrolling:touch;}',
+      '.song-select-row{display:flex;flex-wrap:nowrap;gap:6px;width:min(500px,90vw);overflow-x:auto;-webkit-overflow-scrolling:touch;padding:6px 0 14px;}',
       '.song-btn{font-size:.85rem;white-space:nowrap;}',
-      '.song-btn.active{background:var(--accent,#a78bfa);color:#fff;font-weight:800;}',
+      '.btn.song-btn.active{background:#a78bfa;color:#fff;}',
       '.piano-white.key-next,.piano-black.key-next{animation:key-pulse .8s ease-in-out infinite;}',
       '.piano-white.key-active{background:#fff176;}',
       '.piano-black.key-active{background:#b9952b;}',
@@ -175,29 +175,29 @@ window.APP = window.APP || {};
 
   // ── Nursery-rhyme sequences (C-major, matches the white/black keys above) ───
   var SONGS = [
-    { name: 'Twinkle Twinkle', notes: [
+    { name: 'Twinkle Twinkle', emoji: '⭐', notes: [
       262,262,392,392,440,440,392, 349,349,330,330,294,294,262,
       392,392,349,349,330,330,294, 392,392,349,349,330,330,294,
       262,262,392,392,440,440,392, 349,349,330,330,294,294,262
     ]},
-    { name: 'Mary Had a Lamb', notes: [
+    { name: 'Mary Had a Lamb', emoji: '🐑', notes: [
       330,294,262,294,330,330,330, 294,294,294,330,392,392,
       330,294,262,294,330,330,330,330,294,294,330,294,262,
       330,294,262,294,330,330,330, 294,294,294,330,392,392,
       330,294,262,294,330,330,330,330,294,294,330,294,262
     ]},
-    { name: 'Baa Baa Black Sheep', notes: [
+    { name: 'Baa Baa Black Sheep', emoji: '🐏', notes: [
       262,262,392,392,440,494,523,440,392,
       349,349,330,330,294,294,262,
       392,392,392,349,330,330,330,349,349,330,330,294,
       262,262,392,392,440,494,523,440,392, 349,349,330,330,294,294,262
     ]},
-    { name: 'Hot Cross Buns', notes: [
+    { name: 'Hot Cross Buns', emoji: '🥐', notes: [
       330,294,262, 330,294,262,
       262,262,262,262, 294,294,294,294,
       330,294,262
     ]},
-    { name: 'Row Your Boat', notes: [
+    { name: 'Row Your Boat', emoji: '⛵', notes: [
       262,262,262,294,330, 330,294,330,349,392,
       523,523,523,392,392,392,330,330,330,262,262,262,
       392,349,330,294,262
@@ -306,11 +306,39 @@ window.APP = window.APP || {};
       pianoWrap.appendChild(el);
     });
 
+    // Drag support — pointer capture on the wrap detects movement across keys
+    var lastDragFreq = null;
+    pianoWrap.addEventListener('pointerdown', function (e) {
+      try { pianoWrap.setPointerCapture(e.pointerId); } catch (_) {}
+      lastDragFreq = null;
+    });
+    pianoWrap.addEventListener('pointermove', function (e) {
+      if (!(e.buttons & 1)) return;
+      var el = document.elementFromPoint(e.clientX, e.clientY);
+      if (!el) return;
+      var freq = parseFloat(el.getAttribute('data-freq'));
+      if (isNaN(freq) || freq === lastDragFreq) return;
+      lastDragFreq = freq;
+      pianoWrap.querySelectorAll('.pressed').forEach(function (k) { k.classList.remove('pressed'); });
+      el.classList.add('pressed');
+      if (APP.audio && APP.audio._wake) try { APP.audio._wake(); } catch (_) {}
+      playNote(freq);
+      songProgress(freq, el, songRow, pianoWrap);
+    });
+    pianoWrap.addEventListener('pointerup', function () {
+      pianoWrap.querySelectorAll('.pressed').forEach(function (k) { k.classList.remove('pressed'); });
+      lastDragFreq = null;
+    });
+    pianoWrap.addEventListener('pointercancel', function () {
+      pianoWrap.querySelectorAll('.pressed').forEach(function (k) { k.classList.remove('pressed'); });
+      lastDragFreq = null;
+    });
+
     // Song selector row (above the keyboard)
     SONGS.forEach(function (song) {
       var b = document.createElement('button');
       b.className = 'btn secondary song-btn';
-      b.textContent = '🎵 ' + song.name;
+      b.textContent = song.emoji + ' ' + song.name;
       b.dataset.songName = song.name;
       b.addEventListener('click', function () {
         if (APP.audio && APP.audio._wake) try { APP.audio._wake(); } catch(ex){}

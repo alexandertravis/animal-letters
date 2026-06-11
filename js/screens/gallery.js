@@ -187,13 +187,18 @@ window.APP = window.APP || {};
     wrap.appendChild(grid);
     root.appendChild(wrap);
 
-    // Periodic random animation — fires every 3.5–8 seconds on a random unlocked tile
+    // Periodic random animation — fires every ~2 seconds on a random visible tile
     if (liveTiles.length > 0) {
       (function scheduleNext() {
-        var delay = 3500 + Math.random() * 4500;
+        var delay = 1800 + Math.random() * 400;
         var timer = setTimeout(function() {
           if (!document.contains(wrap)) return;
-          var entry = liveTiles[Math.floor(Math.random() * liveTiles.length)];
+          var visibleTiles = liveTiles.filter(function(entry) {
+            var r = entry.img.getBoundingClientRect();
+            return r.top < window.innerHeight && r.bottom > 0;
+          });
+          var pool = visibleTiles.length > 0 ? visibleTiles : liveTiles;
+          var entry = pool[Math.floor(Math.random() * pool.length)];
           var anims = TYPE_ANIMS[animalType(entry.name)];
           var cls = anims[Math.floor(Math.random() * anims.length)];
           entry.img.style.animation = '';

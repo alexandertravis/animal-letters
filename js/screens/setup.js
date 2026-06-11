@@ -2,37 +2,86 @@ window.APP = window.APP || {};
 
 (function (APP) {
   // Paint the filled (left) portion of a range input purple on webkit browsers.
-  // Firefox uses ::-moz-range-progress in CSS; this handles Chrome/Safari/Edge.
   function fillRange(input) {
     const pct = ((input.value - input.min) / (input.max - input.min)) * 100;
     input.style.background =
       `linear-gradient(to right, #a78bfa ${pct}%, #e0e0e0 ${pct}%)`;
   }
 
+  function makeAudioSection(opts) {
+    // opts: { title, muteState, vol, onMuteToggle, onVol }
+    const section = document.createElement('div');
+    section.className = 'field';
+
+    const titleEl = document.createElement('label');
+    titleEl.className = 'field-label';
+    titleEl.textContent = opts.title;
+    section.appendChild(titleEl);
+
+    const controlRow = document.createElement('div');
+    controlRow.className = 'audio-control-row';
+
+    const muteBtn = document.createElement('button');
+    muteBtn.type = 'button';
+    muteBtn.className = 'btn icon ghost audio-mute-btn';
+    muteBtn.setAttribute('aria-label', opts.muteState ? 'Unmute' : 'Mute');
+    muteBtn.textContent = opts.muteState ? '🔇' : '🔊';
+    muteBtn.addEventListener('click', function () {
+      const muted = opts.onMuteToggle();
+      muteBtn.textContent = muted ? '🔇' : '🔊';
+      muteBtn.setAttribute('aria-label', muted ? 'Unmute' : 'Mute');
+    });
+
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.min = '0';
+    slider.max = '1';
+    slider.step = '0.05';
+    slider.value = String(opts.vol);
+    slider.className = 'audio-slider';
+    fillRange(slider);
+    slider.addEventListener('input', function () {
+      fillRange(slider);
+      const v = parseFloat(slider.value);
+      opts.onVol(v);
+      // If slider moves off 0, un-mute icon
+      if (v > 0 && muteBtn.textContent === '🔇') {
+        muteBtn.textContent = '🔊';
+        muteBtn.setAttribute('aria-label', 'Mute');
+      } else if (v === 0) {
+        muteBtn.textContent = '🔇';
+        muteBtn.setAttribute('aria-label', 'Unmute');
+      }
+    });
+
+    controlRow.appendChild(muteBtn);
+    controlRow.appendChild(slider);
+    section.appendChild(controlRow);
+    return section;
+  }
+
   function render(root, ctx) {
     root.innerHTML = '';
     const s = APP.state.settings;
 
-    // .setup is full-width so the scrollbar reaches the screen edge.
-    // .setup-inner is the centred content column.
     const wrap = document.createElement('div');
     wrap.className = 'setup';
 
-    const inner = document.createElement('div');
-    inner.className = 'setup-inner';
-
-    // Standard topbar: home + back, title "Parent Corner"
-    inner.appendChild(APP.ui.topbar({
+    // Topbar appended to wrap (full-width), not to the inner content column
+    wrap.appendChild(APP.ui.topbar({
       ctx: ctx,
       title: APP.t('setup.parents'),
       home: true,
       back: true
     }));
 
-    // Language selector — dropdown at the top with flag emoji
+    const inner = document.createElement('div');
+    inner.className = 'setup-inner';
+
+    // Language selector
     const f0 = document.createElement('div');
     f0.className = 'field';
-    f0.innerHTML = `<label for="locale-select">${APP.t('setup.language')}</label>`;
+    f0.innerHTML = `<label class="field-label" for="locale-select">${APP.t('setup.language')}</label>`;
     const locales = (APP.I18N && APP.I18N.LOCALES) || [
       { code: 'en', label: 'English', flag: '🇬🇧' },
     ];
@@ -49,7 +98,6 @@ window.APP = window.APP || {};
     select.addEventListener('change', () => {
       const v = select.value;
       APP.setLocale(v);
-      // Reset maxLength to match the new locale's animal list, then re-render.
       const newList = APP.animals ? APP.animals.eligibleAll() : APP.ANIMALS;
       const newMax  = Math.max(...newList.map(a => a.name.length));
       APP.settings.update({ maxLength: newMax });
@@ -58,115 +106,50 @@ window.APP = window.APP || {};
     f0.appendChild(select);
     inner.appendChild(f0);
 
-    // ── Background Music section ─────────────────────────────────────────────
-    const musicSection = document.createElement('div');
-    musicSection.className = 'field';
+    // Background Music section
+    inner.appendChild(makeAudioSection({
+      title: APP.t('setup.music'),
+      muteState: s.bgMusicEnabled === false,
+      vol: s.bgMusicVol != null ? s.bgMusicVol : 0.3,
+      onMuteToggle: function () {
+        const nowEnabled = s.bgMusicEnabled === false; // toggling: was disabled → now enable
+        APP.settings.update({ bgMusicEnabled: nowEnabled });
+        if (APP.audio && APP.audio.music) APP.audio.music.setEnabled(nowEnabled);
+        s.bgMusicEnabled = nowEnabled;
+        return !nowEnabled; // return muted state
+      },
+      onVol: function (v) {
+        APP.settings.update({ bgMusicVol: v });
+        if (APP.audio && APP.audio.music) APP.audio.music.setVol(v);
+      }
+    }));
 
-    const musicLabelRow = document.createElement('div');
-    musicLabelRow.className = 'volume-row';
-    const musicLabel = document.createElement('label');
-    musicLabel.textContent = APP.t('setup.music');
-
-    const musicToggle = document.createElement('input');
-    musicToggle.type = 'checkbox';
-    musicToggle.checked = s.bgMusicEnabled !== false;
-    musicToggle.setAttribute('aria-label', APP.t('setup.music'));
-
-    musicLabelRow.appendChild(musicLabel);
-    musicLabelRow.appendChild(musicToggle);
-    musicSection.appendChild(musicLabelRow);
-
-    // Volume slider for bgMusicVol
-    const musicVolRow = document.createElement('div');
-    musicVolRow.className = 'field';
-    musicVolRow.style.display = s.bgMusicEnabled !== false ? '' : 'none';
-    const musicVolLabel = document.createElement('label');
-    musicVolLabel.textContent = APP.t('audio.bgMusic');
-    const musicVolInput = document.createElement('input');
-    musicVolInput.type = 'range';
-    musicVolInput.min = '0';
-    musicVolInput.max = '1';
-    musicVolInput.step = '0.05';
-    musicVolInput.value = String(s.bgMusicVol != null ? s.bgMusicVol : 0.3);
-    fillRange(musicVolInput);
-    musicVolInput.addEventListener('input', function() {
-      fillRange(musicVolInput);
-      const v = parseFloat(musicVolInput.value);
-      APP.settings.update({ bgMusicVol: v });
-      if (APP.audio.music) APP.audio.music.setVol(v);
-    });
-    musicVolRow.appendChild(musicVolLabel);
-    musicVolRow.appendChild(musicVolInput);
-    musicSection.appendChild(musicVolRow);
-
-    musicToggle.addEventListener('change', function() {
-      const enabled = musicToggle.checked;
-      APP.settings.update({ bgMusicEnabled: enabled });
-      if (APP.audio.music) APP.audio.music.setEnabled(enabled);
-      musicVolRow.style.display = enabled ? '' : 'none';
-    });
-
-    inner.appendChild(musicSection);
-
-    // ── Sound Effects section ────────────────────────────────────────────────
-    const sfxSection = document.createElement('div');
-    sfxSection.className = 'field';
-
-    const sfxLabelRow = document.createElement('div');
-    sfxLabelRow.className = 'volume-row';
-    const sfxLabel = document.createElement('label');
-    sfxLabel.textContent = APP.t('setup.sfx');
-
-    const sfxMuteToggle = document.createElement('input');
-    sfxMuteToggle.type = 'checkbox';
-    sfxMuteToggle.checked = s.sfxMuted === true;
-    sfxMuteToggle.setAttribute('aria-label', APP.t('setup.sfx'));
-
-    sfxLabelRow.appendChild(sfxLabel);
-    sfxLabelRow.appendChild(sfxMuteToggle);
-    sfxSection.appendChild(sfxLabelRow);
-
-    // Volume slider for sfxVol
-    const sfxVolRow = document.createElement('div');
-    sfxVolRow.className = 'field';
-    const sfxVolLabel = document.createElement('label');
-    sfxVolLabel.textContent = APP.t('audio.sfx');
-    const sfxVolInput = document.createElement('input');
-    sfxVolInput.type = 'range';
-    sfxVolInput.min = '0';
-    sfxVolInput.max = '1';
-    sfxVolInput.step = '0.05';
-    sfxVolInput.value = String(s.sfxVol != null ? s.sfxVol : 0.7);
-    fillRange(sfxVolInput);
-
-    // Debounce the preview tone so rapid dragging doesn't stack up.
+    // Sound Effects section
     let sfxPreviewTimer = null;
-    sfxVolInput.addEventListener('input', function() {
-      fillRange(sfxVolInput);
-      const v = parseFloat(sfxVolInput.value);
-      APP.settings.update({ sfxVol: v });
-      if (APP.audio.sfx) APP.audio.sfx.setVol(v);
-      clearTimeout(sfxPreviewTimer);
-      sfxPreviewTimer = setTimeout(function() { APP.audio.strokeDone(); }, 80);
-    });
-    sfxVolRow.appendChild(sfxVolLabel);
-    sfxVolRow.appendChild(sfxVolInput);
-    sfxSection.appendChild(sfxVolRow);
-
-    sfxMuteToggle.addEventListener('change', function() {
-      const muted = sfxMuteToggle.checked;
-      APP.settings.update({ sfxMuted: muted });
-      if (APP.audio.sfx) APP.audio.sfx.setMuted(muted);
-      // Play a preview tone so the user hears the result of un-muting.
-      if (!muted) APP.audio.strokeDone();
-    });
-
-    inner.appendChild(sfxSection);
+    inner.appendChild(makeAudioSection({
+      title: APP.t('setup.sfx'),
+      muteState: s.sfxMuted === true,
+      vol: s.sfxVol != null ? s.sfxVol : 0.7,
+      onMuteToggle: function () {
+        const nowMuted = !(s.sfxMuted === true);
+        APP.settings.update({ sfxMuted: nowMuted });
+        if (APP.audio && APP.audio.sfx) APP.audio.sfx.setMuted(nowMuted);
+        if (!nowMuted && APP.audio) APP.audio.strokeDone();
+        s.sfxMuted = nowMuted;
+        return nowMuted;
+      },
+      onVol: function (v) {
+        APP.settings.update({ sfxVol: v });
+        if (APP.audio && APP.audio.sfx) APP.audio.sfx.setVol(v);
+        clearTimeout(sfxPreviewTimer);
+        sfxPreviewTimer = setTimeout(function () { if (APP.audio) APP.audio.strokeDone(); }, 80);
+      }
+    }));
 
     // Progress reset
     const resetField = document.createElement('div');
     resetField.className = 'field';
-    resetField.innerHTML = `<label>${APP.t('setup.gallery')}</label>`;
+    resetField.innerHTML = `<label class="field-label">${APP.t('setup.gallery')}</label>`;
     const resetBtn = document.createElement('button');
     resetBtn.type = 'button';
     resetBtn.className = 'btn secondary';
@@ -175,7 +158,7 @@ window.APP = window.APP || {};
       if (!confirm(APP.t('setup.clearConfirm'))) return;
       APP.clearProgress();
       APP.clearMastery();
-      render(root, ctx); // refresh count in button label
+      render(root, ctx);
     });
     resetField.appendChild(resetBtn);
     inner.appendChild(resetField);
@@ -183,7 +166,7 @@ window.APP = window.APP || {};
     // Dev / review tools
     const devTools = document.createElement('div');
     devTools.className = 'field setup-dev-tools';
-    devTools.innerHTML = `<label>${APP.t('setup.reviewTools')}</label>`;
+    devTools.innerHTML = `<label class="field-label">${APP.t('setup.reviewTools')}</label>`;
     const devBtns = document.createElement('div');
     devBtns.className = 'seg';
     const lettersBtn = document.createElement('button');

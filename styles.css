@@ -236,28 +236,37 @@ input, textarea, [contenteditable] {
 }
 .setup .actions { display: flex; gap: 12px; margin-top: 12px; align-items: stretch; }
 
-/* Volume row inside settings */
+/* Audio control row inside settings — title above, then [icon] [slider] */
+.audio-control-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+.audio-control-row .audio-slider {
+  flex: 1;
+  width: auto;
+}
+.audio-mute-btn {
+  font-size: 1.3rem;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+/* Legacy volume-row kept for any other callers */
 .volume-row {
   display: flex;
   align-items: center;
   gap: 12px;
 }
-.volume-row input[type=range] {
-  flex: 1;
-  width: auto;
-}
-.mute-btn {
-  width: 42px;
-  height: 42px;
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
+.volume-row input[type=range] { flex: 1; width: auto; }
+.mute-btn { width: 42px; height: 42px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
 .mute-btn svg { display: block; }
-.volume-row.muted input[type=range] {
-  opacity: 0.4;
-}
+.volume-row.muted input[type=range] { opacity: 0.4; }
 .setup .actions .btn { flex: 1; min-width: 0; }
 .setup .lengthValue { font-size: 1.6rem; font-weight: 700; }
 
