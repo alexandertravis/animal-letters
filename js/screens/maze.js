@@ -288,6 +288,7 @@ window.APP = window.APP || {};
 
         // Current-path polyline (bright) — hidden in 'none' mode
         var trailEl = null;
+        var dynSegEl = null;
         if (trailMode !== 'none') {
           trailEl = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
           var trailPts = currentPath.map(function (pt) {
@@ -301,6 +302,13 @@ window.APP = window.APP || {};
           trailEl.setAttribute('stroke-linejoin', 'round');
           trailEl.setAttribute('opacity', '0.85');
           svg.appendChild(trailEl);
+
+          dynSegEl = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          dynSegEl.setAttribute('stroke', '#a78bfa');
+          dynSegEl.setAttribute('stroke-width', '8');
+          dynSegEl.setAttribute('stroke-linecap', 'round');
+          dynSegEl.setAttribute('opacity', '0.85');
+          svg.appendChild(dynSegEl);
         }
 
         // Goal emoji
@@ -426,24 +434,14 @@ window.APP = window.APP || {};
           if (!dragStart || gameOver) return;
           var src = e.touches ? e.touches[0] : e;
 
-          // Float player emoji towards pointer — wall-aware, clamped to CELL/2 in open directions
+          // Extend trail dynamically to pointer position
           var svgPt = clientToSvgCoord(e);
-          if (svgPt) {
-            var cellCx = MARGIN + playerCol * CELL + CELL / 2;
-            var cellCy = MARGIN + playerRow * CELL + CELL / 2;
-            var mc = maze[playerRow][playerCol];
-            var rdx = svgPt.x - cellCx;
-            var rdy = svgPt.y - cellCy;
-            var px = cellCx, py = cellCy;
-            if (Math.abs(rdx) >= Math.abs(rdy)) {
-              if      (rdx > 0 && !mc.right) px = cellCx + Math.min(rdx,  CELL / 2);
-              else if (rdx < 0 && !mc.left)  px = cellCx + Math.max(rdx, -CELL / 2);
-            } else {
-              if      (rdy > 0 && !mc.bottom) py = cellCy + Math.min(rdy,  CELL / 2);
-              else if (rdy < 0 && !mc.top)    py = cellCy + Math.max(rdy, -CELL / 2);
-            }
-            playerText.setAttribute('x', px);
-            playerText.setAttribute('y', py);
+          if (svgPt && dynSegEl) {
+            var lastPt = currentPath[currentPath.length - 1];
+            dynSegEl.setAttribute('x1', MARGIN + lastPt[1] * CELL + CELL / 2);
+            dynSegEl.setAttribute('y1', MARGIN + lastPt[0] * CELL + CELL / 2);
+            dynSegEl.setAttribute('x2', svgPt.x);
+            dynSegEl.setAttribute('y2', svgPt.y);
           }
 
           var dx = src.clientX - dragStart.x;
@@ -465,6 +463,10 @@ window.APP = window.APP || {};
           if (playerText) {
             playerText.setAttribute('x', MARGIN + playerCol * CELL + CELL / 2);
             playerText.setAttribute('y', MARGIN + playerRow * CELL + CELL / 2);
+          }
+          if (dynSegEl) {
+            dynSegEl.removeAttribute('x1'); dynSegEl.removeAttribute('y1');
+            dynSegEl.removeAttribute('x2'); dynSegEl.removeAttribute('y2');
           }
           dragStart = null;
         }

@@ -125,7 +125,7 @@ window.APP = window.APP || {};
     if (shape === 'circle') {
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
     } else if (shape === 'square') {
-      var s = r * 1.4;
+      var s = r * 1.1;
       ctx.rect(cx - s, cy - s, s * 2, s * 2);
     } else if (shape === 'triangle') {
       ctx.moveTo(cx, cy - r);
@@ -148,7 +148,7 @@ window.APP = window.APP || {};
     if (shape === 'circle') {
       ctx.arc(0, 0, r, 0, Math.PI * 2);
     } else if (shape === 'square') {
-      var s = r * 1.4;
+      var s = r * 1.1;
       ctx.rect(-s, -s, s * 2, s * 2);
     } else if (shape === 'triangle') {
       ctx.moveTo(0, -r);
@@ -212,6 +212,23 @@ window.APP = window.APP || {};
     ctx.closePath();
   }
 
+  // ── Shape grid (shuffled so shapes are evenly distributed, not columnar) ──
+  function buildShapeGrid(rows, cols) {
+    var n = rows * cols;
+    var indices = [];
+    for (var i = 0; i < n; i++) indices.push(i % SHAPES.length);
+    for (var j = n - 1; j > 0; j--) {
+      var k = Math.floor(Math.random() * (j + 1));
+      var tmp = indices[j]; indices[j] = indices[k]; indices[k] = tmp;
+    }
+    var grid = [];
+    for (var r = 0; r < rows; r++) {
+      grid[r] = [];
+      for (var c = 0; c < cols; c++) grid[r][c] = indices[r * cols + c];
+    }
+    return grid;
+  }
+
   // ── Tab grid ───────────────────────────────────────────────────────────────
   function buildTabGrid(rows, cols) {
     var grid = [];
@@ -262,6 +279,7 @@ window.APP = window.APP || {};
       srcImg: null,
       pieces: [],
       tabGrid: null,
+      shapeGrid: null,
       lockedCount: 0,
       totalPieces: 0,
       boardX: 0, boardY: 0, boardW: 0, boardH: 0,
@@ -807,6 +825,9 @@ window.APP = window.APP || {};
         if (S.mode === 'jigsaw') {
           S.tabGrid = buildTabGrid(S.rows, S.cols);
         }
+        if (S.mode === 'shapes') {
+          S.shapeGrid = buildShapeGrid(S.rows, S.cols);
+        }
         S.totalPieces = S.rows * S.cols;
 
         // ── Hint canvas ────────────────────────────────────────────────────
@@ -883,7 +904,7 @@ window.APP = window.APP || {};
       cx.globalCompositeOperation = 'destination-out';
       for (var r = 0; r < S.rows; r++) {
         for (var c = 0; c < S.cols; c++) {
-          var shape = SHAPES[(r * S.cols + c) % SHAPES.length];
+          var shape = SHAPES[S.shapeGrid[r][c]];
           var hcx = c * S.cellW + S.cellW / 2;
           var hcy = r * S.cellH + S.cellH / 2;
           var hr  = Math.min(S.cellW, S.cellH) * 0.42;
@@ -907,7 +928,7 @@ window.APP = window.APP || {};
         gx.lineWidth = 2;
         for (var r2 = 0; r2 < S.rows; r2++) {
           for (var c2 = 0; c2 < S.cols; c2++) {
-            var sh2 = SHAPES[(r2 * S.cols + c2) % SHAPES.length];
+            var sh2 = SHAPES[S.shapeGrid[r2][c2]];
             var gx2 = c2 * S.cellW + S.cellW / 2;
             var gy2 = r2 * S.cellH + S.cellH / 2;
             var hr2 = Math.min(S.cellW, S.cellH) * 0.42;
@@ -950,7 +971,7 @@ window.APP = window.APP || {};
         cx.stroke();
 
       } else if (mode === 'shapes') {
-        var shape = SHAPES[(row * S.cols + col) % SHAPES.length];
+        var shape = SHAPES[S.shapeGrid[row][col]];
         drawShapePath(cx, shape, cW, cH);
         cx.save();
         cx.clip();
