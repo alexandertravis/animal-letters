@@ -350,14 +350,20 @@ window.APP = window.APP || {};
     }
 
     // ── Mini-win: gold glow + star burst when the book opens or closes ────────
-    function spawnBookStars(anchorEl, count) {
-      var rect = anchorEl.getBoundingClientRect();
-      var cx = rect.left + rect.width  / 2;
-      var cy = rect.top  + rect.height / 2;
+    function spawnBookStars(anchorElOrCoords, count) {
+      var cx, cy;
+      if (anchorElOrCoords && typeof anchorElOrCoords.getBoundingClientRect === 'function') {
+        var rect = anchorElOrCoords.getBoundingClientRect();
+        cx = rect.left + rect.width  / 2;
+        cy = rect.top  + rect.height / 2;
+      } else {
+        cx = anchorElOrCoords.cx;
+        cy = anchorElOrCoords.cy;
+      }
       var step = (Math.PI * 2) / count;
       for (var i = 0; i < count; i++) {
         var a = i * step + Math.random() * 0.6;
-        var r = 60 + Math.random() * 50;
+        var r = 140 + Math.random() * 80;
         var star = document.createElement('span');
         star.className = 'book-star';
         star.textContent = ['⭐','✨','💫'][i % 3];
@@ -567,6 +573,14 @@ window.APP = window.APP || {};
       L.leaf.classList.add('flipping');           // rotateY 0 → -180deg
       L.front.style.animation = 'cover-front-hide ' + COVER_MS + 'ms linear forwards';
 
+      // Mini-win: glow + stars burst AS the cover starts swinging open
+      if (APP.audio && APP.audio.sfx) APP.audio.sfx.pop();
+      bookEl.classList.add('book-open-glow');
+      bookEl.addEventListener('animationend', function () {
+        bookEl.classList.remove('book-open-glow');
+      }, { once: true });
+      spawnBookStars(bookClosed, 12);
+
       setTimeout(function () {
         if (destroyed) return;
         unblankPage(leftPage);
@@ -578,13 +592,6 @@ window.APP = window.APP || {};
         navPrev.style.display = '';
         navNext.style.display = '';
         updateNav();
-        // Mini-win: golden glow + stars when the book fully opens
-        if (APP.audio && APP.audio.sfx) APP.audio.sfx.pop();
-        bookEl.classList.add('book-open-glow');
-        bookEl.addEventListener('animationend', function () {
-          bookEl.classList.remove('book-open-glow');
-        }, { once: true });
-        spawnBookStars(bookEl, 8);
       }, COVER_MS);
     });
 
@@ -622,7 +629,9 @@ window.APP = window.APP || {};
         bookEl.addEventListener('animationend', function () {
           bookEl.classList.remove('book-close-glow');
         }, { once: true });
-        spawnBookStars(bookEl, 4);
+        // Burst from the visible cover (right half of the book in closed state)
+        var bRect = bookEl.getBoundingClientRect();
+        spawnBookStars({ cx: bRect.left + bRect.width * 0.75, cy: bRect.top + bRect.height * 0.5 }, 4);
       }, COVER_MS);
       setTimeout(function () {
         if (destroyed) return;
@@ -696,7 +705,7 @@ window.APP = window.APP || {};
         bookEl.addEventListener('animationend', function () {
           bookEl.classList.remove('book-close-glow');
         }, { once: true });
-        spawnBookStars(bookEl, 4);
+        spawnBookStars(bookClosed, 4);
       }, COVER_MS);
     }
 
@@ -800,7 +809,8 @@ window.APP = window.APP || {};
           bookEl.addEventListener('animationend', function () {
             bookEl.classList.remove('book-close-glow');
           }, { once: true });
-          spawnBookStars(bookEl, 4);
+          var bRect = bookEl.getBoundingClientRect();
+          spawnBookStars({ cx: bRect.left + bRect.width * 0.75, cy: bRect.top + bRect.height * 0.5 }, 4);
         }, COVER_MS);
         setTimeout(function () {
           if (destroyed) return;

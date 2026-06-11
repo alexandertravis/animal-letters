@@ -77,8 +77,10 @@ window.APP = window.APP || {};
       '.ttt-cell { aspect-ratio:1; font-size:2.8rem; border:3px solid #ccc; border-radius:12px; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s,transform 0.1s; -webkit-tap-highlight-color:transparent; }',
       '.ttt-cell:not(:disabled):hover { background:#f5f5f5; transform:scale(1.04); }',
       '.ttt-cell:disabled { cursor:default; opacity:1; }',
-      '@keyframes winnerPulse{0%{transform:scale(1)}25%{transform:scale(1.15);box-shadow:0 0 0 6px rgba(255,215,0,0.7)}70%{transform:scale(1.07)}100%{transform:scale(1)}}',
+      '@keyframes winnerPulse{0%{box-shadow:none}25%{box-shadow:0 0 0 6px rgba(255,215,0,0.7)}70%{box-shadow:0 0 0 3px rgba(255,215,0,0.3)}100%{box-shadow:none}}',
       '.ttt-cell.winner{background:#fff9c4;border-color:#f9c74f;animation:winnerPulse 0.6s ease-out;}',
+      '@keyframes tttEmojiWiggle{0%{transform:scale(1)}20%{transform:scale(1.45) rotate(-15deg)}40%{transform:scale(1.3) rotate(12deg)}60%{transform:scale(1.12) rotate(-6deg)}80%{transform:scale(1.05) rotate(3deg)}100%{transform:scale(1)}}',
+      '.ttt-cell.winner span{display:inline-block;animation:tttEmojiWiggle 0.7s 0.1s ease-out both;}',
       '@keyframes tttStarPop{0%{transform:translate(var(--sx),var(--sy)) scale(0);opacity:1}70%{opacity:1}100%{transform:translate(calc(var(--sx)*4),calc(var(--sy)*4)) scale(0.3);opacity:0}}',
       '.ttt-star{position:absolute;pointer-events:none;font-size:1rem;z-index:50;animation:tttStarPop 0.65s ease-out forwards;}',
       '.ttt-tally { display:flex; gap:24px; justify-content:center; align-items:flex-end; font-size:1rem; font-weight:700; color:#555; }',
@@ -237,7 +239,9 @@ window.APP = window.APP || {};
         (function (idx) {
           var cell = document.createElement('button');
           cell.className = 'ttt-cell';
-          cell.textContent = board[idx] === 'P' ? p1Icon : board[idx] === 'R' ? p2Icon : '';
+          var cellSpan = document.createElement('span');
+          cellSpan.textContent = board[idx] === 'P' ? p1Icon : board[idx] === 'R' ? p2Icon : '';
+          cell.appendChild(cellSpan);
           cell.disabled = board[idx] !== '' || gameOver;
           cell.addEventListener('click', function () {
             if (gameOver || board[idx] !== '') return;
