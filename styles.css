@@ -4278,11 +4278,13 @@ input, textarea, [contenteditable] {
   100% { transform: translate(var(--sx),var(--sy)) scale(0.3); opacity: 0; }
 }
 .book-star {
-  position: fixed;
+  position: absolute;
   pointer-events: none;
-  font-size: 2.2rem;
-  z-index: 200;
+  font-size: 2.8rem;
+  z-index: 5;
   animation: starFly 0.9s ease-out forwards;
-  margin-left: -1.1rem;
-  margin-top: -1.1rem;
+  margin-left: -1.4rem;
+  margin-top: -1.4rem;
 }
+/* Book sits above stars within the reader scene stacking context */
+.reader-scene .book { z-index: 10; }

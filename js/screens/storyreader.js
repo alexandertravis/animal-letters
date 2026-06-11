@@ -350,20 +350,22 @@ window.APP = window.APP || {};
     }
 
     // ── Mini-win: gold glow + star burst when the book opens or closes ────────
+    // Stars are appended to `scene` at z-index:5, behind the book (z-index:10).
     function spawnBookStars(anchorElOrCoords, count) {
+      var sceneRect = scene.getBoundingClientRect();
       var cx, cy;
       if (anchorElOrCoords && typeof anchorElOrCoords.getBoundingClientRect === 'function') {
         var rect = anchorElOrCoords.getBoundingClientRect();
-        cx = rect.left + rect.width  / 2;
-        cy = rect.top  + rect.height / 2;
+        cx = rect.left + rect.width  / 2 - sceneRect.left;
+        cy = rect.top  + rect.height / 2 - sceneRect.top;
       } else {
-        cx = anchorElOrCoords.cx;
-        cy = anchorElOrCoords.cy;
+        cx = anchorElOrCoords.cx - sceneRect.left;
+        cy = anchorElOrCoords.cy - sceneRect.top;
       }
       var step = (Math.PI * 2) / count;
       for (var i = 0; i < count; i++) {
         var a = i * step + Math.random() * 0.6;
-        var r = 140 + Math.random() * 80;
+        var r = 200 + Math.random() * 140;
         var star = document.createElement('span');
         star.className = 'book-star';
         star.textContent = ['⭐','✨','💫'][i % 3];
@@ -371,7 +373,7 @@ window.APP = window.APP || {};
         star.style.top  = Math.round(cy) + 'px';
         star.style.setProperty('--sx', Math.round(Math.cos(a) * r) + 'px');
         star.style.setProperty('--sy', Math.round(Math.sin(a) * r) + 'px');
-        document.body.appendChild(star);
+        scene.appendChild(star);
         star.addEventListener('animationend', function () {
           if (star.parentNode) star.parentNode.removeChild(star);
         }, { once: true });
@@ -573,13 +575,16 @@ window.APP = window.APP || {};
       L.leaf.classList.add('flipping');           // rotateY 0 → -180deg
       L.front.style.animation = 'cover-front-hide ' + COVER_MS + 'ms linear forwards';
 
-      // Mini-win: glow + stars burst AS the cover starts swinging open
+      // Mini-win: glow on the visible cover only (right half), stars burst from behind
       if (APP.audio && APP.audio.sfx) APP.audio.sfx.pop();
-      bookEl.classList.add('book-open-glow');
-      bookEl.addEventListener('animationend', function () {
-        bookEl.classList.remove('book-open-glow');
+      var coverGlowEl = document.createElement('div');
+      coverGlowEl.style.cssText = 'position:absolute;top:0;right:0;width:50%;height:100%;pointer-events:none;border-radius:3px 6px 6px 3px;z-index:8;';
+      bookEl.appendChild(coverGlowEl);
+      coverGlowEl.classList.add('book-open-glow');
+      coverGlowEl.addEventListener('animationend', function () {
+        if (coverGlowEl.parentNode) coverGlowEl.parentNode.removeChild(coverGlowEl);
       }, { once: true });
-      spawnBookStars(bookClosed, 12);
+      spawnBookStars(bookClosed, 20);
 
       setTimeout(function () {
         if (destroyed) return;
@@ -625,13 +630,16 @@ window.APP = window.APP || {};
 
       setTimeout(function () {
         if (destroyed) return;
-        bookEl.classList.add('book-close-glow');
-        bookEl.addEventListener('animationend', function () {
-          bookEl.classList.remove('book-close-glow');
+        // Glow on visible cover only (right half of book in closed state)
+        var coverGlowEl = document.createElement('div');
+        coverGlowEl.style.cssText = 'position:absolute;top:0;right:0;width:50%;height:100%;pointer-events:none;border-radius:3px 6px 6px 3px;z-index:8;';
+        bookEl.appendChild(coverGlowEl);
+        coverGlowEl.classList.add('book-close-glow');
+        coverGlowEl.addEventListener('animationend', function () {
+          if (coverGlowEl.parentNode) coverGlowEl.parentNode.removeChild(coverGlowEl);
         }, { once: true });
-        // Burst from the visible cover (right half of the book in closed state)
         var bRect = bookEl.getBoundingClientRect();
-        spawnBookStars({ cx: bRect.left + bRect.width * 0.75, cy: bRect.top + bRect.height * 0.5 }, 4);
+        spawnBookStars({ cx: bRect.left + bRect.width * 0.75, cy: bRect.top + bRect.height * 0.5 }, 8);
       }, COVER_MS);
       setTimeout(function () {
         if (destroyed) return;
@@ -701,11 +709,12 @@ window.APP = window.APP || {};
         navNext.style.display = 'none';
         phase = 'closed';
         bookEl.dataset.phase = 'closed';
-        bookEl.classList.add('book-close-glow');
-        bookEl.addEventListener('animationend', function () {
-          bookEl.classList.remove('book-close-glow');
+        // bookClosed is visible again here — glow goes directly on it
+        bookClosed.classList.add('book-close-glow');
+        bookClosed.addEventListener('animationend', function () {
+          bookClosed.classList.remove('book-close-glow');
         }, { once: true });
-        spawnBookStars(bookClosed, 4);
+        spawnBookStars(bookClosed, 8);
       }, COVER_MS);
     }
 
@@ -805,12 +814,16 @@ window.APP = window.APP || {};
 
         setTimeout(function () {
           if (destroyed) return;
-          bookEl.classList.add('book-close-glow');
-          bookEl.addEventListener('animationend', function () {
-            bookEl.classList.remove('book-close-glow');
+          // Glow on visible cover only (right half of book in closed state)
+          var coverGlowEl = document.createElement('div');
+          coverGlowEl.style.cssText = 'position:absolute;top:0;right:0;width:50%;height:100%;pointer-events:none;border-radius:3px 6px 6px 3px;z-index:8;';
+          bookEl.appendChild(coverGlowEl);
+          coverGlowEl.classList.add('book-close-glow');
+          coverGlowEl.addEventListener('animationend', function () {
+            if (coverGlowEl.parentNode) coverGlowEl.parentNode.removeChild(coverGlowEl);
           }, { once: true });
           var bRect = bookEl.getBoundingClientRect();
-          spawnBookStars({ cx: bRect.left + bRect.width * 0.75, cy: bRect.top + bRect.height * 0.5 }, 4);
+          spawnBookStars({ cx: bRect.left + bRect.width * 0.75, cy: bRect.top + bRect.height * 0.5 }, 8);
         }, COVER_MS);
         setTimeout(function () {
           if (destroyed) return;
