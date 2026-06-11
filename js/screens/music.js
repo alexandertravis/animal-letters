@@ -35,6 +35,15 @@ window.APP = window.APP || {};
       '.shaker-btn:active{transform:scale(.95);}',
       '@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-15deg)}75%{transform:rotate(15deg)}}',
       '.wiggle{animation:wiggle .3s ease;}',
+      '.song-select-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:6px 0 14px;}',
+      '.song-btn{font-size:.85rem;}',
+      '.piano-white.key-next,.piano-black.key-next{animation:key-pulse .8s ease-in-out infinite;}',
+      '.piano-white.key-active{background:#fff176;}',
+      '.piano-black.key-active{background:#b9952b;}',
+      '@keyframes key-pulse{0%,100%{box-shadow:0 0 0 3px #f9c74f inset}50%{box-shadow:0 0 0 6px #f9c74f inset,0 0 12px #f9c74f}}',
+      '.drum-kit-wrap{display:flex;justify-content:center;align-items:center;width:100%;padding:8px;}',
+      '.drum-kit-svg{width:min(340px,92vw);height:auto;}',
+      '.drum-part{cursor:pointer;}',
     ].join('');
     document.head.appendChild(s);
   }
@@ -156,10 +165,67 @@ window.APP = window.APP || {};
     el.addEventListener('animationend', function () { el.classList.remove('wiggle'); }, { once: true });
   }
 
+  // ── Nursery-rhyme sequences (C-major, matches the white/black keys above) ───
+  var SONGS = [
+    { name: 'Twinkle Twinkle', notes: [262,262,392,392,440,440,392,349,349,330,330,294,294,262] },
+    { name: 'Mary Had a Lamb',  notes: [330,294,262,294,330,330,330,294,294,294,330,392,392] },
+    { name: 'Baa Baa Sheep',    notes: [262,262,392,392,440,494,523,440,392] }
+  ];
+  var activeSong = null;     // { song, stepIndex }
+  var activeSongNote = null; // freq the player must press next
+
+  function startSong(song, songRow, pianoWrap) {
+    activeSong = { song: song, stepIndex: 0 };
+    activeSongNote = song.notes[0];
+    var stop = songRow.querySelector('.song-stop-btn');
+    if (stop) stop.style.display = '';
+    songRow.querySelectorAll('.song-btn').forEach(function (b) { b.style.opacity = '0.4'; });
+    updateKeyHighlights(pianoWrap);
+  }
+
+  function stopSong(songRow, pianoWrap) {
+    activeSong = null; activeSongNote = null;
+    var stop = songRow.querySelector('.song-stop-btn');
+    if (stop) stop.style.display = 'none';
+    songRow.querySelectorAll('.song-btn').forEach(function (b) { b.style.opacity = ''; });
+    pianoWrap.querySelectorAll('.key-next,.key-active').forEach(function (k) {
+      k.classList.remove('key-next', 'key-active');
+    });
+  }
+
+  function updateKeyHighlights(pianoWrap) {
+    pianoWrap.querySelectorAll('[data-freq]').forEach(function (k) {
+      k.classList.remove('key-next');
+      var freq = parseFloat(k.getAttribute('data-freq'));
+      if (activeSongNote != null && Math.abs(freq - activeSongNote) < 5) k.classList.add('key-next');
+    });
+  }
+
+  // Advance the active song when the correct key is pressed. Returns nothing.
+  function songProgress(keyFreq, el, songRow, pianoWrap) {
+    if (!activeSong || activeSongNote == null) return;
+    if (Math.abs(keyFreq - activeSongNote) >= 5) return;
+    el.classList.add('key-active');
+    setTimeout(function () { el.classList.remove('key-active'); }, 200);
+    activeSong.stepIndex++;
+    if (activeSong.stepIndex >= activeSong.song.notes.length) {
+      stopSong(songRow, pianoWrap);
+      if (APP.launchConfetti) APP.launchConfetti();
+    } else {
+      activeSongNote = activeSong.song.notes[activeSong.stepIndex];
+      updateKeyHighlights(pianoWrap);
+    }
+  }
+
   // ── Tab content builders ───────────────────────────────────────────────────
 
   function buildKeyboard(content) {
     content.innerHTML = '';
+    activeSong = null; activeSongNote = null;
+
+    var songRow = document.createElement('div');
+    songRow.className = 'song-select-row';
+
     var pianoWrap = document.createElement('div');
     pianoWrap.className = 'piano-wrap';
 
@@ -174,11 +240,13 @@ window.APP = window.APP || {};
       el.style.width  = (widthPct - 0.5) + '%';
       el.style.height = '100%';
       el.setAttribute('aria-label', key.note);
+      el.setAttribute('data-freq', key.freq);
       el.addEventListener('pointerdown', function (e) {
         e.preventDefault();
         if (APP.audio && APP.audio._wake) try { APP.audio._wake(); } catch(ex){}
         playNote(key.freq);
         el.classList.add('pressed');
+        songProgress(key.freq, el, songRow, pianoWrap);
       });
       el.addEventListener('pointerup', function () { el.classList.remove('pressed'); });
       el.addEventListener('pointerleave', function () { el.classList.remove('pressed'); });
@@ -195,46 +263,90 @@ window.APP = window.APP || {};
       el.style.width  = widthPct + '%';
       el.style.height = '60%';
       el.setAttribute('aria-label', key.note);
+      el.setAttribute('data-freq', key.freq);
       el.addEventListener('pointerdown', function (e) {
         e.preventDefault();
         if (APP.audio && APP.audio._wake) try { APP.audio._wake(); } catch(ex){}
         playNote(key.freq);
         el.classList.add('pressed');
+        songProgress(key.freq, el, songRow, pianoWrap);
       });
       el.addEventListener('pointerup', function () { el.classList.remove('pressed'); });
       el.addEventListener('pointerleave', function () { el.classList.remove('pressed'); });
       pianoWrap.appendChild(el);
     });
 
+    // Song selector row (above the keyboard)
+    var stopBtn = document.createElement('button');
+    stopBtn.className = 'song-stop-btn btn ghost';
+    stopBtn.textContent = '⏹ Stop';
+    stopBtn.style.display = 'none';
+    stopBtn.addEventListener('click', function () { stopSong(songRow, pianoWrap); });
+    songRow.appendChild(stopBtn);
+    SONGS.forEach(function (song) {
+      var b = document.createElement('button');
+      b.className = 'btn secondary song-btn';
+      b.textContent = '🎵 ' + song.name;
+      b.addEventListener('click', function () {
+        if (APP.audio && APP.audio._wake) try { APP.audio._wake(); } catch(ex){}
+        startSong(song, songRow, pianoWrap);
+      });
+      songRow.appendChild(b);
+    });
+
+    content.appendChild(songRow);
     content.appendChild(pianoWrap);
   }
 
   function buildDrums(content) {
     content.innerHTML = '';
-    var grid = document.createElement('div');
-    grid.className = 'drum-grid';
+    var kick  = APP.t('game.music.kick')  || 'Kick';
+    var snare = APP.t('game.music.snare') || 'Snare';
+    var hihat = APP.t('game.music.hihat') || 'Hi-hat';
+    var tom   = APP.t('game.music.tom')   || 'Tom';
 
-    var pads = [
-      { label: '🥁 ' + (APP.t('game.music.kick') || 'Kick'),   color: '#e74c3c', fn: playKick },
-      { label: '🥁 ' + (APP.t('game.music.snare') || 'Snare'), color: '#3498db', fn: playSnare },
-      { label: '🎵 ' + (APP.t('game.music.hihat') || 'Hi-hat'),color: '#f39c12', fn: playHihat },
-      { label: '🥁 ' + (APP.t('game.music.tom') || 'Tom'),     color: '#2ecc71', fn: playTom },
-    ];
+    var wrap = document.createElement('div');
+    wrap.className = 'drum-kit-wrap';
+    wrap.innerHTML =
+      '<svg viewBox="0 0 320 240" class="drum-kit-svg" xmlns="http://www.w3.org/2000/svg">' +
+        // Hi-hat (top left) + stand
+        '<line x1="62" y1="68" x2="62" y2="150" stroke="#7f8c8d" stroke-width="3"/>' +
+        '<ellipse cx="62" cy="68" rx="32" ry="6" fill="#f39c12" stroke="#d68910" stroke-width="2" class="drum-part" data-drum="hihat"/>' +
+        '<ellipse cx="62" cy="61" rx="32" ry="6" fill="#f9ca24" stroke="#d68910" stroke-width="2" class="drum-part" data-drum="hihat"/>' +
+        '<text x="62" y="46" text-anchor="middle" font-size="10" fill="#555" font-weight="bold" pointer-events="none">' + hihat + '</text>' +
+        // Snare (left)
+        '<ellipse cx="80" cy="150" rx="44" ry="17" fill="#3498db" stroke="#1a5276" stroke-width="2.5" class="drum-part" data-drum="snare"/>' +
+        '<rect x="36" y="133" width="88" height="18" fill="#2980b9" stroke="#1a5276" stroke-width="2.5" class="drum-part" data-drum="snare"/>' +
+        '<ellipse cx="80" cy="133" rx="44" ry="16" fill="#5dade2" stroke="#1a5276" stroke-width="2.5" class="drum-part" data-drum="snare"/>' +
+        '<text x="80" y="142" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="#fff" font-weight="bold" pointer-events="none">' + snare + '</text>' +
+        // Tom (right)
+        '<ellipse cx="244" cy="134" rx="40" ry="15" fill="#27ae60" stroke="#1a5226" stroke-width="2.5" class="drum-part" data-drum="tom"/>' +
+        '<rect x="204" y="119" width="80" height="16" fill="#229954" stroke="#1a5226" stroke-width="2.5" class="drum-part" data-drum="tom"/>' +
+        '<ellipse cx="244" cy="119" rx="40" ry="14" fill="#58d68d" stroke="#1a5226" stroke-width="2.5" class="drum-part" data-drum="tom"/>' +
+        '<text x="244" y="127" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="#fff" font-weight="bold" pointer-events="none">' + tom + '</text>' +
+        // Kick (large, centre bottom)
+        '<rect x="92" y="172" width="136" height="34" fill="#e74c3c" stroke="#7b241c" stroke-width="3" class="drum-part" data-drum="kick"/>' +
+        '<ellipse cx="160" cy="206" rx="68" ry="30" fill="#c0392b" stroke="#7b241c" stroke-width="3" class="drum-part" data-drum="kick"/>' +
+        '<ellipse cx="160" cy="172" rx="68" ry="26" fill="#ff6b6b" stroke="#7b241c" stroke-width="3" class="drum-part" data-drum="kick"/>' +
+        '<text x="160" y="174" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="#fff" font-weight="bold" pointer-events="none">' + kick + '</text>' +
+        // Decorative sticks
+        '<line x1="104" y1="54" x2="142" y2="120" stroke="#a0856c" stroke-width="4" stroke-linecap="round"/>' +
+        '<line x1="216" y1="54" x2="178" y2="120" stroke="#a0856c" stroke-width="4" stroke-linecap="round"/>' +
+      '</svg>';
 
-    pads.forEach(function (pad) {
-      var btn = document.createElement('button');
-      btn.className = 'drum-pad';
-      btn.style.background = pad.color;
-      btn.textContent = pad.label;
-      btn.addEventListener('pointerdown', function (e) {
+    var fns = { kick: playKick, snare: playSnare, hihat: playHihat, tom: playTom };
+    wrap.querySelectorAll('.drum-part').forEach(function (el) {
+      el.addEventListener('pointerdown', function (e) {
         e.preventDefault();
         if (APP.audio && APP.audio._wake) try { APP.audio._wake(); } catch(ex){}
-        pad.fn();
+        var id = el.getAttribute('data-drum');
+        if (fns[id]) fns[id]();
+        el.style.filter = 'brightness(1.3)';
+        setTimeout(function () { el.style.filter = ''; }, 150);
       });
-      grid.appendChild(btn);
     });
 
-    content.appendChild(grid);
+    content.appendChild(wrap);
   }
 
   function buildShakers(content) {
