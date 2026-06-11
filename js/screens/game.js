@@ -49,9 +49,11 @@ window.APP = window.APP || {};
   function render(root, ctx) {
     if (activeTracer) { activeTracer.destroy(); activeTracer = null; }
     root.innerHTML = '';
+    // Track active mode so the complete screen can return to the right game.
+    if (APP.state && APP.state.settings) APP.state.settings.gameMode = 'trace';
 
     let animal = APP.state.currentAnimal;
-    if (!animal) { ctx.go('landing'); return; }
+    if (!animal) { ctx.go(APP.screens && APP.screens.map ? 'map' : 'landing'); return; }
 
     // Animal already fully traced (e.g. user pressed Home on the complete screen
     // then hit Continue). Silently start the next animal instead of showing a
@@ -61,7 +63,7 @@ window.APP = window.APP || {};
     // but defensive programming against future edge cases).
     while (APP.state.letterIndex >= animal.name.length) {
       const next = APP.animals.pickNext(APP.state.settings.maxLength, animal);
-      if (!next) { ctx.go('landing'); return; }
+      if (!next) { ctx.go(APP.screens && APP.screens.map ? 'map' : 'landing'); return; }
       APP.startGame(next);
       animal = APP.state.currentAnimal; // re-read after startGame resets letterIndex
     }

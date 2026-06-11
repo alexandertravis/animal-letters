@@ -10,7 +10,6 @@ window.APP = window.APP || {};
         { id: 'trace',    labelKey: 'school.trace',    art: '✏️', screen: 'game' },
         { id: 'find',     labelKey: 'school.find',     art: '🔍', screen: 'findletter' },
         { id: 'numbers',  labelKey: 'loc.numbers',     art: '🔢', screen: 'numbers' },
-        { id: 'letters',  labelKey: 'loc.letters',     art: '🔤', screen: 'letters' },
       ]
     },
     { id: 'library', labelKey: 'loc.library',  bgTrack: 'library',  direct: 'library'  },
@@ -22,8 +21,8 @@ window.APP = window.APP || {};
       bgTrack: 'games',
       direct: null,
       games: [
-        { id: 'puzzles',   labelKey: 'loc.puzzles',              art: '🧩', screen: 'puzzles'   },
-        { id: 'dots',      labelKey: 'loc.dots',                 art: '🔵', screen: 'dots'      },
+        { id: 'puzzles',   labelKey: 'puzzles.title',            art: '🧩', screen: 'puzzles'   },
+        { id: 'dots',      labelKey: 'dots.title',               art: '🔵', screen: 'dots'      },
         { id: 'tictactoe', labelKey: 'game.tictactoe.title',     art: '❌', screen: 'tictactoe' },
         { id: 'memory',    labelKey: 'game.memory.title',        art: '🃏', screen: 'memory'    },
         { id: 'maze',      labelKey: 'game.maze.title',          art: '🌀', screen: 'maze'      },

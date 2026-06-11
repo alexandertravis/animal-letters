@@ -323,7 +323,7 @@ window.APP = window.APP || {};
             ctx: ctx,
             title: (APP.t && APP.t('puzzles.title')) || 'Puzzles',
             home: true,
-            back: function () { if (G) G.killTweensOf('*'); setStep('setup'); },
+            back: function () { if (G) G.killTweensOf('*'); ctx.go(APP.ui && APP.ui.defaultBackTarget ? APP.ui.defaultBackTarget('puzzles') : (APP.screens && APP.screens.map ? 'map' : 'landing')); },
             right: [nextBtn]
           });
         } else {
@@ -348,9 +348,9 @@ window.APP = window.APP || {};
         backBtn.className = 'btn icon';
         backBtn.innerHTML = (APP.ICONS && APP.ICONS.back) || '&#8592;';
         if (step === 'play') {
-          backBtn.addEventListener('click', function () { if (G) G.killTweensOf('*'); setStep('setup'); });
+          backBtn.addEventListener('click', function () { if (G) G.killTweensOf('*'); ctx.go(APP.ui && APP.ui.defaultBackTarget ? APP.ui.defaultBackTarget('puzzles') : (APP.screens && APP.screens.map ? 'map' : 'landing')); });
         } else {
-          backBtn.addEventListener('click', function () { if (G) G.killTweensOf('*'); ctx.go('landing'); });
+          backBtn.addEventListener('click', function () { if (G) G.killTweensOf('*'); ctx.go(APP.ui && APP.ui.defaultBackTarget ? APP.ui.defaultBackTarget('puzzles') : (APP.screens && APP.screens.map ? 'map' : 'landing')); });
         }
         var titleEl = document.createElement('h1');
         titleEl.textContent = (APP.t && APP.t('puzzles.title')) || 'Puzzles';

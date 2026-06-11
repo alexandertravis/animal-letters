@@ -47,6 +47,19 @@ window.APP = window.APP || {};
       wrap.appendChild(topbar);
     }
 
+    // Trace/Find need a loaded animal. Start a fresh one only if none is in
+    // progress (preserves a half-traced animal if the child switches modes).
+    function startGameIfNeeded(screen) {
+      if (screen !== 'game' && screen !== 'findletter') return;
+      var st = APP.state || {};
+      var cur = st.currentAnimal;
+      var done = cur && cur.name && st.letterIndex != null && st.letterIndex >= cur.name.length;
+      if ((!cur || done) && APP.animals && APP.animals.pickRandom) {
+        var animal = APP.animals.pickRandom((st.settings && st.settings.maxLength) || 6, cur);
+        if (animal) APP.startGame(animal);
+      }
+    }
+
     var body = document.createElement('div');
     body.className = 'location-body';
 
@@ -62,6 +75,7 @@ window.APP = window.APP || {};
           label: APP.t(game.labelKey) || game.id,
           onClick: function() {
             if (APP.audio && APP.audio.sfx && APP.audio.sfx.click) APP.audio.sfx.click();
+            startGameIfNeeded(game.screen);
             ctx.go(game.screen);
           }
         });
@@ -74,6 +88,7 @@ window.APP = window.APP || {};
         (function(screen) {
           btn.addEventListener('click', function() {
             if (APP.audio && APP.audio.sfx && APP.audio.sfx.click) APP.audio.sfx.click();
+            startGameIfNeeded(screen);
             ctx.go(screen);
           });
         })(game.screen);

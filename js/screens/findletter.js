@@ -168,16 +168,18 @@ window.APP = window.APP || {};
   function render(root, ctx) {
     if (confettiCleanup) { confettiCleanup(); confettiCleanup = null; }
     root.innerHTML = '';
+    // Track active mode so the complete screen can return to the right game.
+    if (APP.state && APP.state.settings) APP.state.settings.gameMode = 'find';
 
     let animal = APP.state.currentAnimal;
-    if (!animal) { ctx.go('landing'); return; }
+    if (!animal) { ctx.go(APP.screens && APP.screens.map ? 'map' : 'landing'); return; }
 
     // Guard: if animal is already fully done, start next
     while (APP.state.letterIndex >= animal.name.length) {
       const next = APP.animals.pickNext
         ? APP.animals.pickNext(APP.state.settings.maxLength, animal)
         : APP.animals.pickRandom(APP.state.settings.maxLength, animal);
-      if (!next) { ctx.go('landing'); return; }
+      if (!next) { ctx.go(APP.screens && APP.screens.map ? 'map' : 'landing'); return; }
       APP.startGame(next);
       animal = APP.state.currentAnimal;
     }

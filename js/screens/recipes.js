@@ -292,7 +292,7 @@ window.APP = window.APP || {};
         if (S.step !== 'pick') setStep('pick');
         else {
           var prev = APP.state && APP.state.previousScreen;
-          ctx.go(prev && prev !== 'recipes' ? prev : 'landing');
+          ctx.go(prev && prev !== 'recipes' ? prev : (APP.screens && APP.screens.map ? 'map' : 'landing'));
         }
       });
     }
@@ -1096,7 +1096,7 @@ window.APP = window.APP || {};
       var again = el('button', 'recipe-action', t('recipes.makeAnother', 'Make another'));
       again.addEventListener('click', function () { S.recipe = null; S.placed = []; setStep('pick'); });
       var home = el('button', 'recipe-action secondary', t('recipes.home', 'Home'));
-      home.addEventListener('click', function () { ctx.go('landing'); });
+      home.addEventListener('click', function () { ctx.go(APP.screens && APP.screens.map ? 'map' : 'landing'); });
       row.appendChild(again); row.appendChild(home);
       stage.appendChild(row);
 

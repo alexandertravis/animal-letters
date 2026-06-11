@@ -5,7 +5,7 @@ window.APP = window.APP || {};
   function render(root, ctx) {
     root.innerHTML = '';
     const animal = APP.state.currentAnimal;
-    if (!animal) { ctx.go('landing'); return; }
+    if (!animal) { ctx.go(APP.screens && APP.screens.map ? 'map' : 'landing'); return; }
 
     const wrap = document.createElement('div');
     wrap.className = 'complete';
@@ -121,9 +121,10 @@ window.APP = window.APP || {};
     wrap.querySelector('[data-act=next]').addEventListener('click', () => {
       const next = APP.animals.pickNext(APP.state.settings.maxLength, animal);
       navigate(() => {
-        if (!next) { ctx.go('landing'); return; }
+        if (!next) { ctx.go(APP.screens && APP.screens.map ? 'map' : 'landing'); return; }
         APP.startGame(next);
-        ctx.go('game');
+        const mode = (APP.state && APP.state.settings && APP.state.settings.gameMode) || 'trace';
+        ctx.go(mode === 'find' ? 'findletter' : 'game');
       });
     });
     wrap.querySelector('[data-act=gallery]').addEventListener('click', () =>
