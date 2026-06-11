@@ -353,43 +353,74 @@ window.APP = window.APP || {};
     setMuted: function (b) { APP.audio.setMuted(b); }
   };
 
+  // ── Background music files (one per location) ─────────────────────────────
+  // Real MP3 tracks served from assets/music/. If a file fails to load we fall
+  // back to the synthesised TRACKS oscillator for that id.
+  var MUSIC_FILES = {
+    map:     'assets/music/the_mountain-happy-peaceful-522464.mp3',
+    school:  'assets/music/nastelbom-children-291652.mp3',
+    library: 'assets/music/the_mountain-children-522447.mp3',
+    kitchen: 'assets/music/the_mountain-cartoon-522446.mp3',
+    games:   'assets/music/nastelbom-children-436855.mp3',
+    music:   'assets/music/the_mountain-children-483305.mp3',
+    default: 'assets/music/the_mountain-children-commercial-129872.mp3'
+  };
+  var bgAudio = null;   // active HTMLAudioElement for file-based music
+
   // ── Music namespace ───────────────────────────────────────────────────────
   APP.audio.music = {
     play: function (trackId) {
       var s = APP.state && APP.state.settings;
       if (s && !s.bgMusicEnabled) return;
-      if (bgCurrent && bgCurrent.id === trackId) return; // already playing
+      var file = MUSIC_FILES[trackId] || MUSIC_FILES['default'];
+      // Already playing the same file — leave it running.
+      if (bgAudio && bgAudio._trackId === trackId && !bgAudio.paused) return;
+      // Stop any synthesised oscillator track first.
       if (bgCurrent) { try { bgCurrent.stop(); } catch (_) {} bgCurrent = null; }
-      var fn = TRACKS[trackId] || TRACKS['default'];
-      // Restore bgMaster gain before starting
-      var bm = getBgMaster();
+      // Stop any previously-playing file.
+      if (bgAudio) { bgAudio.pause(); bgAudio.src = ''; bgAudio = null; }
       var vol = s ? (s.bgMusicVol != null ? s.bgMusicVol : 0.6) : 0.6;
-      var enabled = s ? s.bgMusicEnabled : true;
-      if (bm && ac) bm.gain.setValueAtTime(enabled ? vol : 0, ac.currentTime);
-      var stopFn = fn();
-      bgCurrent = { id: trackId, stop: stopFn };
+      var el = new Audio(file);
+      el._trackId = trackId;
+      el.loop = true;
+      el.volume = vol;
+      el.addEventListener('error', function () {
+        // File failed to load — fall back to the synthesised track.
+        if (bgAudio === el) bgAudio = null;
+        var fn = TRACKS[trackId] || TRACKS['default'];
+        if (!fn) return;
+        var bm = getBgMaster();
+        if (bm && ac) bm.gain.setValueAtTime(vol, ac.currentTime);
+        bgCurrent = { id: trackId, stop: fn() };
+      });
+      // play() may reject until a user gesture — that's fine, it retries on the
+      // next navigation (which is always inside a click/tap gesture).
+      el.play().catch(function () {});
+      bgAudio = el;
     },
     stop: function () {
-      if (bgCurrent) {
-        try { bgCurrent.stop(); } catch (_) {}
-        bgCurrent = null;
-      }
+      if (bgAudio) { bgAudio.pause(); bgAudio.src = ''; bgAudio = null; }
+      if (bgCurrent) { try { bgCurrent.stop(); } catch (_) {} bgCurrent = null; }
     },
     setVol: function (v) {
       if (APP.settings) APP.settings.update({ bgMusicVol: v });
       else if (APP.state) APP.state.settings.bgMusicVol = v;
+      var s = APP.state && APP.state.settings;
+      var enabled = s ? s.bgMusicEnabled : true;
+      if (bgAudio) bgAudio.volume = enabled ? v : 0;
       if (bgMaster && ac) {
-        var s = APP.state && APP.state.settings;
-        var enabled = s ? s.bgMusicEnabled : true;
         bgMaster.gain.setTargetAtTime(enabled ? v : 0, getAC().currentTime, 0.1);
       }
     },
     setEnabled: function (b) {
       if (APP.settings) APP.settings.update({ bgMusicEnabled: b });
       else if (APP.state) APP.state.settings.bgMusicEnabled = b;
+      var s = APP.state && APP.state.settings;
+      var vol = s ? (s.bgMusicVol != null ? s.bgMusicVol : 0.6) : 0.6;
+      // Keep the file element alive but silence it when disabled, so re-enabling
+      // is instant without needing a fresh user gesture to restart playback.
+      if (bgAudio) bgAudio.volume = b ? vol : 0;
       if (bgMaster && ac) {
-        var s = APP.state && APP.state.settings;
-        var vol = s ? (s.bgMusicVol != null ? s.bgMusicVol : 0.6) : 0.6;
         bgMaster.gain.setTargetAtTime(b ? vol : 0, getAC().currentTime, 0.3);
       }
     }
