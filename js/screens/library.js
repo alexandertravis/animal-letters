@@ -131,29 +131,39 @@ window.APP = window.APP || {};
     const SHELF_SKIN = theme.shelf;
     const BOOK_SKIN  = theme.book;
 
+    // Sync current theme into the settings store so the gear panel shows the right selection.
+    if (APP.settings) APP.settings.saveGame('library', { theme: themeKey });
+
     const stories  = APP.STORIES || [];
     const unlocked = stories.filter(APP.isStoryUnlocked);
     const allBooks = [...unlocked, ...stories.filter(s => !APP.isStoryUnlocked(s))];
 
     const wrap = el('div', { class:'library' });
 
-    // ── Topbar: back + title + theme switcher ────────────────────────────
-    const themeSelect = el('select', {
-      class:'tb-select library-theme-select', 'aria-label':'Theme',
-      on: { change: (e) => { APP.setState({ libraryTheme: e.target.value }); render(root, ctx); } }
-    });
-    Object.keys(THEMES).forEach(key => {
-      const opt = el('option', { value: key }, THEMES[key].label);
-      if (key === themeKey) opt.selected = true;
-      themeSelect.appendChild(opt);
-    });
-
+    // ── Topbar: back + title + theme gear ────────────────────────────
     wrap.appendChild(APP.ui.topbar({
       ctx: ctx,
       title: APP.t('library.title'),
       home: true,
       back: true,
-      right: [themeSelect]
+      settings: {
+        gameId: 'library',
+        title: APP.t('ui.settings') || 'Settings',
+        schema: [
+          {
+            key: 'theme',
+            label: APP.t('library.theme') || 'Theme',
+            type: 'segmented',
+            options: Object.keys(THEMES).map(function(k) { return { value: k, label: THEMES[k].label }; })
+          }
+        ],
+        onChange: function(key, val, all) {
+          var newTheme = all.theme || val;
+          APP.setState({ libraryTheme: newTheme });
+          if (APP.settings) APP.settings.saveGame('library', { theme: newTheme });
+          render(root, ctx);
+        }
+      }
     }));
 
     // ── Body — bookshelf fills the area below the header ──────────────────

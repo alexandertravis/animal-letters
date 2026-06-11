@@ -261,11 +261,11 @@ window.APP = window.APP || {};
         msg.className = 'ttt-result-msg';
         if (winner === 'P') {
           msg.textContent = settings.opponent === 'friend'
-            ? p1Icon + ' ' + (T('game.tictactoe.youWin') || 'You win!')
+            ? p1Icon + ' Player 1 wins!'
             : (T('game.tictactoe.youWin') || 'You win!');
         } else if (winner === 'R') {
           msg.textContent = settings.opponent === 'friend'
-            ? p2Icon + ' ' + (T('game.tictactoe.youWin') || 'You win!')
+            ? p2Icon + ' Player 2 wins!'
             : (T('game.tictactoe.robotWins') || 'Good try — robot wins!');
         } else {
           msg.textContent = T('game.tictactoe.draw') || "It's a draw!";
@@ -295,8 +295,8 @@ window.APP = window.APP || {};
             : (T('game.tictactoe.robotThinking') || 'Thinking...');
         } else {
           statusEl.textContent = currentTurn === 'P'
-            ? (T('game.tictactoe.yourTurn') || 'Your turn!')
-            : (T('game.tictactoe.friendTurn') || "Friend's turn");
+            ? p1Icon + ' Player 1\'s turn'
+            : p2Icon + ' Player 2\'s turn';
         }
       }
 

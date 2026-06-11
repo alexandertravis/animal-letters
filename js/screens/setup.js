@@ -87,7 +87,7 @@ window.APP = window.APP || {};
     musicVolInput.min = '0';
     musicVolInput.max = '1';
     musicVolInput.step = '0.05';
-    musicVolInput.value = String(s.bgMusicVol != null ? s.bgMusicVol : 0.6);
+    musicVolInput.value = String(s.bgMusicVol != null ? s.bgMusicVol : 0.3);
     fillRange(musicVolInput);
     musicVolInput.addEventListener('input', function() {
       fillRange(musicVolInput);

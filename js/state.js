@@ -18,7 +18,7 @@ window.APP = window.APP || {};
     sfxVol: 0.7,           // 0–1 — SFX/speech volume
     sfxMuted: false,       // SFX mute state
     lastSfxVol: 0.7,       // last non-zero SFX volume
-    bgMusicVol: 0.6,       // 0–1 — background music volume
+    bgMusicVol: 0.3,       // 0–1 — background music volume
     bgMusicEnabled: true,  // background music on/off
     locale: "en",          // "en" | "pt" | … — overwritten by APP.loadLocale() on boot
     phonics: true,         // speak letter name aloud after each trace

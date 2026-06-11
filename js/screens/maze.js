@@ -96,14 +96,16 @@ window.APP = window.APP || {};
     injectStyles();
 
     var T = APP.t || function (k) { return k; };
+    var MAZE_DEFAULTS = { size: 6, trailMode: 'twoColor' };
     var settings = (APP.settings && APP.settings.game)
-      ? APP.settings.game('maze', { size: 6 })
-      : { size: 6 };
+      ? APP.settings.game('maze', MAZE_DEFAULTS)
+      : Object.assign({}, MAZE_DEFAULTS);
     settings.size = parseInt(settings.size, 10) || 6;
+    if (!settings.trailMode) settings.trailMode = 'twoColor';
 
     function saveSettings(patch) {
       if (APP.settings && APP.settings.updateGame) {
-        APP.settings.updateGame('maze', patch, { size: 6 });
+        APP.settings.updateGame('maze', patch, MAZE_DEFAULTS);
       }
     }
 
@@ -115,8 +117,10 @@ window.APP = window.APP || {};
     var playerRow = 0, playerCol = 0;
     var gameOver = false;
 
-    // Trail: array of [row, col] visited in order
-    var trail = [[0, 0]];
+    // Trail tracking: currentPath is the non-backtracked forward route from start.
+    // breadcrumbs holds cells that were on the path but got backtracked from.
+    var currentPath = [[0, 0]];
+    var breadcrumbs = [];
 
     function doRender() {
       root.innerHTML = '';
@@ -144,6 +148,16 @@ window.APP = window.APP || {};
                 { value: 10, label: '10×10' },
                 { value: 12, label: '12×12' },
                 { value: 14, label: '14×14' }
+              ]
+            },
+            {
+              key: 'trailMode',
+              label: 'Trail',
+              type: 'segmented',
+              options: [
+                { value: 'twoColor', label: '2 colours' },
+                { value: 'erase',    label: 'Erase' },
+                { value: 'none',     label: 'None' }
               ]
             }
           ],
@@ -244,19 +258,41 @@ window.APP = window.APP || {};
         }
         svg.appendChild(wallGroup);
 
-        // Draw trail
-        var trailEl = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-        var trailPts = trail.map(function (pt) {
-          return (MARGIN + pt[1] * CELL + CELL/2) + ',' + (MARGIN + pt[0] * CELL + CELL/2);
-        }).join(' ');
-        trailEl.setAttribute('points', trailPts);
-        trailEl.setAttribute('fill', 'none');
-        trailEl.setAttribute('stroke', '#a78bfa');
-        trailEl.setAttribute('stroke-width', '8');
-        trailEl.setAttribute('stroke-linecap', 'round');
-        trailEl.setAttribute('stroke-linejoin', 'round');
-        trailEl.setAttribute('opacity', '0.85');
-        svg.appendChild(trailEl);
+        // Draw trail based on trailMode setting
+        var trailMode = settings.trailMode || 'twoColor';
+
+        // Breadcrumb dots (cells visited but backtracked from) — twoColor mode only
+        var breadcrumbsEl = null;
+        if (trailMode === 'twoColor') {
+          breadcrumbsEl = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          breadcrumbs.forEach(function(pt) {
+            var c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            c.setAttribute('cx', MARGIN + pt[1] * CELL + CELL/2);
+            c.setAttribute('cy', MARGIN + pt[0] * CELL + CELL/2);
+            c.setAttribute('r', CELL * 0.15);
+            c.setAttribute('fill', '#d4b8fa');
+            c.setAttribute('opacity', '0.45');
+            breadcrumbsEl.appendChild(c);
+          });
+          svg.appendChild(breadcrumbsEl);
+        }
+
+        // Current-path polyline (bright) — hidden in 'none' mode
+        var trailEl = null;
+        if (trailMode !== 'none') {
+          trailEl = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+          var trailPts = currentPath.map(function (pt) {
+            return (MARGIN + pt[1] * CELL + CELL/2) + ',' + (MARGIN + pt[0] * CELL + CELL/2);
+          }).join(' ');
+          trailEl.setAttribute('points', trailPts);
+          trailEl.setAttribute('fill', 'none');
+          trailEl.setAttribute('stroke', '#a78bfa');
+          trailEl.setAttribute('stroke-width', '8');
+          trailEl.setAttribute('stroke-linecap', 'round');
+          trailEl.setAttribute('stroke-linejoin', 'round');
+          trailEl.setAttribute('opacity', '0.85');
+          svg.appendChild(trailEl);
+        }
 
         // Goal emoji
         var goalText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -304,14 +340,30 @@ window.APP = window.APP || {};
           if (dCol === -1 && !cell.left)   canMove = true;
           if (dCol ===  1 && !cell.right)  canMove = true;
 
-          if (!canMove) {
-            if (APP.audio && APP.audio.sfx) APP.audio.sfx.wrong();
-            return false;
+          if (!canMove) return false;
+
+          var newRow = playerRow + dRow;
+          var newCol = playerCol + dCol;
+
+          // Detect backtracking: stepping back to the cell before us on currentPath
+          var prevOnPath = currentPath.length > 1 ? currentPath[currentPath.length - 2] : null;
+          if (prevOnPath && prevOnPath[0] === newRow && prevOnPath[1] === newCol) {
+            // Pop the current position off the path and add it to breadcrumbs
+            var popped = currentPath.pop();
+            if (trailMode === 'twoColor') breadcrumbs.push(popped);
+          } else {
+            // Moving to a new cell: push it onto the path
+            currentPath.push([newRow, newCol]);
+            // If revisiting a breadcrumb cell, remove it from breadcrumbs
+            for (var bi = breadcrumbs.length - 1; bi >= 0; bi--) {
+              if (breadcrumbs[bi][0] === newRow && breadcrumbs[bi][1] === newCol) {
+                breadcrumbs.splice(bi, 1); break;
+              }
+            }
           }
 
-          playerRow += dRow;
-          playerCol += dCol;
-          trail.push([playerRow, playerCol]);
+          playerRow = newRow;
+          playerCol = newCol;
 
           if (APP.audio && APP.audio.sfx) APP.audio.sfx.click();
 
@@ -319,11 +371,27 @@ window.APP = window.APP || {};
           playerText.setAttribute('x', MARGIN + playerCol * CELL + CELL/2);
           playerText.setAttribute('y', MARGIN + playerRow * CELL + CELL/2);
 
-          // Update trail
-          var newPts = trail.map(function (pt) {
-            return (MARGIN + pt[1] * CELL + CELL/2) + ',' + (MARGIN + pt[0] * CELL + CELL/2);
-          }).join(' ');
-          trailEl.setAttribute('points', newPts);
+          // Update trail polyline (current path)
+          if (trailEl) {
+            var newPts = currentPath.map(function (pt) {
+              return (MARGIN + pt[1] * CELL + CELL/2) + ',' + (MARGIN + pt[0] * CELL + CELL/2);
+            }).join(' ');
+            trailEl.setAttribute('points', newPts);
+          }
+
+          // Rebuild breadcrumb dots
+          if (breadcrumbsEl) {
+            while (breadcrumbsEl.firstChild) breadcrumbsEl.removeChild(breadcrumbsEl.firstChild);
+            breadcrumbs.forEach(function(pt) {
+              var c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+              c.setAttribute('cx', MARGIN + pt[1] * CELL + CELL/2);
+              c.setAttribute('cy', MARGIN + pt[0] * CELL + CELL/2);
+              c.setAttribute('r', CELL * 0.15);
+              c.setAttribute('fill', '#d4b8fa');
+              c.setAttribute('opacity', '0.45');
+              breadcrumbsEl.appendChild(c);
+            });
+          }
 
           if (playerRow === N - 1 && playerCol === N - 1) {
             gameOver = true;
@@ -401,7 +469,8 @@ window.APP = window.APP || {};
       seed = Math.floor(Math.random() * 0x7fffffff);
       maze = generateMaze(N, seed);
       playerRow = 0; playerCol = 0;
-      trail = [[0, 0]];
+      currentPath = [[0, 0]];
+      breadcrumbs = [];
       gameOver = false;
       doRender();
     }

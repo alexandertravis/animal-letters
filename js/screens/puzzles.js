@@ -324,7 +324,13 @@ window.APP = window.APP || {};
             title: (APP.t && APP.t('puzzles.title')) || 'Puzzles',
             home: true,
             back: function () { if (G) G.killTweensOf('*'); ctx.go(APP.ui && APP.ui.defaultBackTarget ? APP.ui.defaultBackTarget('puzzles') : (APP.screens && APP.screens.map ? 'map' : 'landing')); },
-            right: [nextBtn]
+            right: [nextBtn],
+            settings: {
+              gameId: 'puzzles',
+              title: (APP.t && APP.t('puzzles.settings')) || 'Puzzle Settings',
+              schema: advancedSchema,
+              onChange: onSettingsChange
+            }
           });
         } else {
           topbarEl = APP.ui.topbar({

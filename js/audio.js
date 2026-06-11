@@ -37,7 +37,7 @@ window.APP = window.APP || {};
       bgMaster.connect(a.destination);
       var s = APP.state && APP.state.settings;
       var enabled = s ? s.bgMusicEnabled : true;
-      var vol = s ? (s.bgMusicVol != null ? s.bgMusicVol : 0.6) : 0.6;
+      var vol = s ? (s.bgMusicVol != null ? s.bgMusicVol : 0.3) : 0.3;
       bgMaster.gain.value = enabled ? vol : 0;
     }
     return bgMaster;
@@ -152,7 +152,7 @@ window.APP = window.APP || {};
         setTimeout(function () {
           var s = APP.state && APP.state.settings;
           if (s && bgMaster) {
-            var vol = s.bgMusicVol != null ? s.bgMusicVol : 0.6;
+            var vol = s.bgMusicVol != null ? s.bgMusicVol : 0.3;
             bgMaster.gain.value = s.bgMusicEnabled ? vol : 0;
           }
         }, 500);
@@ -379,7 +379,7 @@ window.APP = window.APP || {};
       if (bgCurrent) { try { bgCurrent.stop(); } catch (_) {} bgCurrent = null; }
       // Stop any previously-playing file.
       if (bgAudio) { bgAudio.pause(); bgAudio.src = ''; bgAudio = null; }
-      var vol = s ? (s.bgMusicVol != null ? s.bgMusicVol : 0.6) : 0.6;
+      var vol = s ? (s.bgMusicVol != null ? s.bgMusicVol : 0.3) : 0.3;
       var el = new Audio(file);
       el._trackId = trackId;
       el.loop = true;

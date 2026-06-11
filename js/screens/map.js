@@ -43,7 +43,7 @@ window.APP = window.APP || {};
     var bgSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     bgSvg.setAttribute('viewBox', '0 0 400 300');
     bgSvg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
-    bgSvg.className = 'map-bg';
+    bgSvg.setAttribute('class', 'map-bg');
     bgSvg.innerHTML = [
       '<rect width="400" height="300" fill="#87ceeb"/>',
       '<circle cx="340" cy="50" r="35" fill="#ffe066"/>',

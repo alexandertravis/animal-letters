@@ -177,7 +177,7 @@ window.APP = window.APP || {};
     if (APP.ui && APP.ui.topbar) {
       topbarEl = APP.ui.topbar({ ctx: ctx, title: t('recipes.title', 'Recipes'), home: true, back: true });
       wrap.appendChild(topbarEl);
-      title = topbarEl.querySelector('h1, .topbar-title') || topbarEl;
+      title = topbarEl.querySelector('.tb-title, h1, h2, .topbar-title');
       backBtn = null; // APP.ui.topbar handles back navigation
     } else {
       topbarEl = el('div', 'recipes-topbar');

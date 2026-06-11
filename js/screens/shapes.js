@@ -26,6 +26,13 @@ window.APP = window.APP || {};
       for (i = 0; i < count; i++) {
         items.push({ path: base.path, color: COLOURS[i % COLOURS.length], size: 1 });
       }
+    } else if (difficulty === 'size') {
+      // Same shape (circle), different sizes — child must match size.
+      var sizesOnly = [0.6, 0.85, 1.05, 1.3, 1.6];
+      var baseShape = SHAPES[0];
+      for (i = 0; i < count; i++) {
+        items.push({ path: baseShape.path, color: baseShape.color, size: sizesOnly[i % sizesOnly.length] });
+      }
     } else if (difficulty === 'sizeColour') {
       // Alternate two shapes, vary both size and colour.
       var sizes = [0.7, 1.0, 1.3];
@@ -121,7 +128,8 @@ window.APP = window.APP || {};
             options: [
               { value: 'shapes',     label: 'Shapes' },
               { value: 'colour',     label: 'Colours' },
-              { value: 'sizeColour', label: 'Size + colour' }
+              { value: 'size',       label: 'Size' },
+              { value: 'sizeColour', label: 'Size+colour' }
             ]
           },
           { type: 'toggle', key: 'colourHints', label: APP.t('game.shapes.hints') || 'Colour hints' }
