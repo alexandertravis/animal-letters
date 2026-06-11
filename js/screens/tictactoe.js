@@ -74,8 +74,12 @@ window.APP = window.APP || {};
       '.ttt-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; width:min(300px,80vw); }',
       '.ttt-cell { aspect-ratio:1; font-size:2.8rem; border:3px solid #ccc; border-radius:12px; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s,transform 0.1s; -webkit-tap-highlight-color:transparent; }',
       '.ttt-cell:not(:disabled):hover { background:#f5f5f5; transform:scale(1.04); }',
-      '.ttt-cell:disabled { cursor:default; }',
+      '.ttt-cell:disabled { cursor:default; opacity:1; }',
       '.ttt-cell.winner { background:#fff9c4; border-color:#f9c74f; }',
+      '.ttt-tally { display:flex; gap:24px; justify-content:center; align-items:flex-end; font-size:1rem; font-weight:700; color:#555; }',
+      '.ttt-tally .tcol { display:flex; flex-direction:column; align-items:center; gap:2px; }',
+      '.ttt-tally .ticon { font-size:1.6rem; line-height:1; }',
+      '.ttt-tally .tscore { font-size:1.5rem; color:var(--accent,#e67e22); }',
       '.ttt-result { display:flex; flex-direction:column; align-items:center; gap:12px; }',
       '.ttt-result-msg { font-size:1.5rem; font-weight:700; text-align:center; }',
     ].join('\n');
@@ -95,6 +99,8 @@ window.APP = window.APP || {};
     var board = ['','','','','','','','',''];
     var currentTurn = settings.first === 'robot' ? 'R' : 'P';
     var gameOver = false;
+    var tally = { P: 0, R: 0, draw: 0 };  // P=player 1, R=player 2 / robot
+    var recorded = false;                 // count each finished game only once
 
     function saveSettings(patch) {
       if (APP.settings && APP.settings.updateGame) {
@@ -104,6 +110,13 @@ window.APP = window.APP || {};
 
     function doRender() {
       root.innerHTML = '';
+      var p1Icon = settings.playerIcon || '🐱';
+      var p2Icon = settings.robotIcon || '🐶';
+      var winner = checkWinner(board);
+      if (gameOver && !recorded) {
+        recorded = true;
+        if (winner) tally[winner]++; else tally.draw++;
+      }
       var screen = document.createElement('div');
       screen.className = 'ttt-screen';
 
@@ -117,6 +130,7 @@ window.APP = window.APP || {};
           board = ['','','','','','','','',''];
           currentTurn = (settings.first === 'robot') ? 'R' : 'P';
           gameOver = false;
+          recorded = false;
           doRender();
           if (settings.opponent === 'robot' && currentTurn === 'R') {
             scheduleRobot();
@@ -143,6 +157,26 @@ window.APP = window.APP || {};
                 { value: 'player', label: 'Player 1' },
                 { value: 'robot',  label: settings.opponent === 'friend' ? 'Player 2' : (T('game.tictactoe.robot') || 'Robot') }
               ]
+            },
+            {
+              key: 'playerIcon',
+              label: 'Player 1 icon',
+              type: 'segmented',
+              options: [
+                { value: '🐱', label: '🐱' }, { value: '🦊', label: '🦊' },
+                { value: '🐸', label: '🐸' }, { value: '⭐', label: '⭐' },
+                { value: '🦄', label: '🦄' }, { value: '🐙', label: '🐙' }
+              ]
+            },
+            {
+              key: 'robotIcon',
+              label: settings.opponent === 'friend' ? 'Player 2 icon' : 'Robot icon',
+              type: 'segmented',
+              options: [
+                { value: '🐶', label: '🐶' }, { value: '🐼', label: '🐼' },
+                { value: '🤖', label: '🤖' }, { value: '🦁', label: '🦁' },
+                { value: '🐯', label: '🐯' }, { value: '🎃', label: '🎃' }
+              ]
             }
           ],
           onChange: function (key, val, all) {
@@ -162,6 +196,15 @@ window.APP = window.APP || {};
       statusEl.className = 'ttt-status';
       body.appendChild(statusEl);
 
+      // Win tally (player 1 — draws — player 2/robot)
+      var tallyEl = document.createElement('div');
+      tallyEl.className = 'ttt-tally';
+      tallyEl.innerHTML =
+        '<div class="tcol"><span class="ticon">' + p1Icon + '</span><span class="tscore">' + tally.P + '</span></div>' +
+        '<div class="tcol"><span class="ticon">🤝</span><span class="tscore">' + tally.draw + '</span></div>' +
+        '<div class="tcol"><span class="ticon">' + p2Icon + '</span><span class="tscore">' + tally.R + '</span></div>';
+      body.appendChild(tallyEl);
+
       // Grid
       var grid = document.createElement('div');
       grid.className = 'ttt-grid';
@@ -171,7 +214,7 @@ window.APP = window.APP || {};
         (function (idx) {
           var cell = document.createElement('button');
           cell.className = 'ttt-cell';
-          cell.textContent = board[idx] === 'P' ? '🐱' : board[idx] === 'R' ? '🐶' : '';
+          cell.textContent = board[idx] === 'P' ? p1Icon : board[idx] === 'R' ? p2Icon : '';
           cell.disabled = board[idx] !== '' || gameOver;
           cell.addEventListener('click', function () {
             if (gameOver || board[idx] !== '') return;
@@ -196,8 +239,7 @@ window.APP = window.APP || {};
         })(i);
       }
 
-      // Highlight winning line
-      var winner = checkWinner(board);
+      // Highlight winning line (winner computed at top of doRender)
       if (winner) {
         for (var li = 0; li < LINES.length; li++) {
           var a = LINES[li][0], b = LINES[li][1], c = LINES[li][2];
@@ -219,11 +261,11 @@ window.APP = window.APP || {};
         msg.className = 'ttt-result-msg';
         if (winner === 'P') {
           msg.textContent = settings.opponent === 'friend'
-            ? '🐱 ' + (T('game.tictactoe.youWin') || 'You win!')
+            ? p1Icon + ' ' + (T('game.tictactoe.youWin') || 'You win!')
             : (T('game.tictactoe.youWin') || 'You win!');
         } else if (winner === 'R') {
           msg.textContent = settings.opponent === 'friend'
-            ? '🐶 ' + (T('game.tictactoe.youWin') || 'You win!')
+            ? p2Icon + ' ' + (T('game.tictactoe.youWin') || 'You win!')
             : (T('game.tictactoe.robotWins') || 'Good try — robot wins!');
         } else {
           msg.textContent = T('game.tictactoe.draw') || "It's a draw!";
@@ -237,6 +279,7 @@ window.APP = window.APP || {};
           board = ['','','','','','','','',''];
           currentTurn = (settings.first === 'robot') ? 'R' : 'P';
           gameOver = false;
+          recorded = false;
           doRender();
           if (settings.opponent === 'robot' && currentTurn === 'R') {
             scheduleRobot();
