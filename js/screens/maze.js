@@ -288,7 +288,6 @@ window.APP = window.APP || {};
 
         // Current-path polyline (bright) — hidden in 'none' mode
         var trailEl = null;
-        var dynSegEl = null;
         if (trailMode !== 'none') {
           trailEl = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
           var trailPts = currentPath.map(function (pt) {
@@ -302,13 +301,6 @@ window.APP = window.APP || {};
           trailEl.setAttribute('stroke-linejoin', 'round');
           trailEl.setAttribute('opacity', '0.85');
           svg.appendChild(trailEl);
-
-          dynSegEl = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-          dynSegEl.setAttribute('stroke', '#a78bfa');
-          dynSegEl.setAttribute('stroke-width', '8');
-          dynSegEl.setAttribute('stroke-linecap', 'round');
-          dynSegEl.setAttribute('opacity', '0.85');
-          svg.appendChild(dynSegEl);
         }
 
         // Goal emoji
@@ -335,8 +327,10 @@ window.APP = window.APP || {};
         body.appendChild(wrap);
 
         // ── Drag / swipe input ───────────────────────────────────────────────
-        var dragStart = null;
-        var MIN_DRAG = 6; // px in screen coords per cell-step
+        var dragAnchorSvg = null;  // SVG-coord pointer position when slide started
+        var slideTarget   = null;  // { row, col } we are sliding toward, or null
+        var slideProgress = 0;     // 0..1 progress toward slideTarget
+        var lockedDir     = null;  // { dRow, dCol } locked movement direction
 
         function clientToSvgCoord(e) {
           var ctm = svg.getScreenCTM();
@@ -346,6 +340,78 @@ window.APP = window.APP || {};
           pt.x = src.clientX;
           pt.y = src.clientY;
           return pt.matrixTransform(ctm.inverse());
+        }
+
+        function cellCentreSvg(row, col) {
+          return { x: MARGIN + col * CELL + CELL / 2,
+                   y: MARGIN + row * CELL + CELL / 2 };
+        }
+
+        function canMoveFrom(row, col, dRow, dCol) {
+          var cell = maze[row][col];
+          if (dRow === -1 && !cell.top)    return true;
+          if (dRow ===  1 && !cell.bottom) return true;
+          if (dCol === -1 && !cell.left)   return true;
+          if (dCol ===  1 && !cell.right)  return true;
+          return false;
+        }
+
+        // Commits a move without updating emoji position (emoji driven by slideProgress).
+        function commitMove(dRow, dCol) {
+          var newRow = playerRow + dRow;
+          var newCol = playerCol + dCol;
+          var prevOnPath = currentPath.length > 1 ? currentPath[currentPath.length - 2] : null;
+          if (prevOnPath && prevOnPath[0] === newRow && prevOnPath[1] === newCol) {
+            var popped = currentPath.pop();
+            if (trailMode === 'twoColor') breadcrumbs.push(popped);
+          } else {
+            currentPath.push([newRow, newCol]);
+            for (var bi = breadcrumbs.length - 1; bi >= 0; bi--) {
+              if (breadcrumbs[bi][0] === newRow && breadcrumbs[bi][1] === newCol) {
+                breadcrumbs.splice(bi, 1); break;
+              }
+            }
+          }
+          playerRow = newRow;
+          playerCol = newCol;
+          if (APP.audio && APP.audio.sfx) APP.audio.sfx.click();
+          if (trailEl) {
+            trailEl.setAttribute('points', currentPath.map(function (pt) {
+              return (MARGIN + pt[1] * CELL + CELL / 2) + ',' + (MARGIN + pt[0] * CELL + CELL / 2);
+            }).join(' '));
+          }
+          if (breadcrumbsEl) {
+            while (breadcrumbsEl.firstChild) breadcrumbsEl.removeChild(breadcrumbsEl.firstChild);
+            breadcrumbs.forEach(function (pt) {
+              var c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+              c.setAttribute('cx', MARGIN + pt[1] * CELL + CELL / 2);
+              c.setAttribute('cy', MARGIN + pt[0] * CELL + CELL / 2);
+              c.setAttribute('r', CELL * 0.15);
+              c.setAttribute('fill', '#d4b8fa');
+              c.setAttribute('opacity', '0.45');
+              breadcrumbsEl.appendChild(c);
+            });
+          }
+          if (playerRow === N - 1 && playerCol === N - 1) {
+            gameOver = true;
+            if (APP.audio && APP.audio.sfx) APP.audio.sfx.pop();
+            if (APP.launchConfetti) APP.launchConfetti();
+            setTimeout(function () { doRender(); }, 400);
+          }
+        }
+
+        function updateEmojiPos() {
+          var ex, ey;
+          if (slideTarget && slideProgress > 0 && lockedDir) {
+            var p = Math.min(slideProgress, 1);
+            ex = MARGIN + (playerCol + lockedDir.dCol * p) * CELL + CELL / 2;
+            ey = MARGIN + (playerRow + lockedDir.dRow * p) * CELL + CELL / 2;
+          } else {
+            ex = MARGIN + playerCol * CELL + CELL / 2;
+            ey = MARGIN + playerRow * CELL + CELL / 2;
+          }
+          playerText.setAttribute('x', ex);
+          playerText.setAttribute('y', ey);
         }
 
         function tryMove(dRow, dCol) {
@@ -419,11 +485,13 @@ window.APP = window.APP || {};
           return true;
         }
 
-        // Continuous drag: keep moving through cells as the pointer travels,
-        // re-anchoring after each step so one long swipe walks several cells.
         function onPointerDown(e) {
-          var src = e.touches ? e.touches[0] : e;
-          dragStart = { x: src.clientX, y: src.clientY };
+          var svgPt = clientToSvgCoord(e);
+          if (!svgPt) return;
+          dragAnchorSvg = svgPt;
+          slideTarget   = null;
+          slideProgress = 0;
+          lockedDir     = null;
           if (svg.setPointerCapture && e.pointerId != null) {
             try { svg.setPointerCapture(e.pointerId); } catch (_) {}
           }
@@ -431,44 +499,94 @@ window.APP = window.APP || {};
         }
 
         function onPointerMove(e) {
-          if (!dragStart || gameOver) return;
-          var src = e.touches ? e.touches[0] : e;
-
-          // Extend trail dynamically to pointer position
-          var svgPt = clientToSvgCoord(e);
-          if (svgPt && dynSegEl) {
-            var lastPt = currentPath[currentPath.length - 1];
-            dynSegEl.setAttribute('x1', MARGIN + lastPt[1] * CELL + CELL / 2);
-            dynSegEl.setAttribute('y1', MARGIN + lastPt[0] * CELL + CELL / 2);
-            dynSegEl.setAttribute('x2', svgPt.x);
-            dynSegEl.setAttribute('y2', svgPt.y);
-          }
-
-          var dx = src.clientX - dragStart.x;
-          var dy = src.clientY - dragStart.y;
-          if (Math.abs(dx) < MIN_DRAG && Math.abs(dy) < MIN_DRAG) return;
-          var moved;
-          if (Math.abs(dx) >= Math.abs(dy)) {
-            moved = tryMove(0, dx > 0 ? 1 : -1);
-          } else {
-            moved = tryMove(dy > 0 ? 1 : -1, 0);
-          }
-          // Re-anchor so the next cell-step needs a fresh drag delta.
-          if (moved) dragStart = { x: src.clientX, y: src.clientY };
+          if (!dragAnchorSvg || gameOver) return;
           e.preventDefault();
+          var svgPt = clientToSvgCoord(e);
+          if (!svgPt) return;
+
+          var dx = svgPt.x - dragAnchorSvg.x;
+          var dy = svgPt.y - dragAnchorSvg.y;
+
+          // Establish direction on first significant movement
+          if (!lockedDir) {
+            if (Math.abs(dx) < 3 && Math.abs(dy) < 3) return;
+            lockedDir = Math.abs(dx) >= Math.abs(dy)
+              ? { dRow: 0, dCol: dx > 0 ? 1 : -1 }
+              : { dRow: dy > 0 ? 1 : -1, dCol: 0 };
+            slideTarget = canMoveFrom(playerRow, playerCol, lockedDir.dRow, lockedDir.dCol)
+              ? { row: playerRow + lockedDir.dRow, col: playerCol + lockedDir.dCol }
+              : null;
+            slideProgress = 0;
+          }
+
+          // Forward projection and perpendicular magnitude
+          var proj    = dx * lockedDir.dCol + dy * lockedDir.dRow;
+          var perpAbs = Math.abs(dx * (-lockedDir.dRow) + dy * lockedDir.dCol);
+          var rawProg = proj / CELL;
+
+          // Perpendicular dominates → direction change
+          if (perpAbs > Math.abs(proj) + 3) {
+            if (rawProg >= 0.5 && slideTarget) {
+              commitMove(lockedDir.dRow, lockedDir.dCol);
+            }
+            dragAnchorSvg = cellCentreSvg(playerRow, playerCol);
+            lockedDir     = null;
+            slideTarget   = null;
+            slideProgress = 0;
+            updateEmojiPos();
+            return;
+          }
+
+          // Pulled back past start → unlock for fresh direction
+          if (rawProg < -0.15) {
+            dragAnchorSvg = cellCentreSvg(playerRow, playerCol);
+            lockedDir     = null;
+            slideTarget   = null;
+            slideProgress = 0;
+            updateEmojiPos();
+            return;
+          }
+
+          // Wall in this direction — no movement
+          if (!slideTarget) {
+            slideProgress = 0;
+            updateEmojiPos();
+            return;
+          }
+
+          // Walk through complete cells (handles fast swipes, cap at 8 per frame)
+          var iter = 0;
+          while (rawProg >= 1.0 && iter++ < 8) {
+            commitMove(lockedDir.dRow, lockedDir.dCol);
+            dragAnchorSvg = cellCentreSvg(playerRow, playerCol);
+            dx      = svgPt.x - dragAnchorSvg.x;
+            dy      = svgPt.y - dragAnchorSvg.y;
+            rawProg = (dx * lockedDir.dCol + dy * lockedDir.dRow) / CELL;
+            if (!canMoveFrom(playerRow, playerCol, lockedDir.dRow, lockedDir.dCol)) {
+              slideTarget   = null;
+              slideProgress = 0;
+              updateEmojiPos();
+              return;
+            }
+            slideTarget = { row: playerRow + lockedDir.dRow, col: playerCol + lockedDir.dCol };
+          }
+
+          slideProgress = Math.max(0, Math.min(1, rawProg));
+          updateEmojiPos();
         }
 
         function onPointerUp() {
-          // Snap back to exact cell centre on release
-          if (playerText) {
-            playerText.setAttribute('x', MARGIN + playerCol * CELL + CELL / 2);
-            playerText.setAttribute('y', MARGIN + playerRow * CELL + CELL / 2);
+          if (dragAnchorSvg) {
+            if (slideTarget && slideProgress >= 0.5) {
+              commitMove(lockedDir.dRow, lockedDir.dCol);
+            }
+            dragAnchorSvg = null;
+            slideTarget   = null;
+            slideProgress = 0;
+            lockedDir     = null;
           }
-          if (dynSegEl) {
-            dynSegEl.removeAttribute('x1'); dynSegEl.removeAttribute('y1');
-            dynSegEl.removeAttribute('x2'); dynSegEl.removeAttribute('y2');
-          }
-          dragStart = null;
+          playerText.setAttribute('x', MARGIN + playerCol * CELL + CELL / 2);
+          playerText.setAttribute('y', MARGIN + playerRow * CELL + CELL / 2);
         }
 
         svg.addEventListener('pointerdown', onPointerDown);

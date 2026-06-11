@@ -897,7 +897,7 @@ window.APP = window.APP || {};
     // ── Shape-fit board (image with holes punched out) ─────────────────────
     function buildShapesBoard(board) {
       var hc = document.createElement('canvas');
-      hc.className = 'pz-board-hint hint-' + S.hintMode;
+      hc.className = 'pz-board-hint'; // shapes always full colour — holes are the puzzle
       hc.width = S.boardW; hc.height = S.boardH;
       var cx = hc.getContext('2d');
       cx.drawImage(S.srcImg, 0, 0, S.boardW, S.boardH);
