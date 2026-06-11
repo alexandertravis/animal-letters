@@ -335,7 +335,19 @@ window.APP = window.APP || {};
     },
 
     // Wake / resume the AudioContext during a user gesture so later sounds fire instantly.
-    _wake: function () { try { getMaster(); } catch (_) {} },
+    // Also unlocks iOS silent-switch: playing a silent <audio> element registers
+    // media-playback mode so Web Audio API tones bypass the hardware ringer switch.
+    _wake: function () {
+      try { getMaster(); } catch (_) {}
+      if (!APP.audio._iosSilentUnlocked) {
+        APP.audio._iosSilentUnlocked = true;
+        try {
+          var sil = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==');
+          sil.volume = 0.001;
+          sil.play().catch(function () {});
+        } catch (_) {}
+      }
+    },
 
     // Exposed for external use (music.js instruments)
     tone: tone,

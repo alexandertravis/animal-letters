@@ -319,7 +319,7 @@ window.APP = window.APP || {};
 
         // ── Drag / swipe input ───────────────────────────────────────────────
         var dragStart = null;
-        var MIN_DRAG = 16; // px in screen coords per cell-step
+        var MIN_DRAG = 6; // px in screen coords per cell-step
 
         function clientToSvgCoord(e) {
           var ctm = svg.getScreenCTM();

@@ -69,6 +69,7 @@ window.APP = window.APP || {};
     });
     mapTopbar.style.position = 'relative';
     mapTopbar.style.zIndex = '1';
+    mapTopbar.style.width = '100%';
 
     // Inject continue button into the left slot if a session exists
     if (APP.state.sessionExists) {

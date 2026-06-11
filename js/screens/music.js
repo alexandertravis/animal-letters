@@ -36,7 +36,9 @@ window.APP = window.APP || {};
       '@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-15deg)}75%{transform:rotate(15deg)}}',
       '.wiggle{animation:wiggle .3s ease;}',
       '.song-select-row{display:flex;flex-wrap:nowrap;gap:6px;width:min(500px,90vw);overflow-x:auto;-webkit-overflow-scrolling:touch;padding:6px 0 14px;}',
-      '.song-btn{font-size:.85rem;white-space:nowrap;}',
+      '.song-btn{font-size:.85rem;display:inline-flex;align-items:center;gap:5px;padding:6px 10px;}',
+      '.song-emoji{font-size:1.1rem;flex-shrink:0;line-height:1;}',
+      '.song-name{overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-align:center;white-space:normal;line-height:1.25;word-break:break-word;}',
       '.btn.song-btn.active{background:#a78bfa;color:#fff;}',
       '.piano-white.key-next,.piano-black.key-next{animation:key-pulse .8s ease-in-out infinite;}',
       '.piano-white.key-active{background:#fff176;}',
@@ -49,8 +51,8 @@ window.APP = window.APP || {};
       '@media (orientation:landscape) and (max-height:520px){',
         '.music-content{flex-direction:row;align-items:stretch;padding:8px 12px;gap:12px;padding-top:8px;}',
         '.piano-wrap{flex:1;min-width:0;height:min(200px,45vh);}',
-        '.song-select-row{flex-direction:column;align-items:stretch;width:160px;flex-shrink:0;overflow-y:auto;overflow-x:hidden;padding:0;gap:4px;order:0;max-height:100%;}',
-        '.song-btn{font-size:0.75rem;padding:6px 8px;text-align:left;white-space:normal;}',
+        '.song-select-row{flex-direction:column;align-items:stretch;width:160px;flex-shrink:0;overflow-y:auto;overflow-x:hidden;padding:4px 0;gap:4px;order:0;height:0;min-height:0;flex:1;}',
+        '.song-btn{font-size:0.75rem;padding:5px 6px;}.song-name{text-align:left;}',
       '}',
     ].join('');
     document.head.appendChild(s);
@@ -317,7 +319,14 @@ window.APP = window.APP || {};
       var el = document.elementFromPoint(e.clientX, e.clientY);
       if (!el) return;
       var freq = parseFloat(el.getAttribute('data-freq'));
-      if (isNaN(freq) || freq === lastDragFreq) return;
+      if (isNaN(freq)) {
+        if (lastDragFreq !== null) {
+          pianoWrap.querySelectorAll('.pressed').forEach(function (k) { k.classList.remove('pressed'); });
+          lastDragFreq = null;
+        }
+        return;
+      }
+      if (freq === lastDragFreq) return;
       lastDragFreq = freq;
       pianoWrap.querySelectorAll('.pressed').forEach(function (k) { k.classList.remove('pressed'); });
       el.classList.add('pressed');
@@ -338,8 +347,15 @@ window.APP = window.APP || {};
     SONGS.forEach(function (song) {
       var b = document.createElement('button');
       b.className = 'btn secondary song-btn';
-      b.textContent = song.emoji + ' ' + song.name;
       b.dataset.songName = song.name;
+      var emojiSpan = document.createElement('span');
+      emojiSpan.className = 'song-emoji';
+      emojiSpan.textContent = song.emoji;
+      var nameSpan = document.createElement('span');
+      nameSpan.className = 'song-name';
+      nameSpan.textContent = song.name;
+      b.appendChild(emojiSpan);
+      b.appendChild(nameSpan);
       b.addEventListener('click', function () {
         if (APP.audio && APP.audio._wake) try { APP.audio._wake(); } catch(ex){}
         if (activeSong && activeSong.song === song) {
