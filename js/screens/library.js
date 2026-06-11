@@ -155,12 +155,22 @@ window.APP = window.APP || {};
             label: APP.t('library.theme') || 'Theme',
             type: 'segmented',
             options: Object.keys(THEMES).map(function(k) { return { value: k, label: THEMES[k].label }; })
+          },
+          {
+            key: 'textSize',
+            label: APP.t('library.textSize') || 'Text Size',
+            type: 'segmented',
+            options: [
+              { value: 'small',  label: 'S' },
+              { value: 'medium', label: 'M' },
+              { value: 'large',  label: 'L' }
+            ]
           }
         ],
         onChange: function(key, val, all) {
           var newTheme = all.theme || val;
           APP.setState({ libraryTheme: newTheme });
-          if (APP.settings) APP.settings.saveGame('library', { theme: newTheme });
+          if (APP.settings) APP.settings.saveGame('library', all);
           render(root, ctx);
         }
       }

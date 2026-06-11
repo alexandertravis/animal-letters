@@ -68,7 +68,7 @@ window.APP = window.APP || {};
     }));
     // Lift topbar above the fixed reader-scene overlay (z-index:20) + light colours against dark bg
     var _tb = root.querySelector('.std-topbar');
-    if (_tb) { _tb.style.position = 'relative'; _tb.style.zIndex = '30'; _tb.classList.add('topbar-on-dark'); }
+    if (_tb) { _tb.classList.add('topbar-on-dark', 'reader-topbar'); }
 
     // ── Scene overlay ────────────────────────────────────────────────────────
     const scene = document.createElement('div');
@@ -89,6 +89,8 @@ window.APP = window.APP || {};
     const bookEl = document.createElement('div');
     bookEl.className = 'book book-closed-state ' + skin + ' ' + palette;
     bookEl.dataset.phase = 'closed';
+    var _libSets = APP.settings ? APP.settings.game('library', { textSize: 'small' }) : {};
+    bookEl.dataset.textSize = _libSets.textSize || 'small';
 
     // ── Closed cover (the shared skinned cover; box-shadow/idle-shake live on
     //    .book-closed, the painted face is the .story-cover inside it) ─────────
@@ -347,6 +349,29 @@ window.APP = window.APP || {};
       return { leaf: leaf, front: front, back: back };
     }
 
+    // ── Mini-win: gold glow + star burst when the book opens or closes ────────
+    function spawnBookStars(anchorEl, count) {
+      var rect = anchorEl.getBoundingClientRect();
+      var cx = rect.left + rect.width  / 2;
+      var cy = rect.top  + rect.height / 2;
+      var step = (Math.PI * 2) / count;
+      for (var i = 0; i < count; i++) {
+        var a = i * step + Math.random() * 0.6;
+        var r = 60 + Math.random() * 50;
+        var star = document.createElement('span');
+        star.className = 'book-star';
+        star.textContent = ['⭐','✨','💫'][i % 3];
+        star.style.left = Math.round(cx) + 'px';
+        star.style.top  = Math.round(cy) + 'px';
+        star.style.setProperty('--sx', Math.round(Math.cos(a) * r) + 'px');
+        star.style.setProperty('--sy', Math.round(Math.sin(a) * r) + 'px');
+        document.body.appendChild(star);
+        star.addEventListener('animationend', function () {
+          if (star.parentNode) star.parentNode.removeChild(star);
+        }, { once: true });
+      }
+    }
+
     // Paint the front cover (the shared skinned cover) into a leaf face.
     // Pre-set a background matching the cover colour so there is no parchment
     // flash between innerHTML clearing and the cover component rendering.
@@ -553,6 +578,13 @@ window.APP = window.APP || {};
         navPrev.style.display = '';
         navNext.style.display = '';
         updateNav();
+        // Mini-win: golden glow + stars when the book fully opens
+        if (APP.audio && APP.audio.sfx) APP.audio.sfx.pop();
+        bookEl.classList.add('book-open-glow');
+        bookEl.addEventListener('animationend', function () {
+          bookEl.classList.remove('book-open-glow');
+        }, { once: true });
+        spawnBookStars(bookEl, 8);
       }, COVER_MS);
     });
 
@@ -584,6 +616,14 @@ window.APP = window.APP || {};
       bookShadow.style.transition = 'clip-path ' + COVER_MS + 'ms ease';
       bookShadow.style.clipPath = 'inset(0 0 0 50%)';
 
+      setTimeout(function () {
+        if (destroyed) return;
+        bookEl.classList.add('book-close-glow');
+        bookEl.addEventListener('animationend', function () {
+          bookEl.classList.remove('book-close-glow');
+        }, { once: true });
+        spawnBookStars(bookEl, 4);
+      }, COVER_MS);
       setTimeout(function () {
         if (destroyed) return;
         scene.classList.add('scene-fade-out');
@@ -652,6 +692,11 @@ window.APP = window.APP || {};
         navNext.style.display = 'none';
         phase = 'closed';
         bookEl.dataset.phase = 'closed';
+        bookEl.classList.add('book-close-glow');
+        bookEl.addEventListener('animationend', function () {
+          bookEl.classList.remove('book-close-glow');
+        }, { once: true });
+        spawnBookStars(bookEl, 4);
       }, COVER_MS);
     }
 
@@ -749,6 +794,14 @@ window.APP = window.APP || {};
         bookShadow.style.transition = 'clip-path ' + COVER_MS + 'ms ease';
         bookShadow.style.clipPath = 'inset(0 0 0 50%)';
 
+        setTimeout(function () {
+          if (destroyed) return;
+          bookEl.classList.add('book-close-glow');
+          bookEl.addEventListener('animationend', function () {
+            bookEl.classList.remove('book-close-glow');
+          }, { once: true });
+          spawnBookStars(bookEl, 4);
+        }, COVER_MS);
         setTimeout(function () {
           if (destroyed) return;
           scene.classList.add('scene-fade-out');

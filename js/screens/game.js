@@ -84,11 +84,7 @@ window.APP = window.APP || {};
           { value: 'proper', label: APP.t('setup.case.proper') },
           { value: 'lower',  label: APP.t('setup.case.lower') }
       ]},
-      { type: 'segmented', key: 'depiction', label: APP.t('setup.pictures'), options: [
-          { value: 'cartoon',   label: APP.t('setup.cartoon') },
-          { value: 'realistic', label: APP.t('setup.realistic') }
-      ]},
-      { type: 'segmented', key: 'revealMode', label: APP.t('setup.reveal'), options: [
+{ type: 'segmented', key: 'revealMode', label: APP.t('setup.reveal'), options: [
           { value: 'faint',  label: APP.t('setup.faint') },
           { value: 'hidden', label: APP.t('setup.hidden') }
       ]},

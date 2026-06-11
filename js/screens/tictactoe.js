@@ -77,7 +77,10 @@ window.APP = window.APP || {};
       '.ttt-cell { aspect-ratio:1; font-size:2.8rem; border:3px solid #ccc; border-radius:12px; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s,transform 0.1s; -webkit-tap-highlight-color:transparent; }',
       '.ttt-cell:not(:disabled):hover { background:#f5f5f5; transform:scale(1.04); }',
       '.ttt-cell:disabled { cursor:default; opacity:1; }',
-      '.ttt-cell.winner { background:#fff9c4; border-color:#f9c74f; }',
+      '@keyframes winnerPulse{0%{transform:scale(1)}25%{transform:scale(1.15);box-shadow:0 0 0 6px rgba(255,215,0,0.7)}70%{transform:scale(1.07)}100%{transform:scale(1)}}',
+      '.ttt-cell.winner{background:#fff9c4;border-color:#f9c74f;animation:winnerPulse 0.6s ease-out;}',
+      '@keyframes tttStarPop{0%{transform:translate(var(--sx),var(--sy)) scale(0);opacity:1}70%{opacity:1}100%{transform:translate(calc(var(--sx)*4),calc(var(--sy)*4)) scale(0.3);opacity:0}}',
+      '.ttt-star{position:absolute;pointer-events:none;font-size:1rem;z-index:50;animation:tttStarPop 0.65s ease-out forwards;}',
       '.ttt-tally { display:flex; gap:24px; justify-content:center; align-items:flex-end; font-size:1rem; font-weight:700; color:#555; }',
       '.ttt-tally .tcol { display:flex; flex-direction:column; align-items:center; gap:2px; }',
       '.ttt-tally .ticon { font-size:1.6rem; line-height:1; }',
@@ -86,6 +89,26 @@ window.APP = window.APP || {};
       '.ttt-result-msg { font-size:1.5rem; font-weight:700; text-align:center; }',
     ].join('\n');
     document.head.appendChild(s);
+  }
+
+  // ── Star burst helper ────────────────────────────────────────────────────────
+  function spawnTttStars(anchor, count) {
+    var step = (Math.PI * 2) / count;
+    for (var i = 0; i < count; i++) {
+      var a = i * step + Math.random() * 0.5;
+      var star = document.createElement('span');
+      star.className = 'ttt-star';
+      star.textContent = ['⭐','✨','💫'][i % 3];
+      var r = 16 + Math.random() * 8;
+      star.style.setProperty('--sx', Math.round(Math.cos(a) * r) + 'px');
+      star.style.setProperty('--sy', Math.round(Math.sin(a) * r) + 'px');
+      star.style.left = '50%'; star.style.top = '50%';
+      star.style.marginLeft = '-0.5rem'; star.style.marginTop = '-0.5rem';
+      anchor.appendChild(star);
+      star.addEventListener('animationend', function () {
+        if (star.parentNode) star.parentNode.removeChild(star);
+      }, { once: true });
+    }
   }
 
   // ── Render ──────────────────────────────────────────────────────────────────
@@ -248,6 +271,9 @@ window.APP = window.APP || {};
             cellEls[a].classList.add('winner');
             cellEls[b].classList.add('winner');
             cellEls[c].classList.add('winner');
+            spawnTttStars(cellEls[a], 4);
+            spawnTttStars(cellEls[b], 4);
+            spawnTttStars(cellEls[c], 4);
           }
         }
       }

@@ -4,7 +4,7 @@ window.APP = window.APP || {};
   // Keys stored under 'al.global' in localStorage
   var GLOBAL_KEYS = ['sfxVol', 'sfxMuted', 'lastSfxVol', 'bgMusicVol', 'bgMusicEnabled'];
   // Keys stored under 'al.game.letters' in localStorage
-  var LETTER_KEYS = ['maxLength', 'letterCase', 'depiction', 'revealMode', 'phonics'];
+  var LETTER_KEYS = ['maxLength', 'letterCase', 'revealMode', 'phonics'];
 
   function load() {
     var g = APP.store.get('al.global', {});

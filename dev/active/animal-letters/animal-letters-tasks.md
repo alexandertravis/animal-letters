@@ -367,3 +367,65 @@
 - [x] **tests/state.test.js** — add 17 new tests: `APP.activeTheme`, `APP.activeBookSkin`, `APP.recordLetterTrace`
 - [x] **tests/utils.test.js** — add 9 new tests: `APP.animalId`, `APP.starsHtml`, `APP.getUnlockedStories`
 - [x] All 151 tests passing; committed `46a37c5` and pushed to main
+
+## Section 34 — Phase 1–3 App-Wide Overhaul (main, 2026-06-10)
+- [x] `js/screens/map.js` — village map home screen (7 buildings, illustrated SVG, bgMusic)
+- [x] `js/screens/location.js` — generic sub-menu for multi-game locations
+- [x] `data/locations.js` — `APP.LOCATIONS` registry + `APP.locationOf()`
+- [x] `js/store.js` — `APP.store` localStorage wrapper (get/set/remove)
+- [x] `js/settings.js` — full rewrite: `al.global` + `al.game.<id>` persistence, legacy alias sync
+- [x] `js/ui.js` — `APP.ui.topbar/settingsPanel/bigButton/isShortLandscape/defaultBackTarget`
+- [x] All screens migrated to `APP.ui.topbar` (std-topbar, smart back, gear modal)
+- [x] `js/audio.js` — sfx/music split: `APP.audio.sfx.*` + `APP.audio.music.*`, independent gain nodes
+- [x] New games: tictactoe, memory, maze, shapes-sorter, colours, washing, music keyboard/drums
+- [x] `setup.js` repurposed as Parent Corner (sliders + locale picker)
+- [x] 193 tests passing; committed `e348c8a`, pushed to main
+
+## Section 35 — Post-Overhaul Bug-Fix & Polish (main, 2026-06-11)
+- [x] `data/i18n.js` — added ~15 missing keys across all 6 locales; `map.title` per-locale
+- [x] `map.js` — centred title heading, building emojis enlarged + centred
+- [x] `setup.js` — removed Game Mode + New Game (inappropriate in Parent Corner)
+- [x] All `ctx.go('landing')` fallbacks → `map`; active-mode tracking (`gameMode='trace'/'find'`)
+- [x] `audio.js` — 7 real MP3 background tracks via `HTMLAudioElement` with synth fallback
+- [x] `styles.css` — painting landscape toolbar: std-topbar overridden to vertical flex column
+- [x] Game fixes: tictactoe (icon pickers, win tally), maze (trail width, size options), memory (responsive grid), shapes (difficulty modes), colours (fruit emoji map), washing (ellipse mud), music (SVG drum kit + nursery-rhyme songs)
+- [x] `dots.js` — custom puzzles persist via `APP.store`; Export/Import JSON
+- [x] Committed 14 fixes (588db55→135c12c), pushed to main
+
+## Section 36 — Polish Rounds 8–9 (main, 2026-06-11 → 2026-06-12)
+- [x] **Puzzles — jigsaw grid overlay**: bezier tab outlines on grid canvas; `buildTabGrid` moved before grid canvas creation
+- [x] **Puzzles — shapes grid overlay**: `drawShapePathAt` outlines replace straight grid lines
+- [x] **Puzzles — shapes doubling fix**: removed `pz-hole` divs (were mismatched to canvas holes)
+- [x] **Puzzles — hint=none blocked in shapes mode**: silently clamped to `grey`
+- [x] **Puzzles — Go button in topbar**: `goBtn` in `right:[]` of topbar opts; replaces bottom confirm
+- [x] **Puzzles — Squares label**: `puzzles.modeEmoji` → `'Squares'` in all 6 locales; `ui.go` key added
+- [x] **Puzzles — square size fix**: `s = r * 1.4 → r * 1.1` in both `drawShapePath` + `drawShapePathAt`
+- [x] **Puzzles — shape grid randomisation**: `buildShapeGrid()` + `S.shapeGrid`; replaces `(r*cols+c)%4`
+- [x] **Puzzles — shapes board always full colour**: removed `hint-*` class modifier from shapes board canvas
+- [x] **Tictactoe — stable grid layout**: `position:absolute` footer + `padding-bottom:148px` on top zone
+- [x] **Maze — wall-aware float** (round 8, later superseded): emoji floated in open corridor directions only
+- [x] **Maze — smooth 1:1 movement** (round 9): full drag model rewrite — `dragAnchorSvg`, `slideTarget`, `slideProgress`, `lockedDir`; emoji tracks finger proportionally; commits at ≥50% on release; direction change after ≥50% commits then resets; fast-swipe carry-over loop (max 8 cells/frame)
+- [x] Committed `f70c136`, `6ff999f`, `65efd9d`; pushed to main
+
+## Section 38 — Multi-Screen Polish Pass (main, 2026-06-12)
+- [x] **Trace Letters — drop realistic depiction**: `complete.js` always uses `animal.images.cartoon`; `game.js` depiction field removed from schema; `settings.js` LETTER_KEYS stripped of `'depiction'`; `state.js` DEFAULT_SETTINGS stripped of `depiction`
+- [x] **Memory Pairs — match mini-win**: `matchBounce` + `matchGlow` keyframes in `injectStyles()`; `spawnStars(anchor, 5)` called on each matched card; `mem-star` CSS particle class
+- [x] **Noughts & Crosses — win mini-win**: `winnerPulse` + `tttStarPop` keyframes in `injectStyles()`; `spawnTttStars(cellEl, 4)` on each winning cell; `ttt-star` CSS particle class
+- [x] **Puzzles — snap glow**: `snapFlash(node)` helper adds `.snap-flash` class; `@keyframes snapFlash` gold drop-shadow in `styles.css`; called in both GSAP onComplete + non-GSAP fallback path
+- [x] **Music Shed — 3/4 keyboard + 1/4 song list**: `piano-wrap: flex:3`, `song-list-wrap: flex:1` in landscape CSS; `height:100svh; overflow:hidden` on `.music-screen` fixes landscape scroll
+- [x] **Music Shed — scroll glow**: `song-list-wrap::before/::after` gradient overlays; `.at-top`/`.at-bottom` classes toggled by scroll listener; double-rAF initial check
+- [x] **Library — text size setting**: `textSize` segmented field (S/M/L) added to settings schema in `library.js`; `onChange` saves full `all` object; `storyreader.js` reads `textSize` and sets `bookEl.dataset.textSize`
+- [x] **Library — text size CSS**: `[data-text-size="medium/large"]` overrides for both skins at base, portrait mobile, and landscape breakpoints
+- [x] **Library — landscape vertical topbar sidebar**: `.reader-topbar` base `position:relative; z-index:30`; in `@media (max-height:600px) and (orientation:landscape)` → `position:fixed; width:48px; flex-direction:column`; `.reader-scene { inset:0 0 0 48px }` offsets book area
+- [x] **Library — page counter right side**: `margin-left:auto` on `.reader-page-count`
+- [x] **Story reader — book open glow + stars**: `bookEl.classList.add('book-open-glow')` + `spawnBookStars(bookEl, 8)` after cover opens; `sfx.pop()` plays
+- [x] **Story reader — book close glow + stars**: `bookEl.classList.add('book-close-glow')` + `spawnBookStars(bookEl, 4)` at COVER_MS in `closeBook()`, `collapseToClosedCover()`, and `flutterAndClose()`
+- [x] **CSS — book glow + star keyframes**: `@keyframes bookOpenGlow`, `.book-open-glow`, `@keyframes bookCloseGlow`, `.book-close-glow`, `@keyframes starFly`, `.book-star` (position:fixed, z-index:200) added to `styles.css`
+
+## Section 37 — Open / Planned
+- [ ] **Topbar audit**: verify every game screen uses `APP.ui.topbar` consistently — title, back, home, restart, settings gear. Should be done proactively whenever touching a game screen.
+- [ ] **Mini wins across all games**: add positive feedback moments (confetti, pop sound, Great Job button) for in-game achievements beyond just winning — e.g. first correct move, streak, quick solve. Keeps children engaged and points toward success.
+- [ ] **Maze trail**: trail currently cell-centre-to-cell-centre only (polyline). Consider adding intermediate points between cells that the slide model naturally visits — visual smoothness improvement.
+- [ ] Story illustrations — Three Little Pigs pages 4–11
+- [ ] Recipes visual upgrade — SVG cartoon art extraction from Lottie export (see recipes-context.md Session 3)
+- [ ] Dead CSS cleanup — old `.book-tile` / `.books-grid` rules (~styles.css line 1125–1205)

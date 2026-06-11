@@ -253,6 +253,14 @@ window.APP = window.APP || {};
     };
   }
 
+  // ── Snap-flash helper (brief gold glow on a freshly-locked piece) ──────────
+  function snapFlash(node) {
+    node.classList.add('snap-flash');
+    node.addEventListener('animationend', function () {
+      node.classList.remove('snap-flash');
+    }, { once: true });
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────────
   function render(root, ctx) {
     if (G) G.killTweensOf('*');
@@ -1094,6 +1102,7 @@ window.APP = window.APP || {};
           onComplete: function () {
             S.lockedCount++;
             if (APP.audio) APP.audio.strokeDone();
+            snapFlash(piece.node);
             checkDone(stage);
           },
         });
@@ -1102,6 +1111,7 @@ window.APP = window.APP || {};
         piece.node.style.top  = targetT + 'px';
         S.lockedCount++;
         if (APP.audio) APP.audio.strokeDone();
+        snapFlash(piece.node);
         checkDone(stage);
       }
       return true;

@@ -58,11 +58,39 @@ window.APP = window.APP || {};
       '.memory-card-front { background:#6c63ff; font-size:2.2rem; color:#fff; font-weight:700; border:3px solid rgba(255,255,255,0.3); }',
       '.memory-card-back { background:#fff; border:3px solid #ddd; font-size:clamp(2rem,9vw,3.4rem); transform:rotateY(180deg); }',
       '.memory-card.matched .memory-card-back { background:#e8f5e9; border-color:#81c784; }',
+      '@keyframes matchBounce{0%{transform:scale(1)}25%{transform:scale(1.18) rotate(6deg)}55%{transform:scale(1.08) rotate(-3deg)}80%{transform:scale(1.03)}100%{transform:scale(1)}}',
+      '.memory-card.matched{animation:matchBounce 0.55s ease-out;}',
+      '@keyframes matchGlow{0%{box-shadow:0 0 0 0 rgba(255,215,0,0)}35%{box-shadow:0 0 0 10px rgba(255,215,0,0.55)}100%{box-shadow:0 0 0 0 rgba(255,215,0,0)}}',
+      '.memory-card.matched .memory-card-inner{animation:matchGlow 0.55s ease-out;}',
+      '@keyframes starPop{0%{transform:translate(var(--sx),var(--sy)) scale(0);opacity:1}70%{opacity:1}100%{transform:translate(calc(var(--sx)*3.5),calc(var(--sy)*3.5)) scale(0.4);opacity:0}}',
+      '.mem-star{position:absolute;pointer-events:none;font-size:1.1rem;z-index:50;animation:starPop 0.6s ease-out forwards;}',
       '.mem-result { display:flex; flex-direction:column; align-items:center; gap:12px; padding:24px; }',
       '.mem-stars { font-size:2.5rem; letter-spacing:4px; }',
       '.mem-result-msg { font-size:1.4rem; font-weight:700; }',
     ].join('\n');
     document.head.appendChild(s);
+  }
+
+  // ── Star burst helper ────────────────────────────────────────────────────────
+  function spawnStars(anchor, count) {
+    var angles = [], step = (Math.PI * 2) / count;
+    for (var i = 0; i < count; i++) angles.push(i * step + Math.random() * 0.4);
+    angles.forEach(function (a) {
+      var star = document.createElement('span');
+      star.className = 'mem-star';
+      star.textContent = ['⭐','✨','💫'][Math.floor(Math.random() * 3)];
+      var r = 18 + Math.random() * 10;
+      star.style.setProperty('--sx', Math.round(Math.cos(a) * r) + 'px');
+      star.style.setProperty('--sy', Math.round(Math.sin(a) * r) + 'px');
+      star.style.left = '50%';
+      star.style.top  = '50%';
+      star.style.marginLeft = '-0.55rem';
+      star.style.marginTop  = '-0.55rem';
+      anchor.appendChild(star);
+      star.addEventListener('animationend', function () {
+        if (star.parentNode) star.parentNode.removeChild(star);
+      }, { once: true });
+    });
   }
 
   // ── Render ──────────────────────────────────────────────────────────────────
@@ -240,9 +268,12 @@ window.APP = window.APP || {};
                 if (APP.audio && APP.audio.sfx) APP.audio.sfx.pop();
                 // Update move count display
                 infoEl.textContent = (T('game.memory.moves') || 'Moves') + ': ' + moves;
-                // Mark matched visually
-                gridEl.querySelectorAll('.memory-card')[fi].classList.add('matched');
-                gridEl.querySelectorAll('.memory-card')[si].classList.add('matched');
+                // Mark matched visually + mini-win burst
+                var cards = gridEl.querySelectorAll('.memory-card');
+                [cards[fi], cards[si]].forEach(function (c) {
+                  c.classList.add('matched');
+                  spawnStars(c, 5);
+                });
                 if (matchedCount === settings.pairs) {
                   gameOver = true;
                   setTimeout(function () {

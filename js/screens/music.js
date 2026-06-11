@@ -48,11 +48,19 @@ window.APP = window.APP || {};
       '.drum-kit-svg{width:min(340px,92vw);height:auto;}',
       '.drum-part{cursor:pointer;}',
       '@media (orientation:portrait){.song-select-row{order:-1;}}',
+      '.song-list-wrap{position:relative;display:flex;flex-direction:column;min-width:0;overflow:hidden;}',
+      '.song-list-wrap::before,.song-list-wrap::after{content:"";position:absolute;left:0;right:0;height:0;pointer-events:none;z-index:5;transition:height 0.2s;}',
+      '.song-list-wrap::before{top:0;background:linear-gradient(to bottom,rgba(30,20,60,0.55),transparent);}',
+      '.song-list-wrap::after{bottom:0;background:linear-gradient(to top,rgba(30,20,60,0.55),transparent);}',
       '@media (orientation:landscape) and (max-height:520px){',
-        '.music-content{flex-direction:row;align-items:stretch;padding:8px 12px;gap:12px;padding-top:8px;}',
-        '.piano-wrap{flex:1;min-width:0;height:min(200px,45vh);}',
-        '.song-select-row{flex-direction:column;align-items:stretch;width:160px;flex-shrink:0;overflow-y:auto;overflow-x:hidden;padding:4px 0;gap:4px;order:0;height:0;min-height:0;flex:1;}',
+        '.music-screen{height:100svh;overflow:hidden;}',
+        '.music-content{flex-direction:row;align-items:stretch;padding:8px 12px;gap:12px;padding-top:8px;min-height:0;}',
+        '.piano-wrap{flex:3;min-width:0;height:min(200px,45vh);}',
+        '.song-list-wrap{flex:1;min-width:0;}',
+        '.song-select-row{flex-direction:column;align-items:stretch;overflow-y:auto;overflow-x:hidden;padding:4px 0;gap:4px;order:0;flex:1;min-height:0;width:auto;}',
         '.song-btn{font-size:0.75rem;padding:5px 6px;}.song-name{text-align:left;}',
+        '.song-list-wrap::before{height:28px;}.song-list-wrap.at-top::before{height:0;}',
+        '.song-list-wrap::after{height:28px;}.song-list-wrap.at-bottom::after{height:0;}',
       '}',
     ].join('');
     document.head.appendChild(s);
@@ -367,8 +375,23 @@ window.APP = window.APP || {};
       songRow.appendChild(b);
     });
 
+    // Wrap songRow in a container that provides the scroll-glow edge effect
+    var songWrap = document.createElement('div');
+    songWrap.className = 'song-list-wrap';
+    songWrap.appendChild(songRow);
+
+    function updateScrollGlow() {
+      var atTop    = songRow.scrollTop <= 2;
+      var atBottom = songRow.scrollTop + songRow.clientHeight >= songRow.scrollHeight - 2;
+      songWrap.classList.toggle('at-top',    atTop);
+      songWrap.classList.toggle('at-bottom', atBottom);
+    }
+    songRow.addEventListener('scroll', updateScrollGlow, { passive: true });
+    // Initialise after layout (requestAnimationFrame gives the browser time to measure)
+    requestAnimationFrame(function () { requestAnimationFrame(updateScrollGlow); });
+
     content.appendChild(pianoWrap);
-    content.appendChild(songRow);
+    content.appendChild(songWrap);
   }
 
   function buildDrums(content) {

@@ -9,8 +9,7 @@ window.APP = window.APP || {};
   const DEFAULT_SETTINGS = {
     maxLength: _maxInList,
     letterCase: "upper",   // "upper" | "proper" | "lower"
-    depiction: "cartoon",  // "cartoon" | "realistic"
-    revealMode: "faint",   // "faint" | "hidden"
+revealMode: "faint",   // "faint" | "hidden"
     gameMode: "trace",     // "trace" | "find"
     volume: 0.7,           // 0–1 (legacy alias for sfxVol)
     lastVolume: 0.7,       // last non-zero volume; restored when un-muting from 0 (legacy alias for lastSfxVol)

@@ -10,7 +10,7 @@ window.APP = window.APP || {};
     const wrap = document.createElement('div');
     wrap.className = 'complete';
 
-    const imgSrc = animal.images[APP.state.settings.depiction] || animal.images.cartoon;
+    const imgSrc = animal.images.cartoon;
 
     // Lazy cleanup reference — confettiHandles populated below, but the function
     // is safe to call before that point (no-op on empty array).

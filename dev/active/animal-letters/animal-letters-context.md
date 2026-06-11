@@ -403,8 +403,41 @@ Completed (Section 33):
 1. Full bug review across all screen files — 6 bugs fixed in `game.js`, `findletter.js`, `storyreader.js`, `recipes.js`, `puzzles.js`, `dots.js`.
 2. Added 26 new unit tests (state.test.js + utils.test.js) covering: `APP.activeTheme`, `APP.activeBookSkin`, `APP.recordLetterTrace`, `APP.animalId`, `APP.starsHtml`, `APP.getUnlockedStories`.
 3. Total tests: 151 (all passing).
-4. Commit `46a37c5` pushed to main (origin ahead at `46a37c5`).
-NEXT STEP: No active work items. Optional: story illustrations (Three Little Pigs pages 4–11); dots.js architecture notes; dead-CSS cleanup.
+4. Commit `46a37c5` pushed to main.
+
+---
+
+## Constraints & Gotchas (Phase 1–3 overhaul — added 2026-06-10)
+- **`APP.ui.topbar` is the standard for ALL game screens**: `opts = { ctx, title, home:true, back:true, onRestart, settings:{gameId,title,schema,onChange} }`. Any game screen that doesn't use it is inconsistent. Proactively migrate on first touch.
+- **`APP.settings.game(gameId, defaults)` / `APP.settings.updateGame`**: per-game settings under `al.game.<gameId>` in localStorage. `saveSettings` wrapper pattern should be copied from any existing game screen.
+- **`APP.audio.sfx.click()` / `.pop()` / `.wrong()`**: use these for in-game feedback. `click()` = normal move; `pop()` = success/win; `wrong()` = invalid move.
+- **`ctx.go('map')`**: all Back/Home navigation from game screens goes to `'map'`, not `'landing'`. `APP.ui.defaultBackTarget(screen)` for smart back if needed.
+- **Background music**: `APP.audio.music.play(trackId)` where trackId matches location (`map/school/library/kitchen/games/default`). Music should start on screen entry and is automatically managed by the map routing — games don't need to stop it explicitly.
+
+## Constraints & Gotchas (maze smooth movement — added 2026-06-12)
+- **`dragAnchorSvg` is SVG coordinates, not client px**: set in `onPointerDown` via `clientToSvgCoord(e)`. All subsequent displacement maths uses SVG units. CELL=40 SVG units = one cell. Progress = svgDisplacement/CELL.
+- **`slideTarget`/`slideProgress`/`lockedDir` scope**: declared as local `var` inside the `if (!gameOver)` render block. `lockedDir` is `{dRow, dCol}`, not a string.
+- **`commitMove` vs `tryMove`**: `commitMove(dRow, dCol)` is used by pointer events — updates path/breadcrumbs/playerPos/trail but NOT emoji position (emoji driven by `updateEmojiPos`). `tryMove` is kept for arrow key support only (still updates emoji directly).
+- **Direction change after ≥50%**: when perpendicular displacement exceeds forward displacement + 3 SVG units, direction change fires. If `rawProg >= 0.5`, `commitMove` is called first (player advances), then anchor resets and `lockedDir` clears. Next `onPointerMove` re-locks direction from the new anchor.
+- **Perpendicular formula**: `perpAbs = |dx * (−lockedDir.dRow) + dy * lockedDir.dCol|`. For horizontal locked dir: perpAbs = |dy|. For vertical locked dir: perpAbs = |dx|.
+
+## Session Summary — 2026-06-12 (polish rounds 8–9)
+Completed (Section 36):
+
+**Round 8:**
+1. Puzzles: jigsaw bezier grid overlay (moved `buildTabGrid` before grid canvas, translates per-cell, calls `buildJigsawPath`); shapes grid overlay (`drawShapePathAt` outlines); doubled-shape fix (removed `pz-hole` divs); hint=none clamped to grey in shapes mode; Go button in topbar `right:[]` replacing bottom confirm button.
+2. i18n: `ui.go` key (6 locales); `puzzles.modeEmoji` → 'Squares' (6 locales).
+3. Tictactoe: `position:absolute` footer + `padding-bottom:148px` on top zone for stable grid.
+4. Maze: wall-aware emoji float (later superseded in Round 9).
+
+**Round 9:**
+1. Puzzles shapes board: always full colour — `hc.className = 'pz-board-hint'` (no hint modifier).
+2. Puzzles square size: `s = r * 1.1` (was `r * 1.4` — exceeded canvas, clipped piece smaller than hole).
+3. Puzzles shape randomisation: `buildShapeGrid(rows,cols)` + `S.shapeGrid`; 4×4 boards no longer show same-shape columns.
+4. Maze: complete movement rewrite — `dragAnchorSvg`/`slideTarget`/`slideProgress`/`lockedDir` model; 1:1 SVG-coordinate tracking; ≥50% commit-on-release; direction-change handling; 8-cell carry-over loop.
+
+Commits: `f70c136`, `6ff999f`, `65efd9d` — all pushed to main (HEAD: `65efd9d`).
+
+NEXT STEP: See Section 37 for open items. Priority: topbar audit (proactive) + mini wins across games.
 Blockers: none
 Half-finished: none
-Security flags added: none
