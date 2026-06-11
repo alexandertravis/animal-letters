@@ -426,6 +426,25 @@ window.APP = window.APP || {};
     }
   };
 
+  // Pause background music when the page is hidden (lock screen, tab switch).
+  // Resume when it becomes visible again. Registered once per page load.
+  if (!APP.audio._visibilityBound) {
+    APP.audio._visibilityBound = true;
+    document.addEventListener('visibilitychange', function () {
+      if (!bgAudio) return;
+      if (document.hidden) {
+        bgAudio.pause();
+      } else {
+        var s = APP.state && APP.state.settings;
+        if (s && s.bgMusicEnabled !== false) bgAudio.play().catch(function () {});
+      }
+    });
+    // pagehide fires on iOS Safari when the app moves to the background.
+    window.addEventListener('pagehide', function () {
+      if (bgAudio) bgAudio.pause();
+    });
+  }
+
   APP.audio.speakLetter = function (char, locale) {
     if (!window.speechSynthesis) return;
     if (!APP.state.settings.phonics) return;

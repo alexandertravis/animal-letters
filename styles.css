@@ -25,6 +25,13 @@ html, body {
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
   touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+input, textarea, [contenteditable] {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 #app {
@@ -3968,6 +3975,11 @@ html, body {
   .std-topbar { padding-top: 2px; padding-bottom: 2px; }
   .std-topbar .btn.icon { width: 40px; height: 40px; }
 }
+
+/* ── Topbar on dark background (e.g. story reader) ──────────────────────── */
+.topbar-on-dark .tb-title,
+.topbar-on-dark .btn.icon.ghost { color: rgba(255, 255, 255, 0.92); }
+.topbar-on-dark .btn.icon.ghost:active { background: rgba(255, 255, 255, 0.18); }
 
 /* ── Big image-first button ──────────────────────────────────────────────── */
 .bigbtn {

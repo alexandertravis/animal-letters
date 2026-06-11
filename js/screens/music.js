@@ -35,8 +35,9 @@ window.APP = window.APP || {};
       '.shaker-btn:active{transform:scale(.95);}',
       '@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-15deg)}75%{transform:rotate(15deg)}}',
       '.wiggle{animation:wiggle .3s ease;}',
-      '.song-select-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:6px 0 14px;}',
-      '.song-btn{font-size:.85rem;}',
+      '.song-select-row{display:flex;flex-wrap:nowrap;gap:6px;justify-content:flex-start;padding:6px 0 14px;overflow-x:auto;-webkit-overflow-scrolling:touch;}',
+      '.song-btn{font-size:.85rem;white-space:nowrap;}',
+      '.song-btn.active{background:var(--accent,#a78bfa);color:#fff;font-weight:800;}',
       '.piano-white.key-next,.piano-black.key-next{animation:key-pulse .8s ease-in-out infinite;}',
       '.piano-white.key-active{background:#fff176;}',
       '.piano-black.key-active{background:#b9952b;}',
@@ -47,10 +48,9 @@ window.APP = window.APP || {};
       '@media (orientation:portrait){.song-select-row{order:-1;}}',
       '@media (orientation:landscape) and (max-height:520px){',
         '.music-content{flex-direction:row;align-items:stretch;padding:8px 12px;gap:12px;padding-top:8px;}',
-        '.piano-wrap{flex:1;min-width:0;height:min(140px,35vh);}',
-        '.song-select-row{flex-direction:column;align-items:stretch;width:160px;flex-shrink:0;overflow-y:auto;padding:0;gap:4px;order:0;}',
-        '.song-btn{font-size:0.75rem;padding:6px 8px;text-align:left;}',
-        '.song-stop-btn{position:sticky;top:0;z-index:2;}',
+        '.piano-wrap{flex:1;min-width:0;height:min(200px,45vh);}',
+        '.song-select-row{flex-direction:column;align-items:stretch;width:160px;flex-shrink:0;overflow-y:auto;overflow-x:hidden;padding:0;gap:4px;order:0;max-height:100%;}',
+        '.song-btn{font-size:0.75rem;padding:6px 8px;text-align:left;white-space:normal;}',
       '}',
     ].join('');
     document.head.appendChild(s);
@@ -175,9 +175,33 @@ window.APP = window.APP || {};
 
   // ── Nursery-rhyme sequences (C-major, matches the white/black keys above) ───
   var SONGS = [
-    { name: 'Twinkle Twinkle', notes: [262,262,392,392,440,440,392,349,349,330,330,294,294,262] },
-    { name: 'Mary Had a Lamb',  notes: [330,294,262,294,330,330,330,294,294,294,330,392,392] },
-    { name: 'Baa Baa Sheep',    notes: [262,262,392,392,440,494,523,440,392] }
+    { name: 'Twinkle Twinkle', notes: [
+      262,262,392,392,440,440,392, 349,349,330,330,294,294,262,
+      392,392,349,349,330,330,294, 392,392,349,349,330,330,294,
+      262,262,392,392,440,440,392, 349,349,330,330,294,294,262
+    ]},
+    { name: 'Mary Had a Lamb', notes: [
+      330,294,262,294,330,330,330, 294,294,294,330,392,392,
+      330,294,262,294,330,330,330,330,294,294,330,294,262,
+      330,294,262,294,330,330,330, 294,294,294,330,392,392,
+      330,294,262,294,330,330,330,330,294,294,330,294,262
+    ]},
+    { name: 'Baa Baa Black Sheep', notes: [
+      262,262,392,392,440,494,523,440,392,
+      349,349,330,330,294,294,262,
+      392,392,392,349,330,330,330,349,349,330,330,294,
+      262,262,392,392,440,494,523,440,392, 349,349,330,330,294,294,262
+    ]},
+    { name: 'Hot Cross Buns', notes: [
+      330,294,262, 330,294,262,
+      262,262,262,262, 294,294,294,294,
+      330,294,262
+    ]},
+    { name: 'Row Your Boat', notes: [
+      262,262,262,294,330, 330,294,330,349,392,
+      523,523,523,392,392,392,330,330,330,262,262,262,
+      392,349,330,294,262
+    ]},
   ];
   var activeSong = null;     // { song, stepIndex }
   var activeSongNote = null; // freq the player must press next
@@ -185,17 +209,15 @@ window.APP = window.APP || {};
   function startSong(song, songRow, pianoWrap) {
     activeSong = { song: song, stepIndex: 0 };
     activeSongNote = song.notes[0];
-    var stop = songRow.querySelector('.song-stop-btn');
-    if (stop) stop.style.display = '';
-    songRow.querySelectorAll('.song-btn').forEach(function (b) { b.style.opacity = '0.4'; });
+    songRow.querySelectorAll('.song-btn').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.songName === song.name);
+    });
     updateKeyHighlights(pianoWrap);
   }
 
   function stopSong(songRow, pianoWrap) {
     activeSong = null; activeSongNote = null;
-    var stop = songRow.querySelector('.song-stop-btn');
-    if (stop) stop.style.display = 'none';
-    songRow.querySelectorAll('.song-btn').forEach(function (b) { b.style.opacity = ''; });
+    songRow.querySelectorAll('.song-btn').forEach(function (b) { b.classList.remove('active'); });
     pianoWrap.querySelectorAll('.key-next,.key-active').forEach(function (k) {
       k.classList.remove('key-next', 'key-active');
     });
@@ -285,19 +307,18 @@ window.APP = window.APP || {};
     });
 
     // Song selector row (above the keyboard)
-    var stopBtn = document.createElement('button');
-    stopBtn.className = 'song-stop-btn btn ghost';
-    stopBtn.textContent = '⏹ Stop';
-    stopBtn.style.display = 'none';
-    stopBtn.addEventListener('click', function () { stopSong(songRow, pianoWrap); });
-    songRow.appendChild(stopBtn);
     SONGS.forEach(function (song) {
       var b = document.createElement('button');
       b.className = 'btn secondary song-btn';
       b.textContent = '🎵 ' + song.name;
+      b.dataset.songName = song.name;
       b.addEventListener('click', function () {
         if (APP.audio && APP.audio._wake) try { APP.audio._wake(); } catch(ex){}
-        startSong(song, songRow, pianoWrap);
+        if (activeSong && activeSong.song === song) {
+          stopSong(songRow, pianoWrap);
+        } else {
+          startSong(song, songRow, pianoWrap);
+        }
       });
       songRow.appendChild(b);
     });
