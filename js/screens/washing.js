@@ -76,7 +76,8 @@ window.APP = window.APP || {};
     var animalDiv = document.createElement('div');
     animalDiv.className = 'washing-animal';
     var animalSpan = document.createElement('span');
-    animalSpan.style.fontSize = '6rem';
+    animalSpan.style.fontSize = Math.round(stageSize * 0.6) + 'px';
+    animalSpan.style.lineHeight = '1';
     animalSpan.textContent = randomAnimal;
     animalDiv.appendChild(animalSpan);
     stage.appendChild(animalDiv);
@@ -98,23 +99,31 @@ window.APP = window.APP || {};
     wrap.appendChild(body);
     root.appendChild(wrap);
 
-    // Draw mud
+    // Draw mud as an ellipse roughly over the animal (not the whole canvas),
+    // so the mud blob matches the emoji's shape rather than a square.
     var ctx2d = canvas.getContext('2d');
+    var mcx = stageSize / 2, mcy = stageSize / 2;
+    var mrx = stageSize * 0.46, mry = stageSize * 0.44;
     ctx2d.fillStyle = '#7B5B3A';
-    ctx2d.fillRect(0, 0, stageSize, stageSize);
+    ctx2d.beginPath();
+    ctx2d.ellipse(mcx, mcy, mrx, mry, 0, 0, Math.PI * 2);
+    ctx2d.fill();
     if (mud === 'heavy') {
+      // Darker speckles, clipped to the mud blob via source-atop.
+      ctx2d.globalCompositeOperation = 'source-atop';
       for (var i = 0; i < 12; i++) {
         ctx2d.fillStyle = 'rgba(50,30,10,0.4)';
         ctx2d.beginPath();
         ctx2d.ellipse(
-          Math.random() * stageSize,
-          Math.random() * stageSize,
-          30 + Math.random() * 40,
+          mcx + (Math.random() - 0.5) * mrx * 1.6,
+          mcy + (Math.random() - 0.5) * mry * 1.6,
           20 + Math.random() * 30,
+          15 + Math.random() * 22,
           Math.random() * Math.PI, 0, Math.PI * 2
         );
         ctx2d.fill();
       }
+      ctx2d.globalCompositeOperation = 'source-over';
     }
 
     // Wiping state
