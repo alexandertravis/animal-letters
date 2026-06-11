@@ -378,7 +378,7 @@ window.APP = window.APP || {};
       // Stop any synthesised oscillator track first.
       if (bgCurrent) { try { bgCurrent.stop(); } catch (_) {} bgCurrent = null; }
       // Stop any previously-playing file.
-      if (bgAudio) { bgAudio.pause(); bgAudio.src = ''; bgAudio = null; }
+      if (bgAudio) { bgAudio.pause(); bgAudio = null; }
       var vol = s ? (s.bgMusicVol != null ? s.bgMusicVol : 0.3) : 0.3;
       var el = new Audio(file);
       el._trackId = trackId;
@@ -399,7 +399,7 @@ window.APP = window.APP || {};
       bgAudio = el;
     },
     stop: function () {
-      if (bgAudio) { bgAudio.pause(); bgAudio.src = ''; bgAudio = null; }
+      if (bgAudio) { bgAudio.pause(); bgAudio = null; }
       if (bgCurrent) { try { bgCurrent.stop(); } catch (_) {} bgCurrent = null; }
     },
     setVol: function (v) {
