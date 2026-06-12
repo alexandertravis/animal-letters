@@ -5,6 +5,8 @@
     go(screen) {
       APP.state.previousScreen = APP.state.screen; // remember where we came from
       APP.state.screen = screen;
+      // Stop any in-flight speech so it never carries over into the next screen.
+      if (window.speechSynthesis) speechSynthesis.cancel();
       route();
     }
   };

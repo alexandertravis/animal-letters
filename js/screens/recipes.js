@@ -169,6 +169,7 @@ window.APP = window.APP || {};
     root.innerHTML = '';
     var wrap = el('div', 'recipes');
     root.appendChild(wrap);
+    if (APP.ui && APP.ui.speakIntro) APP.ui.speakIntro('recipes');
 
     var S = { recipe: null, step: 'pick', placed: [] };
 

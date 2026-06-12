@@ -9,12 +9,17 @@
 - [x] vitest: 201/202 — only failure is the known main-inherited depiction red (see context doc) → commit
 
 ## Section 2 — speakIntro + wiring (checkpoint commit 2)
-- [ ] ui.js: `APP.ui.speakIntro(screenId)` — i18n `intro.<id>`, once per session per screen
-- [ ] main.js: `speechSynthesis.cancel()` in ctx.go()
-- [ ] i18n: 13 intro.* keys × 6 locales
-- [ ] Wire: map, library, painting, recipes, puzzles, dots, maze, memory, tictactoe, shapes, colours, washing, music (one line at end of each render())
-- [ ] tests: speakIntro once-per-session + missing-key no-op
-- [ ] vitest green → commit
+- [x] ui.js: `APP.ui.speakIntro(screenId)` — once per screen per session; guards APP.t
+      key-echo; only consumes the session slot when speech actually happened (speak()
+      now returns boolean — muted child still hears intro after unmuting)
+- [x] main.js: `speechSynthesis.cancel()` in ctx.go()
+- [x] i18n: 13 intro.* keys × 6 locales (78 strings)
+- [x] Wired all 13 screens (idempotent — safe inside doRender re-renders)
+- [x] tests: 3 speakIntro tests (once-per-session, key-echo no-op, mute-then-unmute)
+- [x] vitest 204/205 (only the known main-inherited depiction red) → commit
+- [x] Live verify: maze intro spoke once across two renders; tictactoe intro in fr-FR;
+      no console errors. GOTCHA: window.speechSynthesis is readonly in real browsers —
+      stub by patching speechSynthesis.speak/.cancel instance methods, not the property.
 
 ## Section 3 — Review + verify
 - [ ] /review-section (bug review + inline security triage)

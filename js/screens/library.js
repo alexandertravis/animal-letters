@@ -199,6 +199,7 @@ window.APP = window.APP || {};
 
     wrap.appendChild(body);
     root.appendChild(wrap);
+    if (APP.ui && APP.ui.speakIntro) APP.ui.speakIntro('library');
 
     // Re-render when the viewport is resized so booksPerRow() stays accurate.
     // The handler is a no-op once `wrap` leaves the DOM (user navigated away),

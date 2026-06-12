@@ -527,6 +527,7 @@ window.APP = window.APP || {};
     wrap.appendChild(tabs);
     wrap.appendChild(content);
     root.appendChild(wrap);
+    if (APP.ui && APP.ui.speakIntro) APP.ui.speakIntro('music');
 
     // Build initial tab
     buildKeyboard(content);

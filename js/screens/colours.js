@@ -145,6 +145,7 @@ window.APP = window.APP || {};
     body.appendChild(basketRow);
     wrap.appendChild(body);
     root.appendChild(wrap);
+    if (APP.ui && APP.ui.speakIntro) APP.ui.speakIntro('colours');
 
     // Drag state
     var dragging = null;

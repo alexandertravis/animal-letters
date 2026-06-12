@@ -78,6 +78,21 @@ APP.I18N = {
     // Progress screen
     'screens.progress.title': 'My Progress',
 
+    // Spoken screen intros (kept short — read aloud to pre-readers)
+    'intro.map':       'Where shall we play? Tap a building!',
+    'intro.library':   'Pick a book to read!',
+    'intro.painting':  'Let\'s paint a picture!',
+    'intro.recipes':   'Let\'s cook something yummy!',
+    'intro.puzzles':   'Put the puzzle pieces together!',
+    'intro.dots':      'Join the dots in order!',
+    'intro.maze':      'Find a way through the maze!',
+    'intro.memory':    'Find the matching pairs!',
+    'intro.tictactoe': 'Get three in a row!',
+    'intro.shapes':    'Match the shapes to their holes!',
+    'intro.colours':   'Sort the things by colour!',
+    'intro.washing':   'Scrub the animal clean!',
+    'intro.music':     'Tap the keys to make music!',
+
     // Setup / Settings
     'setup.title':        'Settings',
     'setup.nameLength':   'Longest animal name: {n} letters',
@@ -267,6 +282,20 @@ APP.I18N = {
 
     // Progress screen
     'screens.progress.title': 'Meu Progresso',
+
+    'intro.map':       'Onde vamos brincar? Toca num edifício!',
+    'intro.library':   'Escolhe um livro para ler!',
+    'intro.painting':  'Vamos pintar um desenho!',
+    'intro.recipes':   'Vamos cozinhar algo delicioso!',
+    'intro.puzzles':   'Junta as peças do puzzle!',
+    'intro.dots':      'Liga os pontos por ordem!',
+    'intro.maze':      'Encontra o caminho no labirinto!',
+    'intro.memory':    'Encontra os pares iguais!',
+    'intro.tictactoe': 'Faz três em linha!',
+    'intro.shapes':    'Encaixa as formas nos buracos!',
+    'intro.colours':   'Separa as coisas por cor!',
+    'intro.washing':   'Esfrega o animal até brilhar!',
+    'intro.music':     'Toca nas teclas e faz música!',
 
     // Setup / Settings
     'setup.title':        'Configurações',
@@ -458,6 +487,20 @@ APP.I18N = {
     // Progress screen
     'screens.progress.title': 'Ma Progression',
 
+    'intro.map':       'Où veux-tu jouer ? Touche un bâtiment !',
+    'intro.library':   'Choisis un livre à lire !',
+    'intro.painting':  'Peignons un joli dessin !',
+    'intro.recipes':   'Cuisinons quelque chose de bon !',
+    'intro.puzzles':   'Assemble les pièces du puzzle !',
+    'intro.dots':      'Relie les points dans l\'ordre !',
+    'intro.maze':      'Trouve le chemin dans le labyrinthe !',
+    'intro.memory':    'Trouve les paires identiques !',
+    'intro.tictactoe': 'Aligne trois symboles !',
+    'intro.shapes':    'Place les formes dans les trous !',
+    'intro.colours':   'Trie les objets par couleur !',
+    'intro.washing':   'Frotte l\'animal pour le laver !',
+    'intro.music':     'Appuie sur les touches et joue !',
+
     // Setup / Settings
     'setup.title':        'Paramètres',
     'setup.nameLength':   'Nom le plus long : {n} lettres',
@@ -647,6 +690,20 @@ APP.I18N = {
 
     // Progress screen
     'screens.progress.title': 'Mi Progreso',
+
+    'intro.map':       '¿Dónde jugamos? ¡Toca un edificio!',
+    'intro.library':   '¡Elige un libro para leer!',
+    'intro.painting':  '¡Vamos a pintar un dibujo!',
+    'intro.recipes':   '¡Vamos a cocinar algo rico!',
+    'intro.puzzles':   '¡Une las piezas del puzle!',
+    'intro.dots':      '¡Une los puntos en orden!',
+    'intro.maze':      '¡Encuentra el camino del laberinto!',
+    'intro.memory':    '¡Encuentra las parejas iguales!',
+    'intro.tictactoe': '¡Haz tres en raya!',
+    'intro.shapes':    '¡Encaja las formas en los huecos!',
+    'intro.colours':   '¡Ordena las cosas por color!',
+    'intro.washing':   '¡Frota al animal hasta limpiarlo!',
+    'intro.music':     '¡Toca las teclas y haz música!',
 
     // Setup / Settings
     'setup.title':        'Ajustes',
@@ -838,6 +895,20 @@ APP.I18N = {
     // Progress screen
     'screens.progress.title': 'Mein Fortschritt',
 
+    'intro.map':       'Wo wollen wir spielen? Tippe ein Gebäude an!',
+    'intro.library':   'Such dir ein Buch aus!',
+    'intro.painting':  'Lass uns ein Bild malen!',
+    'intro.recipes':   'Lass uns etwas Leckeres kochen!',
+    'intro.puzzles':   'Setze die Puzzleteile zusammen!',
+    'intro.dots':      'Verbinde die Punkte der Reihe nach!',
+    'intro.maze':      'Finde den Weg durchs Labyrinth!',
+    'intro.memory':    'Finde die gleichen Paare!',
+    'intro.tictactoe': 'Schaffe drei in einer Reihe!',
+    'intro.shapes':    'Stecke die Formen in die Löcher!',
+    'intro.colours':   'Sortiere die Dinge nach Farbe!',
+    'intro.washing':   'Schrubbe das Tier sauber!',
+    'intro.music':     'Tippe die Tasten und mach Musik!',
+
     // Setup / Settings
     'setup.title':        'Einstellungen',
     'setup.nameLength':   'Längster Tiername: {n} Buchstaben',
@@ -1027,6 +1098,20 @@ APP.I18N = {
 
     // Progress screen
     'screens.progress.title': 'I Miei Progressi',
+
+    'intro.map':       'Dove giochiamo? Tocca un edificio!',
+    'intro.library':   'Scegli un libro da leggere!',
+    'intro.painting':  'Dipingiamo un bel disegno!',
+    'intro.recipes':   'Cuciniamo qualcosa di buono!',
+    'intro.puzzles':   'Unisci i pezzi del puzzle!',
+    'intro.dots':      'Unisci i puntini in ordine!',
+    'intro.maze':      'Trova la strada nel labirinto!',
+    'intro.memory':    'Trova le coppie uguali!',
+    'intro.tictactoe': 'Fai tre in fila!',
+    'intro.shapes':    'Incastra le forme nei buchi!',
+    'intro.colours':   'Ordina le cose per colore!',
+    'intro.washing':   'Strofina e lava l\'animale!',
+    'intro.music':     'Tocca i tasti e fai musica!',
 
     // Setup / Settings
     'setup.title':        'Impostazioni',

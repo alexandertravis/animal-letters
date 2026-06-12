@@ -309,6 +309,7 @@ window.APP = window.APP || {};
     var wrap = document.createElement('div');
     wrap.className = 'pz-screen';
     root.appendChild(wrap);
+    if (APP.ui && APP.ui.speakIntro) APP.ui.speakIntro('puzzles');
 
     var confettiCleanup = null;
 

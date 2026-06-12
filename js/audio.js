@@ -462,10 +462,12 @@ window.APP = window.APP || {};
 
   // General-purpose speech. No phonics gate — that setting only governs letter
   // sounds in the tracing game; instructions and names must still be spoken.
+  // Returns true when something was actually spoken (callers like speakIntro use
+  // this to avoid burning their once-per-session slot while muted).
   APP.audio.speak = function (text, locale) {
-    if (!window.speechSynthesis) return;
+    if (!window.speechSynthesis) return false;
     var s = APP.state.settings;
-    if (s.sfxMuted || s.muted) return;
+    if (s.sfxMuted || s.muted) return false;
     var utt = new SpeechSynthesisUtterance(text);
     var langMap = { en: 'en-GB', pt: 'pt-PT', fr: 'fr-FR', es: 'es-ES', de: 'de-DE', it: 'it-IT' };
     utt.lang = langMap[locale != null ? locale : s.locale] || 'en-GB';
@@ -474,6 +476,7 @@ window.APP = window.APP || {};
     utt.volume = vol;
     speechSynthesis.cancel();
     speechSynthesis.speak(utt);
+    return true;
   };
 
   APP.audio.speakLetter = function (char, locale) {

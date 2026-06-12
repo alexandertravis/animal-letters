@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-// Real module (IIFE attaches to window.APP; window === global via setup.js).
+// Real modules (IIFEs attach to window.APP; window === global via setup.js).
 // jsdom has no speechSynthesis — stubbed per test below.
 await import('../js/audio.js');
+await import('../js/ui.js');
 
 describe('APP.audio.speak / speakLetter', () => {
   let spoken;
@@ -84,5 +85,35 @@ describe('APP.audio.speak / speakLetter', () => {
     expect(spoken).toHaveLength(0);
     APP.audio.speak('instructions still speak');
     expect(spoken).toHaveLength(1);
+  });
+
+  // NOTE: speakIntro's once-per-session memory is module-level state shared across
+  // this file's tests — each test below uses a distinct screenId.
+  describe('APP.ui.speakIntro', () => {
+    beforeEach(() => {
+      APP.t = (k) => ({ 'intro.maze': 'Find a way through the maze!', 'intro.memory': 'Find the matching pairs!' }[k] || k);
+    });
+
+    it('speaks the intro string for a known screen, once per session', () => {
+      APP.ui.speakIntro('maze');
+      APP.ui.speakIntro('maze');
+      expect(spoken).toHaveLength(1);
+      expect(spoken[0].text).toBe('Find a way through the maze!');
+    });
+
+    it('does not speak raw keys for screens without an intro string', () => {
+      APP.ui.speakIntro('nonexistent');
+      expect(spoken).toHaveLength(0);
+    });
+
+    it('is silent when muted, and still fires after unmuting', () => {
+      APP.state.settings.sfxMuted = true;
+      APP.ui.speakIntro('memory');
+      expect(spoken).toHaveLength(0);
+      APP.state.settings.sfxMuted = false;
+      APP.ui.speakIntro('memory');
+      expect(spoken).toHaveLength(1);
+      expect(spoken[0].text).toBe('Find the matching pairs!');
+    });
   });
 });

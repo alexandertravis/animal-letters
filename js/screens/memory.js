@@ -308,6 +308,7 @@ window.APP = window.APP || {};
 
       screen.appendChild(body);
       root.appendChild(screen);
+      if (APP.ui && APP.ui.speakIntro) APP.ui.speakIntro('memory');
     }
 
     function startNew() {

@@ -98,6 +98,7 @@ window.APP = window.APP || {};
 
     wrap.appendChild(body);
     root.appendChild(wrap);
+    if (APP.ui && APP.ui.speakIntro) APP.ui.speakIntro('washing');
 
     // Draw mud as an ellipse roughly over the animal (not the whole canvas),
     // so the mud blob matches the emoji's shape rather than a square.
