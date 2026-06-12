@@ -5,21 +5,11 @@ window.APP = window.APP || {};
   let confettiCleanup = null;
   let _advanceTimer = null;
 
-  // Inline speakLetter fallback (removed once feature/phonics merges)
+  // Thin delegate — the real implementation lives in APP.audio (phonics merged).
   function speakLetter(char, locale) {
     if (APP.audio && typeof APP.audio.speakLetter === 'function') {
       APP.audio.speakLetter(char, locale);
-      return;
     }
-    if (!window.speechSynthesis) return;
-    if (APP.state.settings.muted) return;
-    const utt = new SpeechSynthesisUtterance(char);
-    const langMap = { en: 'en-GB', pt: 'pt-PT', fr: 'fr-FR', es: 'es-ES', de: 'de-DE', it: 'it-IT' };
-    utt.lang = langMap[locale || 'en'] || 'en-GB';
-    utt.rate = 0.85;
-    utt.volume = APP.state.settings.volume != null ? APP.state.settings.volume : 1;
-    speechSynthesis.cancel();
-    speechSynthesis.speak(utt);
   }
 
   // Build the letter strip (mirrors game.js buildStrip)
