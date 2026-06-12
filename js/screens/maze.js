@@ -394,6 +394,7 @@ window.APP = window.APP || {};
           }
           if (playerRow === N - 1 && playerCol === N - 1) {
             gameOver = true;
+            if (APP.progress) APP.progress.recordWin('maze', { stars: N >= 12 ? 3 : N >= 8 ? 2 : 1 });
             if (APP.audio && APP.audio.sfx) APP.audio.sfx.pop();
             if (APP.launchConfetti) APP.launchConfetti();
             setTimeout(function () { doRender(); }, 400);
@@ -478,6 +479,7 @@ window.APP = window.APP || {};
 
           if (playerRow === N - 1 && playerCol === N - 1) {
             gameOver = true;
+            if (APP.progress) APP.progress.recordWin('maze', { stars: N >= 12 ? 3 : N >= 8 ? 2 : 1 });
             if (APP.audio && APP.audio.sfx) APP.audio.sfx.pop();
             if (APP.launchConfetti) APP.launchConfetti();
             setTimeout(function () { doRender(); }, 400);

@@ -782,6 +782,7 @@ window.APP = window.APP || {};
     function stepPlay(stage) {
       S.pieces = [];
       S.lockedCount = 0;
+      S.doneShown = false;
 
       // Board layout is computed in rAF after the stage has been painted
       requestAnimationFrame(function () {
@@ -1125,6 +1126,9 @@ window.APP = window.APP || {};
 
     // ── Done overlay (overlaid on completed board) ─────────────────────────
     function showDone(stage) {
+      if (S.doneShown) return;
+      S.doneShown = true;
+      if (APP.progress) APP.progress.recordWin('puzzles', { stars: S.totalPieces >= 16 ? 3 : S.totalPieces >= 9 ? 2 : 1 });
       if (APP.audio) APP.audio.wordDone();
       confettiCleanup = APP.launchConfetti({ count: 130, duration: 3800 });
 

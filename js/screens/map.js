@@ -22,7 +22,8 @@ window.APP = window.APP || {};
         '.map-grid{position:relative;z-index:1;display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:8px 16px 16px;width:100%;max-width:600px;box-sizing:border-box;margin:0 auto;overflow-y:auto;max-height:calc(100dvh - 56px);}',
         '@media(min-width:768px){.map-grid{grid-template-columns:repeat(3,1fr);}}',
         '@media(orientation:landscape) and (max-height:520px){.map-grid{grid-template-columns:repeat(4,1fr);padding-top:8px;}.map-title{font-size:1.3rem;padding:6px 56px 2px;}}',
-        '.map-building{background:rgba(255,255,255,.35);border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;border-radius:16px;transition:transform .15s,box-shadow .15s;box-shadow:0 2px 8px rgba(0,0,0,.15);}',
+        '.map-building{position:relative;background:rgba(255,255,255,.35);border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;border-radius:16px;transition:transform .15s,box-shadow .15s;box-shadow:0 2px 8px rgba(0,0,0,.15);}',
+        '.map-building-star{position:absolute;top:6px;right:8px;font-size:.85rem;line-height:1;color:#ffb703;background:rgba(255,255,255,.85);border-radius:999px;padding:3px 6px;box-shadow:0 1px 3px rgba(0,0,0,.2);pointer-events:none;}',
         '.map-building:hover{transform:translateY(-3px);box-shadow:0 6px 16px rgba(0,0,0,.2);}',
         '.map-building:active{transform:scale(.95);}',
         '.map-building svg{width:100%;max-width:90px;height:auto;filter:drop-shadow(0 2px 4px rgba(0,0,0,.2));}',
@@ -90,11 +91,22 @@ window.APP = window.APP || {};
     var grid = document.createElement('div');
     grid.className = 'map-grid';
 
+    // True when any game reachable from this building has earned stars.
+    function locationHasStars(loc) {
+      if (!APP.progress) return false;
+      var screens = loc.direct ? [loc.direct] : (loc.games || []).map(function(g) { return g.screen; });
+      return screens.some(function(s) {
+        var gameId = s === 'game' ? 'letters' : s;
+        return APP.progress.get(gameId).bestStars > 0;
+      });
+    }
+
     (APP.LOCATIONS || []).forEach(function(loc) {
       var btn = document.createElement('button');
       btn.className = 'map-building';
       btn.innerHTML = (BUILDINGS[loc.id] || '<svg viewBox="0 0 120 110"><rect x="20" y="30" width="80" height="75" fill="#b2bec3"/></svg>') +
-        '<span class="map-building-label">' + (APP.t(loc.labelKey) || loc.id) + '</span>';
+        '<span class="map-building-label">' + (APP.t(loc.labelKey) || loc.id) + '</span>' +
+        (locationHasStars(loc) ? '<span class="map-building-star">★</span>' : '');
 
       (function(loc) {
         btn.addEventListener('click', function() {

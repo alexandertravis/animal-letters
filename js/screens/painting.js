@@ -834,6 +834,7 @@ window.APP = window.APP || {};
             if (APP.audio) APP.audio.strokeDone();
             const allDone = tpl.regions.every(r => paint.pbnDone.has(r.number));
             if (allDone) {
+              if (APP.progress) APP.progress.recordWin('painting', { stars: 3 });
               setTimeout(() => {
                 if (APP.launchConfetti) APP.launchConfetti();
                 if (APP.audio) APP.audio.wordDone();

@@ -228,6 +228,14 @@ revealMode: "faint",   // "faint" | "hidden"
       APP.state.completedAnimals.add(id);
       APP.saveProgress();
 
+      // Record the word completion in the cross-game progress log.
+      if (APP.progress) {
+        APP.progress.recordWin(
+          APP.state.settings.gameMode === "find" ? "findletter" : "letters",
+          { stars: 3 }
+        );
+      }
+
       // Detect stories newly unlocked by this completion.
       if (APP.getUnlockedStories) {
         APP.state.newlyUnlockedStories = APP.getUnlockedStories().filter(function (s) {

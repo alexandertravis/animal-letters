@@ -308,6 +308,7 @@ window.APP = window.APP || {};
       delay += 200;
     }
     if (APP.launchConfetti) APP.launchConfetti();
+    if (APP.progress) APP.progress.recordWin('shapes', { stars: 3 });
 
     var body = wrap.querySelector('.shapes-body');
     if (body) {

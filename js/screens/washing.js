@@ -206,6 +206,7 @@ window.APP = window.APP || {};
       })(i);
     }
     if (APP.launchConfetti) APP.launchConfetti();
+    if (APP.progress) APP.progress.recordWin('washing', { stars: 3 });
     body.innerHTML = '';
     var win = document.createElement('div');
     win.className = 'washing-win';
