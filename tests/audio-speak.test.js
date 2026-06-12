@@ -93,6 +93,9 @@ describe('APP.audio.speak / speakLetter', () => {
     beforeEach(() => {
       APP.t = (k) => ({ 'intro.maze': 'Find a way through the maze!', 'intro.memory': 'Find the matching pairs!' }[k] || k);
     });
+    afterEach(() => {
+      delete APP.t; // not loaded by setup.js — leave the namespace as we found it
+    });
 
     it('speaks the intro string for a known screen, once per session', () => {
       APP.ui.speakIntro('maze');

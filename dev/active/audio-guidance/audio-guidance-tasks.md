@@ -22,6 +22,11 @@
       stub by patching speechSynthesis.speak/.cancel instance methods, not the property.
 
 ## Section 3 — Review + verify
-- [ ] /review-section (bug review + inline security triage)
-- [ ] Preview: boot clean, intro speaks on map (stub-check via preview_eval), no console errors
-- [ ] Update dev docs + memory, mark phase complete
+- [x] /review-section: bug review PASS (0 critical / 0 major / 3 minor — fixed
+      speakLetter defensive guard + APP.t test cleanup; third minor is documented
+      _spokenIntros test fragility, accepted). Security triage GREEN (bundled locale
+      strings only, no user input, no secrets).
+- [x] Preview verified live: maze intro once across two renders, fr-FR locale intro,
+      no console errors
+- [x] Docs + memory updated — PHASE 2 COMPLETE (3 commits on feature/audio-guidance,
+      not merged)

@@ -480,7 +480,7 @@ window.APP = window.APP || {};
   };
 
   APP.audio.speakLetter = function (char, locale) {
-    if (!APP.state.settings.phonics) return;
+    if (!APP.state || !APP.state.settings || !APP.state.settings.phonics) return;
     // Pass the character as lowercase so iOS TTS does not prepend "Capital" before
     // uppercase letter names (e.g. "A" → "Capital A"). Lowercase reads the letter
     // sound directly on all tested voices.

@@ -41,9 +41,16 @@ funnel), not per-screen cleanup.
 
 ## Resume-here state (update on every checkpoint)
 - [x] Dev docs created
-- [ ] Checkpoint 1: audio.js speak/speakLetter split + colours/findletter dedupe + tests — IN PROGRESS
-- [ ] Checkpoint 2: ui.speakIntro + main.js cancel + i18n ×6 + wire 13 screens + tests
-- [ ] Review (/review-section) + preview verification
+- [x] Checkpoint 1: e1a2bf6 — speak/speakLetter split + colours/findletter dedupe + 9 tests
+- [x] Checkpoint 2: 3bf3c84 — speakIntro + main.js cancel + 78 i18n strings + 13 screens wired + 3 tests
+- [x] Review + fixes committed; preview-verified. PHASE COMPLETE — awaiting merge
+      decision from user (game-progress dd37a15 should merge BEFORE this branch so the
+      depiction test fix lands first).
+
+## Real-browser TTS stubbing gotcha (for any future session)
+window.speechSynthesis is a readonly WebIDL attribute — `window.speechSynthesis = stub`
+silently no-ops in Chrome. Patch instance methods instead:
+`speechSynthesis.speak = recorder; speechSynthesis.cancel = noop;`
 
 ## Open Questions
 (none)
