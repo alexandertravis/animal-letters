@@ -1134,6 +1134,32 @@ input, textarea, [contenteditable] {
 .star-full  { color: #ffb703; }
 .star-empty { color: #c8c8c8; }
 
+/* ── Sticker toast (body-level, shown after navigation) ──────────────────── */
+.sticker-toast {
+  position: fixed;
+  top: 64px;
+  right: 12px;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fffbe6;
+  border: 2px solid #ffc72c;
+  border-radius: 14px;
+  padding: 10px 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.25);
+  cursor: pointer;
+  animation: stickerToastIn .4s ease;
+}
+.sticker-toast.hide { opacity: 0; transform: translateX(20px); transition: all .35s ease; }
+.sticker-toast-icon { font-size: 2rem; line-height: 1; }
+.sticker-toast-title { font-weight: 800; color: var(--ink); font-size: .9rem; }
+.sticker-toast-label { font-size: .8rem; color: #7a6a2f; }
+@keyframes stickerToastIn {
+  from { opacity: 0; transform: translateX(30px); }
+  to   { opacity: 1; transform: none; }
+}
+
 /* ── Gallery stars row — in flex flow, immediately below the animal name ── */
 .gallery-stars-row {
   flex-shrink: 0;

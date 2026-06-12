@@ -1,6 +1,7 @@
 window.APP = window.APP || {};
 (function (APP) {
   var KEY = 'al.progress.games';
+  var STICKERS_KEY = 'al.progress.stickers';
   var MAX_STARS = 3;
 
   function zeros() {
@@ -25,7 +26,43 @@ window.APP = window.APP || {};
     g.lastPlayed = new Date().toISOString().slice(0, 10);
     games[gameId] = g;
     APP.store.set(KEY, games);
+    checkStickers(games);
     return g;
+  }
+
+  function earnedStickers() {
+    var v = APP.store.get(STICKERS_KEY, []);
+    return Array.isArray(v) ? v : [];
+  }
+
+  // Evaluate unearned stickers against the latest progress. Newly earned ids are
+  // persisted; the full sticker objects go onto APP.state.newStickers so the next
+  // screen render can toast them (drained in main.js).
+  function checkStickers(games) {
+    if (!APP.STICKERS) return;
+    var earned = earnedStickers();
+    var newlyEarned = [];
+    APP.STICKERS.forEach(function (st) {
+      if (earned.indexOf(st.id) !== -1) return;
+      var ok = false;
+      try { ok = !!st.check(games, APP.state); } catch (_) { /* a broken predicate must never break recording */ }
+      if (ok) {
+        earned.push(st.id);
+        newlyEarned.push(st);
+      }
+    });
+    if (!newlyEarned.length) return;
+    APP.store.set(STICKERS_KEY, earned);
+    // Only queue toasts for stickers whose persist verifiably landed — if the
+    // write silently failed (quota), the sticker stays unearned and will be
+    // re-evaluated (and toasted once) on a later record instead of every time.
+    var persisted = earnedStickers();
+    if (APP.state) {
+      if (!APP.state.newStickers) APP.state.newStickers = [];
+      newlyEarned.forEach(function (st) {
+        if (persisted.indexOf(st.id) !== -1) APP.state.newStickers.push(st);
+      });
+    }
   }
 
   APP.progress = {
@@ -47,6 +84,9 @@ window.APP = window.APP || {};
     },
     all: function () {
       return allGames();
+    },
+    stickers: function () {
+      return earnedStickers();
     }
   };
 })(window.APP);
