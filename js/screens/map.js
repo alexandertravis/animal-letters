@@ -124,6 +124,19 @@ window.APP = window.APP || {};
       grid.appendChild(btn);
     });
 
+    // Sticker book — extra card, deliberately NOT an APP.LOCATIONS entry (it has
+    // no games[] and locationOf must not claim it).
+    var stickersBtn = document.createElement('button');
+    stickersBtn.className = 'map-building';
+    stickersBtn.innerHTML =
+      '<svg viewBox="0 0 120 110"><rect x="22" y="16" width="76" height="84" rx="8" fill="#ffd166"/><rect x="30" y="24" width="60" height="68" rx="5" fill="#fff7e0"/><circle cx="44" cy="42" r="8" fill="#ff8fa3"/><rect x="58" y="36" width="22" height="12" rx="3" fill="#74c0fc"/><polygon points="48,68 53,78 64,78 55,84 58,94 48,88 38,94 41,84 32,78 43,78" fill="#ffc72c"/><text x="60" y="58" text-anchor="middle" dominant-baseline="middle" font-size="0">.</text></svg>' +
+      '<span class="map-building-label">' + ((APP.t && APP.t('stickers.title')) || 'Sticker Book') + '</span>';
+    stickersBtn.addEventListener('click', function() {
+      if (APP.audio && APP.audio.sfx && APP.audio.sfx.click) APP.audio.sfx.click();
+      ctx.go('stickers');
+    });
+    grid.appendChild(stickersBtn);
+
     wrap.appendChild(grid);
 
     root.appendChild(wrap);

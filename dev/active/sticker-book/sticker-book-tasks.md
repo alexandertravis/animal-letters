@@ -1,20 +1,20 @@
 # sticker-book — Tasks
 
-## Section 1 — Data + award engine (checkpoint 1)
-- [ ] data/stickers.js — 12 defs with defensive check(games, state)
-- [ ] index.html — script tag after data/locations.js
-- [ ] js/progress.js — checkStickers() after each record; al.progress.stickers; APP.state.newStickers (guarded); APP.progress.stickers()
-- [ ] tests/stickers.test.js — predicates, award-once, persistence, throwing-check safety
-- [ ] vitest green → commit
+## Section 1 — Data + award engine (checkpoint 1, commit bbaf3ec)
+- [x] data/stickers.js — 12 defs with defensive check(games, state)
+- [x] index.html — script tag after data/locations.js
+- [x] js/progress.js — checkStickers() after each record; al.progress.stickers; APP.state.newStickers (guarded); APP.progress.stickers()
+- [x] tests/stickers.test.js — 10 tests (predicates, award-once, persistence, throwing-check safety, all-checks-safe-on-empty)
+- [x] vitest 227/227 → committed
 
 ## Section 2 — Surfaces (checkpoint 2)
-- [ ] js/ui.js stickerToast (pop sfx + speak + auto-dismiss; CSS in shared styles.css section)
-- [ ] js/main.js — drain newStickers after route render
-- [ ] js/screens/stickers.js — grid screen (grey icon filter on span), topbar back:'map'
-- [ ] index.html — screen script tag
-- [ ] js/screens/map.js — stickers building card
-- [ ] data/i18n.js — 12 labels + stickers.title + stickers.earned + intro.stickers ×6
-- [ ] vitest green → commit
+- [x] js/ui.js stickerToast (pop sfx + speak + 3.5s auto-dismiss + tap-to-dismiss; CSS in shared styles.css section)
+- [x] js/main.js — drain newStickers after route render, toasts staggered from +2200ms (after the game's own celebration)
+- [x] js/screens/stickers.js — grid screen, count header, grey filter ON THE ICON SPAN, tap earned sticker = pop + speak label, topbar back:'map', intro.stickers wired
+- [x] index.html — screen script tag (after music.js)
+- [x] js/screens/map.js — sticker-album building card (inline SVG art), NOT in APP.LOCATIONS
+- [x] data/i18n.js — 15 keys × 6 locales (90 strings)
+- [x] vitest 227/227; live-verified: earn→navigate→drain scheduled at +2200ms, toast renders (icon+title+label), stickers screen 1/12 with 11 greyed, computed filter grayscale(1) opacity(.35) on icon span, no console errors → commit
 
 ## Section 3 — Review + verify (checkpoint 3)
 - [ ] /review-section

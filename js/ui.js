@@ -124,6 +124,41 @@ window.APP = window.APP || {};
     if (APP.audio.speak(text)) _spokenIntros[screenId] = true;
   };
 
+  // ── stickerToast ─────────────────────────────────────────────────────────────
+  // Body-level toast for a newly earned sticker. Self-contained: its timers only
+  // touch the toast itself, so navigation while visible is safe.
+  APP.ui.stickerToast = function (sticker) {
+    var toast = document.createElement('div');
+    toast.className = 'sticker-toast';
+
+    var icon = document.createElement('span');
+    icon.className = 'sticker-toast-icon';
+    icon.textContent = sticker.icon;
+    toast.appendChild(icon);
+
+    var txt = document.createElement('div');
+    var title = document.createElement('div');
+    title.className = 'sticker-toast-title';
+    title.textContent = APP.t ? APP.t('stickers.earned') : 'You earned a sticker!';
+    var label = document.createElement('div');
+    label.className = 'sticker-toast-label';
+    label.textContent = APP.t ? APP.t(sticker.labelKey) : sticker.id;
+    txt.appendChild(title);
+    txt.appendChild(label);
+    toast.appendChild(txt);
+
+    document.body.appendChild(toast);
+    if (APP.audio && APP.audio.sfx && APP.audio.sfx.pop) APP.audio.sfx.pop();
+    if (APP.audio && APP.audio.speak && APP.t) APP.audio.speak(APP.t('stickers.earned'));
+
+    var hideT = setTimeout(function () {
+      toast.classList.add('hide');
+      setTimeout(function () { toast.remove(); }, 400);
+    }, 3500);
+    toast.addEventListener('click', function () { clearTimeout(hideT); toast.remove(); });
+    return toast;
+  };
+
   // ── settingsPanel ────────────────────────────────────────────────────────────
   // Opens a modal with a declarative field schema.
   // schema: [{ key, label /*i18n key or plain string*/, type:'segmented'|'slider'|'toggle'|'select',

@@ -18,6 +18,15 @@
       return;
     }
     screen.render(root, ctx);
+
+    // Toast stickers earned on the previous screen, AFTER its own celebration has
+    // had time to finish. Toasts are body-level and survive navigation safely.
+    if (APP.state.newStickers && APP.state.newStickers.length && APP.ui && APP.ui.stickerToast) {
+      const pending = APP.state.newStickers.splice(0);
+      pending.forEach(function (st, i) {
+        setTimeout(function () { APP.ui.stickerToast(st); }, 2200 + i * 1500);
+      });
+    }
   }
 
   // Gate on document.fonts.ready so the Quicksand font is fully parsed before
