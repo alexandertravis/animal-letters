@@ -359,6 +359,7 @@ window.APP = window.APP || {};
       body.appendChild(footer);
       screen.appendChild(body);
       root.appendChild(screen);
+      if (APP.ui && APP.ui.speakIntro) APP.ui.speakIntro('tictactoe');
     }
 
     function scheduleRobot() {

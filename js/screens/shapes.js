@@ -192,6 +192,7 @@ window.APP = window.APP || {};
     body.appendChild(tray);
     wrap.appendChild(body);
     root.appendChild(wrap);
+    if (APP.ui && APP.ui.speakIntro) APP.ui.speakIntro('shapes');
 
     // Drag state
     var dragging = null;   // { el (clone), pieceEl, shapeIndex, startX, startY }

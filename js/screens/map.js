@@ -127,6 +127,7 @@ window.APP = window.APP || {};
     wrap.appendChild(grid);
 
     root.appendChild(wrap);
+    if (APP.ui && APP.ui.speakIntro) APP.ui.speakIntro('map');
   }
 
   APP.screens = APP.screens || {};

@@ -47,15 +47,7 @@ window.APP = window.APP || {};
   }
 
   function speakColour(colourName) {
-    if (!window.speechSynthesis) return;
-    if (APP.state && APP.state.settings && APP.state.settings.sfxMuted) return;
-    var utt = new SpeechSynthesisUtterance(colourName);
-    var langMap = { en: 'en-GB', pt: 'pt-PT', fr: 'fr-FR', es: 'es-ES', de: 'de-DE', it: 'it-IT' };
-    var locale = APP.state && APP.state.settings && APP.state.settings.locale ? APP.state.settings.locale : 'en';
-    utt.lang = langMap[locale] || 'en-GB';
-    utt.rate = 0.85;
-    speechSynthesis.cancel();
-    speechSynthesis.speak(utt);
+    if (APP.audio && APP.audio.speak) APP.audio.speak(colourName);
   }
 
   function render(root, ctx) {
@@ -153,6 +145,7 @@ window.APP = window.APP || {};
     body.appendChild(basketRow);
     wrap.appendChild(body);
     root.appendChild(wrap);
+    if (APP.ui && APP.ui.speakIntro) APP.ui.speakIntro('colours');
 
     // Drag state
     var dragging = null;

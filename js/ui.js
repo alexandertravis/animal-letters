@@ -108,6 +108,22 @@ window.APP = window.APP || {};
     return APP.screens && APP.screens.map ? 'map' : 'landing';
   };
 
+  // ── speakIntro ───────────────────────────────────────────────────────────────
+  // Speaks the i18n string `intro.<screenId>` aloud, once per screen per session
+  // (in-memory only — repeating across sessions is desirable for pre-readers).
+  var _spokenIntros = {};
+  APP.ui.speakIntro = function (screenId) {
+    if (!screenId || _spokenIntros[screenId]) return;
+    if (!APP.audio || !APP.audio.speak || !APP.t) return;
+    var key = 'intro.' + screenId;
+    var text = APP.t(key);
+    if (!text || text === key) return; // APP.t echoes the key when missing
+
+    // Only consume the once-per-session slot if speech actually happened
+    // (muted children should still hear the intro after unmuting).
+    if (APP.audio.speak(text)) _spokenIntros[screenId] = true;
+  };
+
   // ── settingsPanel ────────────────────────────────────────────────────────────
   // Opens a modal with a declarative field schema.
   // schema: [{ key, label /*i18n key or plain string*/, type:'segmented'|'slider'|'toggle'|'select',

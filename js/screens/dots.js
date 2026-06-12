@@ -867,6 +867,7 @@ window.APP = window.APP || {};
     const wrap = document.createElement('div');
     wrap.className = 'dots-screen';
     root.appendChild(wrap);
+    if (APP.ui && APP.ui.speakIntro) APP.ui.speakIntro('dots');
     renderPicker(wrap, ctx);
   }
 

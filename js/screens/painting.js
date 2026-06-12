@@ -192,6 +192,7 @@ window.APP = window.APP || {};
       </div>
     `);
     root.appendChild(wrap);
+    if (APP.ui && APP.ui.speakIntro) APP.ui.speakIntro('painting');
 
     // Emoji panel — appended separately so it overlays the toolbar.
     // Structure: scrollable section grid on the left + narrow sidebar on the right

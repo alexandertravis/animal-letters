@@ -460,21 +460,30 @@ window.APP = window.APP || {};
     });
   }
 
-  APP.audio.speakLetter = function (char, locale) {
-    if (!window.speechSynthesis) return;
-    if (!APP.state.settings.phonics) return;
+  // General-purpose speech. No phonics gate — that setting only governs letter
+  // sounds in the tracing game; instructions and names must still be spoken.
+  // Returns true when something was actually spoken (callers like speakIntro use
+  // this to avoid burning their once-per-session slot while muted).
+  APP.audio.speak = function (text, locale) {
+    if (!window.speechSynthesis) return false;
     var s = APP.state.settings;
-    if (s.sfxMuted || s.muted) return;
-    // Pass the character as lowercase so iOS TTS does not prepend "Capital" before
-    // uppercase letter names (e.g. "A" → "Capital A"). Lowercase reads the letter
-    // sound directly on all tested voices.
-    var utt = new SpeechSynthesisUtterance(char.toLowerCase());
+    if (s.sfxMuted || s.muted) return false;
+    var utt = new SpeechSynthesisUtterance(text);
     var langMap = { en: 'en-GB', pt: 'pt-PT', fr: 'fr-FR', es: 'es-ES', de: 'de-DE', it: 'it-IT' };
-    utt.lang = langMap[locale || 'en'] || 'en-GB';
+    utt.lang = langMap[locale != null ? locale : s.locale] || 'en-GB';
     utt.rate = 0.85;
     var vol = s.sfxVol != null ? s.sfxVol : (s.volume != null ? s.volume : 1);
     utt.volume = vol;
     speechSynthesis.cancel();
     speechSynthesis.speak(utt);
+    return true;
+  };
+
+  APP.audio.speakLetter = function (char, locale) {
+    if (!APP.state || !APP.state.settings || !APP.state.settings.phonics) return;
+    // Pass the character as lowercase so iOS TTS does not prepend "Capital" before
+    // uppercase letter names (e.g. "A" → "Capital A"). Lowercase reads the letter
+    // sound directly on all tested voices.
+    APP.audio.speak(char.toLowerCase(), locale != null ? locale : 'en');
   };
 })(window.APP);
