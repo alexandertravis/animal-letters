@@ -101,12 +101,12 @@ All game sounds are synthesised via the Web Audio API — no sound files are req
 
 `APP.state` is the single source of truth. Key fields:
 - `screen` — active screen name
-- `settings` — `{ maxLength, letterCase, depiction, revealMode }` (in-memory only, no persistence)
+- `settings` — `{ maxLength, letterCase, revealMode, phonics, … }` (persisted via `APP.settings`, see Phase 1 section below)
 - `currentAnimal` — the animal object currently being traced
 - `letterIndex` — index into `currentAnimal.name` for the letter currently on screen
 - `sessionExists` — enables the "Continue" button on the landing screen
 
-Settings are lost on page refresh by design.
+Settings persist across refreshes via `APP.settings` / localStorage (`al.global`, `al.game.<id>`). Progress persists under `al.progress.*` (games, stickers, lastSeenStars).
 
 ## Phase 1 Overhaul — New Architecture
 
@@ -127,7 +127,7 @@ Replaces the old one-liner. Persists to localStorage and keeps backward-compat a
 
 localStorage keys:
 - `al.global` — sfxVol, sfxMuted, lastSfxVol, bgMusicVol, bgMusicEnabled
-- `al.game.letters` — maxLength, letterCase, depiction, revealMode, phonics
+- `al.game.letters` — maxLength, letterCase, revealMode, phonics
 - `al.game.<gameId>` — arbitrary per-game settings object
 
 ### APP.ui (`js/ui.js`)

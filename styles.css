@@ -1134,6 +1134,45 @@ input, textarea, [contenteditable] {
 .star-full  { color: #ffb703; }
 .star-empty { color: #c8c8c8; }
 
+/* ── Keyboard focus (global) ─────────────────────────────────────────────── */
+:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ── Parent gate (setup screen, hold-to-enter) ───────────────────────────── */
+.gate-inner { align-items: center; text-align: center; gap: 14px; }
+.gate-title { font-size: 1.5rem; font-weight: 800; color: var(--ink); margin-top: 24px; }
+.gate-hint  { font-size: 1rem; color: var(--ink); opacity: .75; }
+.gate-hold-btn {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  margin-top: 10px;
+  border: 4px solid var(--primary);
+  border-radius: 50%;
+  background: white;
+  font-size: 2.4rem;
+  cursor: pointer;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
+}
+.gate-hold-fill {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 0;
+  background: var(--primary);
+  opacity: .35;
+  transition: height 0.2s ease;
+  pointer-events: none;
+}
+.gate-hold-btn.holding .gate-hold-fill {
+  height: 100%;
+  transition: height 3s linear;
+}
+
 /* ── Sticker toast (body-level, shown after navigation) ──────────────────── */
 .sticker-toast {
   position: fixed;
@@ -1315,12 +1354,6 @@ input, textarea, [contenteditable] {
   box-shadow: -6px 6px 24px rgba(0,0,0,0.55), 4px 4px 16px rgba(0,0,0,0.35);
   user-select: none;
   z-index: 7;
-}
-.book-closed-img   { width: 30%; max-height: 38%; object-fit: contain; opacity: 0.92; }
-.book-closed-title {
-  font-size: clamp(1rem, 3vw, 1.7rem); font-weight: 700;
-  text-align: center; padding: 0 20px; line-height: 1.25;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
 }
 /* Periodic idle shake to hint the book is tappable. The shake occupies ~12% of
    the 5 s cycle (~0.6 s of motion, ~4.4 s of rest). A 2 s initial delay lets

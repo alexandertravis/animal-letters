@@ -49,7 +49,6 @@ beforeEach(() => {
   global.APP.state.settings = {
     maxLength: 6,
     letterCase: 'upper',
-    depiction: 'cartoon',
     revealMode: 'faint',
     volume: 0.7,
     muted: false,
