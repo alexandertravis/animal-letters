@@ -24,7 +24,6 @@ function makeApp() {
     settings: {
       maxLength: 6,
       letterCase: 'upper',
-      depiction: 'cartoon',
       revealMode: 'faint',
       gameMode: 'trace',
       volume: 0.7,
@@ -42,7 +41,7 @@ function makeApp() {
 
   // Inline APP.settings
   var GLOBAL_KEYS = ['sfxVol', 'sfxMuted', 'lastSfxVol', 'bgMusicVol', 'bgMusicEnabled'];
-  var LETTER_KEYS = ['maxLength', 'letterCase', 'depiction', 'revealMode', 'phonics'];
+  var LETTER_KEYS = ['maxLength', 'letterCase', 'revealMode', 'phonics'];
 
   function load() {
     var g = APP.store.get('al.global', {});

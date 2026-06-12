@@ -60,7 +60,68 @@ window.APP = window.APP || {};
     return section;
   }
 
+  // Parent gate: hold-to-enter, unlocked once per session (in-memory only).
+  let gateUnlocked = false;
+  const GATE_HOLD_MS = 3000;
+
+  function renderGate(root, ctx) {
+    root.innerHTML = '';
+    const wrap = document.createElement('div');
+    wrap.className = 'setup';
+    wrap.appendChild(APP.ui.topbar({
+      ctx: ctx,
+      title: APP.t('setup.parents'),
+      home: true,
+      back: true
+    }));
+
+    const inner = document.createElement('div');
+    inner.className = 'setup-inner gate-inner';
+
+    const title = document.createElement('div');
+    title.className = 'gate-title';
+    title.textContent = APP.t('setup.gateTitle');
+    inner.appendChild(title);
+
+    const hint = document.createElement('div');
+    hint.className = 'gate-hint';
+    hint.textContent = APP.t('setup.gateHold');
+    inner.appendChild(hint);
+
+    const holdBtn = document.createElement('button');
+    holdBtn.className = 'gate-hold-btn';
+    holdBtn.innerHTML = '🔒<span class="gate-hold-fill"></span>';
+
+    let timer = null;
+    function start(e) {
+      e.preventDefault();
+      if (timer) return;
+      holdBtn.classList.add('holding');
+      timer = setTimeout(function () {
+        timer = null;
+        // Guard: the user may have navigated away mid-hold.
+        if (!holdBtn.isConnected) return;
+        gateUnlocked = true;
+        if (APP.audio && APP.audio.sfx && APP.audio.sfx.pop) APP.audio.sfx.pop();
+        render(root, ctx);
+      }, GATE_HOLD_MS);
+    }
+    function stop() {
+      if (timer) { clearTimeout(timer); timer = null; }
+      holdBtn.classList.remove('holding');
+    }
+    holdBtn.addEventListener('pointerdown', start);
+    holdBtn.addEventListener('pointerup', stop);
+    holdBtn.addEventListener('pointerleave', stop);
+    holdBtn.addEventListener('pointercancel', stop);
+
+    inner.appendChild(holdBtn);
+    wrap.appendChild(inner);
+    root.appendChild(wrap);
+  }
+
   function render(root, ctx) {
+    if (!gateUnlocked) { renderGate(root, ctx); return; }
     root.innerHTML = '';
     const s = APP.state.settings;
 

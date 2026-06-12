@@ -94,6 +94,8 @@ APP.I18N = {
     'intro.washing':   'Scrub the animal clean!',
     'intro.music':     'Tap the keys to make music!',
     'intro.stickers':  'Look at all your stickers!',
+    'setup.gateTitle': 'Grown-ups only',
+    'setup.gateHold':  'Hold the button to enter',
 
     // Sticker book
     'stickers.title':         'Sticker Book',
@@ -316,6 +318,8 @@ APP.I18N = {
     'intro.washing':   'Esfrega o animal até brilhar!',
     'intro.music':     'Toca nas teclas e faz música!',
     'intro.stickers':  'Olha os teus cromos todos!',
+    'setup.gateTitle': 'Só para adultos',
+    'setup.gateHold':  'Mantém o botão premido para entrar',
 
     'stickers.title':         'Caderneta de Cromos',
     'stickers.earned':        'Ganhaste um cromo!',
@@ -537,6 +541,8 @@ APP.I18N = {
     'intro.washing':   'Frotte l\'animal pour le laver !',
     'intro.music':     'Appuie sur les touches et joue !',
     'intro.stickers':  'Regarde tous tes autocollants !',
+    'setup.gateTitle': 'Réservé aux adultes',
+    'setup.gateHold':  'Maintiens le bouton pour entrer',
 
     'stickers.title':         'Album d\'Autocollants',
     'stickers.earned':        'Tu as gagné un autocollant !',
@@ -758,6 +764,8 @@ APP.I18N = {
     'intro.washing':   '¡Frota al animal hasta limpiarlo!',
     'intro.music':     '¡Toca las teclas y haz música!',
     'intro.stickers':  '¡Mira todas tus pegatinas!',
+    'setup.gateTitle': 'Solo para adultos',
+    'setup.gateHold':  'Mantén pulsado el botón para entrar',
 
     'stickers.title':         'Álbum de Pegatinas',
     'stickers.earned':        '¡Has ganado una pegatina!',
@@ -979,6 +987,8 @@ APP.I18N = {
     'intro.washing':   'Schrubbe das Tier sauber!',
     'intro.music':     'Tippe die Tasten und mach Musik!',
     'intro.stickers':  'Schau dir all deine Sticker an!',
+    'setup.gateTitle': 'Nur für Erwachsene',
+    'setup.gateHold':  'Halte den Knopf gedrückt zum Öffnen',
 
     'stickers.title':         'Stickeralbum',
     'stickers.earned':        'Du hast einen Sticker verdient!',
@@ -1200,6 +1210,8 @@ APP.I18N = {
     'intro.washing':   'Strofina e lava l\'animale!',
     'intro.music':     'Tocca i tasti e fai musica!',
     'intro.stickers':  'Guarda tutte le tue figurine!',
+    'setup.gateTitle': 'Solo per adulti',
+    'setup.gateHold':  'Tieni premuto il pulsante per entrare',
 
     'stickers.title':         'Album di Figurine',
     'stickers.earned':        'Hai guadagnato una figurina!',
