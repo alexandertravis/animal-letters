@@ -16,7 +16,8 @@ master plan (`~/.claude/plans/review-the-entire-project-hidden-plum.md`).
    each unearned sticker run check(); newly earned → persist id under
    `al.progress.stickers` (array) + push full sticker onto transient
    `APP.state.newStickers[]` (guarded — APP.state may not exist in tests).
-   Expose `APP.progress.stickers()` (earned id array) + `APP.progress.checkStickers()`.
+   Expose `APP.progress.stickers()` (earned id array). (checkStickers stays internal —
+   nothing external needs forced re-evaluation; evaluation runs on every record.)
 3. **Toast on NEXT screen render** (js/main.js route()): after render, read+clear
    `APP.state.newStickers`, show `APP.ui.stickerToast(sticker)` — never interrupts the
    game's own win celebration. Toast: slide-in card, pop sfx, speaks i18n

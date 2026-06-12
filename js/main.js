@@ -23,8 +23,11 @@
     // had time to finish. Toasts are body-level and survive navigation safely.
     if (APP.state.newStickers && APP.state.newStickers.length && APP.ui && APP.ui.stickerToast) {
       const pending = APP.state.newStickers.splice(0);
+      // On the stickers screen the intro is still being spoken at toast time —
+      // suppress the toast's spoken line there so it doesn't cut the intro off.
+      const silent = APP.state.screen === 'stickers';
       pending.forEach(function (st, i) {
-        setTimeout(function () { APP.ui.stickerToast(st); }, 2200 + i * 1500);
+        setTimeout(function () { APP.ui.stickerToast(st, { silent: silent }); }, 2200 + i * 1500);
       });
     }
   }

@@ -71,8 +71,12 @@ describe('sticker awards', () => {
 
   it('a throwing check never breaks recording', () => {
     APP.STICKERS.push({ id: 'broken', icon: 'x', labelKey: 'x', check: () => { throw new Error('boom'); } });
-    const g = APP.progress.recordWin('letters');
-    APP.STICKERS.pop();
+    let g;
+    try {
+      g = APP.progress.recordWin('letters');
+    } finally {
+      APP.STICKERS.pop();
+    }
     expect(g.wins).toBe(1);
     expect(APP.progress.stickers()).toContain('first-word');
     expect(APP.progress.stickers()).not.toContain('broken');

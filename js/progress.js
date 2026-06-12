@@ -41,21 +41,28 @@ window.APP = window.APP || {};
   function checkStickers(games) {
     if (!APP.STICKERS) return;
     var earned = earnedStickers();
-    var changed = false;
+    var newlyEarned = [];
     APP.STICKERS.forEach(function (st) {
       if (earned.indexOf(st.id) !== -1) return;
       var ok = false;
       try { ok = !!st.check(games, APP.state); } catch (_) { /* a broken predicate must never break recording */ }
       if (ok) {
         earned.push(st.id);
-        changed = true;
-        if (APP.state) {
-          if (!APP.state.newStickers) APP.state.newStickers = [];
-          APP.state.newStickers.push(st);
-        }
+        newlyEarned.push(st);
       }
     });
-    if (changed) APP.store.set(STICKERS_KEY, earned);
+    if (!newlyEarned.length) return;
+    APP.store.set(STICKERS_KEY, earned);
+    // Only queue toasts for stickers whose persist verifiably landed — if the
+    // write silently failed (quota), the sticker stays unearned and will be
+    // re-evaluated (and toasted once) on a later record instead of every time.
+    var persisted = earnedStickers();
+    if (APP.state) {
+      if (!APP.state.newStickers) APP.state.newStickers = [];
+      newlyEarned.forEach(function (st) {
+        if (persisted.indexOf(st.id) !== -1) APP.state.newStickers.push(st);
+      });
+    }
   }
 
   APP.progress = {

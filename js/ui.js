@@ -127,7 +127,9 @@ window.APP = window.APP || {};
   // ── stickerToast ─────────────────────────────────────────────────────────────
   // Body-level toast for a newly earned sticker. Self-contained: its timers only
   // touch the toast itself, so navigation while visible is safe.
-  APP.ui.stickerToast = function (sticker) {
+  // opts.silent: suppress the spoken line (used when the toast appears on the
+  // stickers screen itself, whose intro is still being spoken at toast time).
+  APP.ui.stickerToast = function (sticker, opts) {
     var toast = document.createElement('div');
     toast.className = 'sticker-toast';
 
@@ -149,7 +151,9 @@ window.APP = window.APP || {};
 
     document.body.appendChild(toast);
     if (APP.audio && APP.audio.sfx && APP.audio.sfx.pop) APP.audio.sfx.pop();
-    if (APP.audio && APP.audio.speak && APP.t) APP.audio.speak(APP.t('stickers.earned'));
+    if (!(opts && opts.silent) && APP.audio && APP.audio.speak && APP.t) {
+      APP.audio.speak(APP.t('stickers.earned'));
+    }
 
     var hideT = setTimeout(function () {
       toast.classList.add('hide');

@@ -17,6 +17,15 @@
 - [x] vitest 227/227; live-verified: earn→navigate→drain scheduled at +2200ms, toast renders (icon+title+label), stickers screen 1/12 with 11 greyed, computed filter grayscale(1) opacity(.35) on icon span, no console errors → commit
 
 ## Section 3 — Review + verify (checkpoint 3)
-- [ ] /review-section
-- [ ] Preview: seed progress → recordWin → toast on next nav; stickers screen renders earned/unearned; no console errors
-- [ ] Update docs + memory
+- [x] /review-section: 0 critical / 2 major / 2 minor. Fixed: (1) toast speech no
+      longer cuts off the stickers screen's own intro — drain passes {silent:true}
+      when destination is 'stickers'; (2) persist-divergence — toasts only queue for
+      stickers whose localStorage write verifiably landed (read-back check), so a
+      quota failure re-toasts once later instead of every record; (3) try/finally
+      around APP.STICKERS mutation in the throwing-check test. Accepted: localStorage
+      stub pattern (consistent with other test files); bookworm check signature.
+      Security triage GREEN (localStorage arrays + bundled strings; no user input in
+      markup — all textContent except static SVG).
+- [x] Preview verified (pre-fix run): full earn→navigate→toast loop, screen
+      earned/unearned rendering, computed grey filter, no console errors
+- [x] Docs + memory updated — PHASE 3 COMPLETE (3 commits, not merged)
