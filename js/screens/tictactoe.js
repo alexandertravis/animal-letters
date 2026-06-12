@@ -143,6 +143,12 @@ window.APP = window.APP || {};
       if (gameOver && !recorded) {
         recorded = true;
         if (winner) tally[winner]++; else tally.draw++;
+        if (APP.progress) {
+          // Robot wins and draws count as a play; any human win counts as a win.
+          var humanWin = winner === 'P' || (winner === 'R' && settings.opponent === 'friend');
+          if (humanWin) APP.progress.recordWin('tictactoe', { stars: 3 });
+          else APP.progress.recordPlay('tictactoe');
+        }
       }
       var screen = document.createElement('div');
       screen.className = 'ttt-screen';

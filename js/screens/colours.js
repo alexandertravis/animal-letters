@@ -250,6 +250,7 @@ window.APP = window.APP || {};
 
   function showWin(wrap, body, ctx) {
     if (APP.launchConfetti) APP.launchConfetti();
+    if (APP.progress) APP.progress.recordWin('colours', { stars: 3 });
     body.innerHTML = '';
     var win = document.createElement('div');
     win.className = 'colours-win';

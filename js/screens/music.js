@@ -250,6 +250,7 @@ window.APP = window.APP || {};
     activeSong.stepIndex++;
     if (activeSong.stepIndex >= activeSong.song.notes.length) {
       stopSong(songRow, pianoWrap);
+      if (APP.progress) APP.progress.recordWin('music', { stars: 3 });
       if (APP.launchConfetti) APP.launchConfetti();
     } else {
       activeSongNote = activeSong.song.notes[activeSong.stepIndex];

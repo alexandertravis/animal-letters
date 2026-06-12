@@ -1100,6 +1100,7 @@ window.APP = window.APP || {};
       row.appendChild(again); row.appendChild(home);
       stage.appendChild(row);
 
+      if (APP.progress) APP.progress.recordWin('recipes', { stars: 3 });
       audio('wordDone');
       if (typeof APP.launchConfetti === 'function') { try { APP.launchConfetti(); } catch (_) {} }
     }

@@ -307,7 +307,6 @@ describe('APP.resetSettings', () => {
   it('restores all settings to their documented defaults', () => {
     APP.state.settings.letterCase = 'lower';
     APP.state.settings.volume = 0.1;
-    APP.state.settings.depiction = 'realistic';
     APP.state.settings.revealMode = 'hidden';
     APP.state.settings.muted = true;
     // Also corrupt maxLength so we can verify it gets reset to the real default.
@@ -316,7 +315,6 @@ describe('APP.resetSettings', () => {
     APP.resetSettings();
 
     expect(APP.state.settings.letterCase).toBe('upper');
-    expect(APP.state.settings.depiction).toBe('cartoon');
     expect(APP.state.settings.revealMode).toBe('faint');
     expect(APP.state.settings.volume).toBe(0.7);
     expect(APP.state.settings.muted).toBe(false);

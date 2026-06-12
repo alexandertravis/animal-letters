@@ -77,6 +77,7 @@ APP.I18N = {
 
     // Progress screen
     'screens.progress.title': 'My Progress',
+    'screens.progress.games': 'Games',
 
     // Setup / Settings
     'setup.title':        'Settings',
@@ -267,6 +268,7 @@ APP.I18N = {
 
     // Progress screen
     'screens.progress.title': 'Meu Progresso',
+    'screens.progress.games': 'Jogos',
 
     // Setup / Settings
     'setup.title':        'Configurações',
@@ -457,6 +459,7 @@ APP.I18N = {
 
     // Progress screen
     'screens.progress.title': 'Ma Progression',
+    'screens.progress.games': 'Jeux',
 
     // Setup / Settings
     'setup.title':        'Paramètres',
@@ -647,6 +650,7 @@ APP.I18N = {
 
     // Progress screen
     'screens.progress.title': 'Mi Progreso',
+    'screens.progress.games': 'Juegos',
 
     // Setup / Settings
     'setup.title':        'Ajustes',
@@ -837,6 +841,7 @@ APP.I18N = {
 
     // Progress screen
     'screens.progress.title': 'Mein Fortschritt',
+    'screens.progress.games': 'Spiele',
 
     // Setup / Settings
     'setup.title':        'Einstellungen',
@@ -1027,6 +1032,7 @@ APP.I18N = {
 
     // Progress screen
     'screens.progress.title': 'I Miei Progressi',
+    'screens.progress.games': 'Giochi',
 
     // Setup / Settings
     'setup.title':        'Impostazioni',

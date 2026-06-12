@@ -280,6 +280,7 @@ window.APP = window.APP || {};
                 });
                 if (matchedCount === settings.pairs) {
                   gameOver = true;
+                  if (APP.progress) APP.progress.recordWin('memory', { stars: starsForMoves(moves, settings.pairs) });
                   setTimeout(function () {
                     if (APP.launchConfetti) APP.launchConfetti({ count: 120, duration: 3500 });
                     if (APP.audio && APP.audio.sfx) APP.audio.sfx.pop();

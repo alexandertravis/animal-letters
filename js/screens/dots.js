@@ -565,6 +565,7 @@ window.APP = window.APP || {};
     }
 
     function onComplete() {
+      if (APP.progress) APP.progress.recordWin('dots', { stars: 3 });
       if (bgImg) bgImg.setAttribute('opacity', '1');
       if (APP.audio) {
         APP.audio.letterDone();
