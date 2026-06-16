@@ -31,6 +31,18 @@ window.APP = window.APP || {};
         { id: 'washing',   labelKey: 'game.washing.title',       art: '🫧', screen: 'washing'   },
       ]
     },
+    {
+      id: 'greenhouse',
+      labelKey: 'loc.greenhouse',
+      bgTrack: 'map',
+      direct: null,
+      games: [
+        { id: 'plantgrow',  labelKey: 'game.plantgrow.title',  art: '🌱', screen: 'plantgrow'  },
+        { id: 'plantneeds', labelKey: 'game.plantneeds.title', art: '💧', screen: 'plantneeds' },
+        { id: 'pollinate',  labelKey: 'game.pollinate.title',  art: '🐝', screen: 'pollinate'  },
+        { id: 'seasons',    labelKey: 'game.seasons.title',    art: '🍂', screen: 'seasons'    },
+      ]
+    },
     { id: 'music',   labelKey: 'loc.music',    bgTrack: 'default',  direct: 'music'    },
     { id: 'park',    labelKey: 'loc.park',     bgTrack: 'map',      direct: 'gallery'  },
   ];
