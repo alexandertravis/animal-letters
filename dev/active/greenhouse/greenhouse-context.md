@@ -43,7 +43,8 @@
 - (2026-06-16) Section 2 complete + merged to main (634f247). `plantgrow` centrepiece, 8-stage journey, 17 i18n keys×6.
 - (2026-06-16) Section 3 complete + merged to main (271ab11). `plantneeds`. 11 i18n keys×6.
 - (2026-06-16) Section 4 complete + merged to main (4043dfc). `pollinate`. 3 i18n keys×6.
-- (2026-06-16) Section 5 complete (`seasons`). 4 season tabs + quiz. 11 i18n keys×6. Verified via preview_eval. Not yet committed. All 5 greenhouse activities built; Section 6 (tests/polish) remains.
+- (2026-06-16) Section 5 complete + merged to main (9cf9f49). `seasons`. 11 i18n keys×6.
+- (2026-06-16) Section 6 complete. Green Thumb sticker, tests/greenhouse.test.js (data + i18n×6 + sticker), 237 tests pass. FEATURE COMPLETE — ready to archive dev docs to dev/done/ and delete branch after final merge (branch already ff-merged section-by-section).
 
 ## Section 2 notes (plantgrow)
 - Stages are data (`APP.GREENHOUSE.stages`); interaction handlers (drag/collect/continue) in `js/screens/plantgrow.js`.

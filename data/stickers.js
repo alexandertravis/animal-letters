@@ -49,6 +49,8 @@ window.APP = window.APP || {};
     { id: 'bookworm',       icon: '📚', labelKey: 'sticker.bookworm',
       check: function () {
         return APP.getUnlockedStories ? APP.getUnlockedStories().length >= 1 : false;
-      } }
+      } },
+    { id: 'green-thumb',    icon: '🌱', labelKey: 'sticker.greenThumb',
+      check: function (g) { return wins(g, 'plantgrow') >= 1; } }
   ];
 })(window.APP);

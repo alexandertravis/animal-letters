@@ -40,5 +40,13 @@
 - [x] data/greenhouse.js seasons; 11 i18n keys × 6 locales
 - [x] Verified via preview_eval: tab switch, quiz playthrough 0→3 stars, no console errors
 
-## Section 6 — Polish & tests
-- [ ] Progress/stickers wiring, navigation-safety audit, unit tests for `data/greenhouse.js` helpers, i18n backfill
+## Section 6 — Polish & tests  ✅ COMPLETE
+- [x] Progress wiring confirmed (each game recordWin/recordPlay; map ★ lights)
+- [x] "Green Thumb" sticker (🌱) added for a plantgrow win (data/stickers.js + 6 locales)
+- [x] Navigation-safety: all screens guard timers with `wrap.isConnected`; plantgrow back clears timers; no GSAP
+- [x] Unit tests: tests/greenhouse.test.js — data integrity + i18n completeness across all 6 locales + sticker trigger
+- [x] i18n: fully translated in all 6 locales (no backfill outstanding)
+- [x] Full suite green: 237 passed (was 227; +10 greenhouse)
+
+## Feature complete
+All 6 sections done. Greenhouse = 4 activities (plantgrow, plantneeds, pollinate, seasons) + hub + map star + sticker. 237 tests pass.

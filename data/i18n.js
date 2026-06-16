@@ -112,6 +112,7 @@ APP.I18N = {
     'sticker.tryEverything':  'Explorer',
     'sticker.animalFriend':   'Animal Friend',
     'sticker.bookworm':       'Bookworm',
+    'sticker.greenThumb':     'Green Thumb',
 
     // Setup / Settings
     'setup.title':        'Settings',
@@ -386,6 +387,7 @@ APP.I18N = {
     'sticker.tryEverything':  'Explorador',
     'sticker.animalFriend':   'Amigo dos Animais',
     'sticker.bookworm':       'Rato de Biblioteca',
+    'sticker.greenThumb':     'Dedo Verde',
 
     // Setup / Settings
     'setup.title':        'Configurações',
@@ -660,6 +662,7 @@ APP.I18N = {
     'sticker.tryEverything':  'Explorateur',
     'sticker.animalFriend':   'Ami des Animaux',
     'sticker.bookworm':       'Rat de Bibliothèque',
+    'sticker.greenThumb':     'Main Verte',
 
     // Setup / Settings
     'setup.title':        'Paramètres',
@@ -934,6 +937,7 @@ APP.I18N = {
     'sticker.tryEverything':  'Explorador',
     'sticker.animalFriend':   'Amigo de los Animales',
     'sticker.bookworm':       'Ratón de Biblioteca',
+    'sticker.greenThumb':     'Mano Verde',
 
     // Setup / Settings
     'setup.title':        'Ajustes',
@@ -1208,6 +1212,7 @@ APP.I18N = {
     'sticker.tryEverything':  'Entdecker',
     'sticker.animalFriend':   'Tierfreund',
     'sticker.bookworm':       'Bücherwurm',
+    'sticker.greenThumb':     'Grüner Daumen',
 
     // Setup / Settings
     'setup.title':        'Einstellungen',
@@ -1482,6 +1487,7 @@ APP.I18N = {
     'sticker.tryEverything':  'Esploratore',
     'sticker.animalFriend':   'Amico degli Animali',
     'sticker.bookworm':       'Topo di Biblioteca',
+    'sticker.greenThumb':     'Pollice Verde',
 
     // Setup / Settings
     'setup.title':        'Impostazioni',
