@@ -330,21 +330,36 @@ window.APP = window.APP || {};
         var s = APP.state.settings;
         var muted = s.sfxMuted || s.muted;
         var vol = s.sfxVol != null ? s.sfxVol : (s.volume || 0.7);
-        master.gain.setTargetAtTime(muted ? 0 : vol, ac.currentTime, 0.015);
+        var target = muted ? 0 : vol;
+        // Direct assignment works on suspended iOS AudioContexts; setTargetAtTime
+        // provides a smooth ramp when the context is already running.
+        master.gain.value = target;
+        if (ac && ac.state === 'running') {
+          master.gain.setTargetAtTime(target, ac.currentTime, 0.015);
+        }
       } catch (_) {}
     },
 
     // Wake / resume the AudioContext during a user gesture so later sounds fire instantly.
-    // Also unlocks iOS silent-switch: playing a silent <audio> element registers
-    // media-playback mode so Web Audio API tones bypass the hardware ringer switch.
+    // On iOS the AudioContext starts suspended; resuming here (inside a pointer event)
+    // puts it into "media audio" routing so Web Audio API tones bypass the silent switch.
     _wake: function () {
       try { getMaster(); } catch (_) {}
       if (!APP.audio._iosSilentUnlocked) {
         APP.audio._iosSilentUnlocked = true;
+        // Loop a 1-sample silent AudioBuffer connected directly to the destination.
+        // This keeps the AudioContext alive in iOS media-audio mode so that all Web
+        // Audio API sound (instruments, SFX) bypasses the hardware silent switch,
+        // matching the behaviour of the HTMLAudioElement background music tracks.
         try {
-          var sil = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==');
-          sil.volume = 0.001;
-          sil.play().catch(function () {});
+          var a = getAC();
+          var buf = a.createBuffer(1, 1, a.sampleRate);
+          var src = a.createBufferSource();
+          src.buffer = buf;
+          src.loop = true;
+          src.connect(a.destination);
+          src.start(0);
+          APP.audio._heartbeat = src;
         } catch (_) {}
       }
     },

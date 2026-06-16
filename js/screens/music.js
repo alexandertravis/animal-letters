@@ -47,7 +47,7 @@ window.APP = window.APP || {};
       '.drum-kit-wrap{display:flex;justify-content:center;align-items:center;width:100%;padding:8px;}',
       '.drum-kit-svg{width:min(340px,92vw);height:auto;}',
       '.drum-part{cursor:pointer;}',
-      '@media (orientation:portrait){.song-select-row{order:-1;}}',
+      '@media (orientation:portrait){.song-list-wrap{order:-1;}}',
       '.song-list-wrap{position:relative;display:flex;flex-direction:column;min-width:0;overflow:hidden;}',
       '.song-list-wrap::before,.song-list-wrap::after{content:"";position:absolute;left:0;right:0;height:0;pointer-events:none;z-index:5;transition:height 0.2s;}',
       '.song-list-wrap::before{top:0;background:linear-gradient(to bottom,rgba(30,20,60,0.55),transparent);}',
@@ -76,7 +76,7 @@ window.APP = window.APP || {};
       var env = ac.createGain();
       osc.connect(env); env.connect(master);
       osc.type = 'triangle'; osc.frequency.value = freq;
-      env.gain.setValueAtTime(0.5, ac.currentTime);
+      env.gain.setValueAtTime(1.0, ac.currentTime);
       env.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 1.0);
       osc.start(ac.currentTime); osc.stop(ac.currentTime + 1.1);
     } catch(e){}
@@ -89,7 +89,7 @@ window.APP = window.APP || {};
       osc.connect(env); env.connect(master);
       osc.type = 'sine'; osc.frequency.setValueAtTime(120, ac.currentTime);
       osc.frequency.exponentialRampToValueAtTime(40, ac.currentTime + 0.15);
-      env.gain.setValueAtTime(0.8, ac.currentTime);
+      env.gain.setValueAtTime(1.2, ac.currentTime);
       env.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.3);
       osc.start(ac.currentTime); osc.stop(ac.currentTime + 0.35);
     } catch(e){}
@@ -103,7 +103,7 @@ window.APP = window.APP || {};
       for (var i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.5;
       var src = ac.createBufferSource(), env = ac.createGain();
       src.buffer = buf; src.connect(env); env.connect(master);
-      env.gain.setValueAtTime(0.6, ac.currentTime);
+      env.gain.setValueAtTime(1.0, ac.currentTime);
       env.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.15);
       src.start(ac.currentTime);
     } catch(e){}
@@ -117,7 +117,7 @@ window.APP = window.APP || {};
       for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
       var src = ac.createBufferSource(), env = ac.createGain();
       src.buffer = buf; src.connect(env); env.connect(master);
-      env.gain.setValueAtTime(0.4, ac.currentTime);
+      env.gain.setValueAtTime(0.8, ac.currentTime);
       env.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.04);
       src.start(ac.currentTime);
     } catch(e){}
@@ -130,7 +130,7 @@ window.APP = window.APP || {};
       osc.connect(env); env.connect(master);
       osc.type = 'sine'; osc.frequency.setValueAtTime(200, ac.currentTime);
       osc.frequency.exponentialRampToValueAtTime(80, ac.currentTime + 0.2);
-      env.gain.setValueAtTime(0.7, ac.currentTime);
+      env.gain.setValueAtTime(1.1, ac.currentTime);
       env.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.3);
       osc.start(ac.currentTime); osc.stop(ac.currentTime + 0.35);
     } catch(e){}
@@ -144,7 +144,7 @@ window.APP = window.APP || {};
       for (var i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ac.sampleRate * 0.08));
       var src = ac.createBufferSource(), env = ac.createGain();
       src.buffer = buf; src.connect(env); env.connect(master);
-      env.gain.setValueAtTime(0.5, ac.currentTime);
+      env.gain.setValueAtTime(0.9, ac.currentTime);
       env.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.25);
       src.start(ac.currentTime);
     } catch(e){}
@@ -158,7 +158,7 @@ window.APP = window.APP || {};
       for (var i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.3;
       var src = ac.createBufferSource(), env = ac.createGain();
       src.buffer = buf; src.connect(env); env.connect(master);
-      env.gain.setValueAtTime(0.4, ac.currentTime);
+      env.gain.setValueAtTime(0.8, ac.currentTime);
       env.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.12);
       src.start(ac.currentTime);
     } catch(e){}
@@ -170,7 +170,7 @@ window.APP = window.APP || {};
       var osc = ac.createOscillator(), env = ac.createGain();
       osc.connect(env); env.connect(master);
       osc.type = 'sine'; osc.frequency.value = 1200;
-      env.gain.setValueAtTime(0.6, ac.currentTime);
+      env.gain.setValueAtTime(1.0, ac.currentTime);
       env.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.06);
       osc.start(ac.currentTime); osc.stop(ac.currentTime + 0.07);
     } catch(e){}

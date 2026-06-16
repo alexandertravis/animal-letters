@@ -162,6 +162,7 @@ window.APP = window.APP || {};
       clone.style.left = (clientX - 34) + 'px';
       clone.style.top  = (clientY - 34) + 'px';
       document.body.appendChild(clone);
+      objEl.style.opacity = '0.3';
       dragging = { clone: clone, objEl: objEl, objIndex: objIndex };
     }
 
@@ -176,6 +177,7 @@ window.APP = window.APP || {};
       var d = dragging;
       dragging = null;
       d.clone.remove();
+      d.objEl.style.opacity = '';
 
       var obj = shuffledObjects[d.objIndex];
 
@@ -235,6 +237,7 @@ window.APP = window.APP || {};
       el.addEventListener('pointercancel', function () {
         if (dragging && dragging.objEl === el) {
           dragging.clone.remove();
+          dragging.objEl.style.opacity = '';
           dragging = null;
         }
       });
