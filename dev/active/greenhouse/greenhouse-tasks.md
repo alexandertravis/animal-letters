@@ -18,8 +18,13 @@
 - [x] i18n: 17 `plantgrow.*` keys across all 6 locales
 - [x] Verified full playthrough via preview_eval: all parts reveal, win records 0→3 stars, map ★ appears, no console errors
 
-## Section 3 — What Plants Need (`plantneeds`)
-- [ ] Drag needs (water/sun/soil/air) vs distractors onto plant; win on all 4
+## Section 3 — What Plants Need (`plantneeds`)  ✅ COMPLETE
+- [x] Drag 4 real needs (water/sun/air/soil) vs 3 random distractors onto the plant
+- [x] Needs fill a panel + perk leaves one by one; 4th need blooms flower
+- [x] Distractors shake + sfx.wrong + spoken "a plant does not need that"; spoken fact per need
+- [x] Win → confetti + recordWin('plantneeds',{stars:3}) + Play again
+- [x] data/greenhouse.js needs+distractors; 11 i18n keys × 6 locales
+- [x] Verified via preview_eval: distractor rejected, 4 needs → bloom, 0→3 stars, no console errors
 
 ## Section 4 — Pollination & Fruiting (`pollinate`)
 - [ ] Drag bee flower→flower; flowers become fruit; win on all visited

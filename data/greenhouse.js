@@ -22,9 +22,21 @@ window.APP = window.APP || {};
       { id: 'bee',    type: 'drag',     chip: '🐝', target: 'flower', instr: 'plantgrow.bee',  fact: 'plantgrow.beeFact',    anim: 'pollen' },
       { id: 'fruit',  type: 'continue', chip: '🍅', anim: 'fruit', instr: 'plantgrow.fruit',  fact: 'plantgrow.fruitFact',  reveal: ['fruit'], hide: ['flower'], win: true }
     ],
-    // "What plants need" — real needs + distractors (Section 3)
-    needs: [],
-    distractors: [],
+    // "What plants need" — real needs + distractors (Section 3). The plantneeds
+    // screen shows all `needs` plus a random handful of `distractors`, shuffled.
+    needs: [
+      { id: 'water', emoji: '💧', label: 'plantneeds.water', fact: 'plantneeds.waterFact' },
+      { id: 'sun',   emoji: '☀️', label: 'plantneeds.sun',   fact: 'plantneeds.sunFact' },
+      { id: 'air',   emoji: '💨', label: 'plantneeds.air',   fact: 'plantneeds.airFact' },
+      { id: 'soil',  emoji: '🟤', label: 'plantneeds.soil',  fact: 'plantneeds.soilFact' }
+    ],
+    distractors: [
+      { id: 'toy',   emoji: '🧸' },
+      { id: 'sweet', emoji: '🍬' },
+      { id: 'shoe',  emoji: '👟' },
+      { id: 'ball',  emoji: '⚽' },
+      { id: 'tv',    emoji: '📺' }
+    ],
     // Vegetable patch / seasons (Section 5)
     seasons: []
   };
