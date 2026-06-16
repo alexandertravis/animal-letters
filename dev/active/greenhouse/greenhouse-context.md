@@ -39,3 +39,11 @@
 
 ## Session log
 - (2026-06-16) Branch `feature/greenhouse` created off `main` (HEAD bb9b706→93afabf range already on main). Dev docs created. Starting Section 1.
+- (2026-06-16) Section 1 complete + merged to main (ff to 1df011f, pushed). Greenhouse building, hub, 4 stubs, i18n×6.
+- (2026-06-16) Section 2 complete (`plantgrow` centrepiece). 8-stage journey, CSS-only plant build-up, 17 i18n keys×6. Verified end-to-end via preview_eval. Not yet committed.
+
+## Section 2 notes (plantgrow)
+- Stages are data (`APP.GREENHOUSE.stages`); interaction handlers (drag/collect/continue) in `js/screens/plantgrow.js`.
+- Plant parts are SVG elements toggled via `.show` class; CSS transitions handle grow/scale/draw-on. transform-box:fill-box used for per-part scale origins (leaves: 100%/0% 50%).
+- Animation is CSS-only on purpose — removing the DOM stops it; no GSAP/tween cleanup. Timers guarded by `wrap.isConnected`; back clears timers.
+- Test-env gotcha reconfirmed: browser caches data files at port 3456 across server restarts. Force-refresh via `fetch(url+'?t='+Date.now(),{cache:'no-store'})` + `(0,eval)` before testing registry/i18n/map changes.

@@ -5,8 +5,23 @@ window.APP = window.APP || {};
 // 5 (seasons). Section 1 only establishes the namespace + wiring.
 (function (APP) {
   APP.GREENHOUSE = {
-    // Life-cycle journey stages (Section 2)
-    stages: [],
+    // Life-cycle journey stages (Section 2). Each stage drives one interaction in
+    // js/screens/plantgrow.js. `instr`/`fact` are i18n keys (resolved at render
+    // time). `type`: 'drag' (drag chip → target zone), 'collect' (tap N items),
+    // 'continue' (tap to play an animation). `reveal`/`hide` name plant-part ids
+    // that the screen toggles on the persistent SVG. `anim` names an effect layer.
+    stages: [
+      { id: 'seed',   type: 'drag',     chip: '🌰', target: 'soil',   instr: 'plantgrow.seed',   fact: 'plantgrow.seedFact',   reveal: ['seed'] },
+      { id: 'needs',  type: 'collect',  items: [
+          { id: 'water', emoji: '💧' }, { id: 'sun', emoji: '☀️' }, { id: 'air', emoji: '💨' }
+        ], instr: 'plantgrow.needs', fact: 'plantgrow.needsFact' },
+      { id: 'roots',  type: 'continue', chip: '💧', anim: 'water', instr: 'plantgrow.roots',  fact: 'plantgrow.rootsFact',  reveal: ['roots'] },
+      { id: 'stem',   type: 'continue', chip: '🌱', anim: 'flow',  instr: 'plantgrow.stem',   fact: 'plantgrow.stemFact',   reveal: ['stem', 'leafL', 'leafR', 'bud'] },
+      { id: 'photo',  type: 'continue', chip: '☀️', anim: 'photo', instr: 'plantgrow.photo',  fact: 'plantgrow.photoFact' },
+      { id: 'flower', type: 'continue', chip: '🌸', anim: 'bloom', instr: 'plantgrow.flower', fact: 'plantgrow.flowerFact', reveal: ['flower'], hide: ['bud'] },
+      { id: 'bee',    type: 'drag',     chip: '🐝', target: 'flower', instr: 'plantgrow.bee',  fact: 'plantgrow.beeFact',    anim: 'pollen' },
+      { id: 'fruit',  type: 'continue', chip: '🍅', anim: 'fruit', instr: 'plantgrow.fruit',  fact: 'plantgrow.fruitFact',  reveal: ['fruit'], hide: ['flower'], win: true }
+    ],
     // "What plants need" — real needs + distractors (Section 3)
     needs: [],
     distractors: [],

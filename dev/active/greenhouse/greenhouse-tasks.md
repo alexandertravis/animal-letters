@@ -9,8 +9,14 @@
 - [x] Add i18n keys: `loc.greenhouse`, 4 `game.*.title`, 4 `intro.*` — all 6 locales
 - [x] Verify: map shows Greenhouse → opens hub → 4 buttons → each stub renders + back works, no console errors
 
-## Section 2 — Life-cycle journey (`plantgrow`)
-- [ ] Staged flow (8 stages) with inline SVG plant build-up, narration, drag/tap interactions, win + confetti + recordWin
+## Section 2 — Life-cycle journey (`plantgrow`)  ✅ COMPLETE
+- [x] 8-stage flow driven by `APP.GREENHOUSE.stages` (seed→needs→roots→stem→photo→flower→bee→fruit)
+- [x] Persistent inline-SVG plant built up part-by-part (CSS-only animation; no GSAP cleanup needed)
+- [x] Three interaction types: drag-chip-to-target, tap-collect (needs panel), tap-continue
+- [x] Narration via `APP.audio.speak` per stage; sfx + star burst on each step
+- [x] Win → confetti + `recordWin('plantgrow',{stars:3})` + Play again; navigation-safe timers (isConnected guard)
+- [x] i18n: 17 `plantgrow.*` keys across all 6 locales
+- [x] Verified full playthrough via preview_eval: all parts reveal, win records 0→3 stars, map ★ appears, no console errors
 
 ## Section 3 — What Plants Need (`plantneeds`)
 - [ ] Drag needs (water/sun/soil/air) vs distractors onto plant; win on all 4
