@@ -182,7 +182,10 @@ window.APP = window.APP || {};
         // finishes before the next letter (or complete screen) renders.
         // Without the delay the new screen cancels the utterance mid-word.
         APP.audio.speakLetter(completedChar, APP.state.settings.locale);
-        const delay = (APP.TRACER_CONFIG && APP.TRACER_CONFIG.PHONICS_ADVANCE_DELAY) || 700;
+        const fullDelay = (APP.TRACER_CONFIG && APP.TRACER_CONFIG.PHONICS_ADVANCE_DELAY) || 1400;
+        // When phonics is off there's no speech, so use half the delay — enough
+        // for a brief celebration beat without stalling the next letter.
+        const delay = APP.state.settings.phonics ? fullDelay : Math.round(fullDelay / 2);
         _advanceTimer = setTimeout(() => {
           _advanceTimer = null;
           if (APP.state.screen === 'complete') {

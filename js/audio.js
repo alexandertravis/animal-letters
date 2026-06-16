@@ -403,8 +403,11 @@ window.APP = window.APP || {};
       var s = APP.state && APP.state.settings;
       if (s && s.bgMusicEnabled === false) return;
       var file = MUSIC_FILES[trackId] || MUSIC_FILES['default'];
-      // Already playing the same file — leave it running.
-      if (bgAudio && bgAudio._trackId === trackId && !bgAudio.paused) return;
+      // Already playing the same file — unmute in case keepAlive() muted it, then leave it.
+      if (bgAudio && bgAudio._trackId === trackId && !bgAudio.paused) {
+        bgAudio.muted = false;
+        return;
+      }
       // Stop any synthesised oscillator track first.
       if (bgCurrent) { try { bgCurrent.stop(); } catch (_) {} bgCurrent = null; }
       // Stop any previously-playing file.
@@ -449,10 +452,18 @@ window.APP = window.APP || {};
       var vol = s ? (s.bgMusicVol != null ? s.bgMusicVol : 0.3) : 0.3;
       // Keep the file element alive but silence it when disabled, so re-enabling
       // is instant without needing a fresh user gesture to restart playback.
-      if (bgAudio) bgAudio.volume = b ? vol : 0;
+      // Use .muted (honoured by iOS) rather than .volume (iOS ignores JS changes).
+      if (bgAudio) bgAudio.muted = !b;
       if (bgMaster && ac) {
         bgMaster.gain.setTargetAtTime(b ? vol : 0, getAC().currentTime, 0.3);
       }
+    },
+
+    // Mute (without pausing) so the <audio> element stays "playing" inside iOS's
+    // media session. This keeps Web Audio API audio in media-routing mode so
+    // instrument sounds bypass the hardware silent switch.
+    keepAlive: function () {
+      if (bgAudio && !bgAudio.paused) bgAudio.muted = true;
     }
   };
 

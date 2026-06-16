@@ -479,8 +479,10 @@ window.APP = window.APP || {};
   // ── Main render ────────────────────────────────────────────────────────────
 
   function render(root, ctx) {
-    // Stop background music
-    if (APP.audio && APP.audio.music) try { APP.audio.music.stop(); } catch(e){}
+    // Mute (but keep alive) so iOS maintains its media-audio session while
+    // the keyboard/drums are in use — Web Audio API instruments only bypass
+    // the hardware silent switch when an <audio> element is still "playing".
+    if (APP.audio && APP.audio.music) try { APP.audio.music.keepAlive(); } catch(e){}
 
     injectStyles();
     root.innerHTML = '';
