@@ -9,8 +9,12 @@
 - [x] index.html: 4 new screen script tags before main.js
 - [x] Verified via preview_eval: Numbers building on map, hub shows 5 games, all render, no console errors
 
-## Section 2 — Count & Match (`countmatch`)
-- [ ] N emoji items + number line; pick the matching numeral; difficulty range; speak number; win/streak
+## Section 2 — Count & Match (`countmatch`)  ✅ COMPLETE
+- [x] N identical emoji + number line 1..range; tap the matching numeral
+- [x] Correct → pop + star + speak the number; wrong → shake (no advance)
+- [x] 5 rounds → win + confetti + recordWin('countmatch',{stars:3}); difficulty `range` 5/10/20
+- [x] 3 i18n keys × 6 locales
+- [x] Verified via preview_eval: wrong tap shakes, 5 rounds → win 0→3 stars, no console errors
 
 ## Section 3 — Addition (`addition`)
 - [ ] objects + numerals (a + b = ?); pick answer; difficulty maxSum; win
