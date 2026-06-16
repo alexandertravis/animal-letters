@@ -34,3 +34,4 @@
 
 ## Session log
 - (2026-06-16) Phase 1 Greenhouse done + archived. Branch `feature/number-games` created off main (ae73647). Starting Section 1.
+- (2026-06-16) All sections complete. Numbers building + 5 activities. Commits 70af1a3→39af5bd ff-merged to main + pushed (one transient DNS push failure mid-way, retried OK). `APP.numberBonds(n)` exposed for tests. 248 tests pass. Section 6 commit pending; then archive docs + delete branch.

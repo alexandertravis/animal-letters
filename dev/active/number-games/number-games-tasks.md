@@ -31,8 +31,17 @@
 - [x] 3 i18n keys × 6 locales (prompt uses {n})
 - [x] Verified via preview_eval: helper correct, drag discovers bonds, all-found → win 0→3 stars, no console errors
 
-## Section 5 — Times Tables (`times`)
-- [ ] visual arrays → numerals; pick product; difficulty tables; win
+## Section 5 — Times Tables (`times`)  ✅ COMPLETE
+- [x] Multiplication as groups of items (array for products ≤30) + numerals; 4 answer choices
+- [x] Difficulty `tables`: easy(×2,5,10)/mid(×2–5)/hard(×2–12); speak product; wrong-tap shake
+- [x] 5 rounds → win + confetti + recordWin('times',{stars:3}); 2 i18n keys × 6 locales
+- [x] Verified via preview_eval: array for small products, numerals for large, win 0→3 stars, no console errors
 
-## Section 6 — Polish & tests
-- [ ] Unit tests for pure helpers (bond enumeration, problem generation); i18n completeness; suite green
+## Section 6 — Polish & tests  ✅ COMPLETE
+- [x] tests/number-games.test.js: APP.numberBonds correctness, counting-hub wiring (5 games, school slimmed, locationOf), i18n completeness across 6 locales
+- [x] Navigation safety: timer screens guard with `wrap.isConnected`; back clears timers
+- [x] Full suite green: 248 passed (was 237; +11)
+- [x] Map ★ verified for the Numbers building after wins
+
+## Feature complete
+Numbers building + 5 activities (Write Numbers + countmatch, addition, numberbonds, times). 248 tests pass.
