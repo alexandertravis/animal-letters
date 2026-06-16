@@ -23,8 +23,13 @@
 - [x] 2 i18n keys × 6 locales
 - [x] Verified via preview_eval: wrong tap shakes, 5 rounds → win 0→3 stars, no console errors
 
-## Section 4 — Number Bonds (`numberbonds`)
-- [ ] N items, two boxes, drag to split; track which splits found; difficulty total; win when all found
+## Section 4 — Number Bonds (`numberbonds`)  ✅ COMPLETE
+- [x] N dots in two boxes; drag dots between boxes; live `l + r = N` equation
+- [x] Bond tracker chips light as each distinct unordered bond is shown (0+N pre-found silently)
+- [x] `APP.numberBonds(n)` pure helper exposed (for unit tests); difficulty `total` 5/10
+- [x] All bonds found → win + confetti + recordWin('numberbonds',{stars:3})
+- [x] 3 i18n keys × 6 locales (prompt uses {n})
+- [x] Verified via preview_eval: helper correct, drag discovers bonds, all-found → win 0→3 stars, no console errors
 
 ## Section 5 — Times Tables (`times`)
 - [ ] visual arrays → numerals; pick product; difficulty tables; win
