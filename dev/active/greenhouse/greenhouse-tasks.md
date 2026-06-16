@@ -26,8 +26,12 @@
 - [x] data/greenhouse.js needs+distractors; 11 i18n keys × 6 locales
 - [x] Verified via preview_eval: distractor rejected, 4 needs → bloom, 0→3 stars, no console errors
 
-## Section 4 — Pollination & Fruiting (`pollinate`)
-- [ ] Drag bee flower→flower; flowers become fruit; win on all visited
+## Section 4 — Pollination & Fruiting (`pollinate`)  ✅ COMPLETE
+- [x] Row of 4 flowers; drag the bee (stays-home clone) onto each
+- [x] Pollinated flower sparkles then morphs to fruit; spoken fact on first pollination
+- [x] All pollinated → win + confetti + recordWin('pollinate',{stars:3}) + Play again
+- [x] Flower→fruit data inline in screen; 3 i18n keys × 6 locales
+- [x] Verified via preview_eval: bee pollinates all 4, flowers become fruit, 0→3 stars, no console errors
 
 ## Section 5 — Vegetable Patch & Seasons (`seasons`)
 - [ ] Four season tabs + insect facts; recordPlay; optional name-the-season mini-quiz

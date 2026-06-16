@@ -41,7 +41,8 @@
 - (2026-06-16) Branch `feature/greenhouse` created off `main` (HEAD bb9b706→93afabf range already on main). Dev docs created. Starting Section 1.
 - (2026-06-16) Section 1 complete + merged to main (ff to 1df011f, pushed). Greenhouse building, hub, 4 stubs, i18n×6.
 - (2026-06-16) Section 2 complete + merged to main (634f247). `plantgrow` centrepiece, 8-stage journey, 17 i18n keys×6.
-- (2026-06-16) Section 3 complete (`plantneeds`). Drag needs vs distractors; perk-and-bloom plant. 11 i18n keys×6. Verified via preview_eval. Not yet committed.
+- (2026-06-16) Section 3 complete + merged to main (271ab11). `plantneeds`. 11 i18n keys×6.
+- (2026-06-16) Section 4 complete (`pollinate`). Bee → flowers → fruit. 3 i18n keys×6. Verified via preview_eval. Not yet committed.
 
 ## Section 2 notes (plantgrow)
 - Stages are data (`APP.GREENHOUSE.stages`); interaction handlers (drag/collect/continue) in `js/screens/plantgrow.js`.
