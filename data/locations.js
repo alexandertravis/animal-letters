@@ -9,7 +9,19 @@ window.APP = window.APP || {};
       games: [
         { id: 'trace',    labelKey: 'school.trace',    art: '✏️', screen: 'game' },
         { id: 'find',     labelKey: 'school.find',     art: '🔍', screen: 'findletter' },
-        { id: 'numbers',  labelKey: 'loc.numbers',     art: '🔢', screen: 'numbers' },
+      ]
+    },
+    {
+      id: 'counting',
+      labelKey: 'loc.numbers',
+      bgTrack: 'school',
+      direct: null,
+      games: [
+        { id: 'write',  labelKey: 'counting.write',         art: '✏️', screen: 'numbers'     },
+        { id: 'count',  labelKey: 'game.countmatch.title',  art: '🔢', screen: 'countmatch'  },
+        { id: 'add',    labelKey: 'game.addition.title',    art: '➕', screen: 'addition'    },
+        { id: 'bonds',  labelKey: 'game.numberbonds.title', art: '🤝', screen: 'numberbonds' },
+        { id: 'times',  labelKey: 'game.times.title',       art: '✖️', screen: 'times'       },
       ]
     },
     { id: 'library', labelKey: 'loc.library',  bgTrack: 'library',  direct: 'library'  },
