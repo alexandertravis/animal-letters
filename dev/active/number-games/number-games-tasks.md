@@ -16,8 +16,12 @@
 - [x] 3 i18n keys × 6 locales
 - [x] Verified via preview_eval: wrong tap shakes, 5 rounds → win 0→3 stars, no console errors
 
-## Section 3 — Addition (`addition`)
-- [ ] objects + numerals (a + b = ?); pick answer; difficulty maxSum; win
+## Section 3 — Addition (`addition`)  ✅ COMPLETE
+- [x] Problem shown as objects + numerals (a 🍎 + b 🍎 = ?); 4 answer choices (near-neighbour distractors)
+- [x] Correct → reveal answer + pop + star + speak; wrong → shake (no advance)
+- [x] 5 rounds → win + confetti + recordWin('addition',{stars:3}); difficulty `maxSum` 5/10/20
+- [x] 2 i18n keys × 6 locales
+- [x] Verified via preview_eval: wrong tap shakes, 5 rounds → win 0→3 stars, no console errors
 
 ## Section 4 — Number Bonds (`numberbonds`)
 - [ ] N items, two boxes, drag to split; track which splits found; difficulty total; win when all found
