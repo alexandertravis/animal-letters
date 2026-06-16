@@ -37,7 +37,13 @@ window.APP = window.APP || {};
       { id: 'ball',  emoji: '⚽' },
       { id: 'tv',    emoji: '📺' }
     ],
-    // Vegetable patch / seasons (Section 5)
-    seasons: []
+    // Vegetable patch / seasons (Section 5). The seasons screen renders one tab
+    // per entry (sky tint + crop emoji + creature + spoken fact) plus a quiz.
+    seasons: [
+      { id: 'spring', label: 'seasons.spring', fact: 'seasons.springFact', sky: '#d4f1ff', crops: ['🌱', '🌷', '🌱', '🌼'], bug: '🐝' },
+      { id: 'summer', label: 'seasons.summer', fact: 'seasons.summerFact', sky: '#bdeeff', crops: ['🌿', '🥬', '🌽', '🍅'], bug: '🦋' },
+      { id: 'autumn', label: 'seasons.autumn', fact: 'seasons.autumnFact', sky: '#ffe2bd', crops: ['🎃', '🥕', '🍎', '🌽'], bug: '🐞' },
+      { id: 'winter', label: 'seasons.winter', fact: 'seasons.winterFact', sky: '#e9f4ff', crops: ['❄️', '🟫', '❄️', '🟫'], bug: '☃️' }
+    ]
   };
 })(window.APP);

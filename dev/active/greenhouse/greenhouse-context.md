@@ -42,7 +42,8 @@
 - (2026-06-16) Section 1 complete + merged to main (ff to 1df011f, pushed). Greenhouse building, hub, 4 stubs, i18n×6.
 - (2026-06-16) Section 2 complete + merged to main (634f247). `plantgrow` centrepiece, 8-stage journey, 17 i18n keys×6.
 - (2026-06-16) Section 3 complete + merged to main (271ab11). `plantneeds`. 11 i18n keys×6.
-- (2026-06-16) Section 4 complete (`pollinate`). Bee → flowers → fruit. 3 i18n keys×6. Verified via preview_eval. Not yet committed.
+- (2026-06-16) Section 4 complete + merged to main (4043dfc). `pollinate`. 3 i18n keys×6.
+- (2026-06-16) Section 5 complete (`seasons`). 4 season tabs + quiz. 11 i18n keys×6. Verified via preview_eval. Not yet committed. All 5 greenhouse activities built; Section 6 (tests/polish) remains.
 
 ## Section 2 notes (plantgrow)
 - Stages are data (`APP.GREENHOUSE.stages`); interaction handlers (drag/collect/continue) in `js/screens/plantgrow.js`.

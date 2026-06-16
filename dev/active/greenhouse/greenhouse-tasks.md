@@ -33,8 +33,12 @@
 - [x] Flower→fruit data inline in screen; 3 i18n keys × 6 locales
 - [x] Verified via preview_eval: bee pollinates all 4, flowers become fruit, 0→3 stars, no console errors
 
-## Section 5 — Vegetable Patch & Seasons (`seasons`)
-- [ ] Four season tabs + insect facts; recordPlay; optional name-the-season mini-quiz
+## Section 5 — Vegetable Patch & Seasons (`seasons`)  ✅ COMPLETE
+- [x] Four season tabs (sky tint + crop emoji + seasonal creature + spoken fact) + Quiz tab
+- [x] recordPlay('seasons') on entry; explore teaches seasons + which insects appear
+- [x] "Which season is this?" quiz: 4 rounds, star bursts, win → recordWin('seasons',{stars:3})
+- [x] data/greenhouse.js seasons; 11 i18n keys × 6 locales
+- [x] Verified via preview_eval: tab switch, quiz playthrough 0→3 stars, no console errors
 
 ## Section 6 — Polish & tests
 - [ ] Progress/stickers wiring, navigation-safety audit, unit tests for `data/greenhouse.js` helpers, i18n backfill
