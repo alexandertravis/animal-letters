@@ -21,7 +21,9 @@ window.APP = window.APP || {};
       '.ad-body{flex:1;display:flex;flex-direction:column;align-items:center;gap:18px;padding:16px;overflow-y:auto;}',
       '.ad-progress{font-size:.95rem;font-weight:700;color:#e07a2c;}',
       '.ad-problem{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;width:100%;max-width:480px;}',
-      '.ad-group{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;align-items:center;background:rgba(255,255,255,.6);border-radius:14px;padding:10px;max-width:200px;}',
+      '.ad-group{display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(255,255,255,.6);border-radius:14px;padding:10px;max-width:200px;}',
+      '.ad-group-num{font-size:1.9rem;font-weight:800;color:#1a4a6b;line-height:1;}',
+      '.ad-objs{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;align-items:center;}',
       '.ad-obj{font-size:1.9rem;line-height:1;animation:ad-drop .3s ease both;}',
       '@keyframes ad-drop{from{transform:scale(.5);opacity:0}to{transform:none;opacity:1}}',
       '.ad-op{font-size:2.1rem;font-weight:800;color:#c0612a;}',
@@ -101,13 +103,21 @@ window.APP = window.APP || {};
     function group(n, emoji) {
       var g = document.createElement('div');
       g.className = 'ad-group';
+      // Numeral above the objects — reinforces quantity <-> symbol.
+      var num = document.createElement('div');
+      num.className = 'ad-group-num';
+      num.textContent = n;
+      g.appendChild(num);
+      var objs = document.createElement('div');
+      objs.className = 'ad-objs';
       for (var i = 0; i < n; i++) {
         var o = document.createElement('span');
         o.className = 'ad-obj';
         o.textContent = emoji;
         o.style.animationDelay = (i * 0.04) + 's';
-        g.appendChild(o);
+        objs.appendChild(o);
       }
+      g.appendChild(objs);
       return g;
     }
 

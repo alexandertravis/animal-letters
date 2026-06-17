@@ -18,10 +18,10 @@
 - [x] Verify all 4 on phone portrait (375×812) + landscape (812×375) — controls within viewport, SVGs fit scenes
 - [x] Run full test suite — 266 passing
 
-## Section C — Adding Up numerals (#1)
-- [ ] `addition.js` — numeral label above each object group; style it
-- [ ] Verify renders; counts match group sizes
-- [ ] Run full test suite
+## Section C — Adding Up numerals (#1) ✅
+- [x] `addition.js` — `.ad-group` now a column: `.ad-group-num` numeral above `.ad-objs`
+- [x] Verify renders; numerals match group sizes (2→"2", 4→"4"); numeral above objects
+- [x] Run full test suite — 266 passing
 
 ## Section D — Count & Match Mexican wave (#3)
 - [ ] `countmatch.js` — staggered bounce of `.cm-item` on correct answer
