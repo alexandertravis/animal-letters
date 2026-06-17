@@ -26,6 +26,40 @@ describe('APP.numberBonds', () => {
   });
 });
 
+describe('APP.numberBondsScramble', () => {
+  it('returns a split that sums to total', () => {
+    [5, 10].forEach((total) => {
+      for (let tl = 0; tl <= total; tl++) {
+        const s = APP.numberBondsScramble(total, tl);
+        expect(s.left + s.right).toBe(total);
+        expect(s.left).toBeGreaterThanOrEqual(0);
+        expect(s.right).toBeGreaterThanOrEqual(0);
+      }
+    });
+  });
+
+  it('never starts already solved (left !== targetLeft) for total >= 1', () => {
+    for (let i = 0; i < 200; i++) {
+      const total = 5;
+      const targetLeft = i % (total + 1);
+      const s = APP.numberBondsScramble(total, targetLeft);
+      expect(s.left).not.toBe(targetLeft);
+    }
+  });
+
+  it('is deterministic with an injected rng and skips the target split', () => {
+    // rnd 0 -> left 0 (== target, retried); rnd 0.5 -> left floor(0.5*6)=3.
+    const seq = [0, 0.5];
+    let i = 0;
+    const rnd = () => seq[Math.min(i++, seq.length - 1)];
+    expect(APP.numberBondsScramble(5, 0, rnd)).toEqual({ left: 3, right: 2 });
+  });
+
+  it('handles total 0 gracefully', () => {
+    expect(APP.numberBondsScramble(0, 0)).toEqual({ left: 0, right: 0 });
+  });
+});
+
 describe('Numbers building wiring', () => {
   const counting = () => APP.LOCATIONS.find((l) => l.id === 'counting');
   const school = () => APP.LOCATIONS.find((l) => l.id === 'school');
@@ -60,7 +94,7 @@ describe('number-games i18n completeness', () => {
     'intro.countmatch', 'intro.addition', 'intro.numberbonds', 'intro.times',
     'countmatch.range', 'countmatch.prompt', 'countmatch.win',
     'addition.range', 'addition.win',
-    'numberbonds.total', 'numberbonds.prompt', 'numberbonds.win',
+    'numberbonds.total', 'numberbonds.prompt', 'numberbonds.win', 'numberbonds.make', 'numberbonds.same',
     'times.tables', 'times.win',
   ];
 

@@ -29,15 +29,15 @@
 - [x] Verify: count=10 → delays sweep 0→0.34s monotonically, all items waved; no console errors
 - [x] Run full test suite — 266 passing
 
-## Section E — Number Bonds redesign (#2)
-- [ ] `numberbonds.js` — target-equation round model (keep `APP.numberBonds`)
-- [ ] Random initial split that is NOT the target (pure helper, unit-testable)
-- [ ] Big per-box counts + total, live
-- [ ] Solve detection (left==a, right==b) → commutative twin reveal (a+b / b+a)
-- [ ] Round progression through each bond → win
-- [ ] `data/i18n.js` — new strings ×6 locales
-- [ ] `tests/number-games.test.js` — tests for new NB logic + i18n keys
-- [ ] Verify in browser; run full test suite
+## Section E — Number Bonds redesign (#2) ✅
+- [x] `numberbonds.js` — target-equation round model (keep `APP.numberBonds`)
+- [x] `APP.numberBondsScramble(total,targetLeft,rnd)` — random initial split that is NOT the target (pure, unit-tested)
+- [x] Live color-coded sum `[L] + [R] = [N]` (blue left / orange right) + goal banner
+- [x] Solve detection (left==a, right==b) → commutative twin reveal (a+b / b+a / "Same total!")
+- [x] Round progression through each bond → win; orientation randomized per round
+- [x] `data/i18n.js` — `numberbonds.prompt` repurposed + `numberbonds.make`/`.same` added ×6 locales
+- [x] `tests/number-games.test.js` — 4 scramble tests + make/same in i18n completeness (270 total)
+- [x] Verify in browser: full 3-bond playthrough (scramble → drag-to-target → twin → win); symmetric + non-symmetric twins; no console errors
 
 ## Wrap-up
 - [ ] Update dev docs; archive to dev/done/ when complete
