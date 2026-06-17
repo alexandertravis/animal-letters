@@ -7,8 +7,10 @@ window.APP = window.APP || {};
       bgTrack: 'school',
       direct: null,
       games: [
-        { id: 'trace',    labelKey: 'school.trace',    art: '✏️', screen: 'game' },
-        { id: 'find',     labelKey: 'school.find',     art: '🔍', screen: 'findletter' },
+        { id: 'trace',     labelKey: 'school.trace',           art: '✏️', screen: 'game' },
+        { id: 'find',      labelKey: 'school.find',            art: '🔍', screen: 'findletter' },
+        { id: 'wordmatch', labelKey: 'game.wordmatch.title',  art: '🔤', screen: 'wordmatch' },
+        { id: 'firstletter', labelKey: 'game.firstletter.title', art: '🅰️', screen: 'firstletter' },
       ]
     },
     {
