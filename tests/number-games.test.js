@@ -41,7 +41,9 @@ describe('Numbers building wiring', () => {
 
   it('removed digit-tracing from School (which keeps the letters games)', () => {
     const screens = school().games.map((g) => g.screen);
-    expect(screens).toEqual(['game', 'findletter']);
+    expect(screens).not.toContain('numbers'); // digit tracing moved to the Numbers building
+    expect(screens).toContain('game');
+    expect(screens).toContain('findletter');
   });
 
   it('locationOf maps the new game screens to the counting hub', () => {

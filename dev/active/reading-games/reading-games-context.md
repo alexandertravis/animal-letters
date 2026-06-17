@@ -25,3 +25,4 @@
 
 ## Session log
 - (2026-06-16) Phase 2 done + archived. Branch `feature/reading-games` off main (dd39ed9). Starting Section 1.
+- (2026-06-16) All sections complete. wordmatch + firstletter into School. Commits a1dada1→(this). Reused APP.animals.eligibleAll() + cartoon SVGs (HTTP). Fixed Phase-2 number-games School-list test (now `not.toContain('numbers')`). 256 tests pass. Section 3-4 commit pending; then archive + delete branch.

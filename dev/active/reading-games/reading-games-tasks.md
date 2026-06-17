@@ -14,8 +14,16 @@
 - [x] 2 i18n keys × 6 locales
 - [x] Verified via preview_eval: wrong drop rejected, all matched → win 0→3 stars, no console errors
 
-## Section 3 — Starting Letter (`firstletter`)
-- [ ] Animal picture (tap = speak name) + 4 letter targets; drag picture to its starting letter; 5 rounds → win
+## Section 3 — Starting Letter (`firstletter`)  ✅ COMPLETE
+- [x] Round-based: animal picture (tap/pickup speaks name) + 4 letter targets (correct + 3 distractors)
+- [x] Drag picture to its starting letter; correct → star + speak letter; wrong → shake; 5 rounds → win
+- [x] win + confetti + recordWin('firstletter',{stars:3}); 2 i18n keys × 6 locales
+- [x] Verified via preview_eval: wrong drop shakes, 5 rounds → win 0→3 stars, no console errors
 
-## Section 4 — Polish & tests
-- [ ] Unit tests: i18n completeness + School wiring; suite green
+## Section 4 — Polish & tests  ✅ COMPLETE
+- [x] tests/reading-games.test.js: School wiring (4 games, locationOf) + i18n completeness across 6 locales
+- [x] Fixed Phase-2 number-games test (School-list assertion → robust `not.toContain('numbers')`)
+- [x] Full suite green: 256 passed (was 248; +8)
+
+## Feature complete
+School now hosts Trace, Find, Word Match, First Letter. 256 tests pass.
