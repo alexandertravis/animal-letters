@@ -23,6 +23,9 @@ window.APP = window.APP || {};
       '.cm-items{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;width:100%;max-width:460px;min-height:120px;background:rgba(255,255,255,.55);border-radius:18px;padding:14px;box-sizing:border-box;}',
       '.cm-item{font-size:2.6rem;line-height:1;animation:cm-drop .35s ease both;}',
       '@keyframes cm-drop{from{transform:translateY(-12px) scale(.6);opacity:0}to{transform:none;opacity:1}}',
+      // Mini-win: counted items do a Mexican wave on a correct answer.
+      '@keyframes cm-wave{0%{transform:translateY(0)}40%{transform:translateY(-20px) scale(1.12)}100%{transform:translateY(0)}}',
+      '.cm-item.cm-wave{animation:cm-wave .45s ease;}',
       '.cm-numline{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:100%;max-width:460px;}',
       '.cm-num{min-width:46px;height:52px;font-size:1.4rem;font-weight:800;border:none;border-radius:12px;background:#fff;color:#1a4a6b;box-shadow:0 3px 8px rgba(0,0,0,.16);cursor:pointer;}',
       '.cm-num:active{transform:translateY(2px);}',
@@ -112,6 +115,20 @@ window.APP = window.APP || {};
       }
       body.appendChild(items);
 
+      // Sweep a bounce across the counted items, left to right. The crest
+      // spans a fixed 0.34s regardless of count, so the wave always finishes
+      // before the round advances.
+      function mexicanWave() {
+        var els = items.querySelectorAll('.cm-item');
+        var stag = els.length > 1 ? 0.34 / (els.length - 1) : 0;
+        for (var i = 0; i < els.length; i++) {
+          els[i].classList.remove('cm-wave');
+          void els[i].offsetWidth;
+          els[i].style.animationDelay = (i * stag) + 's';
+          els[i].classList.add('cm-wave');
+        }
+      }
+
       var numline = document.createElement('div');
       numline.className = 'cm-numline';
       for (var n = 1; n <= range; n++) {
@@ -129,9 +146,10 @@ window.APP = window.APP || {};
               speak(String(count));
               var r = b.getBoundingClientRect();
               burstStars(r.left + r.width / 2, r.top, 5);
+              mexicanWave();
               roundsDone += 1;
-              if (roundsDone >= ROUNDS) later(showWin, 800);
-              else later(newRound, 850);
+              if (roundsDone >= ROUNDS) later(showWin, 950);
+              else later(newRound, 1000);
             } else {
               sfx('wrong');
               b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('wrong');

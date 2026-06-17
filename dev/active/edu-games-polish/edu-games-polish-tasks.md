@@ -23,10 +23,11 @@
 - [x] Verify renders; numerals match group sizes (2→"2", 4→"4"); numeral above objects
 - [x] Run full test suite — 266 passing
 
-## Section D — Count & Match Mexican wave (#3)
-- [ ] `countmatch.js` — staggered bounce of `.cm-item` on correct answer
-- [ ] Verify wave plays on win; doesn't block round advance
-- [ ] Run full test suite
+## Section D — Count & Match Mexican wave (#3) ✅
+- [x] `countmatch.js` — `@keyframes cm-wave` + `mexicanWave()`: staggered bounce across `.cm-item` (crest spans fixed 0.34s)
+- [x] Advance delays bumped (800→950 / 850→1000) so the ~0.79s wave completes before the round changes
+- [x] Verify: count=10 → delays sweep 0→0.34s monotonically, all items waved; no console errors
+- [x] Run full test suite — 266 passing
 
 ## Section E — Number Bonds redesign (#2)
 - [ ] `numberbonds.js` — target-equation round model (keep `APP.numberBonds`)
