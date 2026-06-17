@@ -42,7 +42,23 @@
 - **New screen needs an index.html `<script>` tag** or `APP.screens[x]` is undefined.
 
 ## Self-serve micro-decisions log
-(populate as stages run — story pairings, recipe choices, stars game form, etc.)
+- **Branching (S1):** all 7 stages on ONE integrated branch `feature/explore-expansion`
+  (not one-per-stage) — can't merge to main between stages without approval, and
+  stages share files (map.js/locations.js/index.html/i18n.js). Single merge/push at
+  the end (or at a user check-in). Flagged to user.
+- **S2 stories — shared style helper:** added `data/stories/_shared.js`
+  (`APP.storyPrompt({cast,scene,composition,light})` + canonical STYLE/NEGATIVE)
+  so the 20 new files don't each re-paste ~70 lines of house-style boilerplate
+  (the original 27 files each inline it). Same rendered-prompt shape; saves tokens.
+  Story text is full-length; imagePrompts present but tighter than fox-crow.
+- **S2 stories — 20 concepts (all 21 unused animals covered):** giraffe, panda,
+  tiger, whale(+fish), horse, kangaroo, koala, flamingo, crocodile, gorilla,
+  hippo, deer, camel, squirrel, moose, bull, snake, lobster, rat, shark. Mix of
+  free + locked requirements; varied classic leathers + the 4 watercolour boards.
+- **Valid cover palettes (avoid transparent-cover bug):** leather l-*: burgundy,
+  forest, navy, tan, plum, chestnut, slate, teal, mauve, sienna, gold, russet,
+  amber, terracotta, leaf, arctic, midnight, buff, dustblue, sage, charcoal.
+  board b-*: rose, sage, sky, sun. Reader resolves `{en}` via `APP.storyText`.
 
 ## Animals available (unused → prioritise for stories)
 bull, camel, crocodile, deer, fish, flamingo, giraffe, gorilla, hippo, horse,
