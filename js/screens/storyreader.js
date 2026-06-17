@@ -59,12 +59,37 @@ window.APP = window.APP || {};
     let phase     = 'closed';   // 'closed' | 'opening' | 'open' | 'closing'
     let turning   = false;       // true while a page-turn animation is in flight
 
-    // ── Standard topbar ──────────────────────────────────────────────────────
+    // ── Standard topbar (text-size gear applies live to the open book) ───────
     root.appendChild(APP.ui.topbar({
       ctx: ctx,
       title: APP.storyText ? APP.storyText(story.title) : (story.title || ''),
       home: true,
-      back: 'library'
+      back: 'library',
+      settings: {
+        gameId: 'library',
+        title: (APP.t && APP.t('ui.settings')) || 'Settings',
+        schema: [
+          {
+            key: 'textSize',
+            label: (APP.t && APP.t('library.textSize')) || 'Text Size',
+            type: 'segmented',
+            options: [
+              { value: 'small',  label: 'S' },
+              { value: 'medium', label: 'M' },
+              { value: 'large',  label: 'L' }
+            ]
+          }
+        ],
+        // Mutate the live book's dataset only — does NOT touch the flip/phase
+        // state machine, so page-turn animations are unaffected.
+        onChange: function (key, val, all) {
+          if (key === 'textSize') {
+            var b = root.querySelector('.book');
+            if (b) b.dataset.textSize = val;
+          }
+          if (APP.settings) APP.settings.saveGame('library', all);
+        }
+      }
     }));
     // Lift topbar above the fixed reader-scene overlay (z-index:20) + light colours against dark bg
     var _tb = root.querySelector('.std-topbar');
