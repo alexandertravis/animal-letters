@@ -16,7 +16,7 @@ window.APP = window.APP || {};
     var s = document.createElement('style');
     s.id = 'firstletter-css';
     s.textContent = [
-      '.fl-screen{display:flex;flex-direction:column;min-height:100vh;background:linear-gradient(180deg,#e9f7ff,#eef8ef);}',
+      '.fl-screen{display:flex;flex-direction:column;flex:1;min-height:0;background:linear-gradient(180deg,#e9f7ff,#eef8ef);}',
       '.fl-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:14px;padding:16px;overflow-y:auto;}',
       '.fl-progress{font-size:.95rem;font-weight:700;color:#2c7bb5;}',
       '.fl-prompt{font-size:1.1rem;font-weight:700;color:#1a4a6b;text-align:center;}',
@@ -36,6 +36,15 @@ window.APP = window.APP || {};
       '@keyframes fl-spark{0%{transform:scale(.2);opacity:1}100%{transform:scale(1.5) translateY(-30px);opacity:0}}',
       '.fl-win{display:flex;flex-direction:column;align-items:center;gap:14px;padding:24px;text-align:center;}',
       '.fl-win h2{font-size:1.6rem;color:#06a37a;margin:0;}',
+      // Short-landscape: compact so the picture + letter targets all fit.
+      '@media (orientation:landscape) and (max-height:520px){',
+      '.fl-body{justify-content:center;gap:10px;padding:10px;}',
+      '.fl-pic{width:104px;height:104px;}',
+      '.fl-pic-clone{width:96px;height:96px;}',
+      '.fl-prompt{font-size:1rem;}',
+      '.fl-letters{gap:10px;}',
+      '.fl-letter{width:54px;height:54px;font-size:1.6rem;}',
+      '}',
     ].join('');
     document.head.appendChild(s);
   }

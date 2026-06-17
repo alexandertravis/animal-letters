@@ -15,7 +15,7 @@ window.APP = window.APP || {};
     var s = document.createElement('style');
     s.id = 'wordmatch-css';
     s.textContent = [
-      '.wm-screen{display:flex;flex-direction:column;min-height:100vh;background:linear-gradient(180deg,#fff6e9,#eef8ef);}',
+      '.wm-screen{display:flex;flex-direction:column;flex:1;min-height:0;background:linear-gradient(180deg,#fff6e9,#eef8ef);}',
       '.wm-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:16px;padding:16px;overflow-y:auto;}',
       '.wm-pics{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:flex-start;}',
       '.wm-pic{width:104px;min-height:104px;border-radius:16px;background:rgba(255,255,255,.7);box-shadow:0 3px 9px rgba(0,0,0,.14);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;box-sizing:border-box;border:3px solid transparent;transition:border-color .2s,background .2s;}',
@@ -33,6 +33,18 @@ window.APP = window.APP || {};
       '@keyframes wm-spark{0%{transform:scale(.2);opacity:1}100%{transform:scale(1.5) translateY(-28px);opacity:0}}',
       '.wm-win{display:flex;flex-direction:column;align-items:center;gap:14px;padding:24px;text-align:center;}',
       '.wm-win h2{font-size:1.6rem;color:#06a37a;margin:0;}',
+      // Short-landscape: compact pics + cards; flex-start so a tall set scrolls.
+      '@media (orientation:landscape) and (max-height:520px){',
+      '.wm-body{justify-content:flex-start;gap:10px;padding:10px;}',
+      '.wm-pics{gap:8px;}',
+      '.wm-pic{width:80px;min-height:80px;padding:6px;}',
+      '.wm-pic img{width:56px;height:56px;}',
+      '.wm-pic-fallback{width:56px;height:56px;font-size:1.9rem;}',
+      '.wm-pic-label{font-size:.8rem;}',
+      '.wm-cards{gap:8px;}',
+      '.wm-card{padding:9px 13px;font-size:1.05rem;}',
+      '.wm-card-clone{padding:9px 13px;font-size:1.05rem;}',
+      '}',
     ].join('');
     document.head.appendChild(s);
   }
