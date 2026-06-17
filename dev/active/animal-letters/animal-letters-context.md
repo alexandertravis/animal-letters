@@ -441,3 +441,24 @@ Commits: `f70c136`, `6ff999f`, `65efd9d` — all pushed to main (HEAD: `65efd9d`
 NEXT STEP: See Section 37 for open items. Priority: topbar audit (proactive) + mini wins across games.
 Blockers: none
 Half-finished: none
+
+## Session Summary — 2026-06-16 (bug fixes + educational-games roadmap, ALL COMPLETE)
+Two bodies of work this session, all merged to `main` and pushed (HEAD `840aacf`):
+
+**A. Four bug fixes** (commits `bb9b706`, `93afabf`):
+1. iOS volume slider did nothing — `audio.js _applyGain` now sets `gain.value` directly (setTargetAtTime no-ops on a suspended iOS AudioContext) before ramping when running.
+2. iOS instruments only sounded with the ringer on — `_wake` loops a silent `AudioBufferSourceNode` on `ac.destination` to hold iOS media-audio mode; `music.keepAlive()` (mute-not-pause) called on Music Shed entry instead of `stop()`; `music.setEnabled` uses `bgAudio.muted` (iOS ignores JS `.volume` on `<audio>`); instrument gains ~2×.
+3. Colour-match drag — original now dims to opacity .3 while dragging the clone.
+4. Phonics-off advance delay halved (1400→700 ms) in `game.js` (no speech to wait for); music portrait song list moved above the keyboard (`.song-list-wrap{order:-1}` — the old `.song-select-row` rule was a no-op).
+
+**B. Educational-games roadmap — ALL 4 PHASES COMPLETE** (plan `~/.claude/plans/i-want-to-include-sparkling-boot.md`; per-phase dev docs archived in `dev/done/greenhouse|number-games|reading-games|calendar/`):
+- **Phase 1 Greenhouse** (new building+hub): plantgrow (8-stage seed→fruit centrepiece), plantneeds, pollinate, seasons + "Green Thumb" sticker.
+- **Phase 2 Numbers** (new building; digit-tracing `numbers` moved here from School): countmatch, addition, numberbonds (`APP.numberBonds(n)` helper), times.
+- **Phase 3 Reading** (into School): wordmatch, firstletter (reuse animal cartoon SVGs).
+- **Phase 4 Calendar** (into School): `calendar` screen — Days order + Months "what's next" quiz; localized names in NEW `data/calendar.js` (`APP.calendarList`).
+- Map now 9 buildings + Sticker Book. **266 tests pass** (was 227). New test files: greenhouse/number-games/reading-games/calendar.
+- Gotcha logged: avoid `toEqual(exact hub game list)` in tests — later phases add games; use `toContain`.
+
+NEXT STEP: Roadmap done. Optional: playtest on the live Vercel deploy; remaining Section 37 items (topbar audit, story illustrations, dead-CSS cleanup) still open. Maths/reading deferred ideas: number-line/subtraction games, rhyming/CVC reading.
+Blockers: none
+Half-finished: none

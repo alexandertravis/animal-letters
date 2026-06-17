@@ -429,3 +429,11 @@
 - [ ] Story illustrations — Three Little Pigs pages 4–11
 - [ ] Recipes visual upgrade — SVG cartoon art extraction from Lottie export (see recipes-context.md Session 3)
 - [ ] Dead CSS cleanup — old `.book-tile` / `.books-grid` rules (~styles.css line 1125–1205)
+
+## Section 39 — Bug Fixes + Educational-Games Roadmap (2026-06-16)  ✅ COMPLETE
+- [x] Bug fixes: iOS volume (`_applyGain` direct gain), iOS silent-switch instruments (`_wake` heartbeat + `music.keepAlive`), colour-match drag opacity, phonics-off advance delay, music portrait song-list order
+- [x] Phase 1 Greenhouse — building + hub + plantgrow/plantneeds/pollinate/seasons + Green Thumb sticker (docs: dev/done/greenhouse/)
+- [x] Phase 2 Numbers — building + countmatch/addition/numberbonds/times; digit-tracing moved from School (docs: dev/done/number-games/)
+- [x] Phase 3 Reading — wordmatch/firstletter into School (docs: dev/done/reading-games/)
+- [x] Phase 4 Calendar — Days+Months screen into School; data/calendar.js (docs: dev/done/calendar/)
+- [x] 266 tests pass; all merged to main + pushed (HEAD 840aacf); all feature branches deleted
