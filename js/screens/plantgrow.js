@@ -19,7 +19,7 @@ window.APP = window.APP || {};
     var s = document.createElement('style');
     s.id = 'plantgrow-css';
     s.textContent = [
-      '.pg-screen{display:flex;flex-direction:column;min-height:100vh;background:linear-gradient(180deg,#dff3ff 0%,#eafaf0 55%,#d6f0d6 100%);}',
+      '.pg-screen{display:flex;flex-direction:column;flex:1;min-height:0;background:linear-gradient(180deg,#dff3ff 0%,#eafaf0 55%,#d6f0d6 100%);}',
       '.pg-scene{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:0;}',
       '.pg-svg{width:min(420px,92vw);height:auto;max-height:62vh;}',
       // needs panel
@@ -60,6 +60,15 @@ window.APP = window.APP || {};
       '.pg-star{position:absolute;pointer-events:none;font-size:1.7rem;z-index:6;animation:pg-spark .9s ease-out forwards;}',
       '.pg-win{display:flex;flex-direction:column;align-items:center;gap:12px;}',
       '.pg-win h2{font-size:1.6rem;color:#256145;margin:0;}',
+      // Short-landscape: cap the plant so scene + prompt controls both fit.
+      '@media (orientation:landscape) and (max-height:520px){',
+      '.pg-svg{max-height:48vh;}',
+      '.pg-prompt{padding:6px 14px calc(6px + env(safe-area-inset-bottom,0px));gap:6px;}',
+      '.pg-instr{font-size:1rem;}',
+      '.pg-ctrls{min-height:52px;gap:12px;}',
+      '.pg-chip{width:52px;height:52px;font-size:1.7rem;}',
+      '.pg-need{width:38px;height:38px;font-size:1.2rem;}',
+      '}',
     ].join('');
     document.head.appendChild(s);
   }

@@ -14,7 +14,7 @@ window.APP = window.APP || {};
     var s = document.createElement('style');
     s.id = 'plantneeds-css';
     s.textContent = [
-      '.pn-screen{display:flex;flex-direction:column;min-height:100vh;background:linear-gradient(180deg,#eaf6ff 0%,#eafaf0 60%,#dcefdc 100%);}',
+      '.pn-screen{display:flex;flex-direction:column;flex:1;min-height:0;background:linear-gradient(180deg,#eaf6ff 0%,#eafaf0 60%,#dcefdc 100%);}',
       '.pn-scene{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:0;}',
       '.pn-svg{width:min(300px,72vw);height:auto;max-height:46vh;}',
       '.pn-needs{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:4;}',
@@ -40,6 +40,15 @@ window.APP = window.APP || {};
       '@keyframes pn-spark{0%{transform:scale(.2);opacity:1;}100%{transform:scale(1.5) translateY(-26px);opacity:0;}}',
       '.pn-win{display:flex;flex-direction:column;align-items:center;gap:12px;}',
       '.pn-win h2{font-size:1.45rem;color:#256145;margin:0;text-align:center;}',
+      // Short-landscape: cap the plant + compact the tray so all chips fit.
+      '@media (orientation:landscape) and (max-height:520px){',
+      '.pn-svg{max-height:42vh;}',
+      '.pn-prompt{padding:6px 14px calc(6px + env(safe-area-inset-bottom,0px));gap:6px;}',
+      '.pn-instr{font-size:1rem;}',
+      '.pn-tray{gap:8px;}',
+      '.pn-chip{width:48px;height:48px;font-size:1.6rem;}',
+      '.pn-need{width:36px;height:36px;font-size:1.1rem;}',
+      '}',
     ].join('');
     document.head.appendChild(s);
   }

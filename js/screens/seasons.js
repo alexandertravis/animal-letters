@@ -14,11 +14,11 @@ window.APP = window.APP || {};
     var s = document.createElement('style');
     s.id = 'seasons-css';
     s.textContent = [
-      '.se-screen{display:flex;flex-direction:column;min-height:100vh;background:#eef8ef;}',
+      '.se-screen{display:flex;flex-direction:column;flex:1;min-height:0;background:#eef8ef;}',
       '.se-tabs{display:flex;border-bottom:2px solid #d7e7d7;overflow-x:auto;}',
       '.se-tab{flex:1 0 auto;padding:11px 14px;background:none;border:none;font-size:.95rem;font-weight:700;color:#3a5;opacity:.6;cursor:pointer;white-space:nowrap;}',
       '.se-tab.active{opacity:1;border-bottom:3px solid #3fa86a;margin-bottom:-2px;color:#256145;}',
-      '.se-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:18px 16px;gap:16px;overflow-y:auto;}',
+      '.se-content{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:18px 16px;gap:16px;overflow-y:auto;}',
       '.se-stage{position:relative;width:min(440px,94vw);height:min(240px,38vh);border-radius:20px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.12);display:flex;align-items:flex-end;}',
       '.se-creature{position:absolute;top:14px;right:18px;font-size:2.4rem;animation:se-float 3s ease-in-out infinite;}',
       '@keyframes se-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}',
@@ -38,6 +38,17 @@ window.APP = window.APP || {};
       '@keyframes se-spark{0%{transform:scale(.2);opacity:1}100%{transform:scale(1.5) translateY(-26px);opacity:0}}',
       '.se-win{display:flex;flex-direction:column;align-items:center;gap:12px;}',
       '.se-win h2{font-size:1.45rem;color:#256145;margin:0;text-align:center;}',
+      // Short-landscape: smaller stage + tighter quiz so all 4 options fit
+      // without scrolling (content still scrolls as a fallback).
+      '@media (orientation:landscape) and (max-height:520px){',
+      '.se-content{padding:8px 14px;gap:8px;}',
+      '.se-stage{height:min(120px,40vh);}',
+      '.se-title{font-size:1.2rem;}',
+      '.se-fact{font-size:.95rem;}',
+      '.se-q-prompt{font-size:1.05rem;}',
+      '.se-q-options{gap:8px;}',
+      '.se-q-opt{padding:8px 14px;min-width:96px;}',
+      '}',
     ].join('');
     document.head.appendChild(s);
   }

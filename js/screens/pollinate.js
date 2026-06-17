@@ -21,7 +21,7 @@ window.APP = window.APP || {};
     var s = document.createElement('style');
     s.id = 'pollinate-css';
     s.textContent = [
-      '.po-screen{display:flex;flex-direction:column;min-height:100vh;background:linear-gradient(180deg,#bfe9ff 0%,#d6f3dc 55%,#9fde7a 100%);}',
+      '.po-screen{display:flex;flex-direction:column;flex:1;min-height:0;background:linear-gradient(180deg,#bfe9ff 0%,#d6f3dc 55%,#9fde7a 100%);}',
       '.po-scene{flex:1;position:relative;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:18px;padding:20px;overflow:hidden;min-height:0;}',
       '.po-flower{width:84px;height:84px;border-radius:50%;background:rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center;font-size:2.8rem;transition:transform .3s;box-shadow:0 3px 10px rgba(0,0,0,.12);}',
       '.po-flower.pollinated{transform:scale(1.05);}',
@@ -37,6 +37,14 @@ window.APP = window.APP || {};
       '@keyframes po-spark{0%{transform:scale(.2);opacity:1}100%{transform:scale(1.5) translateY(-24px);opacity:0}}',
       '.po-win{display:flex;flex-direction:column;align-items:center;gap:12px;}',
       '.po-win h2{font-size:1.45rem;color:#256145;margin:0;text-align:center;}',
+      // Short-landscape: compact flowers + bee so the bee control stays visible.
+      '@media (orientation:landscape) and (max-height:520px){',
+      '.po-scene{gap:12px;padding:10px;}',
+      '.po-flower{width:68px;height:68px;font-size:2.2rem;}',
+      '.po-prompt{padding:6px 14px calc(6px + env(safe-area-inset-bottom,0px));gap:6px;}',
+      '.po-instr{font-size:1rem;}',
+      '.po-bee{width:54px;height:54px;font-size:1.8rem;}',
+      '}',
     ].join('');
     document.head.appendChild(s);
   }

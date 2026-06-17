@@ -10,13 +10,13 @@
       - wordmatch @ 5 pairs: all cards within viewport both orientations; no console errors
 - [x] Run full test suite — 266 passing
 
-## Section B — Greenhouse size-awareness (4 screens)
-- [ ] `plantgrow.js` — height fix + SVG cap for landscape; prompt/controls always visible
-- [ ] `plantneeds.js` — height fix + SVG/tray landscape sizing
-- [ ] `pollinate.js` — height fix + flower grid + bee always visible
-- [ ] `seasons.js` — height fix + stage/quiz fit both orientations
-- [ ] Verify all 4 on phone portrait + landscape
-- [ ] Run full test suite
+## Section B — Greenhouse size-awareness (4 screens) ✅
+- [x] `plantgrow.js` — height fix + SVG cap (48vh) for landscape; ctrls visible. Landscape: svg 180 ≤ scene 216.
+- [x] `plantneeds.js` — height fix + SVG cap (42vh) + tray compaction. Landscape: svg 158 ≤ scene 220.
+- [x] `pollinate.js` — height fix + flower/bee compaction. Landscape: bee bottom 371 ≤ 375.
+- [x] `seasons.js` — height fix + `min-height:0` on content (scroll) + stage 120px/quiz compaction. Landscape quiz: all 4 options visible, no scroll.
+- [x] Verify all 4 on phone portrait (375×812) + landscape (812×375) — controls within viewport, SVGs fit scenes
+- [x] Run full test suite — 266 passing
 
 ## Section C — Adding Up numerals (#1)
 - [ ] `addition.js` — numeral label above each object group; style it
