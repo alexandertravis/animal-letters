@@ -53,3 +53,21 @@ center/space-between (those clip the FIRST item on overflow in a scroll box).
 
 ## Open Questions
 none
+
+## Session Summary — 2026-06-17 (all sections complete)
+All six user-reported items shipped on `feature/edu-games-polish`:
+- **A** firstletter/wordmatch — height fix (`min-height:100vh`→`flex:1;min-height:0`)
+  + short-landscape compaction. Drag targets now within viewport both orientations.
+- **B** plantgrow/plantneeds/pollinate/seasons — same height fix + landscape SVG
+  caps + seasons `min-height:0` scroll + quiz compaction. Controls visible, SVGs
+  fit scenes.
+- **C** addition — numeral above each object group (`.ad-group` → column).
+- **D** countmatch — Mexican wave on correct answer (`cm-wave`, fixed 0.34s crest;
+  advance delays bumped to 950/1000ms).
+- **E** numberbonds — full redesign: target equation, scrambled start
+  (`APP.numberBondsScramble`), live colour-coded sum, commutative twin reveal,
+  round progression. i18n ×6 (`numberbonds.make`/`.same`, prompt repurposed).
+Commits: 7df57b7 (A), 3af26c0 (B), 1000a36 (C), 391243e (D), 139ab32 (E).
+**270 tests pass.** Verified each in-browser at 375×812 + 812×375.
+NEXT STEP: merge to main + push; archive docs to dev/done/.
+Blockers: none. Security flags: none.

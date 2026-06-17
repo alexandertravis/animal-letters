@@ -40,5 +40,6 @@
 - [x] Verify in browser: full 3-bond playthrough (scramble → drag-to-target → twin → win); symmetric + non-symmetric twins; no console errors
 
 ## Wrap-up
-- [ ] Update dev docs; archive to dev/done/ when complete
-- [ ] Final merge to main + push (on user approval)
+- [x] Update dev docs (session summary in context.md)
+- [x] Final merge to main + push (user: "complete all changes and push to main")
+- [x] Archive docs to dev/done/; delete feature branch
