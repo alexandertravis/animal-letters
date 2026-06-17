@@ -11,6 +11,7 @@ window.APP = window.APP || {};
         { id: 'find',      labelKey: 'school.find',            art: '🔍', screen: 'findletter' },
         { id: 'wordmatch', labelKey: 'game.wordmatch.title',  art: '🔤', screen: 'wordmatch' },
         { id: 'firstletter', labelKey: 'game.firstletter.title', art: '🅰️', screen: 'firstletter' },
+        { id: 'calendar',  labelKey: 'game.calendar.title',   art: '📅', screen: 'calendar' },
       ]
     },
     {
