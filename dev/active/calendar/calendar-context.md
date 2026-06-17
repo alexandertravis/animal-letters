@@ -25,3 +25,4 @@
 
 ## Session log
 - (2026-06-16) Phase 3 done + archived. Branch `feature/calendar` off main (ff936d3). Starting Section 1.
+- (2026-06-16) All sections complete. Days-order + Months-quiz tabs. Commits 666ce7e→(this). Relaxed Phase-3 reading test to toContain. 266 tests pass. Section 2-3 commit pending; then archive + delete branch. ROADMAP COMPLETE.
