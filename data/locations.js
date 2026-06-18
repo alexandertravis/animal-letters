@@ -78,6 +78,17 @@ window.APP = window.APP || {};
         { id: 'digestion',  labelKey: 'game.digestion.title',  art: '🍎', screen: 'digestion'  },
       ]
     },
+    {
+      id: 'space',
+      labelKey: 'loc.space',
+      bgTrack: 'map',
+      direct: null,
+      games: [
+        { id: 'solarsystem', labelKey: 'game.solarsystem.title', art: '🪐', screen: 'solarsystem' },
+        { id: 'planetorder', labelKey: 'game.planetorder.title', art: '🌍', screen: 'planetorder' },
+        { id: 'stars',       labelKey: 'game.stars.title',       art: '⭐', screen: 'stars'       },
+      ]
+    },
     { id: 'music',   labelKey: 'loc.music',    bgTrack: 'default',  direct: 'music'    },
     { id: 'park',    labelKey: 'loc.park',     bgTrack: 'map',      direct: 'gallery'  },
   ];

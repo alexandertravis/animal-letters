@@ -52,14 +52,19 @@
       (note: snap-transition is a visual nicety; rapid sim reads it mid-animation)
 - [x] Committed
 
-## Stage 7 — Space building  `feature/space`
-- [ ] `data/space.js` (8 planets + constellations)
-- [ ] `solarsystem.js` + `planetorder.js` + `stars.js` screens
-- [ ] map building + location + index.html tags
-- [ ] i18n (6 locales) + optional sticker
-- [ ] `tests/space.test.js`; in-browser; commit
-- [ ] (gate) merge + push
+## Stage 7 — Space building  (on `feature/explore-expansion`)
+- [x] `data/space.js` (8 ordered planets + 2 constellations; EN facts in data)
+- [x] `solarsystem.js` (tap planets to explore) + `planetorder.js` (tap in order
+      from Sun) + `stars.js` (connect constellations)
+- [x] Space building SVG (rocket) in map.js + hub location + index.html tags
+- [x] i18n ×6 (loc.space + 23 keys incl. planet/constellation names). Sticker deferred
+- [x] `tests/space.test.js` (data + wiring + i18n); 322 tests pass
+- [x] In-browser: building on map; all 3 games win; constellation names shown;
+      flex "1 1 0%" + targets in view at 375×812 & 812×375; console clean
+- [x] Committed
 
 ## Wrap-up
-- [ ] Map layout flows 12 buildings + sticker book on phone/tablet
-- [ ] Update MEMORY.md; archive docs to dev/done/explore-expansion/
+- [x] Map now flows 12 buildings + Sticker Book (scrollable grid; verified Space
+      + Human Body + Clock all present alongside originals)
+- [ ] Update MEMORY.md; archive docs to dev/done/explore-expansion/ (at merge)
+- [ ] (gate) merge feature/explore-expansion → main + push  ← awaiting approval
