@@ -29,13 +29,17 @@
 - [x] In-browser: miss→turn passes, match→scores+keeps turn; solo unchanged; console clean
 - [x] 288 tests pass; committed
 
-## Stage 5 — Clock building  `feature/clock-games`
-- [ ] `js/clockFace.js` helper (pure angle maths)
-- [ ] `readclock.js` + `sethands.js` screens (+ visualAids/difficulty settings)
-- [ ] map building + location + index.html tags
-- [ ] i18n (6 locales) + optional sticker
-- [ ] `tests/clock.test.js`; in-browser both orientations; commit
-- [ ] (gate) merge + push
+## Stage 5 — Clock building  (on `feature/explore-expansion`)
+- [x] `js/clockFace.js` helper (pure clockHandAngles + SVG + clockSetHandAngles)
+- [x] `readclock.js` (tap matching time) + `sethands.js` (drag hands + Check)
+      with `level` (oclock/half/quarter/five) + `aids` (number guides) settings
+- [x] Clock building SVG in map.js + hub location + index.html tags
+- [x] i18n ×6 (loc.clock + 15 keys). Sticker deferred (optional)
+- [x] `tests/clock.test.js` (angles + wiring + i18n); 300 tests pass
+- [x] In-browser: building on map; readclock loop (read→match→advance); sethands
+      drag→Check→advance; flex "1 1 0%" + targets within view at 375×812 & 812×375;
+      console clean
+- [x] Committed
 
 ## Stage 6 — Human Body building  `feature/human-body`
 - [ ] `data/body.js` (layers + digestion)

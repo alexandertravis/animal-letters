@@ -27,6 +27,16 @@ window.APP = window.APP || {};
         { id: 'times',  labelKey: 'game.times.title',       art: '✖️', screen: 'times'       },
       ]
     },
+    {
+      id: 'clock',
+      labelKey: 'loc.clock',
+      bgTrack: 'school',
+      direct: null,
+      games: [
+        { id: 'readclock', labelKey: 'game.readclock.title', art: '🕐', screen: 'readclock' },
+        { id: 'sethands',  labelKey: 'game.sethands.title',  art: '🕓', screen: 'sethands'  },
+      ]
+    },
     { id: 'library', labelKey: 'loc.library',  bgTrack: 'library',  direct: 'library'  },
     { id: 'kitchen', labelKey: 'loc.kitchen',  bgTrack: 'kitchen',  direct: 'recipes'  },
     { id: 'art',     labelKey: 'loc.art',      bgTrack: 'default',  direct: 'painting' },
