@@ -16,11 +16,11 @@
 - [x] 277 tests pass; committed in 4 batches
 - [ ] (gate) merge + push  ← batched for approval
 
-## Stage 3 — +3 cooking items  `feature/cooking-items`
-- [ ] Add 3 recipes to `data/recipes.js` (reuse oven/pan/fry)
-- [ ] `tests/recipes.test.js` data integrity
-- [ ] In-browser cook each; commit
-- [ ] (gate) merge + push
+## Stage 3 — +3 cooking items  (on `feature/explore-expansion`)
+- [x] Added Cookies (oven), Pizza (oven), Waffle (pan) to `data/recipes.js`
+- [x] `tests/recipes.test.js` data integrity (cookType + animType valid)
+- [x] In-browser: 6 recipes in picker, new ones shown, console clean
+- [x] Committed
 
 ## Stage 4 — Memory 2-player  `feature/memory-2player`
 - [ ] mode setting + playerTurn/playerScores + turn-pass logic
