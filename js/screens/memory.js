@@ -45,6 +45,10 @@ window.APP = window.APP || {};
       '.mem-screen { flex:1; display:flex; flex-direction:column; min-height:0; }',
       '.mem-body { flex:1; display:flex; flex-direction:column; align-items:center; gap:12px; padding:12px; overflow-y:auto; }',
       '.mem-info { font-size:1rem; font-weight:600; color:#555; }',
+      '.mem-turnbar { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }',
+      '.mem-pchip { font-size:0.95rem; font-weight:700; padding:6px 12px; border-radius:14px; background:#eee; color:#777; border:2px solid transparent; transition:all 0.2s; }',
+      '.mem-pchip.active.p1 { color:#3b34c9; background:#efeefc; border-color:#6c63ff; box-shadow:0 2px 8px rgba(108,99,255,0.3); transform:scale(1.06); }',
+      '.mem-pchip.active.p2 { color:#b23b3b; background:#fcefef; border-color:#e06666; box-shadow:0 2px 8px rgba(224,102,102,0.3); transform:scale(1.06); }',
       '.mem-grid { display:grid; gap:8px; width:100%; max-width:480px; }',
       '.mem-grid-6  { grid-template-columns:repeat(4,1fr); }',
       '.mem-grid-8  { grid-template-columns:repeat(4,1fr); }',
@@ -102,10 +106,11 @@ window.APP = window.APP || {};
 
     var T = APP.t || function (k) { return k; };
     var settings = (APP.settings && APP.settings.game)
-      ? APP.settings.game('memory', { pairs: 8, theme: 'animals' })
-      : { pairs: 8, theme: 'animals' };
+      ? APP.settings.game('memory', { pairs: 8, theme: 'animals', mode: 'solo' })
+      : { pairs: 8, theme: 'animals', mode: 'solo' };
     // Coerce pairs to number in case it came from localStorage as string
     settings.pairs = parseInt(settings.pairs, 10) || 8;
+    if (settings.mode !== '2player') settings.mode = 'solo';
 
     var deck = buildDeck(settings.pairs, settings.theme);
     var flippedIdx = []; // indices into deck of currently face-up (unmatched) cards
@@ -113,15 +118,18 @@ window.APP = window.APP || {};
     var matchedCount = 0;
     var locked = false;
     var gameOver = false;
+    var playerTurn = 0;        // 0 = Player 1, 1 = Player 2 (2-player mode only)
+    var playerScores = [0, 0]; // pairs matched per player (2-player mode only)
 
     function saveSettings(patch) {
       if (APP.settings && APP.settings.updateGame) {
-        APP.settings.updateGame('memory', patch, { pairs: 8, theme: 'animals' });
+        APP.settings.updateGame('memory', patch, { pairs: 8, theme: 'animals', mode: 'solo' });
       }
     }
 
     function doRender() {
       root.innerHTML = '';
+      var twoPlayer = settings.mode === '2player';
       var screen = document.createElement('div');
       screen.className = 'mem-screen';
 
@@ -136,6 +144,15 @@ window.APP = window.APP || {};
           gameId: 'memory',
           title: T('ui.settings') || 'Settings',
           schema: [
+            {
+              key: 'mode',
+              label: T('game.memory.mode') || 'Players',
+              type: 'segmented',
+              options: [
+                { value: 'solo',    label: T('game.memory.modeSolo') || '1 Player'  },
+                { value: '2player', label: T('game.memory.modeTwo')  || '2 Players' }
+              ]
+            },
             {
               key: 'pairs',
               label: T('game.memory.pairs') || 'Number of pairs',
@@ -159,6 +176,7 @@ window.APP = window.APP || {};
           ],
           onChange: function (key, val, all) {
             all.pairs = parseInt(all.pairs, 10) || 8;
+            if (all.mode !== '2player') all.mode = 'solo';
             settings = all;
             saveSettings(all);
             startNew();
@@ -171,28 +189,54 @@ window.APP = window.APP || {};
       body.className = 'mem-body';
 
       if (gameOver) {
-        var stars = starsForMoves(moves, settings.pairs);
-        var starStr = '';
-        for (var si = 0; si < stars; si++) starStr += '⭐';
-        for (var sj = stars; sj < 3; sj++) starStr += '☆';
-
         var resultDiv = document.createElement('div');
         resultDiv.className = 'mem-result';
 
-        var starsEl = document.createElement('div');
-        starsEl.className = 'mem-stars';
-        starsEl.textContent = starStr;
-        resultDiv.appendChild(starsEl);
+        if (twoPlayer) {
+          var p1 = playerScores[0], p2 = playerScores[1];
+          var faceEl = document.createElement('div');
+          faceEl.className = 'mem-stars';
+          var winMsg;
+          if (p1 === p2) {
+            faceEl.textContent = '🤝';
+            winMsg = T('game.memory.tie') || "It's a tie!";
+          } else {
+            var w = p1 > p2 ? 1 : 2;
+            faceEl.textContent = w === 1 ? '🔵' : '🔴';
+            winMsg = (T('game.memory.winner') || 'Player {n} wins!').replace('{n}', w);
+          }
+          resultDiv.appendChild(faceEl);
 
-        var msgEl = document.createElement('div');
-        msgEl.className = 'mem-result-msg';
-        msgEl.textContent = T('game.memory.win') || 'All matched!';
-        resultDiv.appendChild(msgEl);
+          var msgEl = document.createElement('div');
+          msgEl.className = 'mem-result-msg';
+          msgEl.textContent = winMsg;
+          resultDiv.appendChild(msgEl);
 
-        var movesEl = document.createElement('div');
-        movesEl.className = 'mem-info';
-        movesEl.textContent = (T('game.memory.moves') || 'Moves') + ': ' + moves;
-        resultDiv.appendChild(movesEl);
+          var scoreEl = document.createElement('div');
+          scoreEl.className = 'mem-info';
+          scoreEl.textContent = '🔵 ' + p1 + '  —  ' + p2 + ' 🔴';
+          resultDiv.appendChild(scoreEl);
+        } else {
+          var stars = starsForMoves(moves, settings.pairs);
+          var starStr = '';
+          for (var si = 0; si < stars; si++) starStr += '⭐';
+          for (var sj = stars; sj < 3; sj++) starStr += '☆';
+
+          var starsEl = document.createElement('div');
+          starsEl.className = 'mem-stars';
+          starsEl.textContent = starStr;
+          resultDiv.appendChild(starsEl);
+
+          var msgEl = document.createElement('div');
+          msgEl.className = 'mem-result-msg';
+          msgEl.textContent = T('game.memory.win') || 'All matched!';
+          resultDiv.appendChild(msgEl);
+
+          var movesEl = document.createElement('div');
+          movesEl.className = 'mem-info';
+          movesEl.textContent = (T('game.memory.moves') || 'Moves') + ': ' + moves;
+          resultDiv.appendChild(movesEl);
+        }
 
         var againBtn = document.createElement('button');
         againBtn.className = 'btn';
@@ -213,8 +257,26 @@ window.APP = window.APP || {};
       } else {
         var infoEl = document.createElement('div');
         infoEl.className = 'mem-info';
-        infoEl.textContent = (T('game.memory.moves') || 'Moves') + ': ' + moves;
         body.appendChild(infoEl);
+        function updateInfo() {
+          if (twoPlayer) {
+            infoEl.className = 'mem-turnbar';
+            infoEl.innerHTML = '';
+            [0, 1].forEach(function (pi) {
+              var chip = document.createElement('span');
+              chip.className = 'mem-pchip' + (pi === 0 ? ' p1' : ' p2') + (playerTurn === pi ? ' active' : '');
+              var who = pi === 0
+                ? (T('game.memory.player1') || 'Player 1')
+                : (T('game.memory.player2') || 'Player 2');
+              chip.textContent = (pi === 0 ? '🔵 ' : '🔴 ') + who + ': ' + playerScores[pi];
+              infoEl.appendChild(chip);
+            });
+          } else {
+            infoEl.className = 'mem-info';
+            infoEl.textContent = (T('game.memory.moves') || 'Moves') + ': ' + moves;
+          }
+        }
+        updateInfo();
 
         // Responsive column count: portrait gets fewer columns (taller grid),
         // landscape gets more columns (wider grid). Even layouts per pair count.
@@ -264,14 +326,14 @@ window.APP = window.APP || {};
               locked = true;
 
               if (deck[fi].emoji === deck[si].emoji) {
-                // Match
+                // Match — in 2-player the current player scores and keeps their turn
                 deck[fi].matched = true;
                 deck[si].matched = true;
                 matchedCount++;
+                if (twoPlayer) playerScores[playerTurn]++;
                 locked = false;
                 if (APP.audio && APP.audio.sfx) APP.audio.sfx.pop();
-                // Update move count display
-                infoEl.textContent = (T('game.memory.moves') || 'Moves') + ': ' + moves;
+                updateInfo();
                 // Mark matched visually + mini-win burst
                 var cards = gridEl.querySelectorAll('.memory-card');
                 [cards[fi], cards[si]].forEach(function (c) {
@@ -280,7 +342,7 @@ window.APP = window.APP || {};
                 });
                 if (matchedCount === settings.pairs) {
                   gameOver = true;
-                  if (APP.progress) APP.progress.recordWin('memory', { stars: starsForMoves(moves, settings.pairs) });
+                  if (APP.progress) APP.progress.recordWin('memory', { stars: twoPlayer ? 3 : starsForMoves(moves, settings.pairs) });
                   setTimeout(function () {
                     if (APP.launchConfetti) APP.launchConfetti({ count: 120, duration: 3500 });
                     if (APP.audio && APP.audio.sfx) APP.audio.sfx.pop();
@@ -288,13 +350,14 @@ window.APP = window.APP || {};
                   }, 600);
                 }
               } else {
-                // No match
+                // No match — in 2-player the turn passes to the other player
                 if (APP.audio && APP.audio.sfx) APP.audio.sfx.wrong();
-                infoEl.textContent = (T('game.memory.moves') || 'Moves') + ': ' + moves;
+                updateInfo();
                 setTimeout(function () {
                   deck[fi].flipped = false;
                   deck[si].flipped = false;
                   locked = false;
+                  if (twoPlayer) { playerTurn = 1 - playerTurn; updateInfo(); }
                   var cards = gridEl.querySelectorAll('.memory-card');
                   cards[fi].classList.remove('flipped');
                   cards[si].classList.remove('flipped');
@@ -319,6 +382,8 @@ window.APP = window.APP || {};
       matchedCount = 0;
       locked = false;
       gameOver = false;
+      playerTurn = 0;
+      playerScores = [0, 0];
       doRender();
     }
 

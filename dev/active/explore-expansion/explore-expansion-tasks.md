@@ -22,12 +22,12 @@
 - [x] In-browser: 6 recipes in picker, new ones shown, console clean
 - [x] Committed
 
-## Stage 4 — Memory 2-player  `feature/memory-2player`
-- [ ] mode setting + playerTurn/playerScores + turn-pass logic
-- [ ] turn badge + 2-player win screen
-- [ ] i18n (6 locales); `tests/memory.test.js`
-- [ ] In-browser 2-player run; commit
-- [ ] (gate) merge + push
+## Stage 4 — Memory 2-player  (on `feature/explore-expansion`)
+- [x] `mode` setting (solo/2player) + playerTurn/playerScores + turn-pass logic
+- [x] turn bar (🔵/🔴 chips, active highlighted) + 2-player win screen (winner/tie)
+- [x] i18n ×6 (mode/modeSolo/modeTwo/player1/player2/winner/tie); `tests/memory.test.js`
+- [x] In-browser: miss→turn passes, match→scores+keeps turn; solo unchanged; console clean
+- [x] 288 tests pass; committed
 
 ## Stage 5 — Clock building  `feature/clock-games`
 - [ ] `js/clockFace.js` helper (pure angle maths)
