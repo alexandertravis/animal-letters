@@ -41,13 +41,16 @@
       console clean
 - [x] Committed
 
-## Stage 6 — Human Body building  `feature/human-body`
-- [ ] `data/body.js` (layers + digestion)
-- [ ] `bodylayers.js` + `digestion.js` screens
-- [ ] map building + location + index.html tags
-- [ ] i18n (6 locales) + optional sticker
-- [ ] `tests/body.test.js`; in-browser; commit
-- [ ] (gate) merge + push
+## Stage 6 — Human Body building  (on `feature/explore-expansion`)
+- [x] `data/body.js` (5 layers skin→bones + 5 digestion stops; EN facts in data)
+- [x] `bodylayers.js` (peel through layers) + `digestion.js` (drag food through stops)
+- [x] Human Body building SVG (heart+cross) in map.js + hub location + index.html tags
+- [x] i18n ×6 (loc.humanbody + 18 keys incl. layer/organ labels). Sticker deferred
+- [x] `tests/body.test.js` (data order + wiring + i18n); 311 tests pass
+- [x] In-browser: building on map; layers peel skin→bones+win; digestion drag all
+      5 stops+win; flex "1 1 0%" + targets in view at 375×812 & 812×375; console clean
+      (note: snap-transition is a visual nicety; rapid sim reads it mid-animation)
+- [x] Committed
 
 ## Stage 7 — Space building  `feature/space`
 - [ ] `data/space.js` (8 planets + constellations)

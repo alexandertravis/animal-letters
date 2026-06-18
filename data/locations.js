@@ -68,6 +68,16 @@ window.APP = window.APP || {};
         { id: 'seasons',    labelKey: 'game.seasons.title',    art: '🍂', screen: 'seasons'    },
       ]
     },
+    {
+      id: 'humanbody',
+      labelKey: 'loc.humanbody',
+      bgTrack: 'default',
+      direct: null,
+      games: [
+        { id: 'bodylayers', labelKey: 'game.bodylayers.title', art: '🧍', screen: 'bodylayers' },
+        { id: 'digestion',  labelKey: 'game.digestion.title',  art: '🍎', screen: 'digestion'  },
+      ]
+    },
     { id: 'music',   labelKey: 'loc.music',    bgTrack: 'default',  direct: 'music'    },
     { id: 'park',    labelKey: 'loc.park',     bgTrack: 'map',      direct: 'gallery'  },
   ];
