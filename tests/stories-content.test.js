@@ -22,9 +22,20 @@ beforeAll(async () => {
 });
 
 describe('story library content', () => {
-  it('loads the full library (existing baseline intact + new ones added)', () => {
-    // 28 original stories; the explore-expansion batch adds up to 20 more.
-    expect(APP.STORIES.length).toBeGreaterThanOrEqual(28);
+  it('loads the full library (28 original + 20 explore-expansion)', () => {
+    expect(APP.STORIES.length).toBeGreaterThanOrEqual(48);
+  });
+
+  it('includes all 20 new explore-expansion stories', () => {
+    const NEW_IDS = [
+      'giraffe-friend', 'panda-garden', 'tiger-stripes', 'whale-little-fish', 'horse-wings',
+      'kangaroo-pocket', 'koala-big-day', 'flamingo-balance', 'polite-crocodile', 'gorilla-gentle-hands',
+      'hippo-hum', 'deer-first-snow', 'camel-stars', 'squirrel-acorn', 'moose-antlers',
+      'gentle-bull', 'snake-song', 'lobster-new-shell', 'city-rat', 'shark-smile',
+    ];
+    const have = new Set(APP.STORIES.map((s) => s.id));
+    const missing = NEW_IDS.filter((id) => !have.has(id));
+    expect(missing).toEqual([]);
   });
 
   it('every story id is unique', () => {

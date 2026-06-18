@@ -8,12 +8,13 @@
 - [x] Tests green (270/270); commit
 - [ ] (gate) merge to main + push  ← awaiting approval
 
-## Stage 2 — +20 stories  `feature/library-stories`
-- [ ] Author ~20 full-length stories across unused animals
-- [ ] One `data/stories/<slug>.js` per story + index.html script tags
-- [ ] `tests/stories-content.test.js` (structure + animal refs)
-- [ ] In-browser shelf + read-through; commit
-- [ ] (gate) merge + push
+## Stage 2 — +20 stories  (on `feature/explore-expansion`)
+- [x] Authored 20 full-length stories (~9–10 pages) across all 21 unused animals
+- [x] Shared `data/stories/_shared.js` (APP.storyPrompt) + one file per story + index.html tags
+- [x] `tests/stories-content.test.js` (ids, pages, animal refs, palettes, 20 new-ids)
+- [x] In-browser: 48 books/covers on shelf, new watercolour story opens in reader, console clean
+- [x] 277 tests pass; committed in 4 batches
+- [ ] (gate) merge + push  ← batched for approval
 
 ## Stage 3 — +3 cooking items  `feature/cooking-items`
 - [ ] Add 3 recipes to `data/recipes.js` (reuse oven/pan/fry)
