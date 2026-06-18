@@ -66,5 +66,6 @@
 ## Wrap-up
 - [x] Map now flows 12 buildings + Sticker Book (scrollable grid; verified Space
       + Human Body + Clock all present alongside originals)
-- [ ] Update MEMORY.md; archive docs to dev/done/explore-expansion/ (at merge)
-- [ ] (gate) merge feature/explore-expansion → main + push  ← awaiting approval
+- [x] Update MEMORY.md; archive docs to dev/done/explore-expansion/
+- [x] (gate) merged feature/explore-expansion → main (ff f1d97d1→f698f62) + pushed.
+      ALL 7 STAGES COMPLETE. 322 tests pass.
