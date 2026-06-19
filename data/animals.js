@@ -69,4 +69,32 @@ window.APP.ANIMALS = [
 
   // ── 9-letter animals ──────────────────────────────────────────────────────
   { name: "CROCODILE", displayName: "Crocodile", images: { cartoon: "assets/images/cartoon/crocodile.svg", realistic: "assets/images/realistic/crocodile.jpg" }, audio: "assets/audio/crocodile.mp3" },
+
+  // ══ 2026-06-19 expansion batch (+20 animals) ══════════════════════════════
+  // 2-letter
+  { name: "OX",        displayName: "Ox",        images: { cartoon: "assets/images/cartoon/ox.svg",        realistic: "assets/images/realistic/ox.jpg"        }, audio: "assets/audio/ox.mp3"        },
+  // 3-letter
+  { name: "BAT",       displayName: "Bat",       images: { cartoon: "assets/images/cartoon/bat.svg",       realistic: "assets/images/realistic/bat.jpg"       }, audio: "assets/audio/bat.mp3"       },
+  { name: "ELK",       displayName: "Elk",       images: { cartoon: "assets/images/cartoon/elk.svg",       realistic: "assets/images/realistic/elk.jpg"       }, audio: "assets/audio/elk.mp3"       },
+  // 4-letter
+  { name: "TOAD",      displayName: "Toad",      images: { cartoon: "assets/images/cartoon/toad.svg",      realistic: "assets/images/realistic/toad.jpg"      }, audio: "assets/audio/toad.mp3"      },
+  { name: "SEAL",      displayName: "Seal",      images: { cartoon: "assets/images/cartoon/seal.svg",      realistic: "assets/images/realistic/seal.jpg"      }, audio: "assets/audio/seal.mp3"      },
+  { name: "MOLE",      displayName: "Mole",      images: { cartoon: "assets/images/cartoon/mole.svg",      realistic: "assets/images/realistic/mole.jpg"      }, audio: "assets/audio/mole.mp3"      },
+  // 5-letter
+  { name: "LLAMA",     displayName: "Llama",     images: { cartoon: "assets/images/cartoon/llama.svg",     realistic: "assets/images/realistic/llama.jpg"     }, audio: "assets/audio/llama.mp3"     },
+  { name: "SLOTH",     displayName: "Sloth",     images: { cartoon: "assets/images/cartoon/sloth.svg",     realistic: "assets/images/realistic/sloth.jpg"     }, audio: "assets/audio/sloth.mp3"     },
+  { name: "OTTER",     displayName: "Otter",     images: { cartoon: "assets/images/cartoon/otter.svg",     realistic: "assets/images/realistic/otter.jpg"     }, audio: "assets/audio/otter.mp3"     },
+  { name: "RHINO",     displayName: "Rhino",     images: { cartoon: "assets/images/cartoon/rhino.svg",     realistic: "assets/images/realistic/rhino.jpg"     }, audio: "assets/audio/rhino.mp3"     },
+  { name: "SHEEP",     displayName: "Sheep",     images: { cartoon: "assets/images/cartoon/sheep.svg",     realistic: "assets/images/realistic/sheep.jpg"     }, audio: "assets/audio/sheep.mp3"     },
+  { name: "GOOSE",     displayName: "Goose",     images: { cartoon: "assets/images/cartoon/goose.svg",     realistic: "assets/images/realistic/goose.jpg"     }, audio: "assets/audio/goose.mp3"     },
+  { name: "SNAIL",     displayName: "Snail",     images: { cartoon: "assets/images/cartoon/snail.svg",     realistic: "assets/images/realistic/snail.jpg"     }, audio: "assets/audio/snail.mp3"     },
+  { name: "ROBIN",     displayName: "Robin",     images: { cartoon: "assets/images/cartoon/robin.svg",     realistic: "assets/images/realistic/robin.jpg"     }, audio: "assets/audio/robin.mp3"     },
+  // 6-letter
+  { name: "WALRUS",    displayName: "Walrus",    images: { cartoon: "assets/images/cartoon/walrus.svg",    realistic: "assets/images/realistic/walrus.jpg"    }, audio: "assets/audio/walrus.mp3"    },
+  { name: "BEAVER",    displayName: "Beaver",    images: { cartoon: "assets/images/cartoon/beaver.svg",    realistic: "assets/images/realistic/beaver.jpg"    }, audio: "assets/audio/beaver.mp3"    },
+  { name: "BADGER",    displayName: "Badger",    images: { cartoon: "assets/images/cartoon/badger.svg",    realistic: "assets/images/realistic/badger.jpg"    }, audio: "assets/audio/badger.mp3"    },
+  { name: "TURKEY",    displayName: "Turkey",    images: { cartoon: "assets/images/cartoon/turkey.svg",    realistic: "assets/images/realistic/turkey.jpg"    }, audio: "assets/audio/turkey.mp3"    },
+  // 7-letter
+  { name: "OCTOPUS",   displayName: "Octopus",   images: { cartoon: "assets/images/cartoon/octopus.svg",   realistic: "assets/images/realistic/octopus.jpg"   }, audio: "assets/audio/octopus.mp3"   },
+  { name: "PEACOCK",   displayName: "Peacock",   images: { cartoon: "assets/images/cartoon/peacock.svg",   realistic: "assets/images/realistic/peacock.jpg"   }, audio: "assets/audio/peacock.mp3"   },
 ];
