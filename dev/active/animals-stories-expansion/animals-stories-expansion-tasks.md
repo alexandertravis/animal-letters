@@ -1,25 +1,23 @@
 # Animals + Stories Expansion — Tasks
 
-## Batch 1 — 20 animals
-- [ ] 20 cartoon SVGs in `assets/images/cartoon/`: ox, bat, elk, toad, seal, mole,
-      llama, sloth, otter, rhino, sheep, goose, snail, robin, walrus, beaver,
-      badger, turkey, octopus, peacock
-- [ ] 20 `APP.ANIMALS` entries appended in `data/animals.js`
-- [ ] `npm test` green; in-browser: new animals enter the tracing pool
-- [ ] Commit
+## Batch 1 — 20 animals ✅ DONE (commit 77f6ef9)
+- [x] 20 cartoon SVGs in `assets/images/cartoon/`
+- [x] 20 `APP.ANIMALS` entries appended in `data/animals.js` (pool 50→70)
+- [x] `npm test` green (322); SVGs parse-verified; all 20 registered
+- [x] Commit
 
 ## Story roster (50) — slug · cover animal · theme
-### New-animal stories (Batch 2)
-1. [ ] patient-ox · ox · steady strength (fable)
-2. [ ] little-bat-night · bat · the dark isn't scary (bedtime)
-3. [ ] elk-and-echo · elk · listening (folk)
-4. [ ] toads-umbrella · toad · sharing in the rain
-5. [ ] seal-song · seal · finding your voice
-6. [ ] mole-window · mole · curiosity
-7. [ ] kind-llama · llama · manners/patience
-8. [ ] slow-sloth · sloth · slow & steady / mindfulness
-9. [ ] otters-stone · otter · friendship/treasure
-10. [ ] rhino-soft-heart · rhino · looks vs kindness
+### New-animal stories (Batch 2) ✅ DONE — committed, 322 tests, all 10 load
+1. [x] patient-ox · ox · steady strength (fable)
+2. [x] little-bat-night · bat · the dark isn't scary (bedtime)
+3. [x] elk-and-echo · elk · listening (folk)
+4. [x] toads-umbrella · toad · sharing in the rain
+5. [x] seal-song · seal · finding your voice
+6. [x] mole-window · mole · curiosity
+7. [x] kind-llama · llama · manners/patience (slug kept, title "Llama Who Learned to Hum")
+8. [x] slow-sloth · sloth · slow & steady / mindfulness
+9. [x] otters-stone · otter · friendship/treasure
+10. [x] rhino-soft-heart · rhino · looks vs kindness
 
 ### New-animal stories (Batch 3)
 11. [ ] counting-sheep · sheep · bedtime counting (concept)
