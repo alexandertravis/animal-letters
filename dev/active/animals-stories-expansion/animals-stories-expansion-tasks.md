@@ -19,17 +19,17 @@
 9. [x] otters-stone · otter · friendship/treasure
 10. [x] rhino-soft-heart · rhino · looks vs kindness
 
-### New-animal stories (Batch 3)
-11. [ ] counting-sheep · sheep · bedtime counting (concept)
-12. [ ] goose-golden-egg · goose · contentment vs greed (fable)
-13. [ ] snail-carries-home · snail · home/journey
-14. [ ] robin-spring · robin · hope (seasonal)
-15. [ ] walrus-winter · walrus · warmth/community (seasonal)
-16. [ ] beaver-bridge · beaver · helpfulness/building
-17. [ ] badger-garden · badger · quiet wisdom
-18. [ ] turkey-talent · turkey · find your own talent
-19. [ ] octopus-juggle · octopus · many hands help
-20. [ ] peacock-colours · peacock · vanity → generosity
+### New-animal stories (Batch 3) ✅ DONE — committed, 322 tests
+11. [x] counting-sheep · sheep · bedtime counting (concept)
+12. [x] goose-golden-egg · goose (+fox) · contentment vs greed (fable)
+13. [x] snail-carries-home · snail · home/journey
+14. [x] robin-spring · robin · hope (seasonal)
+15. [x] walrus-winter · walrus · warmth/community (seasonal)
+16. [x] beaver-bridge · beaver · helpfulness/building
+17. [x] badger-garden · badger · quiet wisdom
+18. [x] turkey-talent · turkey · find your own talent
+19. [x] octopus-juggle · octopus · many hands help (+ remember to rest)
+20. [x] peacock-colours · peacock · vanity → generosity
 
 ### Classic & existing-animal fables (Batch 4)
 21. [ ] fox-and-grapes · fox · sour grapes (fable)
