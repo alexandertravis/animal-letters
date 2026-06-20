@@ -31,17 +31,17 @@
 19. [x] octopus-juggle · octopus · many hands help (+ remember to rest)
 20. [x] peacock-colours · peacock · vanity → generosity
 
-### Classic & existing-animal fables (Batch 4)
-21. [ ] fox-and-grapes · fox · sour grapes (fable)
-22. [ ] dog-reflection · dog · greed (fable)
-23. [ ] frog-and-ox · frog (+ox) · vanity (fable)
-24. [ ] lamb-cried-wolf · sheep (+wolf) · honesty (fable)
-25. [ ] bear-and-bees · bear (+bee) · patience
-26. [ ] three-kittens · cat · responsibility (nursery)
-27. [ ] farm-friends-count · cow (+hen,pig,duck) · counting (concept, multi)
-28. [ ] elephant-trunk · elephant · Just-So curiosity
-29. [ ] how-camel-hump · camel · Just-So work ethic
-30. [ ] rabbit-in-moon · rabbit · selflessness (Jataka)
+### Classic & existing-animal fables (Batch 4) ✅ DONE — committed, 322 tests
+21. [x] fox-and-grapes · fox · sour grapes (fable)
+22. [x] dog-reflection · dog · greed (fable)
+23. [x] frog-and-ox · frog (+ox) · vanity (fable)
+24. [x] lamb-cried-wolf · sheep (+wolf) · honesty (fable)
+25. [x] bear-and-bees · bear (+bee) · patience
+26. [x] three-kittens · cat · responsibility (nursery)
+27. [x] farm-friends-count · cow (+hen,pig,duck) · counting (concept, multi)
+28. [x] elephant-trunk · elephant (+crocodile) · Just-So curiosity
+29. [x] how-camel-hump · camel · Just-So work ethic
+30. [x] rabbit-in-moon · rabbit · selflessness (Jataka)
 
 ### Existing-animal tales (Batch 5)
 31. [ ] monkey-caps · monkey · cleverness
