@@ -55,23 +55,29 @@
 39. [x] kangaroo-helps · kangaroo · helpfulness (rescue)
 40. [x] koala-sleepy-tree · koala · rest is not laziness
 
-### Existing-animal tales (Batch 6)
-41. [ ] panda-bamboo-share · panda · sharing
-42. [ ] hippo-mud-song · hippo · joy/self-acceptance
-43. [ ] crocodile-tears · crocodile · honesty/kindness
-44. [ ] flamingo-one-leg · flamingo · perseverance/balance
-45. [ ] gorilla-quiet-strength · gorilla · gentle strength
-46. [ ] hedgehog-prickles · hedgehog · friendship despite differences
-47. [ ] parrot-secret · parrot · keeping a kindness
-48. [ ] whale-lullaby · whale · bedtime/ocean
-49. [ ] dolphin-rescue · dolphin · bravery/helpfulness
-50. [ ] owls-night-school · owl · learning/wisdom
+### Existing-animal tales (Batch 6) ✅ DONE — committed, 323 tests
+41. [x] panda-bamboo-share · panda · sharing
+42. [x] hippo-dance · hippo · surprising grace (renamed from hippo-mud-song)
+43. [x] crocodile-tears · crocodile · honesty over trickery
+44. [x] flamingo-flock · flamingo · belonging/courage to fly (renamed from flamingo-one-leg,
+        to stay distinct from the existing flamingo-balance story)
+45. [x] gorilla-quiet-strength · gorilla · true strength is gentle/protective
+46. [x] hedgehog-prickles · hedgehog · loved as you are; many ways to show care
+47. [x] parrot-secret · parrot · think before you repeat; spread kind words
+48. [x] whale-lullaby · whale · bedtime/comfort
+49. [x] dolphin-rescue · dolphin · bravery/helpfulness
+50. [x] owls-night-school · owl · everyone learns in their own way
 
 ## Wrap-up
-- [ ] Update `tests/stories-content.test.js` baseline (library ≥ 98) + new-id checks
-- [ ] Full `npm test` green
-- [ ] In-browser: library shows new stories; reader renders one end-to-end
+- [x] Update `tests/stories-content.test.js` baseline (library ≥ 98) + 50-new-id check
+- [x] Full `npm test` green — 323 tests
+- [x] In-browser: 98 stories load, all 50 new present, no bad covers, reader renders a new story
 - [ ] (on approval) merge to main + push; archive dev docs
+
+## FEATURE COMPLETE
+20 animals (+SVGs) and 50 full-depth stories added. Library 48 → 98.
+Branch `feature/animals-stories-expansion`, commits 77f6ef9 → (batch 6).
+Awaiting user approval to merge/push.
 
 Notes: leather colours cycled from the valid palette (see context). Themes/slugs
 may flex slightly during authoring — keep requirement animalIds valid.

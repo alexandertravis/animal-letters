@@ -22,8 +22,30 @@ beforeAll(async () => {
 });
 
 describe('story library content', () => {
-  it('loads the full library (28 original + 20 explore-expansion)', () => {
-    expect(APP.STORIES.length).toBeGreaterThanOrEqual(48);
+  it('loads the full library (28 original + 20 explore-expansion + 50 animals-stories-expansion)', () => {
+    expect(APP.STORIES.length).toBeGreaterThanOrEqual(98);
+  });
+
+  it('includes all 50 animals-stories-expansion stories', () => {
+    const NEW_IDS = [
+      // batch 2-3: one per new animal
+      'patient-ox', 'little-bat-night', 'elk-and-echo', 'toads-umbrella', 'seal-song',
+      'mole-window', 'kind-llama', 'slow-sloth', 'otters-stone', 'rhino-soft-heart',
+      'counting-sheep', 'goose-golden-egg', 'snail-carries-home', 'robin-spring', 'walrus-winter',
+      'beaver-bridge', 'badger-garden', 'turkey-talent', 'octopus-juggle', 'peacock-colours',
+      // batch 4: classic fables & tales
+      'fox-and-grapes', 'dog-reflection', 'frog-and-ox', 'lamb-cried-wolf', 'bear-and-bees',
+      'three-kittens', 'farm-friends-count', 'elephant-trunk', 'how-camel-hump', 'rabbit-in-moon',
+      // batch 5-6: existing-animal tales
+      'monkey-caps', 'lions-whisker', 'penguin-egg', 'brave-duckling', 'two-squirrels',
+      'tiger-and-the-pool', 'giraffe-high-note', 'zebra-stripes-night', 'kangaroo-helps', 'koala-sleepy-tree',
+      'panda-bamboo-share', 'hippo-dance', 'crocodile-tears', 'flamingo-flock', 'gorilla-quiet-strength',
+      'hedgehog-prickles', 'parrot-secret', 'whale-lullaby', 'dolphin-rescue', 'owls-night-school',
+    ];
+    expect(NEW_IDS.length).toBe(50);
+    const have = new Set(APP.STORIES.map((s) => s.id));
+    const missing = NEW_IDS.filter((id) => !have.has(id));
+    expect(missing).toEqual([]);
   });
 
   it('includes all 20 new explore-expansion stories', () => {
