@@ -43,17 +43,17 @@
 29. [x] how-camel-hump · camel · Just-So work ethic
 30. [x] rabbit-in-moon · rabbit · selflessness (Jataka)
 
-### Existing-animal tales (Batch 5)
-31. [ ] monkey-caps · monkey · cleverness
-32. [ ] lions-whisker · lion · patience (folk)
-33. [ ] penguin-egg · penguin · devotion (winter)
-34. [ ] brave-duckling · duck · courage
-35. [ ] two-squirrels · squirrel · sharing
-36. [ ] tiger-and-the-pool · tiger · self-acceptance
-37. [ ] giraffe-high-note · giraffe · using your gift to help
-38. [ ] zebra-stripes-night · zebra · identity (Just-So)
-39. [ ] kangaroo-helps · kangaroo · helpfulness
-40. [ ] koala-sleepy-tree · koala · rest/contentment
+### Existing-animal tales (Batch 5) ✅ DONE — committed, 322 tests
+31. [x] monkey-caps · monkey · cleverness (calm head beats shouting)
+32. [x] lions-whisker · lion (+mouse) · patience (folk)
+33. [x] penguin-egg · penguin · devotion (winter)
+34. [x] brave-duckling · duck · courage
+35. [x] two-squirrels · squirrel · sharing
+36. [x] tiger-and-the-pool · tiger · self-acceptance (be a friend to yourself)
+37. [x] giraffe-high-note · giraffe · your difference is your gift
+38. [x] zebra-stripes-night · zebra · identity (Just-So)
+39. [x] kangaroo-helps · kangaroo · helpfulness (rescue)
+40. [x] koala-sleepy-tree · koala · rest is not laziness
 
 ### Existing-animal tales (Batch 6)
 41. [ ] panda-bamboo-share · panda · sharing
