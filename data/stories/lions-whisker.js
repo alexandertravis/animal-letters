@@ -48,9 +48,9 @@ window.APP = window.APP || {};
       { id: 8, text: { en: `From that day on, the great lion and the little mouse were the closest of friends. They shared their meals and their long sunny afternoons, and Mira would even curl up to nap in the soft warmth of the lion's mane. The lion was never lonely again, all because one small mouse had been so patient.` },
         image: IMG, imageAlt: 'A little mouse napping happily in a lion\'s mane.',
         imagePrompt: P({ cast: [CAST.lion, CAST.mouse], scene: 'Mira naps cosily in the lion\'s warm mane, the two now firm friends.', composition: 'Mouse nestled in the lion\'s mane.', light: 'Warm peaceful light.' }) },
-      { id: 9, text: { en: `"How did you do it?" the other animals marvelled. "How did you tame the fearsome lion?" Mira smiled. "I did not tame him at all," she said. "I only gave him my patience, a little each day, until he was ready to trust me. There is no quick way to a frightened heart — only a kind and gentle one."` },
-        image: IMG, imageAlt: 'A mouse and lion together as the other animals look on.',
-        imagePrompt: P({ cast: [CAST.lion, CAST.mouse], scene: 'Mira and the lion sit happily together as the amazed animals look on.', composition: 'Friends together, onlookers around.', light: 'Bright warm light.' }) }
+      { id: 9, text: { en: `And to mark their friendship, the great lion gave Mira one of his own long whiskers to keep — a gift no lion gives lightly, and only to one he truly trusts. "How did you win a lion's whisker?" the other animals marvelled. Mira smiled. "Not by force, and not in a hurry," she said. "Only with patience and kindness, a little each day — until a frightened heart was ready to trust."` },
+        image: IMG, imageAlt: 'A lion giving a tiny mouse one of his whiskers as a keepsake.',
+        imagePrompt: P({ cast: [CAST.lion, CAST.mouse], scene: 'The great lion gives Mira one of his long whiskers as a token of trust while the animals look on.', composition: 'Lion offering a whisker to the small mouse, onlookers around.', light: 'Bright warm light.' }) }
     ],
     closing: {
       text: { en: `For trust is like a whisker on a lion — it can never be snatched by force, only earned, gently and patiently, a little at a time.` },
