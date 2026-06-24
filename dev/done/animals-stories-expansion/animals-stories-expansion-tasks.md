@@ -72,12 +72,18 @@
 - [x] Update `tests/stories-content.test.js` baseline (library ≥ 98) + 50-new-id check
 - [x] Full `npm test` green — 323 tests
 - [x] In-browser: 98 stories load, all 50 new present, no bad covers, reader renders a new story
-- [ ] (on approval) merge to main + push; archive dev docs
+- [x] merged to main + pushed (594881f); dev docs archived (73499f2)
 
-## FEATURE COMPLETE
+## FEATURE COMPLETE — MERGED & PUSHED
 20 animals (+SVGs) and 50 full-depth stories added. Library 48 → 98.
-Branch `feature/animals-stories-expansion`, commits 77f6ef9 → (batch 6).
-Awaiting user approval to merge/push.
+Branch `feature/animals-stories-expansion`, commits 77f6ef9 → 594881f, merged to
+main and pushed; docs archived here (dev/done/).
+
+## CONSISTENCY PASS (2026-06-19, commit e4368af, merged+pushed)
+Reviewed all 98 stories. Structural integrity clean. Fixed 10 protagonist
+name collisions (renamed only in the new stories — Goro→George, Kira→Kayla,
+Kobi→Koda, Bao→Ling, Hattie→Hilda/Holly, Ollie→Otto, Dilly→Posy, Lulu→Lola,
+Sasha→Suki) and gave "The Lion's Whisker" a literal whisker payoff. 323 tests.
 
 Notes: leather colours cycled from the valid palette (see context). Themes/slugs
 may flex slightly during authoring — keep requirement animalIds valid.
