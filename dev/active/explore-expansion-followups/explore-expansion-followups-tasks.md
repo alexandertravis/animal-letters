@@ -12,7 +12,10 @@ Backlog only — nothing in progress. Confirm direction with the user, then
 
 ## Deepening candidates (pick the area that lands well)
 - [ ] Clock: "quarter to" phrasing / word-clock reading / digital→analog variant
-- [ ] Human Body: 3rd game (label body parts / senses); richer layer art
+- [~] Human Body: richer layer art ✅ DONE 2026-06-19 (commit 3c7e3af — distinct
+      per-layer SVG art; MERGED to main + pushed; design doc in
+      docs/superpowers/specs/2026-06-19-body-layers-art-design.md).
+      Still open: 3rd game (label body parts / senses); optional polish: lungs read pink-on-pink
 - [ ] Space: more constellations; planet quiz; moon phases
 - [ ] Library: real illustrations for the 20 new stories (WebP pipeline exists);
       or "read to me" auto-advance
